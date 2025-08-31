@@ -43,13 +43,41 @@
         <a href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-espace-client">Mon Espace Client</a>
     </header>
 
-    <!-- NOUVELLE SECTION D'INFORMATION -->
-    <div class="carte info-banniere" style="margin-bottom: 2rem; text-align: center; padding: 1.5rem; background-color: #f8f9fa;">
-      <h2 style="margin-top: 0; font-size: 1.5em; color: #333;">Bienvenue chez <?= nomService ?></h2>
-      <p style="margin: 0.5rem 0;">Nous sommes à votre service de <strong><?= heureDebut ?></strong> à <strong><?= heureFin ?></strong>.</p>
-      <p style="margin: 0.5rem 0;">Nos tournées débutent à partir de <strong><?= prixBase ?> € TTC</strong> pour le premier arrêt.</p>
-      <p style="margin-top: 1rem; color: #555;">Consultez notre calendrier pour voir nos disponibilités et réservez votre course en quelques clics !</p>
-    </div>
+    <section id="hero-tarifs" class="hero-tarifs">
+      <h1>Réservez vos tournées pro en 1 clic sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol, Bandol</h1>
+      <p class="hero-sous-titre">Tarifs et options toujours à jour, ajustables selon vos besoins.</p>
+      <div class="tarifs-cartes">
+        <div class="tarif-carte">
+          <h3>Course de base</h3>
+          <ul>
+            <li>3,5&nbsp;€ net</li>
+            <li>3&nbsp;km inclus</li>
+            <li>15&nbsp;min inclus</li>
+          </ul>
+          <a href="#vue-calendrier" class="btn btn-primaire">Réserver</a>
+        </div>
+        <div class="tarif-carte">
+          <h3>Arrêts supplémentaires</h3>
+          <ul>
+            <li>2<sup>e</sup> arrêt : 3,5&nbsp;€ net</li>
+            <li>3<sup>e</sup> arrêt : 4&nbsp;€ net</li>
+            <li>4<sup>e</sup> arrêt : 4&nbsp;€ net</li>
+            <li>5<sup>e</sup> arrêt : 5&nbsp;€ net</li>
+          </ul>
+        </div>
+        <div class="tarif-carte">
+          <h3>Options</h3>
+          <ul>
+            <li>Urgent : +2,5&nbsp;€ net</li>
+            <li>Samedi : +2,5&nbsp;€ net</li>
+            <li>2<sup>e</sup> course du mois : -2,5&nbsp;€ (selon dispo)</li>
+          </ul>
+        </div>
+      </div>
+      <p class="hero-footnote">
+        TVA non applicable (Art. 293 B CGI) — Tarifs &amp; forfaits modifiables à tout moment par l'administrateur — Paiement &amp; sécurité garanties — Contact : elservicestoulon@gmail.com
+      </p>
+    </section>
 
     <main id="app-conteneur">
       <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
