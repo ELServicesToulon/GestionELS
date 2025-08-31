@@ -78,6 +78,65 @@ function notifyAdminWithThrottle(typeErreur, sujet, corps) {
   }
 }
 
+/**
+ * Vérifie et corrige si besoin la structure des feuilles (onglets + en-têtes).
+ * - Crée les onglets manquants et leurs en-têtes.
+ * - Ajoute les en-têtes manquants si la première ligne existe déjà.
+ * Retourne un rapport synthétique.
+ */
+function verifierStructureFeuilles() {
+  const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+  const expectations = [
+    { name: 'Clients', headers: ['Email', 'Raison Sociale', 'Adresse', 'SIRET', COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES], required: true },
+    { name: 'Facturation', headers: ['Date', 'Client (Raison S. Client)', 'Client (Email)', 'Type', 'Détails', 'Montant', 'Statut', 'Valider', 'N° Facture', 'Event ID', 'ID Réservation', 'Note Interne', 'Tournée Offerte Appliquée', 'Type Remise Appliquée', 'Valeur Remise Appliquée', 'Lien Note'], required: true },
+    { name: 'Plages_Bloquees', headers: ['Date', 'Heure_Debut', 'Heure_Fin'], required: false },
+    { name: 'Logs', headers: ['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut'], required: false },
+    { name: 'Admin_Logs', headers: ['Timestamp', 'Utilisateur', 'Action', 'Statut'], required: false }
+  ];
+
+  const report = [];
+  expectations.forEach(exp => {
+    let sh = ss.getSheetByName(exp.name);
+    let created = false;
+    if (!sh) {
+      sh = ss.insertSheet(exp.name);
+      created = true;
+      sh.getRange(1, 1, 1, exp.headers.length).setValues([exp.headers]);
+    } else {
+      try {
+        obtenirIndicesEnTetes(sh, exp.headers);
+      } catch (e) {
+        const width = Math.max(sh.getLastColumn(), exp.headers.length);
+        const row1 = sh.getRange(1, 1, 1, width).getValues()[0].map(v => String(v).trim());
+        const nonEmpty = row1.some(v => v.length > 0);
+        if (!nonEmpty) {
+          sh.getRange(1, 1, 1, exp.headers.length).setValues([exp.headers]);
+        } else {
+          const existing = new Set(row1);
+          const missing = exp.headers.filter(h => !existing.has(h));
+          if (missing.length > 0) {
+            sh.getRange(1, row1.length + 1, 1, missing.length).setValues([missing]);
+          }
+        }
+      }
+    }
+
+    let missingNow = [];
+    try {
+      obtenirIndicesEnTetes(sh, exp.headers);
+    } catch (err) {
+      const row1 = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(v => String(v).trim());
+      const existing = new Set(row1);
+      missingNow = exp.headers.filter(h => !existing.has(h));
+    }
+
+    report.push({ sheet: exp.name, created: created, missingHeaders: missingNow });
+  });
+
+  try { logAdminAction('Vérification structure feuilles', 'Terminée'); } catch (e) {}
+  return { success: true, report: report };
+}
+
 
 // =================================================================
 //                      2. SAUVEGARDE (CODE & DONNÉES)
