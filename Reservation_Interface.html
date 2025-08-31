@@ -90,7 +90,8 @@
           .filter(([type]) => type !== 'Normal')
           .forEach(([type, regle]) => {
             const diff = regle.base - configServeur.TARIFS.Normal.base;
-            optionsList.innerHTML += `<li>${type} : +${fmt(diff)}&nbsp;€ net</li>`;
+            const signe = diff >= 0 ? '+' : '';
+            optionsList.innerHTML += `<li>${type} : ${signe}${fmt(diff)}&nbsp;€ net</li>`;
           });
 
         const footnote = document.getElementById('hero-footnote');
