@@ -530,3 +530,73 @@ function genererFactures() {
   }
 }
 
+/**
+ * Envoie par e-mail les factures marquées comme prêtes à être envoyées.
+ * Utilise la feuille "Facturation" et les colonnes suivantes si présentes:
+ *  - "Email à envoyer" (booléen), "Client (Email)", "N° Facture", "ID PDF", "Montant", "Statut", "Note Interne".
+ * Si "Email à envoyer" n'existe pas, envoie pour les lignes ayant un N° Facture et un ID PDF non vides.
+ */
+function envoyerFacturesControlees() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const feuille = ss.getSheetByName('Facturation');
+    if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
+
+    const lastCol = feuille.getLastColumn();
+    const header = feuille.getRange(1, 1, 1, lastCol).getValues()[0].map(v => String(v).trim());
+    const idx = {
+      email: header.indexOf('Client (Email)'),
+      numero: header.indexOf('N° Facture'),
+      idPdf: header.indexOf('ID PDF'),
+      aEnvoyer: header.indexOf('Email à envoyer'),
+      montant: header.indexOf('Montant'),
+      statut: header.indexOf('Statut'),
+      note: header.indexOf('Note Interne')
+    };
+
+    if (idx.email === -1 || idx.numero === -1 || idx.idPdf === -1) {
+      throw new Error("Colonnes requises manquantes dans 'Facturation' (Client (Email), N° Facture, ID PDF).");
+    }
+
+    const data = feuille.getDataRange().getValues();
+    let envoyees = 0;
+    let erreurs = [];
+
+    for (let r = 1; r < data.length; r++) {
+      const row = data[r];
+      const email = String(row[idx.email] || '').trim();
+      const numero = String(row[idx.numero] || '').trim();
+      const idPdf = String(row[idx.idPdf] || '').trim();
+      const flag = idx.aEnvoyer !== -1 ? row[idx.aEnvoyer] === true : true;
+      if (!email || !numero || !idPdf || !flag) continue;
+
+      try {
+        const fichier = DriveApp.getFileById(idPdf);
+        const pdfBlob = fichier.getAs(MimeType.PDF).setName(`${numero}.pdf`);
+        const montant = idx.montant !== -1 ? parseFloat(row[idx.montant]) || 0 : null;
+        const sujet = `[${NOM_ENTREPRISE}] Facture ${numero}`;
+        const corps = [
+          `<p>Bonjour,</p>`,
+          `<p>Veuillez trouver ci-joint votre facture <strong>${numero}</strong>${montant !== null ? ` d'un montant de <strong>${montant.toFixed(2)} €</strong>` : ''}.</p>`,
+          `<p>Merci pour votre confiance.<br/>${NOM_ENTREPRISE}</p>`
+        ].join('');
+
+        MailApp.sendEmail({ to: email, subject: sujet, htmlBody: corps, attachments: [pdfBlob] });
+
+        if (idx.aEnvoyer !== -1) feuille.getRange(r + 1, idx.aEnvoyer + 1).setValue(false);
+        if (idx.statut !== -1) feuille.getRange(r + 1, idx.statut + 1).setValue('Envoyée');
+        envoyees++;
+      } catch (e) {
+        erreurs.push(`Ligne ${r + 1} (${numero}) : ${e.message}`);
+      }
+    }
+
+    ui.alert('Envoi des factures', `${envoyees} e-mail(s) envoyé(s).${erreurs.length ? "\nErreurs:\n" + erreurs.join("\n") : ''}`, ui.ButtonSet.OK);
+    logAdminAction('Envoi Factures', `Succès: ${envoyees}, Erreurs: ${erreurs.length}`);
+  } catch (e) {
+    Logger.log(`Erreur dans envoyerFacturesControlees: ${e.stack}`);
+    try { logAdminAction('Envoi Factures', `Échec: ${e.message}`); } catch (_e) {}
+    SpreadsheetApp.getUi().alert('Erreur', e.message, ui.ButtonSet.OK);
+  }
+}
