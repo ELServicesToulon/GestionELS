@@ -137,6 +137,26 @@ function verifierStructureFeuilles() {
   return { success: true, report: report };
 }
 
+/**
+ * Handler menu: lance la vérification et affiche un rapport synthétique.
+ */
+function menuVerifierStructureFeuilles() {
+  try {
+    const res = verifierStructureFeuilles();
+    const lignes = res.report.map(r => `- ${r.sheet} : ${r.created ? 'créée' : 'ok'}${r.missingHeaders && r.missingHeaders.length ? ' | entêtes ajoutés: ' + r.missingHeaders.join(', ') : ''}`);
+    const html = `<div style="font-family:Arial,sans-serif;line-height:1.5">
+      <h2>Vérification structure des feuilles</h2>
+      <p>Résultat: ${res.success ? 'Succès' : 'Erreur'}</p>
+      <pre style="white-space:pre-wrap">${lignes.join('\n')}</pre>
+    </div>`;
+    const ui = SpreadsheetApp.getUi();
+    ui.showModalDialog(HtmlService.createHtmlOutput(html).setWidth(520).setHeight(420), 'Vérification des feuilles');
+  } catch (e) {
+    const ui = SpreadsheetApp.getUi();
+    ui.alert('Erreur', `La vérification a échoué: ${e.message}`, ui.ButtonSet.OK);
+  }
+}
+
 
 // =================================================================
 //                      2. SAUVEGARDE (CODE & DONNÉES)

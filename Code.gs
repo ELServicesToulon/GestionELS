@@ -21,6 +21,7 @@ function onOpen() {
   const sousMenuMaintenance = ui.createMenu('Maintenance')
       .addItem("Sauvegarder le code du projet", "sauvegarderCodeProjet")
       .addItem("Sauvegarder les données", "sauvegarderDonnees")
+      .addItem("Vérifier structure des feuilles", "menuVerifierStructureFeuilles")
       .addItem("Purger les anciennes données (RGPD)", "purgerAnciennesDonnees");
       
   const sousMenuDebug = ui.createMenu('Debug')
