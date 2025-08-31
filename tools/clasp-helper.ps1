@@ -37,7 +37,7 @@ function New-Form {
   $cmbAction.DropDownStyle = 'DropDownList'
   $cmbAction.Location = New-Object System.Drawing.Point(150,56)
   $cmbAction.Size = New-Object System.Drawing.Size(250,22)
-  @('Push','Pull','Version') | ForEach-Object { [void]$cmbAction.Items.Add($_) }
+  @('Push','Pull','Version','Open','Deploy') | ForEach-Object { [void]$cmbAction.Items.Add($_) }
   $cmbAction.SelectedIndex = 0
   $form.Controls.Add($cmbAction)
 
@@ -73,7 +73,7 @@ function New-Form {
   $form.Controls.Add($btnCancel)
 
   $cmbAction.Add_SelectedIndexChanged({
-    $txtVersion.Enabled = ($cmbAction.SelectedItem -eq 'Version')
+    $txtVersion.Enabled = ($cmbAction.SelectedItem -eq 'Version' -or $cmbAction.SelectedItem -eq 'Deploy')
   })
 
   $result = $null
@@ -84,8 +84,8 @@ function New-Form {
     $projPath = if ($projInfo.Length -ge 2) { $projInfo[1] } else { $root.Path }
     $action = [string]$cmbAction.SelectedItem
     $verName = [string]$txtVersion.Text
-    if ($action -eq 'Version' -and [string]::IsNullOrWhiteSpace($verName)) {
-      [System.Windows.Forms.MessageBox]::Show('Veuillez saisir un nom de version.','Clasp Tools',[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Warning) | Out-Null
+    if (($action -eq 'Version' -or $action -eq 'Deploy') -and [string]::IsNullOrWhiteSpace($verName)) {
+      [System.Windows.Forms.MessageBox]::Show('Veuillez saisir un nom de version / description.','Clasp Tools',[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Warning) | Out-Null
       return
     }
     $result = @{ Path=$projPath; Action=$action; Version=$verName; Force=$chkForce.Checked }
@@ -110,14 +110,15 @@ function Run-Clasp($spec){
       return
     }
     switch ($action) {
-      'Push'    { clasp push $(if ($force) { '-f' }) }
-      'Pull'    { clasp setting fileExtension gs | Out-Null; clasp pull }
-      'Version' { clasp version $verName }
-      default   { Write-Host "Action inconnue: $action" -ForegroundColor Red }
+      'Push'     { clasp push $(if ($force) { '-f' }) }
+      'Pull'     { clasp setting fileExtension gs | Out-Null; clasp pull }
+      'Version'  { clasp version $verName }
+      'Open'     { clasp open }
+      'Deploy'   { clasp deploy -d $verName }
+      default    { Write-Host "Action inconnue: $action" -ForegroundColor Red }
     }
   } finally { Pop-Location }
 }
 
 $spec = New-Form
 Run-Clasp $spec
-
