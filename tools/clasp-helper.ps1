@@ -37,7 +37,7 @@ function New-Form {
   $cmbAction.DropDownStyle = 'DropDownList'
   $cmbAction.Location = New-Object System.Drawing.Point(150,56)
   $cmbAction.Size = New-Object System.Drawing.Size(250,22)
-  @('Push','Pull','Version','Open','Deploy','Pull Version','Restaurer Version','Lister Déploiements','Réassigner Déploiement') | ForEach-Object { [void]$cmbAction.Items.Add($_) }
+  @('Push','Pull','Version','Open','Deploy','PullVersion','RestoreVersion','ListDeployments','ReassignDeployment') | ForEach-Object { [void]$cmbAction.Items.Add($_) }
   $cmbAction.SelectedIndex = 0
   $form.Controls.Add($cmbAction)
 
@@ -106,9 +106,9 @@ function New-Form {
   $cmbAction.Add_SelectedIndexChanged({
     $act = [string]$cmbAction.SelectedItem
     $txtVersion.Enabled = ($act -eq 'Version' -or $act -eq 'Deploy')
-    $txtVerNum.Enabled = ($act -eq 'Pull Version' -or $act -eq 'Restaurer Version' -or $act -eq 'Réassigner Déploiement')
-    $txtDepId.Enabled = ($act -eq 'Réassigner Déploiement')
-    $chkPushAfter.Enabled = ($act -eq 'Restaurer Version')
+    $txtVerNum.Enabled = ($act -eq 'PullVersion' -or $act -eq 'RestoreVersion' -or $act -eq 'ReassignDeployment')
+    $txtDepId.Enabled = ($act -eq 'ReassignDeployment')
+    $chkPushAfter.Enabled = ($act -eq 'RestoreVersion')
   })
 
   $result = $null
@@ -125,11 +125,11 @@ function New-Form {
       [System.Windows.Forms.MessageBox]::Show('Veuillez saisir un nom de version / description.','Clasp Tools',[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Warning) | Out-Null
       return
     }
-    if (($action -eq 'Pull Version' -or $action -eq 'Restaurer Version' -or $action -eq 'Réassigner Déploiement') -and [string]::IsNullOrWhiteSpace($verNum)) {
+    if (($action -eq 'PullVersion' -or $action -eq 'RestoreVersion' -or $action -eq 'ReassignDeployment') -and [string]::IsNullOrWhiteSpace($verNum)) {
       [System.Windows.Forms.MessageBox]::Show('Veuillez saisir un numéro de version.','Clasp Tools',[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Warning) | Out-Null
       return
     }
-    if ($action -eq 'Réassigner Déploiement' -and [string]::IsNullOrWhiteSpace($depId)) {
+    if ($action -eq 'ReassignDeployment' -and [string]::IsNullOrWhiteSpace($depId)) {
       [System.Windows.Forms.MessageBox]::Show('Veuillez saisir un Deployment ID.','Clasp Tools',[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Warning) | Out-Null
       return
     }
@@ -162,7 +162,7 @@ function Run-Clasp($spec){
   Push-Location $projPath
   try {
     if (-not (Get-Command clasp -ErrorAction SilentlyContinue)) {
-      Write-Host 'clasp n\'est pas installé dans le PATH.' -ForegroundColor Red
+      Write-Host "clasp n'est pas installé dans le PATH." -ForegroundColor Red
       return
     }
     switch ($action) {
@@ -171,9 +171,12 @@ function Run-Clasp($spec){
       'Version'  { clasp version $verName }
       'Open'     { clasp open }
       'Deploy'   { clasp deploy -d $verName }
-      'Lister Déploiements' { $out = clasp deployments | Out-String; [System.Windows.Forms.MessageBox]::Show($out,'Déploiements') | Out-Null }
-      'Réassigner Déploiement' { clasp deploy --deploymentId $depId -i $verNum -d ($verName -ne '' ? $verName : "Reassign to $verNum") }
-      'Pull Version' {
+      'ListDeployments' { $out = clasp deployments | Out-String; [System.Windows.Forms.MessageBox]::Show($out,'Deployments') | Out-Null }
+      'ReassignDeployment' {
+         $desc = if ($verName -ne '') { $verName } else { "Reassign to $verNum" }
+         clasp deploy --deploymentId $depId -i $verNum -d $desc
+      }
+      'PullVersion' {
          if (-not $verNum) { throw 'Numéro de version requis' }
          clasp setting fileExtension gs | Out-Null
          $snap = Join-Path $projPath ("snapshots/v{0}" -f $verNum)
@@ -182,9 +185,9 @@ function Run-Clasp($spec){
          clasp pull --versionNumber $verNum
          clasp setting rootDir ./ | Out-Null
          Ensure-IgnoredSnapshots $projPath
-         [System.Windows.Forms.MessageBox]::Show("Version $verNum clonée dans $snap","Pull Version") | Out-Null
+         [System.Windows.Forms.MessageBox]::Show(("Version {0} clonée dans {1}" -f $verNum,$snap),"PullVersion") | Out-Null
       }
-      'Restaurer Version' {
+      'RestoreVersion' {
          if (-not $verNum) { throw 'Numéro de version requis' }
          clasp setting fileExtension gs | Out-Null
          $snap = Join-Path $projPath ("snapshots/v{0}" -f $verNum)
@@ -194,10 +197,11 @@ function Run-Clasp($spec){
          clasp setting rootDir ./ | Out-Null
          # Remplacer fichiers racine par snapshot
          Get-ChildItem -Path $projPath -File -Include *.gs,*.html,appsscript.json | Remove-Item -Force -ErrorAction SilentlyContinue
-         Copy-Item -Path (Join-Path $snap '*') -Destination $projPath -Force -Recurse
+         Copy-Item -Path (Join-Path $snap "*") -Destination $projPath -Force -Recurse
          Ensure-IgnoredSnapshots $projPath
          if ($pushAfter) { clasp push -f }
-         [System.Windows.Forms.MessageBox]::Show("Version $verNum restaurée depuis $snap" + ($pushAfter ? " et poussée." : "."),"Restauration Version") | Out-Null
+         $msg = if ($pushAfter) { ("Version {0} restaurée depuis {1} et poussée." -f $verNum,$snap) } else { ("Version {0} restaurée depuis {1}." -f $verNum,$snap) }
+         [System.Windows.Forms.MessageBox]::Show($msg,"RestoreVersion") | Out-Null
       }
       default    { Write-Host "Action inconnue: $action" -ForegroundColor Red }
     }
