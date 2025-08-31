@@ -78,6 +78,10 @@ function doGet(e) {
     template.URGENT_THRESHOLD_MINUTES = URGENT_THRESHOLD_MINUTES;
     template.dateDuJour = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
 
+    // Expose contact et TVA pour un affichage dynamique
+    template.EMAIL_ENTREPRISE = EMAIL_ENTREPRISE;
+    template.TVA_APPLICABLE = TVA_APPLICABLE;
+
     // NOUVEAU : Ajout des variables pour la bannière d'information
     template.heureDebut = HEURE_DEBUT_SERVICE;
     template.heureFin = HEURE_FIN_SERVICE;
