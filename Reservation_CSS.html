@@ -52,6 +52,58 @@ body {
 #colonne-droite { flex: 2; position: sticky; top: 30px; display: flex; flex-direction: column; gap: 30px;}
 
 
+/* --- HERO TARIFS --- */
+.hero-tarifs {
+  background: linear-gradient(135deg, var(--couleur-primaire), var(--couleur-secondaire));
+  color: white;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: var(--ombre-portee);
+}
+.hero-tarifs h1 {
+  margin-top: 0;
+  font-size: 1.8em;
+}
+.hero-tarifs .hero-sous-titre {
+  margin: 0.5rem 0 1.5rem;
+  font-weight: 500;
+}
+.tarifs-cartes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+}
+.tarif-carte {
+  background: white;
+  color: var(--gris-fonce);
+  border-radius: 12px;
+  padding: 1.5rem;
+  flex: 1;
+  min-width: 220px;
+  max-width: 280px;
+  box-shadow: var(--ombre-portee);
+}
+.tarif-carte h3 {
+  margin-top: 0;
+  color: var(--couleur-primaire);
+}
+.tarif-carte ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+.tarif-carte li {
+  margin: 0.4rem 0;
+}
+.hero-footnote {
+  margin-top: 1.5rem;
+  font-size: 0.75em;
+  line-height: 1.4;
+}
+
+
 /* --- COMPOSANT CARTE --- */
 .carte {
   background-color: white;
