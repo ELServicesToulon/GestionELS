@@ -81,7 +81,11 @@ function doGet(e) {
     // NOUVEAU : Ajout des variables pour la bannière d'information
     template.heureDebut = HEURE_DEBUT_SERVICE;
     template.heureFin = HEURE_FIN_SERVICE;
-    template.prixBase = TARIFS['Normal'].base;
+    // Tarifs de base pour la bannière d'information
+    template.prixBaseNormal = (TARIFS && TARIFS['Normal']) ? TARIFS['Normal'].base : '';
+    template.prixBaseSamedi = (TARIFS && TARIFS['Samedi']) ? TARIFS['Samedi'].base : '';
+    template.prixBaseUrgent = (TARIFS && TARIFS['Urgent']) ? TARIFS['Urgent'].base : '';
+    template.tvaApplicable = typeof TVA_APPLICABLE !== 'undefined' ? TVA_APPLICABLE : false;
 
 
     return template.evaluate()

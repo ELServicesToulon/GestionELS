@@ -79,6 +79,47 @@
       </p>
     </section>
 
+    <script>
+      (function(){
+        try {
+          const t = (typeof configServeur !== 'undefined' && configServeur.TARIFS) ? configServeur.TARIFS : {};
+          const normal = t['Normal'] || { base: '', arrets: [] };
+          const samedi = t['Samedi'] || { base: '' };
+          const urgent = t['Urgent'] || { base: '' };
+          const km = (typeof configServeur.KM_BASE !== 'undefined') ? configServeur.KM_BASE : '';
+          const min = (typeof configServeur.DUREE_BASE !== 'undefined') ? configServeur.DUREE_BASE : '';
+          const arrets = Array.isArray(normal.arrets) ? normal.arrets : [];
+          const items = arrets.map((v,i) => {
+            const label = (i === arrets.length - 1) ? `${i+2}e et +` : `${i+2}e`;
+            return `<li>${label} arrêt : ${v} &euro; TTC</li>`;
+          }).join('');
+          const html = `
+            <div class="tarif-carte">
+              <h3>Course de base</h3>
+              <ul>
+                <li>${normal.base} &euro; TTC</li>
+                <li>${km} km inclus</li>
+                <li>${min} min inclus</li>
+              </ul>
+              <a href="#vue-calendrier" class="btn btn-primaire">Réserver</a>
+            </div>
+            <div class="tarif-carte">
+              <h3>Arrêts supplémentaires</h3>
+              <ul>${items || '<li>—</li>'}</ul>
+            </div>
+            <div class="tarif-carte">
+              <h3>Options</h3>
+              <ul>
+                <li>Samedi (base): ${samedi.base} &euro; TTC</li>
+                <li>Urgent (base): ${urgent.base} &euro; TTC</li>
+              </ul>
+            </div>`;
+          const cont = document.querySelector('.tarifs-cartes');
+          if (cont) cont.innerHTML = html;
+        } catch(e) {}
+      })();
+    </script>
+
     <main id="app-conteneur">
       <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
         <div class="carte-en-tete">
