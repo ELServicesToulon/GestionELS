@@ -250,7 +250,36 @@ function creerReservationAdmin(data) {
 
     const clientPourCalcul = obtenirInfosClientParEmail(data.client.email);
 
-    const { prix, duree, tourneeOfferteAppliquee } = calculerPrixEtDureeServeur(data.additionalStops + 1, data.returnToPharmacy, data.date, data.startTime, clientPourCalcul);
+    // Admin calculation: force type (Normal/Samedi) and avoid automatic Urgent pricing
+    const infosBase = calculerInfosTourneeBase(data.additionalStops + 1, data.returnToPharmacy, data.date, data.startTime);
+    const duree = infosBase.duree;
+    const typeCourse = (data.forceUrgent === true)
+      ? 'Urgent'
+      : (new Date(data.date + 'T00:00:00').getDay() === 6 ? 'Samedi' : 'Normal');
+
+    const arretsSupplementaires = Math.max(0, data.additionalStops);
+    const reglesTarifaires = TARIFS[typeCourse] || TARIFS['Normal'];
+    let prix = reglesTarifaires.base;
+    for (let i = 0; i < arretsSupplementaires; i++) {
+      const prixArret = reglesTarifaires.arrets[i] || reglesTarifaires.arrets[reglesTarifaires.arrets.length - 1];
+      prix += prixArret;
+    }
+    if (data.returnToPharmacy) {
+      const prixRetour = reglesTarifaires.arrets[arretsSupplementaires] || reglesTarifaires.arrets[reglesTarifaires.arrets.length - 1];
+      prix += prixRetour;
+    }
+
+    let tourneeOfferteAppliquee = false;
+    if (clientPourCalcul) {
+      if (clientPourCalcul.nbTourneesOffertes > 0) {
+        prix = 0;
+        tourneeOfferteAppliquee = true;
+      } else if (clientPourCalcul.typeRemise === 'Pourcentage' && clientPourCalcul.valeurRemise > 0) {
+        prix *= (1 - clientPourCalcul.valeurRemise / 100);
+      } else if (clientPourCalcul.typeRemise === 'Montant Fixe' && clientPourCalcul.valeurRemise > 0) {
+        prix = Math.max(0, prix - clientPourCalcul.valeurRemise);
+      }
+    }
     const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(data.date, duree);
     if (!creneauxDisponibles.includes(data.startTime)) {
       return { success: false, error: `Le créneau ${data.startTime} n'est plus disponible.` };
@@ -261,7 +290,7 @@ function creerReservationAdmin(data) {
     const [annee, mois, jour] = data.date.split('-').map(Number);
     const dateDebut = new Date(annee, mois - 1, jour, heure, minute);
     const dateFin = new Date(dateDebut.getTime() + duree * 60000);
-    const typeCourse = new Date(data.date + 'T00:00:00').getDay() === 6 ? 'Samedi' : 'Normal';
+    // typeCourse computed above
 
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${data.client.nom}`;
     const descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${typeCourse}\nID Réservation: ${idReservation}\nArrêts suppl: ${data.additionalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${prix.toFixed(2)} €\nNote: Ajouté par admin.`;

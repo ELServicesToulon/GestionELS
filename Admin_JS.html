@@ -199,7 +199,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="groupe-formulaire"><label for="champ-date-ajout">Date de la course</label><input type="date" id="champ-date-ajout" class="champ-formulaire" value="${champDate ? champDate.value : ''}"></div>
             <div class="groupe-formulaire"><label>Arrêts supplémentaires :</label><div style="display: flex; align-items: center; gap: 20px;"><div class="champ-compteur"><button type="button" class="btn-compteur btn-retirer">-</button><span class="valeur-compteur">0</span><button type="button" class="btn-compteur btn-ajouter">+</button></div><label><input type="checkbox" id="check-retour"> Retour pharmacie</label></div></div>
             <div id="conteneur-creneaux-ajout" class="hidden"><label>Créneau disponible</label><div id="grille-creneaux-ajout"></div></div>
-            <div class="modale-pied-de-page"><label><input type="checkbox" id="check-notifier"> Avertir le client</label><button type="button" id="btn-confirmer-ajout" class="btn btn-primaire" disabled>Ajouter la course</button></div>`;
+            <div class="modale-pied-de-page">
+              <label><input type="checkbox" id="check-urgent"> Forcer urgent</label>
+              <label><input type="checkbox" id="check-notifier"> Avertir le client</label>
+              <button type="button" id="btn-confirmer-ajout" class="btn btn-primaire" disabled>Ajouter la course</button>
+            </div>`;
         if (modale) modale.classList.remove('hidden');
         attacherEcouteursModaleAjout();
     }
@@ -426,7 +430,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = {
                 client: clientData, date: champDateAjout?.value, startTime: creneauSelectionne,
                 additionalStops: parseInt(valeurCompteur?.textContent || '0', 10), returnToPharmacy: checkRetour?.checked || false,
-                notifyClient: document.getElementById('check-notifier')?.checked || false
+                notifyClient: document.getElementById('check-notifier')?.checked || false,
+                forceUrgent: document.getElementById('check-urgent')?.checked || false
             };
             gererSoumissionCreation(data);
         });
