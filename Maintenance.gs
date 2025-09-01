@@ -350,50 +350,118 @@ function nettoyerOngletFacturation() {
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0].map(v => String(v || ''));
-    // Normalise les entetes pour trouver les colonnes, sans accents
-    const normalize = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    // Normalise les entetes pour trouver les colonnes, sans accents et sans ponctuation
+    const normalize = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9\s\(\)]/g, '').trim();
     const H = header.map(normalize);
+    const Hcompact = H.map(h => h.replace(/[^a-z0-9]/g, ''));
     function findIndex(names){
       for (const n of names){
-        const i = H.indexOf(n);
+        const compact = n.replace(/[^a-z0-9]/g, '');
+        let i = Hcompact.indexOf(compact);
+        if (i !== -1) return i;
+        // Essai via includes
+        i = Hcompact.findIndex(x => x.includes(compact));
         if (i !== -1) return i;
       }
       return -1;
     }
-    const idx = {
+    let idx = {
       date: findIndex(['date']),
-      raison: findIndex(['client (raison s. client)','client (raison sociale)','client (raison s client)']),
-      email: findIndex(['client (email)','email client','email']),
+      raison: findIndex(['clientraisonsclient','clientraisonsociale']),
+      email: findIndex(['clientemail','emailclient','email']),
       type: findIndex(['type']),
-      details: findIndex(['details','detail','détails'.normalize('NFD').replace(/[\u0300-\u036f]/g,'')]),
+      details: findIndex(['details','detail']),
       montant: findIndex(['montant','prix']),
       statut: findIndex(['statut','status']),
-      valider: findIndex(['valider','a valider']),
-      numero: findIndex(['n facture','no facture','n° facture'.normalize('NFD').replace(/[\u0300-\u036f]/g,'')]),
-      eventId: findIndex(['event id','evenement id']),
-      idResa: findIndex(['id reservation','id resa','reservation id']),
-      note: findIndex(['note interne','note']),
-      lien: findIndex(['lien note','lien'])
+      valider: findIndex(['valider','avalider']),
+      numero: findIndex(['nfacture','nofacture','nufacture']),
+      eventId: findIndex(['eventid','evenementid']),
+      idResa: findIndex(['idreservation','reservationid','idresa']),
+      note: findIndex(['noteinterne','note']),
+      lien: findIndex(['liennote','lien'])
     };
-    if (idx.date === -1 || idx.email === -1 || idx.idResa === -1) {
-      throw new Error("Colonnes requises manquantes (Date, Client (Email), ID Reservation).");
+    let hasIdResa = idx.idResa !== -1;
+    let colonnesManquantes = [];
+    if (idx.date === -1) colonnesManquantes.push('Date');
+    if (idx.email === -1) colonnesManquantes.push('Client (Email)');
+    // Si ID reservation introuvable, tenter une detection heuristique
+    if (idx.idResa === -1) {
+      const cand = Hcompact.findIndex(x => x.includes('id') && x.includes('reserv'));
+      if (cand !== -1) idx.idResa = cand;
     }
+    // Si echec, on continue sans dedoublonnage (avertissements deja prepares)
 
     const data = feuille.getDataRange().getValues();
+    // Heuristiques si certaines colonnes sont introuvables
+    try {
+      if (idx.date === -1) {
+        let bestCol = -1, bestCount = 0;
+        for (let c = 0; c < header.length; c++) {
+          let count = 0;
+          for (let r = 1; r < data.length; r++) {
+            const v = data[r][c];
+            if (v instanceof Date) { count++; continue; }
+            if (typeof v === 'string') {
+              const d = new Date(v);
+              if (!isNaN(d.getTime())) count++;
+            }
+          }
+          if (count > bestCount) { bestCount = count; bestCol = c; }
+        }
+        if (bestCol !== -1 && bestCount >= 3) idx.date = bestCol;
+      }
+      if (idx.email === -1) {
+        let bestCol = -1, bestCount = 0;
+        for (let c = 0; c < header.length; c++) {
+          let count = 0;
+          for (let r = 1; r < data.length; r++) {
+            const v = String(data[r][c] || '');
+            if (v.includes('@')) count++;
+          }
+          if (count > bestCount) { bestCount = count; bestCol = c; }
+        }
+        if (bestCol !== -1 && bestCount >= 3) idx.email = bestCol;
+      }
+      if (idx.idResa === -1) {
+        let bestCol = -1, bestCount = 0;
+        for (let c = 0; c < header.length; c++) {
+          let count = 0;
+          for (let r = 1; r < data.length; r++) {
+            const v = String(data[r][c] || '');
+            if (v.startsWith('RESA-')) count++;
+          }
+          if (count > bestCount) { bestCount = count; bestCol = c; }
+        }
+        if (bestCol !== -1 && bestCount >= 1) idx.idResa = bestCol;
+      }
+    } catch (_e) {}
+    // Recalcule indicateurs et avertissements
+    hasIdResa = idx.idResa !== -1;
+    colonnesManquantes = [];
+    if (idx.date === -1) colonnesManquantes.push('Date');
+    if (idx.email === -1) colonnesManquantes.push('Client (Email)');
+    // Plage: mois courant uniquement
+    const now = new Date();
+    const moisDebut = new Date(now.getFullYear(), now.getMonth(), 1);
+    const moisFin = new Date(now.getFullYear(), now.getMonth() + 1, 1); // exclusif
     let supprVides = 0, supprDoublons = 0, normalises = 0;
     const vus = new Set();
 
     for (let r = data.length - 1; r >= 1; r--) {
       const row = data[r];
-      const idResa = String(row[idx.idResa] || '').trim();
+      const idResa = hasIdResa ? String(row[idx.idResa] || '').trim() : '';
       const email = String(row[idx.email] || '').trim();
-      const hasDate = row[idx.date] instanceof Date && !isNaN(new Date(row[idx.date]).getTime());
+      const dateVal = row[idx.date] instanceof Date ? row[idx.date] : new Date(row[idx.date]);
+      const hasDate = dateVal instanceof Date && !isNaN(dateVal.getTime());
+      const inRange = hasDate && dateVal >= moisDebut && dateVal < moisFin;
 
-      if (!hasDate && !email && !idResa) {
-        feuille.deleteRow(r + 1); supprVides++; continue;
-      }
+      // Limite: n'op�re que sur le mois courant. Les lignes hors plage sont ignor�es.
+      if (!inRange) { continue; }
 
-      if (idResa) {
+      // Lignes vides (dans la plage) => suppression
+      if (!hasDate && !email && !idResa) { feuille.deleteRow(r + 1); supprVides++; continue; }
+
+      if (hasIdResa && idResa) {
         if (vus.has(idResa)) { feuille.deleteRow(r + 1); supprDoublons++; continue; }
         vus.add(idResa);
       }
@@ -413,12 +481,106 @@ function nettoyerOngletFacturation() {
       }
     }
 
-    const msg = `Nettoyage termine. Lignes vides supprimees: ${supprVides}, doublons supprimes: ${supprDoublons}, lignes normalisees: ${normalises}.`;
+    const moisLib = Utilities.formatDate(moisDebut, Session.getScriptTimeZone(), 'MMMM yyyy');
+    const msg = 'Nettoyage (mois courant: ' + moisLib + ') termine. Lignes vides supprimees: ' + supprVides + ', doublons supprimes: ' + supprDoublons + ', lignes normalisees: ' + normalises + (colonnesManquantes.length ? ('\nAvertissement: colonnes introuvables: ' + colonnesManquantes.join(', ')) : '');
     ui.alert('Nettoyage Facturation', msg, ui.ButtonSet.OK);
     logAdminAction('Nettoyage Facturation', msg);
   } catch (e) {
     Logger.log('Erreur dans nettoyerOngletFacturation: ' + e.stack);
     SpreadsheetApp.getUi().alert('Erreur', e.message, SpreadsheetApp.getUi().ButtonSet.OK);
+  }
+}
+
+/**
+ * Répare les en-tetes critiques de l'onglet Facturation:
+ * - Pose/normalise les entetes "Date", "Client (Email)" (et "ID Réservation" si détectable)
+ * - Utilise des heuristiques si les entetes sont absents ou tronqués.
+ */
+function reparerEntetesFacturation() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const sh = ss.getSheetByName('Facturation');
+    if (!sh) throw new Error("Feuille 'Facturation' introuvable.");
+    const lastCol = sh.getLastColumn();
+    const headers = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+    const data = sh.getDataRange().getValues();
+
+    const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9\s()]/g,'').trim();
+    const H = headers.map(norm);
+    const Hc = H.map(h => h.replace(/[^a-z0-9]/g, ''));
+    const findIdx = (cands) => {
+      for (const cand of cands) {
+        const key = cand.replace(/[^a-z0-9]/g, '');
+        let i = Hc.indexOf(key);
+        if (i !== -1) return i;
+        i = Hc.findIndex(x => x.includes(key));
+        if (i !== -1) return i;
+      }
+      return -1;
+    };
+
+    let idxDate = findIdx(['date']);
+    let idxEmail = findIdx(['clientemail','emailclient','email']);
+    let idxResa = findIdx(['idreservation','reservationid','idresa']);
+
+    // Heuristique: colonne Date
+    if (idxDate === -1) {
+      let best = -1, score = 0;
+      for (let c = 0; c < lastCol; c++) {
+        let ok = 0;
+        for (let r = 1; r < data.length; r++) {
+          const v = data[r][c];
+          if (v instanceof Date) { ok++; continue; }
+          if (typeof v === 'string') { const d = new Date(v); if (!isNaN(d.getTime())) ok++; }
+        }
+        if (ok > score) { score = ok; best = c; }
+      }
+      if (best !== -1 && score >= 3) idxDate = best;
+    }
+
+    // Heuristique: colonne Email
+    if (idxEmail === -1) {
+      let best = -1, score = 0;
+      for (let c = 0; c < lastCol; c++) {
+        let ok = 0;
+        for (let r = 1; r < data.length; r++) {
+          const v = String(data[r][c] || '');
+          if (v.includes('@')) ok++;
+        }
+        if (ok > score) { score = ok; best = c; }
+      }
+      if (best !== -1 && score >= 3) idxEmail = best;
+    }
+
+    // Heuristique: colonne ID Réservation
+    if (idxResa === -1) {
+      let best = -1, score = 0;
+      for (let c = 0; c < lastCol; c++) {
+        let ok = 0;
+        for (let r = 1; r < data.length; r++) {
+          const v = String(data[r][c] || '');
+          if (v.startsWith('RESA-')) ok++;
+        }
+        if (ok > score) { score = ok; best = c; }
+      }
+      if (best !== -1 && score >= 1) idxResa = best;
+    }
+
+    const newHeaders = headers.slice();
+    const fixes = [];
+    if (idxDate !== -1) { newHeaders[idxDate] = 'Date'; fixes.push(`Date -> Col ${idxDate+1}`); }
+    if (idxEmail !== -1) { newHeaders[idxEmail] = 'Client (Email)'; fixes.push(`Client (Email) -> Col ${idxEmail+1}`); }
+    if (idxResa !== -1) { newHeaders[idxResa] = 'ID Réservation'; fixes.push(`ID Réservation -> Col ${idxResa+1}`); }
+
+    if (fixes.length === 0) {
+      ui.alert('Reparer entetes', 'Aucune colonne candidate trouvée. Vérifiez la première ligne de Facturation.', ui.ButtonSet.OK);
+      return;
+    }
+    sh.getRange(1, 1, 1, lastCol).setValues([newHeaders]);
+    ui.alert('Reparer entetes', 'Entetes mis à jour:\n' + fixes.join('\n'), ui.ButtonSet.OK);
+  } catch (e) {
+    ui.alert('Erreur', e.message, ui.ButtonSet.OK);
   }
 }
 

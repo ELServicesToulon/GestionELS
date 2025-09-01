@@ -27,6 +27,8 @@ function onOpen() {
   const sousMenuDebug = ui.createMenu('Debug')
       .addItem("Lancer tous les tests", "lancerTousLesTests");
 
+  sousMenuMaintenance.addItem("Nettoyer l'onglet Facturation", "nettoyerOngletFacturation");
+  sousMenuMaintenance.addItem("Reparer entetes Facturation", "reparerEntetesFacturation");
   menuPrincipal.addSubMenu(sousMenuMaintenance).addToUi();
   menuPrincipal.addSubMenu(sousMenuDebug).addToUi();
 }
