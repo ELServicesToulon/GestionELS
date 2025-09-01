@@ -106,6 +106,91 @@ function obtenirReservationsClient(emailClient) {
 
 
 /**
+ * Récupère les factures (générées) pour un client.
+ * @param {string} emailClient L'e-mail du client.
+ * @returns {Object} success + liste des factures { numero, dateISO, montant, url, idPdf }.
+ */
+function obtenirFacturesPourClient(emailClient) {
+  try {
+    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName('Facturation');
+    if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
+    const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
+    const idx = {
+      date: header.indexOf('Date'),
+      email: header.indexOf('Client (Email)'),
+      numero: header.indexOf('N° Facture'),
+      idPdf: header.indexOf('ID PDF'),
+      montant: header.indexOf('Montant')
+    };
+    if (Object.values(idx).some(i => i === -1)) throw new Error("Colonnes requises absentes (Date, Client (Email), N° Facture, ID PDF, Montant).");
+
+    const now = new Date(0); // inclut tout l'historique
+    const data = feuille.getDataRange().getValues().slice(1);
+    const factures = [];
+    data.forEach(row => {
+      try {
+        const email = String(row[idx.email] || '').trim().toLowerCase();
+        if (email !== String(emailClient || '').trim().toLowerCase()) return;
+        const numero = String(row[idx.numero] || '').trim();
+        const idPdf = String(row[idx.idPdf] || '').trim();
+        if (!numero || !idPdf) return;
+        const dateVal = new Date(row[idx.date]);
+        const montant = parseFloat(row[idx.montant]) || 0;
+        const url = DriveApp.getFileById(idPdf).getUrl();
+        factures.push({ numero: numero, dateISO: isNaN(dateVal) ? null : dateVal.toISOString(), montant: montant, url: url, idPdf: idPdf });
+      } catch (e) {
+        // ignore ligne invalide
+      }
+    });
+    factures.sort((a, b) => new Date(b.dateISO || 0) - new Date(a.dateISO || 0));
+    return { success: true, factures: factures };
+  } catch (e) {
+    Logger.log('Erreur dans obtenirFacturesPourClient: ' + e.stack);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Envoie une facture spécifique au client par e-mail (pièce jointe PDF).
+ * @param {string} emailClient L'e-mail de destination.
+ * @param {string} numeroFacture Le numéro de facture à envoyer.
+ */
+function envoyerFactureClient(emailClient, numeroFacture) {
+  try {
+    if (!emailClient || !numeroFacture) throw new Error('Paramètres manquants.');
+    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const feuille = ss.getSheetByName('Facturation');
+    if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
+    const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
+    const idx = {
+      email: header.indexOf('Client (Email)'),
+      numero: header.indexOf('N° Facture'),
+      idPdf: header.indexOf('ID PDF'),
+      montant: header.indexOf('Montant')
+    };
+    if (Object.values(idx).some(i => i === -1)) throw new Error("Colonnes requises absentes (Client (Email), N° Facture, ID PDF, Montant).");
+    const rows = feuille.getDataRange().getValues().slice(1);
+    const row = rows.find(r => String(r[idx.numero]).trim() === String(numeroFacture).trim() && String(r[idx.email]).trim().toLowerCase() === String(emailClient).trim().toLowerCase());
+    if (!row) throw new Error('Facture introuvable pour ce client.');
+    const idPdf = String(row[idx.idPdf] || '').trim();
+    if (!idPdf) throw new Error('Aucun fichier PDF associé à cette facture.');
+    const montant = parseFloat(row[idx.montant]) || null;
+    const fichier = DriveApp.getFileById(idPdf);
+    const pdfBlob = fichier.getAs(MimeType.PDF).setName(`${String(row[idx.numero]).trim()}.pdf`);
+    const sujet = `[${NOM_ENTREPRISE}] Facture ${String(row[idx.numero]).trim()}`;
+    const corps = [
+      `<p>Veuillez trouver ci-joint votre facture <strong>${String(row[idx.numero]).trim()}</strong>${montant !== null ? ` d'un montant de <strong>${montant.toFixed(2)} €</strong>` : ''}.</p>`,
+      `<p>Cordiales salutations,<br>${NOM_ENTREPRISE}</p>`
+    ].join('');
+    MailApp.sendEmail({ to: emailClient, subject: sujet, htmlBody: corps, attachments: [pdfBlob], replyTo: EMAIL_ENTREPRISE });
+    return { success: true };
+  } catch (e) {
+    Logger.log('Erreur dans envoyerFactureClient: ' + e.stack);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
  * Met à jour les détails (nombre d'arrêts, prix, durée) d'une réservation existante.
  * @param {string} idReservation L'ID unique de la réservation à modifier.
  * @param {number} nouveauxArrets Le nouveau nombre d'arrêts supplémentaires.

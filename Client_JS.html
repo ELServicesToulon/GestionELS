@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Variable d'état pour stocker les réservations chargées ---
     let toutesLesReservationsClient = [];
+    let toutesLesFacturesClient = [];
 
     /**
      * Initialise l'espace client.
@@ -72,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('conteneur-app').classList.remove('hidden');
                     document.getElementById('non-connecte').classList.add('hidden');
                     chargerReservationsClient(email);
+                    chargerFacturesClient(email);
                 } else {
                     afficherErreurConnexion(reponse.error);
                     basculerIndicateurChargement(false);
@@ -104,6 +106,70 @@ document.addEventListener('DOMContentLoaded', () => {
                 basculerIndicateurChargement(false);
             })
             .obtenirReservationsClient(email);
+    }
+
+    /**
+     * Charge les factures pour un client donné.
+     */
+    function chargerFacturesClient(email) {
+        google.script.run
+            .withSuccessHandler(reponse => {
+                if (reponse.success) {
+                    toutesLesFacturesClient = reponse.factures || [];
+                    afficherFactures(toutesLesFacturesClient);
+                } else {
+                    afficherErreur(reponse.error);
+                }
+            })
+            .withFailureHandler(afficherErreur)
+            .obtenirFacturesPourClient(email);
+    }
+
+    /**
+     * Affiche la liste des factures avec lien et action e-mail.
+     */
+    function afficherFactures(factures) {
+        const cont = document.getElementById('contenu-factures');
+        if (!cont) return;
+        cont.innerHTML = '';
+        if (!factures || factures.length === 0) {
+            cont.innerHTML = '<p class="message-aucune-reservation">Aucune facture disponible pour l’instant.</p>';
+            return;
+        }
+        const ul = document.createElement('ul');
+        ul.className = 'liste-factures';
+        factures.forEach(f => {
+            const li = document.createElement('li');
+            const dateTxt = f.dateISO ? new Date(f.dateISO).toLocaleDateString('fr-FR') : '';
+            li.innerHTML = `
+                <span>Facture <strong>${f.numero}</strong> ${dateTxt ? 'du ' + dateTxt : ''} — ${f.montant?.toFixed ? f.montant.toFixed(2) + ' €' : ''}</span>
+                <span style="flex:1"></span>
+                <a class="btn btn-secondaire" href="${f.url}" target="_blank" rel="noopener">Télécharger</a>
+                <button class="btn btn-primaire btn-mail-facture" data-numero="${f.numero}">Recevoir par e-mail</button>
+            `;
+            ul.appendChild(li);
+        });
+        cont.appendChild(ul);
+        cont.querySelectorAll('.btn-mail-facture').forEach(btn => {
+            btn.addEventListener('click', () => envoyerFactureParEmail(btn.dataset.numero));
+        });
+    }
+
+    function envoyerFactureParEmail(numero) {
+        const email = new URLSearchParams(window.location.search).get('email') || document.getElementById('email-connexion')?.value;
+        if (!email) return;
+        basculerIndicateurChargement(true);
+        google.script.run
+            .withSuccessHandler(reponse => {
+                basculerIndicateurChargement(false);
+                if (reponse.success) {
+                    afficherNotification('Facture envoyée par e-mail.');
+                } else {
+                    afficherErreur(reponse.error || 'Envoi impossible.');
+                }
+            })
+            .withFailureHandler(afficherErreur)
+            .envoyerFactureClient(email, numero);
     }
 
     /**
