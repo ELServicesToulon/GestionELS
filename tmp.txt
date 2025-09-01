@@ -1,0 +1,32 @@
+    const items = donneesDevis.items;
+    const emailClient = client.email;
+
+    if (!emailClient || items.length === 0) {
+      throw new Error("Email ou panier manquant pour l'envoi du devis.");
+    }
+
+    let totalDevis = 0;
+    const lignesHtml = items.map(item => {
+      const date = new Date(item.date + 'T00:00:00');
+      const dateFormatee = formaterDateEnFrancais(date);
+      totalDevis += item.prix;
+      return `
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">${dateFormatee} à ${item.startTime}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.details}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${item.prix.toFixed(2)} €</td>
+        </tr>
+      `;
+    }).join('');
+
+    const sujet = `Votre devis de réservation - ${NOM_ENTREPRISE}`;
+    const corpsHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333;">
+        <h2>Devis pour vos réservations de tournées</h2>
+        <p>Bonjour ${client.nom || ''},</p>
+        <p>Voici le détail du devis pour les tournées actuellement dans votre panier. Ce devis est valable 24 heures, sous réserve de disponibilité des créneaux.</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="padding: 8px; border-bottom: 2px solid #333; text-align: left;">Date et Heure</th>
+              <th style="padding: 8px; border-bottom: 2px solid #333; text-align: left;">Détail de la prestation</th>

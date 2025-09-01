@@ -1,4 +1,4 @@
-// =================================================================
+﻿// =================================================================
 //                      LOGIQUE DE RÉSERVATION
 // =================================================================
 // Description: Fonctions centrales pour la gestion des réservations.
@@ -210,10 +210,11 @@ function calculerInfosTourneeBase(totalStops, returnToPharmacy, dateString, star
   const maintenant = new Date();
   let typeCourse = 'Normal';
 
-  if ((dateCourse.getTime() - maintenant.getTime()) / 60000 < URGENT_THRESHOLD_MINUTES) {
-    typeCourse = 'Urgent';
-  } else if (dateCourse.getDay() === 6) {
+  // Prioriser le samedi sur l'urgent
+  if (dateCourse.getDay() === 6) {
     typeCourse = 'Samedi';
+  } else if ((dateCourse.getTime() - maintenant.getTime()) / 60000 < URGENT_THRESHOLD_MINUTES) {
+    typeCourse = 'Urgent';
   }
 
   const reglesTarifaires = TARIFS[typeCourse] || TARIFS['Normal'];

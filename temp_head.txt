@@ -113,9 +113,6 @@
                 <li>Samedi (base): ${samedi.base} &euro; TTC</li>
                 <li>Urgent (base): ${urgent.base} &euro; TTC</li>
               </ul>
-              <p style="font-size: 0.9em; color: #555; margin-top: 0.5rem;">
-                Le samedi est prioritaire sur l&#8217;urgent&nbsp;: une course le samedi applique toujours le tarif samedi, m&ecirc;me si elle est urgente.
-              </p>
             </div>`;
           const cont = document.querySelector('.tarifs-cartes');
           if (cont) cont.innerHTML = html;
@@ -201,70 +198,3 @@
 
   <!-- MODALE 2: Sélection du créneau (VERSION COMPLÈTE) -->
   <div id="modale-selection-creneau" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-selection-titre">
-      <div class="modale-contenu">
-          <button id="btn-fermer-selection-creneau" class="btn-fermer" aria-label="Fermer la fenêtre de sélection">&times;</button>
-          <h3 id="modale-selection-titre">Sélectionner un créneau</h3>
-          <div id="grille-selection-creneau" class="grille-selection-creneau"></div>
-          <div class="groupe-formulaire conteneur-interrupteur" style="margin-top: 1rem;">
-              <label for="interrupteur-recurrence">Réserver pour tous les [jour de la semaine] de ce mois</label>
-              <label class="interrupteur"><input type="checkbox" id="interrupteur-recurrence"><span class="glissiere"></span></label>
-          </div>
-          <div class="modale-resume" style="margin-top: 1rem;">
-              <div id="recap-creneau-heure">--:--</div>
-              <div id="recap-creneau-tarif">--</div>
-              <strong id="recap-creneau-prix">--.-- €</strong>
-          </div>
-          <div class="modale-pied-de-page">
-              <button type="button" id="btn-modifier-tournee" class="btn btn-secondaire">Modifier la tournée</button>
-              <button type="button" id="btn-ajouter-au-panier" class="btn btn-primaire" disabled>Ajouter au panier</button>
-          </div>
-      </div>
-  </div>
-
-  <!-- MODALE 3: Confirmation de la récurrence (VERSION COMPLÈTE) -->
-  <div id="modale-confirmation-recurrence" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-recurrence-titre">
-      <div class="modale-contenu">
-          <button id="btn-fermer-confirmation-recurrence" class="btn-fermer" aria-label="Fermer">&times;</button>
-          <h3 id="modale-recurrence-titre">Confirmer les dates récurrentes</h3>
-          <p>Veuillez vérifier les créneaux pour votre réservation récurrente. Les conflits ont été ajustés au plus proche.</p>
-          <ul id="liste-recurrence-details" class="liste-recurrence"></ul>
-          <div class="modale-pied-de-page">
-              <button type="button" id="btn-annuler-recurrence" class="btn btn-secondaire">Annuler</button>
-              <button type="button" id="btn-confirmer-recurrence" class="btn btn-primaire">Confirmer et Ajouter</button>
-          </div>
-      </div>
-  </div>
-
-  <!-- MODALE 4: Email pour le devis (VERSION COMPLÈTE) -->
-  <div id="modale-email-devis" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-devis-titre">
-      <div class="modale-contenu">
-          <button id="btn-fermer-email-devis" class="btn-fermer" aria-label="Fermer">&times;</button>
-          <h3 id="modale-devis-titre">Recevoir votre devis</h3>
-          <p>Veuillez saisir votre adresse e-mail pour recevoir le devis détaillé.</p>
-          <form id="formulaire-email-devis">
-              <div class="groupe-formulaire">
-                  <label for="email-pour-devis">Adresse e-mail</label>
-                  <input type="email" id="email-pour-devis" required>
-              </div>
-              <div class="modale-pied-de-page">
-                  <button type="submit" class="btn btn-primaire">Envoyer le devis</button>
-              </div>
-          </form>
-      </div>
-  </div>
-
-  <div id="conteneur-notifications" role="alert" aria-live="assertive"></div>
-
-  <?!= include('Reservation_JS_UI'); ?>
-  <?!= include('Reservation_JS_UI_Elements'); ?>
-  <?!= include('Reservation_JS_Calendrier'); ?>
-  <?!= include('Reservation_JS_Panier'); ?>
-  <?!= include('Reservation_JS_Client'); ?>
-  <?!= include('Reservation_JS_Tournee'); ?>
-  <?!= include('Reservation_JS_Reservation'); ?>
-  <?!= include('Reservation_JS_Principal'); ?>
-
-</body>
-</html>
-
-

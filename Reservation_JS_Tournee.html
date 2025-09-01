@@ -20,10 +20,11 @@ function calculerInfosTourneeClient(totalStops, returnToPharmacy, dateString, st
   const dateCourse = new Date(`${dateString}T${heureNormalisee}`);
   const maintenant = new Date();
   let typeCourse = 'Normal';
-  if ((dateCourse.getTime() - maintenant.getTime()) / 60000 < configServeur.URGENT_THRESHOLD_MINUTES) {
-    typeCourse = 'Urgent';
-  } else if (dateCourse.getDay() === 6) {
+  // Prioriser le samedi sur l'urgent
+  if (dateCourse.getDay() === 6) {
     typeCourse = 'Samedi';
+  } else if ((dateCourse.getTime() - maintenant.getTime()) / 60000 < configServeur.URGENT_THRESHOLD_MINUTES) {
+    typeCourse = 'Urgent';
   }
   const reglesTarifaires = configServeur.TARIFS[typeCourse] || configServeur.TARIFS['Normal'];
   let prixFinal = reglesTarifaires.base;
