@@ -335,6 +335,93 @@ function purgerDonneesFeuille(feuille, indexColonneDate, indexColonneIdFichier, 
   return { lignesSupprimees, idsFichiersSupprimes };
 }
 
+/**
+ * Nettoie l'onglet "Facturation" :
+ * - Trim des champs texte, normalisation des booleens (Valider)
+ * - Conversion du montant en nombre
+ * - Suppression des lignes vides
+ * - Suppression des doublons par ID Reservation (garde la plus recente)
+ */
+function nettoyerOngletFacturation() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const feuille = ss.getSheetByName('Facturation');
+    if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
+
+    const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0].map(v => String(v || ''));
+    // Normalise les entetes pour trouver les colonnes, sans accents
+    const normalize = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const H = header.map(normalize);
+    function findIndex(names){
+      for (const n of names){
+        const i = H.indexOf(n);
+        if (i !== -1) return i;
+      }
+      return -1;
+    }
+    const idx = {
+      date: findIndex(['date']),
+      raison: findIndex(['client (raison s. client)','client (raison sociale)','client (raison s client)']),
+      email: findIndex(['client (email)','email client','email']),
+      type: findIndex(['type']),
+      details: findIndex(['details','detail','détails'.normalize('NFD').replace(/[\u0300-\u036f]/g,'')]),
+      montant: findIndex(['montant','prix']),
+      statut: findIndex(['statut','status']),
+      valider: findIndex(['valider','a valider']),
+      numero: findIndex(['n facture','no facture','n° facture'.normalize('NFD').replace(/[\u0300-\u036f]/g,'')]),
+      eventId: findIndex(['event id','evenement id']),
+      idResa: findIndex(['id reservation','id resa','reservation id']),
+      note: findIndex(['note interne','note']),
+      lien: findIndex(['lien note','lien'])
+    };
+    if (idx.date === -1 || idx.email === -1 || idx.idResa === -1) {
+      throw new Error("Colonnes requises manquantes (Date, Client (Email), ID Reservation).");
+    }
+
+    const data = feuille.getDataRange().getValues();
+    let supprVides = 0, supprDoublons = 0, normalises = 0;
+    const vus = new Set();
+
+    for (let r = data.length - 1; r >= 1; r--) {
+      const row = data[r];
+      const idResa = String(row[idx.idResa] || '').trim();
+      const email = String(row[idx.email] || '').trim();
+      const hasDate = row[idx.date] instanceof Date && !isNaN(new Date(row[idx.date]).getTime());
+
+      if (!hasDate && !email && !idResa) {
+        feuille.deleteRow(r + 1); supprVides++; continue;
+      }
+
+      if (idResa) {
+        if (vus.has(idResa)) { feuille.deleteRow(r + 1); supprDoublons++; continue; }
+        vus.add(idResa);
+      }
+
+      // Normalisations legeres
+      const toTrim = [idx.raison, idx.email, idx.type, idx.details, idx.statut, idx.numero, idx.eventId, idx.idResa, idx.note, idx.lien].filter(i => i !== -1);
+      let changed = false;
+      toTrim.forEach(i => { const v = row[i]; const t = (v === null || v === undefined) ? '' : String(v).trim(); if (String(v) !== t) { row[i] = t; changed = true; } });
+      if (idx.montant !== -1) {
+        const num = parseFloat(row[idx.montant]); if (!isNaN(num)) { row[idx.montant] = num; changed = true; }
+      }
+      if (idx.valider !== -1) {
+        const val = row[idx.valider]; if (typeof val !== 'boolean') { row[idx.valider] = (val === true) || (String(val).toLowerCase() === 'true'); changed = true; }
+      }
+      if (changed) {
+        feuille.getRange(r + 1, 1, 1, row.length).setValues([row]); normalises++;
+      }
+    }
+
+    const msg = `Nettoyage termine. Lignes vides supprimees: ${supprVides}, doublons supprimes: ${supprDoublons}, lignes normalisees: ${normalises}.`;
+    ui.alert('Nettoyage Facturation', msg, ui.ButtonSet.OK);
+    logAdminAction('Nettoyage Facturation', msg);
+  } catch (e) {
+    Logger.log('Erreur dans nettoyerOngletFacturation: ' + e.stack);
+    SpreadsheetApp.getUi().alert('Erreur', e.message, SpreadsheetApp.getUi().ButtonSet.OK);
+  }
+}
+
 // =================================================================
 //                      4. AUDIT & VÉRIFICATION
 // =================================================================
