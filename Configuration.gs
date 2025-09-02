@@ -43,12 +43,14 @@ const KM_BASE = 9;
 const KM_ARRET_SUP = 3;
 
 // --- Flags d'activation ---
-const CALENDAR_RESYNC_ENABLED = false; // Permet de resynchroniser les événements supprimés
-const CALENDAR_PURGE_ENABLED = false; // Permet de purger les Event ID introuvables
-const BILLING_MULTI_SHEET_ENABLED = false; // Agrège toutes les feuilles "Facturation*"
-const CA_EN_COURS_ENABLED = false; // Active l'affichage du CA en cours dans l'admin
-const THEME_SELECTION_ENABLED = false; // Active le choix de thème côté client
-const THEME_DEFAULT = 'clarte';
+const CALENDAR_RESYNC_ENABLED = true; // Permet de resynchroniser les événements supprimés
+const CALENDAR_PURGE_ENABLED = true; // Permet de purger les Event ID introuvables
+const BILLING_MULTI_SHEET_ENABLED = true; // Agrège toutes les feuilles "Facturation*"
+
+const CA_EN_COURS_ENABLED = true; // Active l'affichage du CA en cours
+
+const THEME_SELECTION_ENABLED = true; // Active le choix de thème côté client
+const THEME_DEFAULT = 'nocturne';
 const THEMES = {
   clarte: 'branding/Theme_Clarte_CSS',
   nocturne: 'branding/Theme_Nocturne_CSS'
