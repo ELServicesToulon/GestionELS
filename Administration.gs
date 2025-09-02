@@ -57,7 +57,7 @@ function obtenirToutesReservationsAdmin() {
 
     const donnees = feuille.getDataRange().getValues();
 
-    const reservations = donnees.slice(1).map(ligne => {
+    let reservations = donnees.slice(1).map(ligne => {
       try {
         // CORRECTION PRINCIPALE : On crée un objet Date complet dès le début
         const dateHeureSheet = new Date(ligne[indices["Date"]]);
@@ -122,6 +122,10 @@ function obtenirToutesReservationsAdmin() {
       }
     }).filter(Boolean);
 
+    if (ADMIN_HIDE_ARCHIVED_ENABLED) {
+      reservations = reservations.filter(r => r.statut !== 'Archivée');
+    }
+
     reservations.sort((a, b) => new Date(b.start) - new Date(a.start));
     
     return { success: true, reservations: reservations };
@@ -151,7 +155,7 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
 
     const donnees = feuille.getDataRange().getValues();
     
-    const reservations = donnees.slice(1).map(ligne => {
+    let reservations = donnees.slice(1).map(ligne => {
       // CORRECTION PRINCIPALE : On crée un objet Date complet dès le début
       const dateCell = ligne[indices["Date"]];
       if (!dateCell) return null;
@@ -223,6 +227,10 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
         return null; 
       }
     }).filter(Boolean);
+
+    if (ADMIN_HIDE_ARCHIVED_ENABLED) {
+      reservations = reservations.filter(r => r.statut !== 'Archivée');
+    }
 
     reservations.sort((a, b) => new Date(a.start) - new Date(b.start));
     return { success: true, reservations: reservations };
