@@ -53,6 +53,11 @@ const SLOTS_AMPM_ENABLED = false; // Sépare les créneaux matin/après-midi
 const THEME_V2_ENABLED = false; // Active la nouvelle version du thème
 const BILLING_V2_DRYRUN = false; // Mode test pour la facturation V2 (aucune écriture)
 
+const MODAL_FOCUS_TRAP_ENABLED = false; // Gère le focus des modales côté client
+=======
+const ADMIN_HIDE_ARCHIVED_ENABLED = false; // Cache les réservations archivées côté admin
+
+
 const THEME_SELECTION_ENABLED = true; // Active le choix de thème côté client
 const THEME_DEFAULT = 'nocturne';
 const THEMES = {

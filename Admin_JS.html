@@ -5,6 +5,8 @@
  * =================================================================
  */
 
+const ADMIN_HIDE_ARCHIVED_ENABLED = <?!= ADMIN_HIDE_ARCHIVED_ENABLED ? 'true' : 'false' ?>;
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Références aux éléments du DOM ---
     const indicateurChargement = document.getElementById('indicateur-chargement');
@@ -155,6 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Affiche les réservations.
      */
     function afficherReservations(reservations, montrerDate = false) {
+
       if (!contenuReservations) return;
       contenuReservations.innerHTML = '';
       if (reservations.length === 0) {
@@ -164,12 +167,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+        if (ADMIN_HIDE_ARCHIVED_ENABLED) {
+            reservations = reservations.filter(r => r.statut !== 'Archivée');
+        }
+        if (!contenuReservations) return;
+        if (reservations.length === 0) {
+            contenuReservations.innerHTML = '<p>Aucune course à afficher.</p>';
+            return;
+        }
+
+
       const groupeParClient = reservations.reduce((acc, resa) => {
         const clientKey = `${resa.clientName} (${resa.clientEmail})`;
         if (!acc[clientKey]) acc[clientKey] = [];
         acc[clientKey].push(resa);
         return acc;
       }, {});
+
 
       for (const nomClient in groupeParClient) {
         const groupDiv = document.createElement('div');
@@ -250,6 +264,39 @@ document.addEventListener('DOMContentLoaded', () => {
         contenuReservations.appendChild(groupDiv);
       }
       attacherEcouteursActions();
+
+        let html = '';
+        for (const nomClient in groupeParClient) {
+            html += `<div class="groupe-client" role="rowgroup"><div class="groupe-client-en-tete" role="row"><div role="gridcell">${nomClient}</div></div>`;
+            groupeParClient[nomClient].forEach(resa => {
+                const dateDebut = new Date(resa.start);
+                const heureDebut = dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const dateAffichee = dateDebut.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const prix = typeof resa.amount === 'number' ? resa.amount.toFixed(2) : 'N/A';
+                const infoRemiseHtml = resa.infoRemise ? `<span class="info-remise">${resa.infoRemise}</span>` : '';
+                const dateHtml = montrerDate ? `<strong>${dateAffichee}</strong> &agrave; ` : '';
+                const statutHtml = resa.statut ? `<span class="statut-badge" style="background-color: #7f8c8d; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 8px;">${resa.statut}</span>` : '';
+
+                html += `
+                    <div class="carte-reservation" role="row">
+                        <div class="carte-heure" role="gridcell">${dateHtml}${heureDebut}</div>
+                        <div class="carte-details" role="gridcell">
+                            <strong>${resa.details}</strong>
+                            <small>${prix} € ${infoRemiseHtml} (~${resa.km} km) ${statutHtml}</small>
+                        </div>
+                        <div class="carte-actions" role="gridcell">
+                            <button class="btn btn-sm btn-secondaire btn-modifier" data-id-reservation="${resa.id}">Modifier</button>
+                            <button class="btn btn-sm btn-secondaire btn-replanifier" data-id-reservation="${resa.id}">Déplacer</button>
+                            <button class="btn btn-sm btn-appliquer-remise" data-id-reservation="${resa.id}">Remise</button>
+                            <button class="btn btn-sm btn-erreur btn-supprimer" data-id-reservation="${resa.id}">Supprimer</button>
+                        </div>
+                    </div>`;
+            });
+            html += `</div>`;
+        }
+        contenuReservations.innerHTML = html;
+        attacherEcouteursActions();
+
     }
 
     /**

@@ -6,6 +6,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mon Espace Client - Vos Réservations</title>
 
+  <meta name="description" content="Historique et gestion de vos réservations de livraison pharmacie ELS Littoral.">
+  <link rel="canonical" href="https://exemple.com/espace-client">
+  <meta property="og:title" content="Mon Espace Client - Vos Réservations">
+  <meta property="og:description" content="Historique et gestion de vos réservations de livraison pharmacie ELS Littoral.">
+  <meta property="og:url" content="https://exemple.com/espace-client">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "name": "EL Services Littoral",
+        "url": "https://exemple.com/espace-client",
+        "description": "Historique et gestion de vos réservations de livraison pharmacie ELS Littoral."
+      },
+      {
+        "@type": "Service",
+        "serviceType": "Livraison pharmacie à domicile",
+        "provider": {
+          "@type": "LocalBusiness",
+          "name": "EL Services Littoral"
+        }
+      }
+    ]
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -78,7 +108,7 @@
     </div>
   </div>
 
-  <div id="conteneur-notifications"></div>
+  <div id="conteneur-notifications" role="status" aria-live="polite"></div>
   <?!= include('Script_ThemeSelector'); ?>
   <?!= include('Client_JS'); ?>
 </body>
