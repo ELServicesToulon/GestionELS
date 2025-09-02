@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let html = '';
         for (const nomClient in groupeParClient) {
-            html += `<div class="groupe-client"><div class="groupe-client-en-tete">${nomClient}</div>`;
+            html += `<div class="groupe-client" role="rowgroup"><div class="groupe-client-en-tete" role="row"><div role="gridcell">${nomClient}</div></div>`;
             groupeParClient[nomClient].forEach(resa => {
                 const dateDebut = new Date(resa.start);
                 const heureDebut = dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -175,13 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const statutHtml = resa.statut ? `<span class="statut-badge" style="background-color: #7f8c8d; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 8px;">${resa.statut}</span>` : '';
 
                 html += `
-                    <div class="carte-reservation">
-                        <div class="carte-heure">${dateHtml}${heureDebut}</div>
-                        <div class="carte-details">
+                    <div class="carte-reservation" role="row">
+                        <div class="carte-heure" role="gridcell">${dateHtml}${heureDebut}</div>
+                        <div class="carte-details" role="gridcell">
                             <strong>${resa.details}</strong>
                             <small>${prix} € ${infoRemiseHtml} (~${resa.km} km) ${statutHtml}</small>
                         </div>
-                        <div class="carte-actions">
+                        <div class="carte-actions" role="gridcell">
                             <button class="btn btn-sm btn-secondaire btn-modifier" data-id-reservation="${resa.id}">Modifier</button>
                             <button class="btn btn-sm btn-secondaire btn-replanifier" data-id-reservation="${resa.id}">Déplacer</button>
                             <button class="btn btn-sm btn-appliquer-remise" data-id-reservation="${resa.id}">Remise</button>
