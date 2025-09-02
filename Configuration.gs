@@ -52,6 +52,7 @@ const CA_EN_COURS_ENABLED = true; // Active l'affichage du CA en cours
 const SLOTS_AMPM_ENABLED = false; // Sépare les créneaux matin/après-midi
 const THEME_V2_ENABLED = false; // Active la nouvelle version du thème
 const BILLING_V2_DRYRUN = false; // Mode test pour la facturation V2 (aucune écriture)
+const REQUEST_LOGGING_ENABLED = false; // Active la journalisation des requêtes
 
 const THEME_SELECTION_ENABLED = true; // Active le choix de thème côté client
 const THEME_DEFAULT = 'nocturne';

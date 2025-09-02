@@ -40,6 +40,17 @@ function onOpen() {
 }
 
 /**
+ * Journalise la requête entrante.
+ * @param {Object} e L'objet d'événement de la requête.
+ */
+function logRequest(e) {
+  const dateIso = new Date().toISOString();
+  const route = e && e.parameter && e.parameter.page ? e.parameter.page : '';
+  const ua = e && e.headers ? e.headers['User-Agent'] : '';
+  Logger.log(`[Request] ${dateIso} route=${route} ua=${ua}`);
+}
+
+/**
  * S'exécute lorsqu'un utilisateur accède à l'URL de l'application web.
  * Fait office de routeur pour afficher la bonne page.
  * @param {Object} e L'objet d'événement de la requête.
@@ -47,6 +58,9 @@ function onOpen() {
  */
 function doGet(e) {
   try {
+    if (REQUEST_LOGGING_ENABLED) {
+      logRequest(e);
+    }
     // validerConfiguration(); // Assurez-vous que cette fonction existe ou commentez-la si non utilisée
 
     // Routeur de page

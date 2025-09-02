@@ -5,6 +5,22 @@
  * =================================================================
  */
 
+/**
+ * Journalise un avertissement avec le préfixe [ELS].
+ * @param {...*} args Contenu à journaliser.
+ */
+function logWarn(...args) {
+  console.warn('[ELS]', ...args);
+}
+
+/**
+ * Journalise une erreur avec le préfixe [ELS].
+ * @param {...*} args Contenu à journaliser.
+ */
+function logError(...args) {
+  console.error('[ELS]', ...args);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Références aux éléments du DOM ---
     const indicateurChargement = document.getElementById('indicateur-chargement');
@@ -474,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
         basculerIndicateurChargement(false);
         const message = typeof erreur === 'object' && erreur.message ? erreur.message : String(erreur);
         afficherNotification(`Erreur : ${message}`, "erreur");
-        console.error(erreur);
+        logError(erreur);
     }
 
     // --- Point de départ ---
