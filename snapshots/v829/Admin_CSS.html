@@ -3,9 +3,9 @@
 :root {
   --couleur-primaire: #2980b9; /* Bleu Admin */
   --couleur-secondaire: #2c3e50; /* Gris Foncé Admin */
-  --couleur-succes: #27ae60;
+  --couleur-succes: #3498db;
   --couleur-erreur: #c0392b;
-  --couleur-avertissement: #f39c12;
+  --couleur-avertissement: #5dade2;
   --gris-clair: #f4f6f9;
   --gris-moyen: #7f8c8d;
   --gris-fonce: #34495e;
@@ -119,8 +119,11 @@ body {
 
 .info-remise {
   font-weight: bold;
-  color: var(--couleur-avertissement);
+  background-color: var(--couleur-avertissement);
+  color: var(--gris-fonce);
   margin-left: 5px;
+  padding: 0 4px;
+  border-radius: 4px;
 }
 
 /* --- FORMULAIRES & BOUTONS --- */
@@ -171,7 +174,7 @@ body {
 
 .btn-appliquer-remise {
   background-color: var(--couleur-avertissement);
-  color: white;
+  color: var(--gris-fonce);
 }
 
 .btn-sm {
