@@ -29,6 +29,12 @@ function onOpen() {
 
   sousMenuMaintenance.addItem("Nettoyer l'onglet Facturation", "nettoyerOngletFacturation");
   sousMenuMaintenance.addItem("Reparer entetes Facturation", "reparerEntetesFacturation");
+  if (CALENDAR_RESYNC_ENABLED) {
+    sousMenuMaintenance.addItem("Resynchroniser événement manquant", "menuResynchroniserEvenement");
+  }
+  if (CALENDAR_PURGE_ENABLED) {
+    sousMenuMaintenance.addItem("Purger Event ID introuvable", "menuPurgerEventId");
+  }
   menuPrincipal.addSubMenu(sousMenuMaintenance).addToUi();
   menuPrincipal.addSubMenu(sousMenuDebug).addToUi();
 }
