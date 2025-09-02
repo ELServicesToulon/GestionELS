@@ -167,43 +167,63 @@ function Run-Clasp($spec){
       Write-Host "clasp n'est pas installé dans le PATH." -ForegroundColor Red
       return
     }
+    function Show-ClaspError {
+      param([string]$msg)
+      try {
+        [System.Windows.Forms.MessageBox]::Show($msg,'Clasp Tools',[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Error) | Out-Null
+      } catch {}
+      Write-Host $msg -ForegroundColor Red
+    }
+    function Invoke-Clasp {
+      param([string[]]$args)
+      try {
+        $output = & clasp @args 2>&1
+      } catch {
+        Show-ClaspError ("Exception lors de 'clasp {0}': {1}" -f ($args -join ' '),$_.Exception.Message)
+        return $null
+      }
+      if ($LASTEXITCODE -ne 0) {
+        Show-ClaspError ("Erreur 'clasp {0}' (code {1}):`n{2}" -f ($args -join ' '),$LASTEXITCODE,($output | Out-String))
+      }
+      return $output
+    }
     switch ($action) {
-      'Push'     { clasp push $(if ($force) { '-f' }) }
-      'Pull'     { clasp setting fileExtension gs | Out-Null; clasp pull }
-      'Version'  { clasp version $verName }
-      'Open'     { clasp open }
-      'Deploy'   { clasp deploy -d $verName }
-      'ListDeployments' { $out = clasp deployments | Out-String; [System.Windows.Forms.MessageBox]::Show($out,'Deployments') | Out-Null }
+      'Push'     { Invoke-Clasp @('push',$(if ($force) { '-f' })) | Out-Null }
+      'Pull'     { Invoke-Clasp 'setting' 'fileExtension' 'gs' | Out-Null; Invoke-Clasp 'pull' | Out-Null }
+      'Version'  { Invoke-Clasp 'version' $verName | Out-Null }
+      'Open'     { Invoke-Clasp 'open' | Out-Null }
+      'Deploy'   { Invoke-Clasp 'deploy' '-d' $verName | Out-Null }
+      'ListDeployments' { $out = Invoke-Clasp 'deployments' | Out-String; [System.Windows.Forms.MessageBox]::Show($out,'Deployments') | Out-Null }
       'ReassignDeployment' {
-         $desc = if ($verName -ne '') { $verName } else { "Reassign to $verNum" }
-         clasp deploy --deploymentId $depId -i $verNum -d $desc
+        $desc = if ($verName -ne '') { $verName } else { "Reassign to $verNum" }
+        Invoke-Clasp 'deploy' '--deploymentId' $depId '-i' $verNum '-d' $desc | Out-Null
       }
       'PullVersion' {
-         if (-not $verNum) { throw 'Numéro de version requis' }
-         clasp setting fileExtension gs | Out-Null
-         $snap = Join-Path $projPath ("snapshots/v{0}" -f $verNum)
-         New-Item -ItemType Directory -Force -Path $snap | Out-Null
-         clasp setting rootDir (Resolve-Path $snap) | Out-Null
-         clasp pull --versionNumber $verNum
-         clasp setting rootDir ./ | Out-Null
-         Ensure-IgnoredSnapshots $projPath
-         [System.Windows.Forms.MessageBox]::Show(("Version {0} clonée dans {1}" -f $verNum,$snap),"PullVersion") | Out-Null
+        if (-not $verNum) { throw 'Numéro de version requis' }
+        Invoke-Clasp 'setting' 'fileExtension' 'gs' | Out-Null
+        $snap = Join-Path $projPath ("snapshots/v{0}" -f $verNum)
+        New-Item -ItemType Directory -Force -Path $snap | Out-Null
+        Invoke-Clasp 'setting' 'rootDir' (Resolve-Path $snap) | Out-Null
+        Invoke-Clasp 'pull' '--versionNumber' $verNum | Out-Null
+        Invoke-Clasp 'setting' 'rootDir' './' | Out-Null
+        Ensure-IgnoredSnapshots $projPath
+        [System.Windows.Forms.MessageBox]::Show(("Version {0} clonée dans {1}" -f $verNum,$snap),'PullVersion') | Out-Null
       }
       'RestoreVersion' {
-         if (-not $verNum) { throw 'Numéro de version requis' }
-         clasp setting fileExtension gs | Out-Null
-         $snap = Join-Path $projPath ("snapshots/v{0}" -f $verNum)
-         New-Item -ItemType Directory -Force -Path $snap | Out-Null
-         clasp setting rootDir (Resolve-Path $snap) | Out-Null
-         clasp pull --versionNumber $verNum
-         clasp setting rootDir ./ | Out-Null
-         # Remplacer fichiers racine par snapshot
-         Get-ChildItem -Path $projPath -File -Include *.gs,*.html,appsscript.json | Remove-Item -Force -ErrorAction SilentlyContinue
-         Copy-Item -Path (Join-Path $snap "*") -Destination $projPath -Force -Recurse
-         Ensure-IgnoredSnapshots $projPath
-         if ($pushAfter) { clasp push -f }
-         $msg = if ($pushAfter) { ("Version {0} restaurée depuis {1} et poussée." -f $verNum,$snap) } else { ("Version {0} restaurée depuis {1}." -f $verNum,$snap) }
-         [System.Windows.Forms.MessageBox]::Show($msg,"RestoreVersion") | Out-Null
+        if (-not $verNum) { throw 'Numéro de version requis' }
+        Invoke-Clasp 'setting' 'fileExtension' 'gs' | Out-Null
+        $snap = Join-Path $projPath ("snapshots/v{0}" -f $verNum)
+        New-Item -ItemType Directory -Force -Path $snap | Out-Null
+        Invoke-Clasp 'setting' 'rootDir' (Resolve-Path $snap) | Out-Null
+        Invoke-Clasp 'pull' '--versionNumber' $verNum | Out-Null
+        Invoke-Clasp 'setting' 'rootDir' './' | Out-Null
+        # Remplacer fichiers racine par snapshot
+        Get-ChildItem -Path $projPath -File -Include *.gs,*.html,appsscript.json | Remove-Item -Force -ErrorAction SilentlyContinue
+        Copy-Item -Path (Join-Path $snap '*') -Destination $projPath -Force -Recurse
+        Ensure-IgnoredSnapshots $projPath
+        if ($pushAfter) { Invoke-Clasp 'push' '-f' | Out-Null }
+        $msg = if ($pushAfter) { ("Version {0} restaurée depuis {1} et poussée." -f $verNum,$snap) } else { ("Version {0} restaurée depuis {1}." -f $verNum,$snap) }
+        [System.Windows.Forms.MessageBox]::Show($msg,'RestoreVersion') | Out-Null
       }
       default    { Write-Host "Action inconnue: $action" -ForegroundColor Red }
     }
