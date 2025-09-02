@@ -73,6 +73,9 @@
 
   <footer class="els-footer" role="contentinfo">
     <small>TVA non applicable (Art. 293 B CGI). Contenu des sacs sous responsabilité du déposant ; toute préparation médicamenteuse doit être dans une boîte scellée par la pharmacie.</small>
+    <? if (PRIVACY_LINK_ENABLED) { ?>
+    <div><a href="?page=infos" rel="nofollow">Infos & confidentialité</a></div>
+    <? } ?>
   </footer>
 
   <script><?!= include('Script'); ?></script>

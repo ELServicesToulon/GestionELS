@@ -71,6 +71,12 @@ function doGet(e) {
                 } else {
                     return HtmlService.createHtmlOutput('<h1>Accès Refusé</h1><p>Vous n\'avez pas les permissions nécessaires.</p>');
                 }
+            case 'infos':
+                if (PRIVACY_LINK_ENABLED) {
+                    return HtmlService.createHtmlOutputFromFile('Infos_confidentialite')
+                        .setTitle("Infos & confidentialité");
+                }
+                break;
         }
     }
 
@@ -136,7 +142,8 @@ function getConfiguration() {
   return {
     slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
     themeV2Enabled: THEME_V2_ENABLED,
-    billingV2Dryrun: BILLING_V2_DRYRUN
+    billingV2Dryrun: BILLING_V2_DRYRUN,
+    privacyLinkEnabled: PRIVACY_LINK_ENABLED
   };
 }
 
