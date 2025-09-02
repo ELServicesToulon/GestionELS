@@ -95,6 +95,11 @@ function doGet(e) {
     }
 
     // Page par défaut : Interface de réservation
+    if (DEMO_RESERVATION_ENABLED) {
+      return HtmlService.createHtmlOutputFromFile('Reservation_Demo')
+          .setTitle(NOM_ENTREPRISE + " | Réservation (Démo)")
+          .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+    }
     const template = HtmlService.createTemplateFromFile('Reservation_Interface');
     template.appUrl = ScriptApp.getService().getUrl();
     template.nomService = NOM_ENTREPRISE;
