@@ -147,6 +147,8 @@ function Ensure-IgnoredSnapshots($projPath){
   if (Test-Path $ignore) {
     $raw = Get-Content -Raw -LiteralPath $ignore
     if ($raw -notmatch '(?m)^snapshots/\*\*') { Add-Content -Path $ignore -Value "snapshots/**" }
+  } else {
+    Set-Content -Path $ignore -Value "snapshots/**"
   }
 }
 
