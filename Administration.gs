@@ -6,6 +6,14 @@
 // =================================================================
 
 /**
+ * Invalide la configuration mise en cache.
+ * À utiliser après toute modification manuelle des paramètres.
+ */
+function invaliderCacheConfiguration() {
+  CacheService.getScriptCache().remove('CONFIG_JSON');
+}
+
+/**
  * Calcule le chiffre d'affaires du mois en cours.
  * @return {number|null} Total du CA ou null si désactivé ou non autorisé.
  */

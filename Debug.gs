@@ -25,8 +25,9 @@ const ADMIN_TEST_EMAIL = ADMIN_EMAIL; // Utilise l'email admin de la configurati
  */
 function lancerTousLesTests() {
   Logger.log("===== DÉBUT DE LA SUITE DE TESTS COMPLÈTE =====");
-  
+
   testerValidationConfiguration();
+  testerCacheConfiguration();
   testerUtilitaires();
   testerFeuilleCalcul();
   testerCalendrier();
@@ -52,6 +53,18 @@ function testerValidationConfiguration() {
   } catch (e) {
     Logger.log(`FAILURE: validerConfiguration() a échoué. Erreur: ${e.message}`);
   }
+}
+
+function testerCacheConfiguration() {
+  Logger.log("\n--- Test de getConfigCached() ---");
+  CacheService.getScriptCache().remove('CONFIG_JSON');
+  const conf1 = getConfigCached();
+  const conf2 = getConfigCached();
+  Logger.log(`Premier appel TARIFS.Normal.base=${conf1.TARIFS.Normal.base}`);
+  Logger.log(`Deuxième appel (cache) TARIFS.Normal.base=${conf2.TARIFS.Normal.base}`);
+  CacheService.getScriptCache().remove('CONFIG_JSON');
+  const conf3 = getConfigCached();
+  Logger.log(`Après invalidation TARIFS.Normal.base=${conf3.TARIFS.Normal.base}`);
 }
 
 function testerUtilitaires() {
