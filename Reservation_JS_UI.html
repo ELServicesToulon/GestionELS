@@ -3,10 +3,26 @@
  * =================================================================
  * MODULE JAVASCRIPT - INTERFACE UTILISATEUR (UI)
  * =================================================================
- * Description: Gère les composants d'interface utilisateur génériques 
- * comme les notifications, les messages d'erreur et 
+ * Description: Gère les composants d'interface utilisateur génériques
+ * comme les notifications, les messages d'erreur et
  * l'indicateur de chargement.
  */
+
+/**
+ * Journalise un avertissement avec le préfixe [ELS].
+ * @param {...*} args Contenu à journaliser.
+ */
+function logWarn(...args) {
+  console.warn('[ELS]', ...args);
+}
+
+/**
+ * Journalise une erreur avec le préfixe [ELS].
+ * @param {...*} args Contenu à journaliser.
+ */
+function logError(...args) {
+  console.error('[ELS]', ...args);
+}
 
 /**
  * Affiche une notification animée à l'écran.
@@ -16,7 +32,7 @@
 function afficherNotification(message, type = "info") {
   const conteneur = document.getElementById('conteneur-notifications');
   if (!conteneur) {
-    console.error("Le conteneur de notifications est introuvable.");
+    logError("Le conteneur de notifications est introuvable.");
     return;
   }
   const notification = document.createElement('div');
@@ -41,7 +57,7 @@ function basculerIndicateurChargement(afficher) {
   if (indicateur) {
     indicateur.classList.toggle('hidden', !afficher);
   } else {
-    console.warn("L'élément 'indicateur-chargement' est introuvable dans le DOM.");
+    logWarn("L'élément 'indicateur-chargement' est introuvable dans le DOM.");
   }
 }
 
@@ -53,7 +69,7 @@ function afficherErreur(erreur) {
   basculerIndicateurChargement(false); // Toujours masquer le chargement en cas d'erreur.
   const messageErreur = typeof erreur === 'object' && erreur.message ? erreur.message : String(erreur);
   afficherNotification(`Erreur : ${messageErreur}`, "erreur");
-  console.error(erreur);
+  logError(erreur);
 }
 </script>
 
