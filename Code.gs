@@ -78,22 +78,23 @@ function doGet(e) {
     const template = HtmlService.createTemplateFromFile('Reservation_Interface');
     template.appUrl = ScriptApp.getService().getUrl();
     template.nomService = NOM_ENTREPRISE;
-    template.TARIFS_JSON = JSON.stringify(TARIFS);
-    template.DUREE_BASE = DUREE_BASE;
-    template.DUREE_ARRET_SUP = DUREE_ARRET_SUP;
-    template.KM_BASE = KM_BASE;
-    template.KM_ARRET_SUP = KM_ARRET_SUP;
-    template.URGENT_THRESHOLD_MINUTES = URGENT_THRESHOLD_MINUTES;
+    const conf = getConfigCached();
+    template.TARIFS_JSON = JSON.stringify(conf.TARIFS);
+    template.DUREE_BASE = conf.DUREE_BASE;
+    template.DUREE_ARRET_SUP = conf.DUREE_ARRET_SUP;
+    template.KM_BASE = conf.KM_BASE;
+    template.KM_ARRET_SUP = conf.KM_ARRET_SUP;
+    template.URGENT_THRESHOLD_MINUTES = conf.URGENT_THRESHOLD_MINUTES;
     template.dateDuJour = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
 
     // NOUVEAU : Ajout des variables pour la bannière d'information
-    template.heureDebut = HEURE_DEBUT_SERVICE;
-    template.heureFin = HEURE_FIN_SERVICE;
+    template.heureDebut = conf.HEURE_DEBUT_SERVICE;
+    template.heureFin = conf.HEURE_FIN_SERVICE;
     // Tarifs de base pour la bannière d'information
-    template.prixBaseNormal = (TARIFS && TARIFS['Normal']) ? TARIFS['Normal'].base : '';
-    template.prixBaseSamedi = (TARIFS && TARIFS['Samedi']) ? TARIFS['Samedi'].base : '';
-    template.prixBaseUrgent = (TARIFS && TARIFS['Urgent']) ? TARIFS['Urgent'].base : '';
-    template.tvaApplicable = typeof TVA_APPLICABLE !== 'undefined' ? TVA_APPLICABLE : false;
+    template.prixBaseNormal = (conf.TARIFS && conf.TARIFS['Normal']) ? conf.TARIFS['Normal'].base : '';
+    template.prixBaseSamedi = (conf.TARIFS && conf.TARIFS['Samedi']) ? conf.TARIFS['Samedi'].base : '';
+    template.prixBaseUrgent = (conf.TARIFS && conf.TARIFS['Urgent']) ? conf.TARIFS['Urgent'].base : '';
+    template.tvaApplicable = typeof conf.TVA_APPLICABLE !== 'undefined' ? conf.TVA_APPLICABLE : false;
 
 
     return template.evaluate()

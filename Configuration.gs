@@ -43,6 +43,7 @@ const KM_BASE = 9;
 const KM_ARRET_SUP = 3;
 
 // --- Flags d'activation ---
+const CONFIG_CACHE_ENABLED = false; // Active le cache de configuration
 const CALENDAR_RESYNC_ENABLED = true; // Permet de resynchroniser les événements supprimés
 const CALENDAR_PURGE_ENABLED = true; // Permet de purger les Event ID introuvables
 const BILLING_MULTI_SHEET_ENABLED = true; // Agrège toutes les feuilles "Facturation*"
@@ -93,4 +94,28 @@ const COLONNE_TYPE_REMISE_CLIENT = "Type de Remise";
 const COLONNE_VALEUR_REMISE_CLIENT = "Valeur Remise";
 const COLONNE_NB_TOURNEES_OFFERTES = "Nombre Tournées Offertes";
 
+
+function getConfig() {
+  return {
+    TARIFS: TARIFS,
+    DUREE_BASE: DUREE_BASE,
+    DUREE_ARRET_SUP: DUREE_ARRET_SUP,
+    KM_BASE: KM_BASE,
+    KM_ARRET_SUP: KM_ARRET_SUP,
+    URGENT_THRESHOLD_MINUTES: URGENT_THRESHOLD_MINUTES,
+    HEURE_DEBUT_SERVICE: HEURE_DEBUT_SERVICE,
+    HEURE_FIN_SERVICE: HEURE_FIN_SERVICE,
+    TVA_APPLICABLE: typeof TVA_APPLICABLE !== 'undefined' ? TVA_APPLICABLE : false
+  };
+}
+
+function getConfigCached() {
+  if (!CONFIG_CACHE_ENABLED) return getConfig();
+  const cache = CacheService.getScriptCache();
+  const raw = cache.get('CONFIG_JSON');
+  if (raw) return JSON.parse(raw);
+  const conf = getConfig();
+  cache.put('CONFIG_JSON', JSON.stringify(conf), 600); // 10 min
+  return conf;
+}
 
