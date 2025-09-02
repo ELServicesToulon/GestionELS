@@ -42,6 +42,9 @@ const DUREE_ARRET_SUP = 15;
 const KM_BASE = 9;
 const KM_ARRET_SUP = 3;
 
+// --- Flags d'activation ---
+const CALENDAR_RESYNC_ENABLED = false; // Permet de resynchroniser les événements supprimés
+
 // =================================================================
 // SYSTÈME DE TARIFICATION FLEXIBLE - SOURCE UNIQUE DE VÉRITÉ
 // =================================================================

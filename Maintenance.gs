@@ -589,6 +589,60 @@ function reparerEntetesFacturation() {
 // =================================================================
 
 /**
+ * Resynchronise l'événement Calendar d'une réservation à partir des données de facturation.
+ * @param {string} idReservation L'identifiant de la réservation à resynchroniser.
+ */
+function resynchroniserEvenement(idReservation) {
+  if (!CALENDAR_RESYNC_ENABLED) {
+    throw new Error('Resynchronisation désactivée.');
+  }
+  try {
+    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const feuille = ss.getSheetByName('Facturation');
+    if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
+
+    const enTetes = [
+      'ID Réservation', 'Event ID', 'Date', 'Client (Raison S. Client)',
+      'Client (Email)', 'Détails', 'Note Interne', 'Montant'
+    ];
+    const indices = obtenirIndicesEnTetes(feuille, enTetes);
+    const donnees = feuille.getDataRange().getValues();
+    const index = donnees.findIndex(r => String(r[indices['ID Réservation']]).trim() === String(idReservation).trim());
+    if (index === -1) throw new Error(`ID Réservation ${idReservation} introuvable.`);
+
+    const ligne = donnees[index];
+    const dateHeure = new Date(ligne[indices['Date']]);
+    const details = String(ligne[indices['Détails']] || '');
+    const nomClient = ligne[indices['Client (Raison S. Client)']];
+    const emailClient = ligne[indices['Client (Email)']];
+    const note = ligne[indices['Note Interne']];
+
+    const matchStops = details.match(/(\d+)\s+arrêt\(s\) sup\./i);
+    const additionalStops = matchStops ? parseInt(matchStops[1], 10) : 0;
+    const totalStops = additionalStops + 1;
+    const matchRetour = details.match(/retour:\s*(oui|non)/i);
+    const returnToPharmacy = matchRetour ? matchRetour[1].toLowerCase() === 'oui' : false;
+
+    const dateString = Utilities.formatDate(dateHeure, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    const startTime = Utilities.formatDate(dateHeure, Session.getScriptTimeZone(), "HH'h'mm");
+
+    const item = { date: dateString, startTime: startTime, totalStops: totalStops, returnToPharmacy: returnToPharmacy };
+    const client = { nom: nomClient, email: emailClient, note: note };
+    const clientPourCalcul = obtenirInfosClientParEmail(emailClient);
+
+    const resultat = creerReservationUnique(item, client, clientPourCalcul, { overrideIdReservation: idReservation, skipFacturation: true });
+    if (!resultat || !resultat.eventId) throw new Error('Échec de création de l\'événement.');
+
+    feuille.getRange(index + 1, indices['Event ID'] + 1).setValue(resultat.eventId);
+    logActivity(idReservation, emailClient, 'Resynchronisation calendrier', ligne[indices['Montant']], 'Resync');
+    return { success: true };
+  } catch (e) {
+    Logger.log(`Erreur resynchroniserEvenement: ${e.stack}`);
+    return { success: false, message: e.message };
+  }
+}
+
+/**
  * Vérifie la cohérence entre les réservations dans le Google Sheet et les événements dans le Google Calendar.
  * Affiche un rapport des incohérences trouvées.
  */
@@ -605,9 +659,10 @@ function verifierCoherenceCalendrier() {
     const enTetesRequis = ["ID Réservation", "Event ID", "Date"];
     const indices = obtenirIndicesEnTetes(feuille, enTetesRequis);
     const donnees = feuille.getDataRange().getValues();
-    
+
     let incoherences = [];
     let reservationsVerifiees = 0;
+    let idsIntrouvables = [];
 
     for (let i = 1; i < donnees.length; i++) {
       const ligne = donnees[i];
@@ -633,6 +688,7 @@ function verifierCoherenceCalendrier() {
       } catch (e) {
         if (e.message.includes("Not Found")) {
           incoherences.push(`- Ligne ${i + 1} (ID: ${idReservation}): L'événement (ID: ${eventId}) est INTROUVABLE dans le calendrier.`);
+          idsIntrouvables.push({ idReservation: idReservation });
         } else {
           incoherences.push(`- Ligne ${i + 1} (ID: ${idReservation}): Erreur API pour l'événement ${eventId}: ${e.message}`);
         }
@@ -650,6 +706,20 @@ function verifierCoherenceCalendrier() {
       rapportHtml += `<pre>${incoherences.join('<br>')}</pre>`;
     }
     
+    if (idsIntrouvables.length > 0 && CALENDAR_RESYNC_ENABLED) {
+      rapportHtml += `<h3>Réservations manquantes</h3><ul>`;
+      idsIntrouvables.forEach(r => {
+        rapportHtml += `<li>${r.idReservation} <button id="btn-${r.idReservation}" onclick="resync('${r.idReservation}')">Resync</button></li>`;
+      });
+      rapportHtml += `</ul><script>
+        function resync(id){
+          const btn = document.getElementById('btn-'+id);
+          btn.disabled = true;
+          google.script.run.withSuccessHandler(function(){btn.textContent='OK';btn.disabled=false;}).resynchroniserEvenement(id);
+        }
+      </script>`;
+    }
+
     const output = HtmlService.createHtmlOutput(rapportHtml).setWidth(600).setHeight(400);
     ui.showModalDialog(output, "Rapport de cohérence");
     logAdminAction("Vérification Cohérence Calendrier", `Terminée. ${incoherences.length} incohérence(s).`);
