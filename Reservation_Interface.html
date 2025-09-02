@@ -34,7 +34,7 @@
 
   <div id="app-conteneur-principal">
     
-    <header class="app-en-tete">
+    <header class="app-en-tete" role="banner" aria-label="En-tête de la page de réservation">
         <?!= include('Logo'); ?>
         <p>Système de réservation de tournées</p>
         <div id="banniere-client-reconnu" class="hidden">
@@ -124,7 +124,7 @@
       })();
     </script>
 
-    <main id="app-conteneur">
+    <main id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
       <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
         <div class="carte-en-tete">
           <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>
