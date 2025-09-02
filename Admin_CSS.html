@@ -1,12 +1,10 @@
 <style>
 /* --- VARIABLES DE COULEURS ET STYLES DE BASE --- */
 :root {
-  --couleur-primaire: #8e44ad; /* Violet brand */
-  --couleur-secondaire: #3498db; /* Bleu brand */
-  --couleur-succes: #5dade2; /* Bleu clair brand */
-  --couleur-avertissement: #3498db; /* Bleu brand */
+  --couleur-primaire: #2980b9; /* Bleu Admin */
+  --couleur-secondaire: #2c3e50; /* Gris Foncé Admin */
   --couleur-erreur: #c0392b;
-
+  --couleur-avertissement: #8e44ad; /* Violet */
   --gris-clair: #f4f6f9;
   --gris-moyen: #7f8c8d;
   --gris-fonce: #34495e;
@@ -144,26 +142,10 @@ body {
   transition: background-color 0.2s, transform 0.2s;
 }
 
-.btn:focus,
-.btn:focus-visible {
-  outline: 2px solid var(--bleu);
-  outline-offset: 2px;
-}
-
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-}
-
-input:focus,
-input:focus-visible,
-select:focus,
-select:focus-visible,
-a[href]:focus,
-a[href]:focus-visible {
-  outline: 2px solid var(--bleu);
-  outline-offset: 2px;
 }
 
 .btn-primaire {
@@ -172,13 +154,13 @@ a[href]:focus-visible {
 }
 
 .btn-primaire:not(:disabled):hover {
-  background-color: var(--couleur-secondaire);
+  background-color: #3498db;
   transform: translateY(-2px);
 }
 
 .btn-secondaire {
-  background-color: var(--couleur-secondaire);
-  color: white;
+  background-color: var(--couleur-bordure);
+  color: var(--gris-fonce);
 }
 
 .btn-erreur {
@@ -290,7 +272,7 @@ a[href]:focus-visible {
 .btn-creneau-replanif {
   padding: 10px;
   border: 1px solid var(--couleur-primaire);
-  background-color: var(--gris-clair);
+  background-color: #ecf0f1;
   color: var(--couleur-primaire);
   border-radius: 8px;
   cursor: pointer;
@@ -346,19 +328,7 @@ a[href]:focus-visible {
 }
 
 .notification {
-  background: var(--violet);
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 8px;
-  box-shadow: var(--ombre-portee);
-}
-
-.notification.succes {
-  background-color: var(--couleur-succes);
-}
-
-.notification.erreur {
-  background-color: var(--couleur-erreur);
+  /* Styles similaires à la page de réservation */
 }
 
 .theme-selector {

@@ -7,9 +7,8 @@
 :root {
   --couleur-primaire: #8e44ad; /* Violet */
   --couleur-secondaire: #3498db; /* Bleu */
-  --couleur-succes: #3498db; /* Bleu */
+  --couleur-succes: #5dade2; /* Bleu clair */
   --couleur-erreur: #c0392b; /* Rouge */
-  --couleur-avertissement: #5dade2; /* Bleu clair */
   --gris-clair: #f9f9f9;
   --gris-moyen: #6c757d;
   --gris-fonce: #343a40;
@@ -86,16 +85,8 @@ body {
 .champ-formulaire { width: 100%; padding: 12px; border: 1px solid var(--couleur-bordure); border-radius: 8px; box-sizing: border-box; }
 .btn { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s; font-family: var(--police-principale); text-decoration: none; display: inline-block; text-align: center; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primaire {
-  background: linear-gradient(90deg, #8e44ad, #3498db);
-  color: white;
-  border-radius: 9999px;
-  box-shadow: 0 1px 2px -1px rgba(20,34,55,.18), 0 2px 8px rgba(20,34,55,.08);
-}
-.btn-primaire:not(:disabled):hover,
-.btn-primaire:not(:disabled):focus {
-  filter: brightness(0.8);
-}
+.btn-primaire { background-color: var(--couleur-primaire); color: white; }
+.btn-primaire:not(:disabled):hover { background-color: #732d91; }
 .btn-secondaire { background-color: var(--couleur-bordure); color: var(--gris-fonce); }
 .btn-secondaire:not(:disabled):hover { background-color: #dcdfe2; }
 .message-erreur-connexion { color: var(--couleur-erreur); margin-top: 10px; font-size: 0.9em; }
@@ -118,9 +109,8 @@ body {
 
 #conteneur-notifications { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
 .notification { padding: 15px 20px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 15px rgba(0,0,0,0.1); animation: slideIn 0.5s ease-out forwards, slideOut 0.5s ease-in 4.5s forwards; opacity: 0; transform: translateX(100%); }
-.notification.succes { background-color: var(--couleur-succes); color: #000; }
+.notification.succes { background-color: var(--couleur-succes); }
 .notification.erreur { background-color: var(--couleur-erreur); }
-.notification.avertissement { background-color: var(--couleur-avertissement); color: var(--gris-fonce); }
 @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
 @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
 
