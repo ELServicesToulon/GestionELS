@@ -144,10 +144,26 @@ body {
   transition: background-color 0.2s, transform 0.2s;
 }
 
+.btn:focus,
+.btn:focus-visible {
+  outline: 2px solid var(--bleu);
+  outline-offset: 2px;
+}
+
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+a[href]:focus,
+a[href]:focus-visible {
+  outline: 2px solid var(--bleu);
+  outline-offset: 2px;
 }
 
 .btn-primaire {
