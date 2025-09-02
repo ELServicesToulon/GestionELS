@@ -127,3 +127,15 @@ function setUserTheme(theme) {
   }
 }
 
+/**
+ * Retourne les flags d'activation pour le client.
+ * @returns {Object} Flags configurables depuis Configuration.gs.
+ */
+function getConfiguration() {
+  return {
+    slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
+    themeV2Enabled: THEME_V2_ENABLED,
+    billingV2Dryrun: BILLING_V2_DRYRUN
+  };
+}
+

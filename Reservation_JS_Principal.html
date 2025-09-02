@@ -13,7 +13,8 @@ window.etat = {
   dateActuelle: new Date(),
   panier: [],
   tourneeEnCours: {}, // Sera peuplé lors de la configuration
-  clientReconnu: null
+  clientReconnu: null,
+  flags: {} // Flags d'activation issus de Configuration.gs
 };
 
 /**
@@ -101,8 +102,11 @@ function configurerEcouteursEvenements() {
  * Point d'entrée principal, exécuté après le chargement du DOM.
  */
 document.addEventListener('DOMContentLoaded', () => {
-  chargerPanierDepuisLocalStorage(); 
-  verifierSessionClient(); 
+  google.script.run.withSuccessHandler(cfg => {
+    window.etat.flags = cfg;
+  }).getConfiguration();
+  chargerPanierDepuisLocalStorage();
+  verifierSessionClient();
   afficherCalendrier(window.etat.dateActuelle.getMonth() + 1, window.etat.dateActuelle.getFullYear());
   configurerEcouteursEvenements();
 });
