@@ -1,10 +1,11 @@
 <style>
 /* --- VARIABLES DE COULEURS ET STYLES DE BASE --- */
 :root {
-  --couleur-primaire: #2980b9; /* Bleu Admin */
-  --couleur-secondaire: #2c3e50; /* Gris Foncé Admin */
+  --couleur-primaire: #8e44ad; /* Violet brand */
+  --couleur-secondaire: #3498db; /* Bleu brand */
+  --couleur-succes: #5dade2; /* Bleu clair brand */
+  --couleur-avertissement: #3498db; /* Bleu brand */
   --couleur-erreur: #c0392b;
-  --couleur-avertissement: #8e44ad; /* Violet */
   --gris-clair: #f4f6f9;
   --gris-moyen: #7f8c8d;
   --gris-fonce: #34495e;
@@ -154,13 +155,13 @@ body {
 }
 
 .btn-primaire:not(:disabled):hover {
-  background-color: #3498db;
+  background-color: var(--couleur-secondaire);
   transform: translateY(-2px);
 }
 
 .btn-secondaire {
-  background-color: var(--couleur-bordure);
-  color: var(--gris-fonce);
+  background-color: var(--couleur-secondaire);
+  color: white;
 }
 
 .btn-erreur {
@@ -272,7 +273,7 @@ body {
 .btn-creneau-replanif {
   padding: 10px;
   border: 1px solid var(--couleur-primaire);
-  background-color: #ecf0f1;
+  background-color: var(--gris-clair);
   color: var(--couleur-primaire);
   border-radius: 8px;
   cursor: pointer;
