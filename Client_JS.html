@@ -96,6 +96,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (reponse.success) {
                     toutesLesReservationsClient = reponse.reservations;
                     afficherReservations(toutesLesReservationsClient);
+                    google.script.run
+                        .withSuccessHandler(total => {
+                            const caDiv = document.getElementById('ca-client');
+                            if (caDiv) {
+                                caDiv.textContent = `CA en cours\u00A0: ${total.toFixed(2)}\u00A0€`;
+                            }
+                        })
+                        .withFailureHandler(err => console.error(err))
+                        .calculerCAEnCoursClient(email);
                 } else {
                     afficherErreur(reponse.error);
                 }

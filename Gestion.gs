@@ -104,6 +104,38 @@ function obtenirReservationsClient(emailClient) {
   }
 }
 
+/**
+ * Calcule le chiffre d'affaires futur pour un client donné.
+ * @param {string} emailClient L'e-mail du client.
+ * @returns {number} Le total des montants à venir.
+ */
+function calculerCAEnCoursClient(emailClient) {
+  try {
+    if (!CA_EN_COURS_ENABLED) return 0;
+    if (!emailClient) return 0;
+
+    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName('Facturation');
+    if (!feuille) return 0;
+    const indices = obtenirIndicesEnTetes(feuille, ['Date', 'Client (Email)', 'Montant']);
+    const lignes = feuille.getDataRange().getValues();
+    const aujourdHui = new Date();
+    let total = 0;
+
+    lignes.slice(1).forEach(ligne => {
+      const emailLigne = String(ligne[indices['Client (Email)']]).trim().toLowerCase();
+      if (emailLigne !== emailClient.trim().toLowerCase()) return;
+      const dateResa = new Date(ligne[indices['Date']]);
+      if (isNaN(dateResa.getTime()) || dateResa < aujourdHui) return;
+      total += parseFloat(ligne[indices['Montant']]) || 0;
+    });
+
+    return total;
+  } catch (e) {
+    Logger.log(`Erreur dans calculerCAEnCoursClient pour ${emailClient}: ${e.stack}`);
+    return 0;
+  }
+}
+
 
 /**
  * Récupère les factures (générées) pour un client.
