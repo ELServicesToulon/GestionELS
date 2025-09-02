@@ -15,11 +15,12 @@ jobs:
         run: npm install -g @google/clasp@2.5.0
       - name: Authenticate and Push
         env:
-          CLASP_CREDENTIALS: ${{ secrets.CLASP_CREDENTIALS }}
+          GCP_OAUTH_CREDS: ${{ secrets.GCP_OAUTH_CREDS }}
           CLASP_SCRIPT_ID: ${{ secrets.CLASP_SCRIPT_ID }}
         run: |
-          printf '%s' "$CLASP_CREDENTIALS" > creds.json
-          clasp login --creds creds.json
+          printf '%s' "$GCP_OAUTH_CREDS" > "$RUNNER_TEMP/creds.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/creds.json"
+          clasp login --creds "$GOOGLE_APPLICATION_CREDENTIALS"
           cat <<EOF > .clasp.json
           {
             "scriptId": "$CLASP_SCRIPT_ID",
@@ -28,4 +29,4 @@ jobs:
           }
           EOF
           clasp push -f
-          rm -f creds.json .clasp.json
+          rm -f "$GOOGLE_APPLICATION_CREDENTIALS" .clasp.json
