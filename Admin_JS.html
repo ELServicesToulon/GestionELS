@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modale = document.getElementById('modale-action');
     const contenuModale = document.getElementById('contenu-modale-wrapper');
     const btnFermerModale = document.getElementById('btn-fermer-modale');
+    const caEnCours = document.getElementById('ca-en-cours');
 
     // --- Variables d'état ---
     let toutesLesReservationsAffichees = [];
@@ -62,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (reponse.success) {
                     toutesLesReservationsAffichees = reponse.reservations;
                     afficherReservations(toutesLesReservationsAffichees, false);
+                    mettreAJourCAEnCours();
                 } else {
                     afficherErreur(reponse.error);
                 }
@@ -85,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (reponse.success) {
                     toutesLesReservationsAffichees = reponse.reservations;
                     afficherReservations(toutesLesReservationsAffichees, true);
+                    mettreAJourCAEnCours();
                 } else {
                     afficherErreur(reponse.error);
                 }
@@ -117,6 +120,24 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .withFailureHandler(afficherErreur)
             .obtenirTousLesClients();
+    }
+
+    function mettreAJourCAEnCours() {
+        google.script.run
+            .withSuccessHandler(valeur => {
+                if (typeof valeur === 'number' && caEnCours) {
+                    caEnCours.textContent = `CA en cours : ${valeur.toFixed(2)} €`;
+                    caEnCours.style.color = '#8e44ad';
+                    caEnCours.style.fontWeight = '600';
+                    caEnCours.classList.remove('hidden');
+                } else {
+                    if (caEnCours) {
+                        caEnCours.textContent = '';
+                        caEnCours.classList.add('hidden');
+                    }
+                }
+            })
+            .calculerCAEnCours();
     }
 
     /**

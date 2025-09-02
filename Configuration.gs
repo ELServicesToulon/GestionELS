@@ -46,6 +46,7 @@ const KM_ARRET_SUP = 3;
 const CALENDAR_RESYNC_ENABLED = false; // Permet de resynchroniser les événements supprimés
 const CALENDAR_PURGE_ENABLED = false; // Permet de purger les Event ID introuvables
 const BILLING_MULTI_SHEET_ENABLED = false; // Agrège toutes les feuilles "Facturation*"
+const CA_EN_COURS_ENABLED = false; // Active l'affichage du CA en cours dans l'admin
 const THEME_SELECTION_ENABLED = false; // Active le choix de thème côté client
 const THEME_DEFAULT = 'clarte';
 const THEMES = {

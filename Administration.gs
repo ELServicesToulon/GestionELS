@@ -6,6 +6,39 @@
 // =================================================================
 
 /**
+ * Calcule le chiffre d'affaires du mois en cours.
+ * @return {number|null} Total du CA ou null si désactivé ou non autorisé.
+ */
+function calculerCAEnCours() {
+  if (!CA_EN_COURS_ENABLED) return null;
+
+  const userEmail = Session.getActiveUser().getEmail();
+  if (!userEmail || userEmail.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    return null;
+  }
+
+  const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName("Facturation");
+  if (!feuille) return null;
+
+  const indices = obtenirIndicesEnTetes(feuille, ["Date", "Montant"]);
+  const donnees = feuille.getDataRange().getValues();
+  const aujourdHui = new Date();
+  const moisActuel = aujourdHui.getMonth();
+  const anneeActuelle = aujourdHui.getFullYear();
+  let total = 0;
+
+  for (let i = 1; i < donnees.length; i++) {
+    const ligne = donnees[i];
+    const dateCell = new Date(ligne[indices["Date"]]);
+    if (!isNaN(dateCell) && dateCell.getMonth() === moisActuel && dateCell.getFullYear() === anneeActuelle) {
+      total += parseFloat(ligne[indices["Montant"]]) || 0;
+    }
+  }
+
+  return total;
+}
+
+/**
  * Récupère TOUTES les réservations (passées, actuelles, futures) sans aucun filtre par date/email.
  * @returns {Object} Un objet avec le statut et la liste complète des réservations.
  */
