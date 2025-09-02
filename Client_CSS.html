@@ -85,8 +85,16 @@ body {
 .champ-formulaire { width: 100%; padding: 12px; border: 1px solid var(--couleur-bordure); border-radius: 8px; box-sizing: border-box; }
 .btn { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s; font-family: var(--police-principale); text-decoration: none; display: inline-block; text-align: center; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primaire { background-color: var(--couleur-primaire); color: white; }
-.btn-primaire:not(:disabled):hover { background-color: #732d91; }
+.btn-primaire {
+  background: linear-gradient(90deg, #8e44ad, #3498db);
+  color: white;
+  border-radius: 9999px;
+  box-shadow: 0 1px 2px -1px rgba(20,34,55,.18), 0 2px 8px rgba(20,34,55,.08);
+}
+.btn-primaire:not(:disabled):hover,
+.btn-primaire:not(:disabled):focus {
+  filter: brightness(0.8);
+}
 .btn-secondaire { background-color: var(--couleur-bordure); color: var(--gris-fonce); }
 .btn-secondaire:not(:disabled):hover { background-color: #dcdfe2; }
 .message-erreur-connexion { color: var(--couleur-erreur); margin-top: 10px; font-size: 0.9em; }
