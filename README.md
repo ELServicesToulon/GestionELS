@@ -12,7 +12,7 @@ See `AGENTS.md` for project structure, coding style, testing steps, and the pull
 - `clasp push -f`: Push local code to Apps Script (force overwrite).
 
 ## CI/CD
-Le dépôt fournit un workflow GitHub Actions (`.github/workflows/clasp.yml`) qui exécute `clasp push -f` à l'aide de secrets `CLASP_CREDENTIALS` et `GAS_SCRIPT_ID`.
+ Le dépôt fournit un workflow GitHub Actions (`.github/workflows/clasp.yml`) qui exécute `clasp push -f` à l'aide des secrets `CLASP_CREDENTIALS` et `CLASP_SCRIPT_ID`.
 
 ### Reprise manuelle
 1. Exécuter `./clasp-helper.cmd` puis choisir **Push**, ou se connecter via `npx @google/clasp login --creds <fichier>`.
