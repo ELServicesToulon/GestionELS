@@ -5,6 +5,8 @@
   --couleur-secondaire: #2c3e50; /* Gris Foncé Admin */
   --couleur-erreur: #c0392b;
   --couleur-avertissement: #8e44ad; /* Violet */
+  --couleur-succes: #5dade2; /* Bleu clair */
+  --violet: #8e44ad;
   --gris-clair: #f4f6f9;
   --gris-moyen: #7f8c8d;
   --gris-fonce: #34495e;
@@ -328,7 +330,19 @@ body {
 }
 
 .notification {
-  /* Styles similaires à la page de réservation */
+  background: var(--violet);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: var(--ombre-portee);
+}
+
+.notification.succes {
+  background-color: var(--couleur-succes);
+}
+
+.notification.erreur {
+  background-color: var(--couleur-erreur);
 }
 
 .theme-selector {
