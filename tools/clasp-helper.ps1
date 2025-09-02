@@ -146,7 +146,7 @@ function Ensure-IgnoredSnapshots($projPath){
   $ignore = Join-Path $projPath '.claspignore'
   if (Test-Path $ignore) {
     $raw = Get-Content -Raw -LiteralPath $ignore
-    if ($raw -notmatch '(?m)^snapshots/\*\*') { Add-Content -Path $ignore -Value "snapshots/**" }
+    if ($raw -notmatch '(?m)^snapshots/\\*\\*') { Add-Content -Path $ignore -Value "snapshots/**" }
   } else {
     Set-Content -Path $ignore -Value "snapshots/**"
   }
@@ -238,3 +238,4 @@ function Run-Clasp($spec){
 
 $spec = New-Form
 Run-Clasp $spec
+
