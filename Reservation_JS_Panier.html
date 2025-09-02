@@ -54,26 +54,52 @@ function afficherPanier() {
     ui.panierPiedDePage.classList.add('hidden');
     return;
   }
-
-  ui.listePanier.innerHTML = panier.map(item => {
+  ui.listePanier.textContent = '';
+  panier.forEach(item => {
     const date = new Date(item.date + 'T00:00:00');
     const dateFormatee = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-    const recurrenceInfo = item.isRecurrent ? '<small style="color: #6a0dad; display: block;">(Récurrence mensuelle)</small>' : '';
-    
-    return `
-      <li class="item-panier" data-id-item="${item.id}">
-        <div class="item-panier-infos">
-          <strong>Le ${dateFormatee} à ${item.startTime}</strong>
-          ${recurrenceInfo}
-          <small>${item.details}</small>
-        </div>
-        <div class="item-panier-actions">
-            <span class="item-panier-prix">${item.prix.toFixed(2)} €</span>
-            <button class="item-panier-supprimer" aria-label="Supprimer cet article">&times;</button>
-        </div>
-      </li>
-    `;
-  }).join('');
+
+    const li = document.createElement('li');
+    li.className = 'item-panier';
+    li.dataset.idItem = item.id;
+
+    const infos = document.createElement('div');
+    infos.className = 'item-panier-infos';
+
+    const strong = document.createElement('strong');
+    strong.textContent = `Le ${dateFormatee} à ${item.startTime}`;
+    infos.appendChild(strong);
+
+    if (item.isRecurrent) {
+      const recurrence = document.createElement('small');
+      recurrence.style.color = '#6a0dad';
+      recurrence.style.display = 'block';
+      recurrence.textContent = '(Récurrence mensuelle)';
+      infos.appendChild(recurrence);
+    }
+
+    const detail = document.createElement('small');
+    detail.textContent = item.details;
+    infos.appendChild(detail);
+
+    const actions = document.createElement('div');
+    actions.className = 'item-panier-actions';
+
+    const prix = document.createElement('span');
+    prix.className = 'item-panier-prix';
+    prix.textContent = `${item.prix.toFixed(2)} €`;
+    actions.appendChild(prix);
+
+    const boutonSupprimer = document.createElement('button');
+    boutonSupprimer.className = 'item-panier-supprimer';
+    boutonSupprimer.setAttribute('aria-label', 'Supprimer cet article');
+    boutonSupprimer.textContent = '×';
+    actions.appendChild(boutonSupprimer);
+
+    li.appendChild(infos);
+    li.appendChild(actions);
+    ui.listePanier.appendChild(li);
+  });
 
   const total = panier.reduce((acc, item) => acc + item.prix, 0);
   ui.panierTotalValeur.textContent = `~ ${total.toFixed(2)} €`; // Ajout de '~' car le total peut augmenter avec la récurrence
