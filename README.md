@@ -15,7 +15,9 @@ See `AGENTS.md` for project structure, coding style, testing steps, and the pull
 Le projet utilise `@google/clasp` version `2.5.0` en local comme en CI.
 
 - Installation locale : `npm install -g @google/clasp@2.5.0`.
+
 - Vérifier la version : `clasp -v` (doit retourner `2.5.0`).
+
 - Le workflow GitHub Actions (`.github/workflows/clasp.yml`) installe la même version.
 
 ### Mettre à jour
