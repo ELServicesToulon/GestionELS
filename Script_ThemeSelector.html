@@ -1,0 +1,68 @@
+<script>
+(function() {
+  const THEMES_CSS = {
+    <? for (var key in THEMES) { ?>
+    "<?= key ?>": `<?!= include('<?= THEMES[key] ?>') ?>`,
+    <? } ?>
+  };
+  const THEME_DEFAULT = "<?= THEME_DEFAULT ?>";
+  const SELECTION_ENABLED = <?= THEME_SELECTION_ENABLED ?>;
+
+  function applyTheme(id) {
+    const css = THEMES_CSS[id] || THEMES_CSS[THEME_DEFAULT];
+    const styleEl = document.getElementById('theme-style');
+    if (styleEl) styleEl.innerHTML = css;
+  }
+
+  function loadTheme() {
+    let theme = null;
+    try { theme = localStorage.getItem('els_theme'); } catch (e) {}
+    if (theme) {
+      applyTheme(theme);
+    } else {
+      applyTheme(THEME_DEFAULT);
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run.withSuccessHandler(applyTheme).getUserTheme();
+      }
+    }
+  }
+
+  function saveTheme(id) {
+    try { localStorage.setItem('els_theme', id); } catch (e) {}
+    if (typeof google !== 'undefined' && google.script) {
+      google.script.run.setUserTheme(id);
+    }
+  }
+
+  function setupUI() {
+    if (!SELECTION_ENABLED) return;
+    const btn = document.getElementById('btn-theme');
+    const menu = document.getElementById('menu-theme');
+    if (!btn || !menu) return;
+    btn.classList.remove('hidden');
+    btn.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+      menu.querySelector('button').focus();
+    });
+    menu.querySelectorAll('.option-theme').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const t = opt.dataset.theme;
+        applyTheme(t);
+        saveTheme(t);
+        menu.classList.add('hidden');
+        btn.focus();
+      });
+    });
+    document.addEventListener('click', e => {
+      if (!menu.contains(e.target) && e.target !== btn) {
+        menu.classList.add('hidden');
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadTheme();
+    setupUI();
+  });
+})();
+</script>

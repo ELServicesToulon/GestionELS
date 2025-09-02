@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style id="theme-style"></style>
   <?!= include('Reservation_CSS'); ?>
 </head>
 <body>
@@ -254,7 +255,7 @@
   </div>
 
   <div id="conteneur-notifications" role="alert" aria-live="assertive"></div>
-
+  <?!= include('Script_ThemeSelector'); ?>
   <?!= include('Reservation_JS_UI'); ?>
   <?!= include('Reservation_JS_UI_Elements'); ?>
   <?!= include('Reservation_JS_Calendrier'); ?>

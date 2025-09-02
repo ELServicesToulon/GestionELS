@@ -11,6 +11,11 @@ See `AGENTS.md` for project structure, coding style, testing steps, and the pull
 - `clasp open`: Open the Apps Script project in the browser.
 - `clasp push -f`: Push local code to Apps Script (force overwrite).
 
+## Sélecteur de thème
+1. Activer `THEME_SELECTION_ENABLED` dans `Configuration.gs`.
+2. `clasp push -f` puis créer une nouvelle version pour déploiement.
+3. Pour rollback, remettre le flag à `false` et redéployer la version précédente.
+
 ## Tests Manuels
 - Déplacer une facture vers `Facturation_Aout_2025` puis vérifier qu'elle reste visible et envoyable depuis l'espace client.
 
