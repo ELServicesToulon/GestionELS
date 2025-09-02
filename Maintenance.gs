@@ -643,6 +643,57 @@ function resynchroniserEvenement(idReservation) {
 }
 
 /**
+ * Vérifie l'existence de l'événement lié à une réservation et purge si introuvable.
+ * @param {string} idReservation L'identifiant de la réservation.
+ * @returns {boolean} true si purge effectuée, false sinon.
+ */
+function purgerEventIdInexistant(idReservation) {
+  if (!CALENDAR_PURGE_ENABLED) {
+    throw new Error('Purge désactivée.');
+  }
+  try {
+    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const feuille = ss.getSheetByName('Facturation');
+    if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
+
+    const enTetes = ['ID Réservation', 'Event ID', 'Note Interne'];
+    const indices = obtenirIndicesEnTetes(feuille, enTetes);
+    const donnees = feuille.getDataRange().getValues();
+    const index = donnees.findIndex(r => String(r[indices['ID Réservation']]).trim() === String(idReservation).trim());
+    if (index === -1) throw new Error(`ID Réservation ${idReservation} introuvable.`);
+
+    const ligne = donnees[index];
+    const eventId = ligne[indices['Event ID']];
+    if (!eventId) {
+      logAdminAction('Purge Event ID', `Annulé: ${idReservation} vide`);
+      return false;
+    }
+
+    try {
+      Calendar.Events.get(ID_CALENDRIER, eventId);
+      logAdminAction('Purge Event ID', `Annulé: événement existe (${idReservation})`);
+      return false;
+    } catch (e) {
+      if (!e.message.includes('Not Found')) throw e;
+    }
+
+    const row = index + 1;
+    feuille.getRange(row, indices['Event ID'] + 1).clearContent();
+    const noteCell = feuille.getRange(row, indices['Note Interne'] + 1);
+    const noteVal = String(noteCell.getValue());
+    const marker = 'À vérifier';
+    noteCell.setValue(noteVal && noteVal.indexOf(marker) === -1 ? `${noteVal} | ${marker}` : marker);
+
+    logAdminAction('Purge Event ID', `ID ${idReservation}`);
+    return true;
+  } catch (e) {
+    Logger.log(`Erreur purgerEventIdInexistant: ${e.stack}`);
+    logAdminAction('Purge Event ID', `Échec: ${e.message}`);
+    return false;
+  }
+}
+
+/**
  * Vérifie la cohérence entre les réservations dans le Google Sheet et les événements dans le Google Calendar.
  * Affiche un rapport des incohérences trouvées.
  */
@@ -706,18 +757,31 @@ function verifierCoherenceCalendrier() {
       rapportHtml += `<pre>${incoherences.join('<br>')}</pre>`;
     }
     
-    if (idsIntrouvables.length > 0 && CALENDAR_RESYNC_ENABLED) {
+    if (idsIntrouvables.length > 0 && (CALENDAR_RESYNC_ENABLED || CALENDAR_PURGE_ENABLED)) {
       rapportHtml += `<h3>Réservations manquantes</h3><ul>`;
       idsIntrouvables.forEach(r => {
-        rapportHtml += `<li>${r.idReservation} <button id="btn-${r.idReservation}" onclick="resync('${r.idReservation}')">Resync</button></li>`;
-      });
-      rapportHtml += `</ul><script>
-        function resync(id){
-          const btn = document.getElementById('btn-'+id);
-          btn.disabled = true;
-          google.script.run.withSuccessHandler(function(){btn.textContent='OK';btn.disabled=false;}).resynchroniserEvenement(id);
+        rapportHtml += `<li>`;
+        if (CALENDAR_PURGE_ENABLED) {
+          rapportHtml += `<input type="checkbox" class="purgeBox" value="${r.idReservation}"> `;
         }
-      </script>`;
+        rapportHtml += `${r.idReservation}`;
+        if (CALENDAR_RESYNC_ENABLED) {
+          rapportHtml += ` <button id="btn-${r.idReservation}" onclick="resync('${r.idReservation}')">Resync</button>`;
+        }
+        rapportHtml += `</li>`;
+      });
+      rapportHtml += `</ul>`;
+      if (CALENDAR_PURGE_ENABLED) {
+        rapportHtml += `<button id="purgerSelection" onclick="purgerSelection()">Purger sélection</button>`;
+      }
+      rapportHtml += `<script>`;
+      if (CALENDAR_RESYNC_ENABLED) {
+        rapportHtml += `function resync(id){const btn=document.getElementById('btn-'+id);btn.disabled=true;google.script.run.withSuccessHandler(function(){btn.textContent='OK';btn.disabled=false;}).resynchroniserEvenement(id);}`;
+      }
+      if (CALENDAR_PURGE_ENABLED) {
+        rapportHtml += `function purgerSelection(){const btn=document.getElementById('purgerSelection');btn.disabled=true;const ids=[...document.querySelectorAll('.purgeBox:checked')].map(cb=>cb.value);if(ids.length===0){btn.disabled=false;return;} (function next(){if(ids.length===0){btn.disabled=false;return;}const id=ids.shift();google.script.run.withSuccessHandler(next).purgerEventIdInexistant(id);})();}`;
+      }
+      rapportHtml += `</script>`;
     }
 
     const output = HtmlService.createHtmlOutput(rapportHtml).setWidth(600).setHeight(400);
