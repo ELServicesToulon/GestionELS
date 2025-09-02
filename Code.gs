@@ -117,3 +117,13 @@ function include(nomFichier) {
   return HtmlService.createHtmlOutputFromFile(nomFichier).getContent();
 }
 
+function getUserTheme() {
+  return PropertiesService.getUserProperties().getProperty('theme') || THEME_DEFAULT;
+}
+
+function setUserTheme(theme) {
+  if (THEMES[theme]) {
+    PropertiesService.getUserProperties().setProperty('theme', theme);
+  }
+}
+

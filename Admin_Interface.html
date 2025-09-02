@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+  <style id="theme-style"></style>
   <?!= include('Admin_CSS'); ?>
 </head>
 <body>
@@ -31,6 +31,13 @@
       </div>
       <button id="btn-tout-voir" class="btn btn-secondaire">Toutes les courses</button>
       <button id="btn-ajouter-reservation" class="btn btn-primaire">Ajouter une course</button>
+      <div class="theme-selector">
+        <button id="btn-theme" class="btn btn-secondaire hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
+        <div id="menu-theme" class="hidden" role="menu">
+          <button class="option-theme btn btn-secondaire" data-theme="clarte" role="menuitem">Clarté</button>
+          <button class="option-theme btn btn-secondaire" data-theme="nocturne" role="menuitem">Nocturne</button>
+        </div>
+      </div>
     </div>
 
     <main id="conteneur-app">
@@ -54,7 +61,7 @@
   </div>
 
   <div id="conteneur-notifications" role="alert" aria-live="assertive"></div>
-
+  <?!= include('Script_ThemeSelector'); ?>
   <?!= include('Admin_JS'); ?>
 </body>
 </html>

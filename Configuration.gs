@@ -46,6 +46,12 @@ const KM_ARRET_SUP = 3;
 const CALENDAR_RESYNC_ENABLED = false; // Permet de resynchroniser les événements supprimés
 const CALENDAR_PURGE_ENABLED = false; // Permet de purger les Event ID introuvables
 const BILLING_MULTI_SHEET_ENABLED = false; // Agrège toutes les feuilles "Facturation*"
+const THEME_SELECTION_ENABLED = false; // Active le choix de thème côté client
+const THEME_DEFAULT = 'clarte';
+const THEMES = {
+  clarte: 'branding/Theme_Clarte_CSS',
+  nocturne: 'branding/Theme_Nocturne_CSS'
+};
 
 // =================================================================
 // SYSTÈME DE TARIFICATION FLEXIBLE - SOURCE UNIQUE DE VÉRITÉ
