@@ -7,9 +7,9 @@
 :root {
   --couleur-primaire: #8e44ad; /* Violet */
   --couleur-secondaire: #3498db; /* Bleu */
-  --couleur-succes: #27ae60; /* Vert */
+  --couleur-succes: #3498db; /* Bleu */
   --couleur-erreur: #c0392b; /* Rouge */
-  --couleur-avertissement: #f39c12; /* Jaune */
+  --couleur-avertissement: #5dade2; /* Bleu clair */
   --gris-clair: #f9f9f9;
   --gris-moyen: #6c757d;
   --gris-fonce: #343a40;
@@ -99,8 +99,9 @@ body {
 
 #conteneur-notifications { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
 .notification { padding: 15px 20px; border-radius: 8px; color: white; font-weight: 500; box-shadow: 0 4px 15px rgba(0,0,0,0.1); animation: slideIn 0.5s ease-out forwards, slideOut 0.5s ease-in 4.5s forwards; opacity: 0; transform: translateX(100%); }
-.notification.succes { background-color: var(--couleur-succes); }
+.notification.succes { background-color: var(--couleur-succes); color: #000; }
 .notification.erreur { background-color: var(--couleur-erreur); }
+.notification.avertissement { background-color: var(--couleur-avertissement); color: var(--gris-fonce); }
 @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
 @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
 
