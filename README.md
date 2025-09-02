@@ -19,6 +19,15 @@ Lorsqu'un événement est supprimé manuellement dans Google Calendar, la ligne 
 3. Pour chaque réservation introuvable, utiliser le bouton **Resync** afin de recréer l'événement et mettre à jour la colonne *Event ID*.
 4. Après intervention, désactiver le flag ou supprimer la ligne si l'événement ne doit plus exister.
 
+## Purge des Event ID inexistants
+Si un événement supprimé ne doit pas être recréé, on peut purger sa référence dans "Facturation" sans toucher à la ligne de réservation.
+
+1. Activer temporairement le flag `CALENDAR_PURGE_ENABLED` dans `Configuration.gs`.
+2. Dans le Sheet, menu **EL Services → Vérifier la cohérence du calendrier**.
+3. Sélectionner les réservations à purger via les cases à cocher puis cliquer sur **Purger sélection**.
+   La colonne *Event ID* est vidée et "À vérifier" est ajouté dans *Note Interne*.
+4. Désactiver le flag une fois l'opération terminée.
+
 ## Script Properties
 Define these keys in the Apps Script project via `PropertiesService`:
 

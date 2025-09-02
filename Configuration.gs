@@ -44,6 +44,7 @@ const KM_ARRET_SUP = 3;
 
 // --- Flags d'activation ---
 const CALENDAR_RESYNC_ENABLED = false; // Permet de resynchroniser les événements supprimés
+const CALENDAR_PURGE_ENABLED = false; // Permet de purger les Event ID introuvables
 
 // =================================================================
 // SYSTÈME DE TARIFICATION FLEXIBLE - SOURCE UNIQUE DE VÉRITÉ
