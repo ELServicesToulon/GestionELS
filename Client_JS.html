@@ -1,4 +1,5 @@
 <script>
+const MODAL_FOCUS_TRAP_ENABLED = <?= MODAL_FOCUS_TRAP_ENABLED ?>;
 /**
  * =================================================================
  * MODULE JAVASCRIPT - ESPACE CLIENT
@@ -18,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const formulaireConnexionClient = document.getElementById('formulaire-connexion-client');
     const emailConnexionInput = document.getElementById('email-connexion');
     const erreurConnexionDiv = document.getElementById('erreur-connexion');
+    const FOCUSABLE_SELECTORS = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    let dernierDeclencheurModale = null;
 
     // --- Variable d'état pour stocker les réservations chargées ---
     let toutesLesReservationsClient = [];
@@ -30,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gererAffichageInitial();
 
         if (btnFermerModale) {
-            btnFermerModale.addEventListener('click', () => modale?.classList.add('hidden'));
+            btnFermerModale.addEventListener('click', fermerModale);
         }
 
         if (formulaireConnexionClient) {
@@ -217,15 +220,19 @@ document.addEventListener('DOMContentLoaded', () => {
             contenuReservations.insertAdjacentHTML('beforeend', resaHtml);
         });
 
-        document.querySelectorAll('.btn-modifier-arrets').forEach(btn => btn.addEventListener('click', (e) => gererModificationArrets(e.target.closest('.reservation-item').dataset.id)));
-        document.querySelectorAll('.btn-deplacer').forEach(btn => btn.addEventListener('click', (e) => gererDeplacement(e.target.closest('.reservation-item').dataset.id)));
+        document.querySelectorAll('.btn-modifier-arrets').forEach(btn =>
+            btn.addEventListener('click', () => gererModificationArrets(btn.closest('.reservation-item').dataset.id, btn))
+        );
+        document.querySelectorAll('.btn-deplacer').forEach(btn =>
+            btn.addEventListener('click', () => gererDeplacement(btn.closest('.reservation-item').dataset.id, btn))
+        );
     }
 
     /**
      * Gère l'ouverture de la modale pour modifier les arrêts.
      * @param {string} idReservation L'ID de la réservation.
      */
-    function gererModificationArrets(idReservation) {
+    function gererModificationArrets(idReservation, declencheur) {
         const resa = toutesLesReservationsClient.find(r => r.id === idReservation);
         if (!resa || !contenuModale) return;
 
@@ -243,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button id="btn-valider-modif-arrets" class="btn btn-primaire">Valider</button>
             </div>
         `;
-        modale?.classList.remove('hidden');
+        ouvrirModale(declencheur);
 
         document.getElementById('btn-valider-modif-arrets').addEventListener('click', () => {
             const nouveauxArrets = document.getElementById('nouveaux-arrets').value;
@@ -255,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Gère l'ouverture de la modale pour déplacer une réservation.
      * @param {string} idReservation L'ID de la réservation.
      */
-    function gererDeplacement(idReservation) {
+    function gererDeplacement(idReservation, declencheur) {
         const resa = toutesLesReservationsClient.find(r => r.id === idReservation);
         if (!resa || !contenuModale) return;
 
@@ -271,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div id="grille-creneaux-deplacement" class="grille-creneaux"></div>
             </div>
         `;
-        modale?.classList.remove('hidden');
+        ouvrirModale(declencheur);
 
         const inputDate = document.getElementById('nouvelle-date');
         inputDate.addEventListener('change', () => chargerCreneauxDeplacement(idReservation, inputDate.value));
@@ -309,6 +316,41 @@ document.addEventListener('DOMContentLoaded', () => {
             .obtenirCreneauxDisponiblesPourDate(dateString, duree, resa.eventId);
     }
 
+    function ouvrirModale(declencheur) {
+        if (!MODAL_FOCUS_TRAP_ENABLED) {
+            modale?.classList.remove('hidden');
+            return;
+        }
+        dernierDeclencheurModale = declencheur || document.activeElement;
+        modale?.classList.remove('hidden');
+        const focusables = modale.querySelectorAll(FOCUSABLE_SELECTORS);
+        focusables[0]?.focus();
+        document.addEventListener('keydown', gererFocusModale);
+    }
+
+    function fermerModale() {
+        modale?.classList.add('hidden');
+        if (!MODAL_FOCUS_TRAP_ENABLED) return;
+        document.removeEventListener('keydown', gererFocusModale);
+        dernierDeclencheurModale?.focus();
+        dernierDeclencheurModale = null;
+    }
+
+    function gererFocusModale(e) {
+        if (e.key !== 'Tab') return;
+        const focusables = modale.querySelectorAll(FOCUSABLE_SELECTORS);
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    }
+
     /**
      * Valide et envoie la modification du nombre d'arrêts.
      * @param {string} idReservation L'ID de la réservation.
@@ -316,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function validerModificationArrets(idReservation, nouveauxArrets) {
         basculerIndicateurChargement(true);
-        modale?.classList.add('hidden');
+        fermerModale();
         google.script.run
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
@@ -338,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function validerDeplacement(idReservation, nouvelleDate, nouvelleHeure) {
         basculerIndicateurChargement(true);
-        modale?.classList.add('hidden');
+        fermerModale();
         google.script.run
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
