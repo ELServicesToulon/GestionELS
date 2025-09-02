@@ -589,6 +589,40 @@ function reparerEntetesFacturation() {
 // =================================================================
 
 /**
+ * Handler menu: resynchronise un événement après saisie de l'ID Réservation.
+ */
+function menuResynchroniserEvenement() {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.prompt('Resynchroniser événement', "ID Réservation à resynchroniser :", ui.ButtonSet.OK_CANCEL);
+  if (response.getSelectedButton() !== ui.Button.OK) return;
+  const idReservation = response.getResponseText().trim();
+  if (!idReservation) return;
+  try {
+    resynchroniserEvenement(idReservation);
+    ui.alert('Resynchronisation effectuée', `ID ${idReservation}`, ui.ButtonSet.OK);
+  } catch (e) {
+    ui.alert('Erreur', e.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Handler menu: purge l'Event ID introuvable après saisie de l'ID Réservation.
+ */
+function menuPurgerEventId() {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.prompt('Purger Event ID', "ID Réservation à purger :", ui.ButtonSet.OK_CANCEL);
+  if (response.getSelectedButton() !== ui.Button.OK) return;
+  const idReservation = response.getResponseText().trim();
+  if (!idReservation) return;
+  try {
+    purgerEventIdInexistant(idReservation);
+    ui.alert('Purge effectuée', `ID ${idReservation}`, ui.ButtonSet.OK);
+  } catch (e) {
+    ui.alert('Erreur', e.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
  * Resynchronise l'événement Calendar d'une réservation à partir des données de facturation.
  * @param {string} idReservation L'identifiant de la réservation à resynchroniser.
  */
