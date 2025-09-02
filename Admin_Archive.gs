@@ -14,8 +14,8 @@ function archiverFacturesDuMois() {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
     const feuille = ss.getSheetByName('Facturation');
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
-
-    const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0].map(v => String(v).trim());
+    const lastCol = feuille.getLastColumn();
+    const header = feuille.getRange(1, 1, 1, lastCol).getValues()[0].map(v => String(v).trim());
     const idx = {
       date: header.indexOf('Date'),
       numero: header.indexOf('N° Facture'),
@@ -32,7 +32,15 @@ function archiverFacturesDuMois() {
     const libMois = formaterDatePersonnalise(debutMoisPrecedent, "MMMM yyyy");
     const dossierMois = obtenirOuCreerDossier(dossierAnnee, libMois);
 
+    const nomFeuilleArchive = `Facturation_${formaterDatePersonnalise(debutMoisPrecedent, 'MMMM')}_${formaterDatePersonnalise(debutMoisPrecedent, 'yyyy')}`;
+    let feuilleArchive = ss.getSheetByName(nomFeuilleArchive);
+    if (!feuilleArchive) {
+      feuilleArchive = ss.insertSheet(nomFeuilleArchive);
+      feuille.getRange(1, 1, 1, lastCol).copyTo(feuilleArchive.getRange(1, 1));
+    }
+
     let deplaces = 0, ignores = 0, erreurs = 0;
+    const lignesAArchiver = [];
     for (let r = 1; r < donnees.length; r++) {
       const ligne = donnees[r];
       const valDate = ligne[idx.date];
@@ -53,12 +61,21 @@ function archiverFacturesDuMois() {
         if (!dejaBonDossier) {
           fichier.moveTo(dossierMois);
         }
-        if (idx.statut !== -1) feuille.getRange(r + 1, idx.statut + 1).setValue('Archivée');
+        const numLigneFeuille = r + 1;
+        if (idx.statut !== -1) feuille.getRange(numLigneFeuille, idx.statut + 1).setValue('Archivée');
+        lignesAArchiver.push(numLigneFeuille);
         deplaces++;
       } catch (e) {
         Logger.log('Erreur archivage facture ' + numero + ' : ' + e.message);
         erreurs++;
       }
+    }
+
+    for (let i = lignesAArchiver.length - 1; i >= 0; i--) {
+      const ligneSrc = lignesAArchiver[i];
+      const destRow = feuilleArchive.getLastRow() + 1;
+      feuille.getRange(ligneSrc, 1, 1, lastCol).copyTo(feuilleArchive.getRange(destRow, 1));
+      feuille.deleteRow(ligneSrc);
     }
 
     const msg = `Archivage (${libMois}) terminé. Déplacés: ${deplaces}, ignorés: ${ignores}, erreurs: ${erreurs}.`;
