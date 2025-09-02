@@ -22,8 +22,8 @@ function New-Form {
   $cmbProject.Size = New-Object System.Drawing.Size(250,22)
   $root = Get-Location
   $p2 = Join-Path $root.Path 'Projet2'
-  $cmbProject.Items.Add("Projet 1 (Racine)``t$($root.Path)") | Out-Null
-  if (Test-Path $p2) { $cmbProject.Items.Add("Projet 2 (Projet2)``t$($p2)") | Out-Null }
+  $cmbProject.Items.Add("Projet 1 (Racine)`t$($root.Path)") | Out-Null
+  if (Test-Path $p2) { $cmbProject.Items.Add("Projet 2 (Projet2)`t$($p2)") | Out-Null }
   $cmbProject.SelectedIndex = 0
   $form.Controls.Add($cmbProject)
 
