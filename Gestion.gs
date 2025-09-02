@@ -112,35 +112,38 @@ function obtenirReservationsClient(emailClient) {
  */
 function obtenirFacturesPourClient(emailClient) {
   try {
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName('Facturation');
-    if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
-    const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
-    const idx = {
-      date: header.indexOf('Date'),
-      email: header.indexOf('Client (Email)'),
-      numero: header.indexOf('N° Facture'),
-      idPdf: header.indexOf('ID PDF'),
-      montant: header.indexOf('Montant')
-    };
-    if (Object.values(idx).some(i => i === -1)) throw new Error("Colonnes requises absentes (Date, Client (Email), N° Facture, ID PDF, Montant).");
-
-    const now = new Date(0); // inclut tout l'historique
-    const data = feuille.getDataRange().getValues().slice(1);
+    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const feuilles = BILLING_MULTI_SHEET_ENABLED
+      ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
+      : [ss.getSheetByName('Facturation')];
+    if (!feuilles.length || feuilles.some(f => !f)) throw new Error("La feuille 'Facturation' est introuvable.");
     const factures = [];
-    data.forEach(row => {
-      try {
-        const email = String(row[idx.email] || '').trim().toLowerCase();
-        if (email !== String(emailClient || '').trim().toLowerCase()) return;
-        const numero = String(row[idx.numero] || '').trim();
-        const idPdf = String(row[idx.idPdf] || '').trim();
-        if (!numero || !idPdf) return;
-        const dateVal = new Date(row[idx.date]);
-        const montant = parseFloat(row[idx.montant]) || 0;
-        const url = DriveApp.getFileById(idPdf).getUrl();
-        factures.push({ numero: numero, dateISO: isNaN(dateVal) ? null : dateVal.toISOString(), montant: montant, url: url, idPdf: idPdf });
-      } catch (e) {
-        // ignore ligne invalide
-      }
+    feuilles.forEach(feuille => {
+      const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
+      const idx = {
+        date: header.indexOf('Date'),
+        email: header.indexOf('Client (Email)'),
+        numero: header.indexOf('N° Facture'),
+        idPdf: header.indexOf('ID PDF'),
+        montant: header.indexOf('Montant')
+      };
+      if (Object.values(idx).some(i => i === -1)) throw new Error("Colonnes requises absentes (Date, Client (Email), N° Facture, ID PDF, Montant).");
+      const data = feuille.getDataRange().getValues().slice(1);
+      data.forEach(row => {
+        try {
+          const email = String(row[idx.email] || '').trim().toLowerCase();
+          if (email !== String(emailClient || '').trim().toLowerCase()) return;
+          const numero = String(row[idx.numero] || '').trim();
+          const idPdf = String(row[idx.idPdf] || '').trim();
+          if (!numero || !idPdf) return;
+          const dateVal = new Date(row[idx.date]);
+          const montant = parseFloat(row[idx.montant]) || 0;
+          const url = DriveApp.getFileById(idPdf).getUrl();
+          factures.push({ numero: numero, dateISO: isNaN(dateVal) ? null : dateVal.toISOString(), montant: montant, url: url, idPdf: idPdf });
+        } catch (e) {
+          // ignore ligne invalide
+        }
+      });
     });
     factures.sort((a, b) => new Date(b.dateISO || 0) - new Date(a.dateISO || 0));
     return { success: true, factures: factures };
@@ -159,18 +162,25 @@ function envoyerFactureClient(emailClient, numeroFacture) {
   try {
     if (!emailClient || !numeroFacture) throw new Error('Paramètres manquants.');
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    const feuille = ss.getSheetByName('Facturation');
-    if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
-    const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
-    const idx = {
-      email: header.indexOf('Client (Email)'),
-      numero: header.indexOf('N° Facture'),
-      idPdf: header.indexOf('ID PDF'),
-      montant: header.indexOf('Montant')
-    };
-    if (Object.values(idx).some(i => i === -1)) throw new Error("Colonnes requises absentes (Client (Email), N° Facture, ID PDF, Montant).");
-    const rows = feuille.getDataRange().getValues().slice(1);
-    const row = rows.find(r => String(r[idx.numero]).trim() === String(numeroFacture).trim() && String(r[idx.email]).trim().toLowerCase() === String(emailClient).trim().toLowerCase());
+    const feuilles = BILLING_MULTI_SHEET_ENABLED
+      ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
+      : [ss.getSheetByName('Facturation')];
+    if (!feuilles.length || feuilles.some(f => !f)) throw new Error("La feuille 'Facturation' est introuvable.");
+    let row = null;
+    let idx = null;
+    for (const feuille of feuilles) {
+      const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
+      idx = {
+        email: header.indexOf('Client (Email)'),
+        numero: header.indexOf('N° Facture'),
+        idPdf: header.indexOf('ID PDF'),
+        montant: header.indexOf('Montant')
+      };
+      if (Object.values(idx).some(i => i === -1)) throw new Error("Colonnes requises absentes (Client (Email), N° Facture, ID PDF, Montant).");
+      const rows = feuille.getDataRange().getValues().slice(1);
+      row = rows.find(r => String(r[idx.numero]).trim() === String(numeroFacture).trim() && String(r[idx.email]).trim().toLowerCase() === String(emailClient).trim().toLowerCase());
+      if (row) break;
+    }
     if (!row) throw new Error('Facture introuvable pour ce client.');
     const idPdf = String(row[idx.idPdf] || '').trim();
     if (!idPdf) throw new Error('Aucun fichier PDF associé à cette facture.');

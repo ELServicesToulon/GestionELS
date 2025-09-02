@@ -11,6 +11,9 @@ See `AGENTS.md` for project structure, coding style, testing steps, and the pull
 - `clasp open`: Open the Apps Script project in the browser.
 - `clasp push -f`: Push local code to Apps Script (force overwrite).
 
+## Tests Manuels
+- Déplacer une facture vers `Facturation_Aout_2025` puis vérifier qu'elle reste visible et envoyable depuis l'espace client.
+
 ## Resynchronisation du calendrier
 Lorsqu'un événement est supprimé manuellement dans Google Calendar, la ligne correspondante de "Facturation" conserve l'ID Réservation mais l'`Event ID` devient invalide.
 
