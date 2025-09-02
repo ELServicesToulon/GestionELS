@@ -11,6 +11,17 @@ See `AGENTS.md` for project structure, coding style, testing steps, and the pull
 - `clasp open`: Open the Apps Script project in the browser.
 - `clasp push -f`: Push local code to Apps Script (force overwrite).
 
+## Clasp Version
+Le projet utilise `@google/clasp` version `2.5.0` en local comme en CI.
+
+- Installation locale : `npm install -g @google/clasp@2.5.0`.
+- Le workflow GitHub Actions (`.github/workflows/clasp.yml`) installe la même version.
+
+### Mettre à jour
+1. Modifier `.github/workflows/clasp.yml` avec la nouvelle version.
+2. Exécuter `npm install -g @google/clasp@<nouvelle_version>` sur chaque poste.
+3. Mettre à jour cette section du README.
+
 ## CI/CD
  Le dépôt fournit un workflow GitHub Actions (`.github/workflows/clasp.yml`) qui exécute `clasp push -f` à l'aide des secrets `CLASP_CREDENTIALS` et `CLASP_SCRIPT_ID`.
 
