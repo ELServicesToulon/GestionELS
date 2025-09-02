@@ -58,7 +58,7 @@ function afficherPanier() {
   ui.listePanier.innerHTML = panier.map(item => {
     const date = new Date(item.date + 'T00:00:00');
     const dateFormatee = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-    const recurrenceInfo = item.isRecurrent ? '<small style="color: #6a0dad; display: block;">(Récurrence mensuelle)</small>' : '';
+    const recurrenceInfo = item.isRecurrent ? '<small style="color: var(--couleur-recurrence, #ccc); display: block;">(Récurrence mensuelle)</small>' : '';
     
     return `
       <li class="item-panier" data-id-item="${item.id}">
