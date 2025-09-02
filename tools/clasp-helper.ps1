@@ -188,7 +188,13 @@ function Run-Clasp($spec){
       return $output
     }
     switch ($action) {
-      'Push'     { Invoke-Clasp @('push',$(if ($force) { '-f' })) | Out-Null }
+      'Push'     {
+        if ($force) {
+          Invoke-Clasp 'push' '-f' | Out-Null
+        } else {
+          Invoke-Clasp 'push' | Out-Null
+        }
+      }
       'Pull'     { Invoke-Clasp 'setting' 'fileExtension' 'gs' | Out-Null; Invoke-Clasp 'pull' | Out-Null }
       'Version'  { Invoke-Clasp 'version' $verName | Out-Null }
       'Open'     { Invoke-Clasp 'open' | Out-Null }
