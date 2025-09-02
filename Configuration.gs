@@ -7,11 +7,8 @@
 
 // --- Informations sur l'entreprise ---
 const NOM_ENTREPRISE = "EL Services";
-const ADRESSE_ENTREPRISE = "255 Avenue Marcel Castie B, 83000 Toulon";
 const EMAIL_ENTREPRISE = "elservicestoulon@gmail.com";
 const SIRET = "48091306000020";
-const RIB_ENTREPRISE = "FR7640618804760004035757187";
-const BIC_ENTREPRISE = "BOUSFRPPXXX";
 const ADMIN_EMAIL = "elservicestoulon@gmail.com";
 
 // --- Paramètres de facturation ---
@@ -74,5 +71,12 @@ const TARIFS = {
 const COLONNE_TYPE_REMISE_CLIENT = "Type de Remise";
 const COLONNE_VALEUR_REMISE_CLIENT = "Valeur Remise";
 const COLONNE_NB_TOURNEES_OFFERTES = "Nombre Tournées Offertes";
+
+function initScriptProperties() {
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty('ADRESSE_ENTREPRISE', '255 Avenue Marcel Castie B, 83000 Toulon');
+  props.setProperty('RIB_ENTREPRISE', 'FR7640618804760004035757187');
+  props.setProperty('BIC_ENTREPRISE', 'BOUSFRPPXXX');
+}
 
 
