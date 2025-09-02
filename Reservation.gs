@@ -58,8 +58,9 @@ function reserverPanier(donneesReservation) {
  * Crée une réservation unique.
  * @returns {Object|null} L'objet de la réservation réussie ou null si échec.
  */
-function creerReservationUnique(item, client, clientPourCalcul) {
+function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
     const { date, startTime, totalStops, returnToPharmacy } = item;
+    const { overrideIdReservation = null, skipFacturation = false } = options;
     const infosTournee = calculerInfosTourneeBase(totalStops, returnToPharmacy, date, startTime);
     const duree = infosTournee.duree;
     const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(date, duree);
@@ -72,19 +73,21 @@ function creerReservationUnique(item, client, clientPourCalcul) {
     const [annee, mois, jour] = date.split('-').map(Number);
     const dateDebut = new Date(annee, mois - 1, jour, heure, minute);
     const dateFin = new Date(dateDebut.getTime() + duree * 60000);
-    const idReservation = 'RESA-' + new Date().getTime() + '-' + Math.random().toString(36).substr(2, 9);
-    
+    const idReservation = overrideIdReservation || 'RESA-' + new Date().getTime() + '-' + Math.random().toString(36).substr(2, 9);
+
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${client.nom}`;
     const descriptionEvenement = `Client: ${client.nom} (${client.email})\nID Réservation: ${idReservation}\nDétails: ${infosTournee.details}\nNote: ${client.note || ''}`;
     const evenement = CalendarApp.getCalendarById(ID_CALENDRIER).createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
 
     if (evenement) {
         const infosPrixFinal = calculerPrixEtDureeServeur(totalStops, returnToPharmacy, date, startTime, clientPourCalcul);
-        enregistrerReservationPourFacturation(dateDebut, client.nom, client.email, infosTournee.typeCourse, infosTournee.details, infosPrixFinal.prix, evenement.getId(), idReservation, client.note, infosPrixFinal.tourneeOfferteAppliquee, clientPourCalcul.typeRemise, clientPourCalcul.valeurRemise);
+        if (!skipFacturation) {
+          enregistrerReservationPourFacturation(dateDebut, client.nom, client.email, infosTournee.typeCourse, infosTournee.details, infosPrixFinal.prix, evenement.getId(), idReservation, client.note, infosPrixFinal.tourneeOfferteAppliquee, clientPourCalcul.typeRemise, clientPourCalcul.valeurRemise);
+        }
         if (infosPrixFinal.tourneeOfferteAppliquee) {
           decrementerTourneesOffertesClient(client.email);
         }
-        return { date: formaterDateEnFrancais(dateDebut), time: startTime, price: infosPrixFinal.prix };
+        return { date: formaterDateEnFrancais(dateDebut), time: startTime, price: infosPrixFinal.prix, eventId: evenement.getId(), reservationId: idReservation };
     }
     return null;
 }
