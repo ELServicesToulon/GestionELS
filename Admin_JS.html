@@ -5,6 +5,8 @@
  * =================================================================
  */
 
+const ADMIN_HIDE_ARCHIVED_ENABLED = <?!= ADMIN_HIDE_ARCHIVED_ENABLED ? 'true' : 'false' ?>;
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Références aux éléments du DOM ---
     const indicateurChargement = document.getElementById('indicateur-chargement');
@@ -144,6 +146,9 @@ document.addEventListener('DOMContentLoaded', () => {
      * Affiche les réservations.
      */
     function afficherReservations(reservations, montrerDate = false) {
+        if (ADMIN_HIDE_ARCHIVED_ENABLED) {
+            reservations = reservations.filter(r => r.statut !== 'Archivée');
+        }
         if (!contenuReservations) return;
         if (reservations.length === 0) {
             contenuReservations.innerHTML = '<p>Aucune course à afficher.</p>';
