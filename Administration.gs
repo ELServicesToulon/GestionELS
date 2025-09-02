@@ -480,7 +480,7 @@ function genererFactures() {
         const corps = doc.getBody();
 
         corps.replaceText('{{nom_entreprise}}', NOM_ENTREPRISE);
-        corps.replaceText('{{adresse_entreprise}}', PropertiesService.getScriptProperties().getProperty('ADRESSE_ENTREPRISE'));
+        corps.replaceText('{{adresse_entreprise}}', ADRESSE_ENTREPRISE);
         corps.replaceText('{{siret}}', SIRET);
         corps.replaceText('{{email_entreprise}}', EMAIL_ENTREPRISE);
         corps.replaceText('{{client_nom}}', clientInfos.nom);
@@ -494,8 +494,8 @@ function genererFactures() {
         corps.replaceText('{{montant_tva}}', tva.toFixed(2));
         corps.replaceText('{{total_ttc}}', totalTTC.toFixed(2));
         corps.replaceText('{{date_echeance}}', formaterDatePersonnalise(dateEcheance, 'dd/MM/yyyy'));
-        corps.replaceText('{{rib_entreprise}}', PropertiesService.getScriptProperties().getProperty('RIB_ENTREPRISE'));
-        corps.replaceText('{{bic_entreprise}}', PropertiesService.getScriptProperties().getProperty('BIC_ENTREPRISE'));
+        corps.replaceText('{{rib_entreprise}}', RIB_ENTREPRISE);
+        corps.replaceText('{{bic_entreprise}}', BIC_ENTREPRISE);
         
         const tableBordereau = trouverTableBordereau(corps);
         if (tableBordereau) {
