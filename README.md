@@ -11,6 +11,14 @@ See `AGENTS.md` for project structure, coding style, testing steps, and the pull
 - `clasp open`: Open the Apps Script project in the browser.
 - `clasp push -f`: Push local code to Apps Script (force overwrite).
 
+## CI/CD
+Le dépôt fournit un workflow GitHub Actions (`.github/workflows/clasp.yml`) qui exécute `clasp push -f` à l'aide de secrets `CLASP_CREDENTIALS` et `GAS_SCRIPT_ID`.
+
+### Reprise manuelle
+1. Exécuter `./clasp-helper.cmd` puis choisir **Push**, ou se connecter via `npx @google/clasp login --creds <fichier>`.
+2. Lancer `npx @google/clasp push -f`.
+3. En cas de conflit, exécuter `npx @google/clasp pull` avant de retenter.
+
 ## Sélecteur de thème
 1. Activer `THEME_SELECTION_ENABLED` dans `Configuration.gs`.
 2. `clasp push -f` puis créer une nouvelle version pour déploiement.

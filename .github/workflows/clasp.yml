@@ -1,0 +1,30 @@
+name: Clasp Push
+
+on:
+  workflow_dispatch:
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Clasp
+        run: npm install -g @google/clasp
+      - name: Authenticate and Push
+        env:
+          CLASP_CREDENTIALS: ${{ secrets.CLASP_CREDENTIALS }}
+          GAS_SCRIPT_ID: ${{ secrets.GAS_SCRIPT_ID }}
+        run: |
+          printf '%s' "$CLASP_CREDENTIALS" > creds.json
+          clasp login --creds creds.json
+          cat <<EOF > .clasp.json
+          {
+            "scriptId": "$GAS_SCRIPT_ID",
+            "rootDir": "./",
+            "fileExtension": "gs"
+          }
+          EOF
+          clasp push -f
