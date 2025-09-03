@@ -23,7 +23,7 @@ function onOpen() {
       .addItem("Vérifier structure des feuilles", "menuVerifierStructureFeuilles")
       .addItem("Purger les anciennes données (RGPD)", "purgerAnciennesDonnees");
 
-      ==
+     
   const sousMenuDebug = ui.createMenu('Debug')
       .addItem("Lancer tous les tests", "lancerTousLesTests")
       .addItem("Tester audit Drive", "testerAuditDrive");
