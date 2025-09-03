@@ -19,7 +19,8 @@ Margins & Spacing
 - Calendar cells spacing mirrors pilulier compartments; prefer consistent grid gaps.
 
 Logo Usage
-- Preferred: `branding/assets/logo-complet.svg` on light; `logo-complet-blanc.svg` on imagery or gradients.
+- Current source: inline SVG in `Logo.html`; `branding/assets/logo-complet.svg` and `logo-complet-blanc.svg` are not tracked yet.
+- When provided, prefer `branding/assets/logo-complet.svg` on light and `logo-complet-blanc.svg` on imagery or gradients.
 - Clear space: ≥ `--els-space-6` around the logo; avoid placing over busy textures.
 - Do not recolor the ELS gradient; reserve red strictly for error/urgent.
 

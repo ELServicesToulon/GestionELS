@@ -25,7 +25,7 @@ function calculerCAEnCours() {
     return null;
   }
 
-  const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName("Facturation");
+  const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
   if (!feuille) return null;
 
   const indices = obtenirIndicesEnTetes(feuille, ["Date", "Montant"]);
@@ -57,7 +57,7 @@ function obtenirToutesReservationsAdmin() {
       return { success: false, error: "Accès non autorisé." };
     }
 
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName("Facturation");
+    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const enTetesRequis = ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant", "Type Remise Appliquée", "Valeur Remise Appliquée", "Tournée Offerte Appliquée", "Statut"];
@@ -151,7 +151,7 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
       return { success: false, error: "Accès non autorisé." };
     }
 
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName("Facturation");
+    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const enTetesRequis = ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant", "Type Remise Appliquée", "Valeur Remise Appliquée", "Tournée Offerte Appliquée", "Statut"];
@@ -250,7 +250,7 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
  */
 function obtenirTousLesClients() {
     try {
-        const feuilleClients = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName("Clients");
+        const feuilleClients = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_CLIENTS);
         if (!feuilleClients) return [];
         const indices = obtenirIndicesEnTetes(feuilleClients, ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES]);
         const donnees = feuilleClients.getDataRange().getValues();
@@ -381,7 +381,7 @@ function supprimerReservation(idReservation) {
       return { success: false, error: "Accès non autorisé." };
     }
 
-    const feuilleFacturation = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName("Facturation");
+    const feuilleFacturation = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
     if (!feuilleFacturation) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const enTete = feuilleFacturation.getRange(1, 1, 1, feuilleFacturation.getLastColumn()).getValues()[0];
@@ -434,9 +434,9 @@ function genererFactures() {
     logAdminAction("Génération Factures", "Démarrée");
 
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    const feuilleFacturation = ss.getSheetByName("Facturation");
-    const feuilleClients = ss.getSheetByName("Clients");
-    const feuilleParams = ss.getSheetByName("Paramètres");
+    const feuilleFacturation = ss.getSheetByName(SHEET_FACTURATION);
+    const feuilleClients = ss.getSheetByName(SHEET_CLIENTS);
+    const feuilleParams = ss.getSheetByName(SHEET_PARAMETRES);
 
     if (!feuilleFacturation || !feuilleClients || !feuilleParams) {
       throw new Error("Une des feuilles requises ('Facturation', 'Clients', 'Paramètres') est introuvable.");
@@ -610,7 +610,7 @@ function envoyerFacturesControlees() {
   const ui = SpreadsheetApp.getUi();
   try {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    const feuille = ss.getSheetByName('Facturation');
+    const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const lastCol = feuille.getLastColumn();
@@ -643,7 +643,7 @@ function archiverFacturesDuMois() {
     const finMoisPrecedent = new Date(debutMoisCourant.getTime() - 24 * 60 * 60 * 1000);
 
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    const feuille = ss.getSheetByName('Facturation');
+    const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0].map(v => String(v).trim());
