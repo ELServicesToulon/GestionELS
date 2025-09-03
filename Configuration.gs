@@ -158,29 +158,32 @@ const THEMES = {
 // =================================================================
 // SYSTÈME DE TARIFICATION FLEXIBLE - SOURCE UNIQUE DE VÉRITÉ
 // =================================================================
-// Pilotez tous les tarifs depuis cet objet.
-// 'base': Prix pour le premier arrêt (la prise en charge).
-// 'arrets': Un tableau des prix pour les arrêts suivants.
-//           Le dernier prix s'applique à tous les arrêts au-delà.
+// TARIFS schema:
+// {
+//   'Type': {        // ex: 'Normal', 'Samedi', 'Urgent', 'Special'
+//     base: number,  // Prix du premier arrêt (prise en charge)
+//     arrets: number[] // Tarifs des arrêts suivants; le dernier s'applique au-delà
+//   }
+// }
 // Grille tarifaire (Normal): 1=15€, 2=20€, 3=23€, 4=27€, 5=32€, 6 et + = 37€
 /**
  * @const {Object<string,{base:number, arrets:number[]}>}
  * Grille tarifaire unique pilotant tous les calculs de prix.
  */
 const TARIFS = {
-  'Normal': {
+  'Normal': { // Tarifs standard du lundi au vendredi
     base: 15,
     arrets: [5, 4, 3, 4, 5] // Prix pour Arrêt 2, 3, 4, 5, et 6+
   },
-  'Samedi': {
+  'Samedi': { // Livraisons effectuées le samedi
     base: 25,
     arrets: [5, 4, 3, 4, 5]
   },
-  'Urgent': {
+  'Urgent': { // Réservations dans le délai URGENT_THRESHOLD_MINUTES
     base: 20,
     arrets: [5, 4, 3, 4, 5]
   },
-  'Special': { // Vous pouvez ajouter autant de types que vous voulez
+  'Special': { // Cas particuliers ou tarifs temporaires
     base: 30,
     arrets: [5, 4, 3, 4, 5]
   }
