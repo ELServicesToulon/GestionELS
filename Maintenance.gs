@@ -6,8 +6,7 @@
 // =================================================================
 
 // --- Constantes de Rétention (RGPD) ---
-const ANNEES_RETENTION_FACTURES = 5; // Durée de conservation légale des factures
-const MOIS_RETENTION_LOGS = 12;      // Durée de conservation des logs d'activité
+// Définies dans Configuration.gs : ANNEES_RETENTION_FACTURES, MOIS_RETENTION_LOGS
 
 // =================================================================
 //                      1. JOURNALISATION (LOGGING)
