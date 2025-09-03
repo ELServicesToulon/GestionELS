@@ -66,7 +66,8 @@ function doGet(e) {
         switch (e.parameter.page) {
             case 'admin':
                 const adminEmail = Session.getActiveUser().getEmail();
-                if (adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                if (adminEmail && adminEmail.toLowerCase() 
+                ADMIN_EMAIL.toLowerCase()) {
                     const template = HtmlService.createTemplateFromFile('Admin_Interface');
                     return template.evaluate().setTitle("Tableau de Bord Administrateur").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
                 } else {
