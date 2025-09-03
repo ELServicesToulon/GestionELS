@@ -59,8 +59,10 @@
       <div class="filters">
         <button class="chip active" data-filter="week">Semaine</button>
         <button class="chip" data-filter="month">Tout le mois</button>
-        <button class="chip" data-filter="am">Matin</button>
-        <button class="chip" data-filter="pm">Après-midi</button>
+        <? if (SLOTS_AMPM_ENABLED) { ?>
+          <button class="chip" data-filter="am">Matin</button>
+          <button class="chip" data-filter="pm">Après-midi</button>
+        <? } ?>
       </div>
     </section>
 

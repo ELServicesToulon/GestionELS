@@ -32,8 +32,14 @@
     });
   }
 
-  function setupFilters(){
+  function setupFilters(cfg){
+    const ampmEnabled = cfg && cfg.slotsAmpmEnabled;
     $$('#app .chip').forEach(btn=>{
+      const filter = btn.dataset.filter;
+      if (!ampmEnabled && (filter === 'am' || filter === 'pm')) {
+        btn.remove();
+        return;
+      }
       btn.addEventListener('click', e=>{
         $$('#app .chip').forEach(c=>c.classList.remove('active'));
         btn.classList.add('active');
@@ -48,5 +54,5 @@
   });
 
   mountCalendar(demoWeek);
-  setupFilters();
+  google.script.run.withSuccessHandler(setupFilters).getConfiguration();
 })();
