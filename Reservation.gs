@@ -325,7 +325,7 @@ function trouverAlternativeProche(creneauCible, creneauxDisponibles) {
  * Récupère toutes les réservations pour un email client (et optionnellement une date).
  */
 function obtenirReservationsPourClient(email, date) {
-  var sheet = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName('Facturation');
+  var sheet = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
   var data = sheet.getDataRange().getValues();
   var headers = data[0];
   var emailIndex = headers.indexOf("Client (Email)");
