@@ -321,39 +321,6 @@ function trouverAlternativeProche(creneauCible, creneauxDisponibles) {
   return meilleureAlternative;
 }
 
-/**
- * Récupère toutes les réservations pour un email client (et optionnellement une date).
- */
-function obtenirReservationsPourClient(email, date) {
-  var sheet = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName('Facturation');
-  var data = sheet.getDataRange().getValues();
-  var headers = data[0];
-  var emailIndex = headers.indexOf("Client (Email)");
-  var dateIndex = headers.indexOf("Date");
-  var statutIndex = headers.indexOf("Statut");
-  var reservations = [];
-  var now = new Date();
-  for (var i = 1; i < data.length; i++) {
-    var row = data[i];
-    var resDate = new Date(row[dateIndex]);
-    var clientEmail = (row[emailIndex] || '').toString().trim().toLowerCase();
-    var statut = row[statutIndex];
-    var matchEmail = email ? clientEmail === email.trim().toLowerCase() : true;
-    var matchStatut = statut === "Confirmée";
-    var matchDate = true;
-    if (date) {
-      var resDay = Utilities.formatDate(resDate, Session.getScriptTimeZone(), "dd/MM/yyyy");
-      var paramDay = Utilities.formatDate(new Date(date), Session.getScriptTimeZone(), "dd/MM/yyyy");
-      matchDate = resDay === paramDay;
-    } else {
-      matchDate = resDate >= now;
-    }
-    if (matchEmail && matchStatut && matchDate) {
-      reservations.push(row);
-    }
-  }
-  return reservations;
-}
 
 
 
