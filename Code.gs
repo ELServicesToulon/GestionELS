@@ -89,7 +89,7 @@ function doGet(e) {
 
     // Page par défaut : Interface de réservation
     if (DEMO_RESERVATION_ENABLED) {
-      return HtmlService.createHtmlOutputFromFile('Reservation_Demo')
+      return HtmlService.createHtmlOutputFromFile('examples/Reservation_Demo')
           .setTitle(NOM_ENTREPRISE + " | Réservation (Démo)")
           .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
     }
