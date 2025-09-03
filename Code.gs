@@ -15,8 +15,7 @@ function onOpen() {
       .addItem('Envoyer les factures contrôlées', 'envoyerFacturesControlees')
       .addItem("Archiver les factures du mois dernier", "archiverFacturesDuMois")
       .addSeparator()
-      .addItem("Vérifier la cohérence du calendrier", "verifierCoherenceCalendrier")
-      .addItem("Lancer un audit des partages Drive", "lancerAuditDrive");
+      .addItem("Vérifier la cohérence du calendrier", "verifierCoherenceCalendrier");
 
   const sousMenuMaintenance = ui.createMenu('Maintenance')
       .addItem("Sauvegarder le code du projet", "sauvegarderCodeProjet")
@@ -25,7 +24,8 @@ function onOpen() {
       .addItem("Purger les anciennes données (RGPD)", "purgerAnciennesDonnees");
       
   const sousMenuDebug = ui.createMenu('Debug')
-      .addItem("Lancer tous les tests", "lancerTousLesTests");
+      .addItem("Lancer tous les tests", "lancerTousLesTests")
+      .addItem("Tester audit Drive", "testerAuditDrive");
 
   sousMenuMaintenance.addItem("Nettoyer l'onglet Facturation", "nettoyerOngletFacturation");
   sousMenuMaintenance.addItem("Reparer entetes Facturation", "reparerEntetesFacturation");

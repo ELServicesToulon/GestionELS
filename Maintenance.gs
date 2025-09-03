@@ -828,3 +828,12 @@ function verifierCoherenceCalendrier() {
     ui.alert("Erreur Critique", `L'audit a échoué : ${e.message}`, ui.ButtonSet.OK);
   }
 }
+
+/**
+ * Audit basique des partages Drive (stub).
+ * Affiche un message indiquant que la fonctionnalité n'est pas encore disponible.
+ */
+function lancerAuditDrive() {
+  const ui = SpreadsheetApp.getUi();
+  ui.alert('Audit Drive', 'Fonctionnalité non implémentée.', ui.ButtonSet.OK);
+}
