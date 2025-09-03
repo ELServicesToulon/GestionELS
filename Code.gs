@@ -40,17 +40,6 @@ function onOpen() {
 }
 
 /**
- * Journalise la requête entrante.
- * @param {Object} e L'objet d'événement de la requête.
- */
-function logRequest(e) {
-  const dateIso = new Date().toISOString();
-  const route = e && e.parameter && e.parameter.page ? e.parameter.page : '';
-  const ua = e && e.headers ? e.headers['User-Agent'] : '';
-  Logger.log(`[Request] ${dateIso} route=${route} ua=${ua}`);
-}
-
-/**
  * S'exécute lorsqu'un utilisateur accède à l'URL de l'application web.
  * Fait office de routeur pour afficher la bonne page.
  * @param {Object} e L'objet d'événement de la requête.
@@ -135,34 +124,10 @@ function doGet(e) {
 }
 
 /**
- * Permet d'inclure des fichiers (CSS, JS) dans les templates HTML.
- * @param {string} nomFichier Le nom du fichier à inclure.
- * @returns {string} Le contenu du fichier.
+ * Stub pour futures requêtes POST.
+ * @param {Object} e L'objet d'événement de la requête.
  */
-function include(nomFichier) {
-  return HtmlService.createHtmlOutputFromFile(nomFichier).getContent();
-}
-
-function getUserTheme() {
-  return PropertiesService.getUserProperties().getProperty('theme') || THEME_DEFAULT;
-}
-
-function setUserTheme(theme) {
-  if (THEMES[theme]) {
-    PropertiesService.getUserProperties().setProperty('theme', theme);
-  }
-}
-
-/**
- * Retourne les flags d'activation pour le client.
- * @returns {Object} Flags configurables depuis Configuration.gs.
- */
-function getConfiguration() {
-  return {
-    slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
-    themeV2Enabled: THEME_V2_ENABLED,
-    billingV2Dryrun: BILLING_V2_DRYRUN,
-    privacyLinkEnabled: PRIVACY_LINK_ENABLED
-  };
+function doPost(e) {
+  // À implémenter
 }
 
