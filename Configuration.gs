@@ -124,7 +124,7 @@ const CA_EN_COURS_ENABLED = true;
 
 
 const DEMO_RESERVATION_ENABLED = false; // Mettre à true pour servir examples/Reservation_Demo.html à la place de l'interface principale
-=======
+
 /** @const {boolean} Désactivé par défaut. Sert une version légère de la page de réservation pour démonstration. */
 const DEMO_RESERVATION_ENABLED = false;
 
@@ -211,7 +211,7 @@ const TARIFS = {
     arrets: [5, 4, 3, 4, 5]
   }
 };
-// =================================================================
+
 
 // --- Noms des colonnes spécifiques ---
 /** @const {string} Nom de la colonne indiquant le type de remise appliqué. */
