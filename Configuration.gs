@@ -58,6 +58,8 @@ const BILLING_V2_DRYRUN = false; // Mode test pour la facturation V2 (aucune éc
 const REQUEST_LOGGING_ENABLED = false; // Active la journalisation des requêtes
 const POST_ENDPOINT_ENABLED = false; // Active le traitement des requêtes POST
 
+const CLIENT_PORTAL_ENABLED = false; // Active l'espace client
+
 const PRIVACY_LINK_ENABLED = false; // Affiche le lien Infos & confidentialité
 
 const THEME_SELECTION_ENABLED = true; // Active le choix de thème côté client

@@ -41,7 +41,9 @@
             Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
             <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
         </div>
+        <? if (CLIENT_PORTAL_ENABLED) { ?>
         <a href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-espace-client">Mon Espace Client</a>
+        <? } ?>
     </header>
 
     <section id="hero-tarifs" class="hero-tarifs">
