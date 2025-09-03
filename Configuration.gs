@@ -56,6 +56,7 @@ const SLOTS_AMPM_ENABLED = false; // Sépare les créneaux matin/après-midi
 const THEME_V2_ENABLED = false; // Active la nouvelle version du thème
 const BILLING_V2_DRYRUN = false; // Mode test pour la facturation V2 (aucune écriture)
 const REQUEST_LOGGING_ENABLED = false; // Active la journalisation des requêtes
+const POST_ENDPOINT_ENABLED = false; // Active le traitement des requêtes POST
 
 const PRIVACY_LINK_ENABLED = false; // Affiche le lien Infos & confidentialité
 

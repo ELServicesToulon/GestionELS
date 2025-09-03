@@ -124,10 +124,53 @@ function doGet(e) {
 }
 
 /**
- * Stub pour futures requêtes POST.
+ * Gère les requêtes POST entrantes.
+ * Parse les données et route vers la logique appropriée.
  * @param {Object} e L'objet d'événement de la requête.
+ * @returns {HtmlOutput|TextOutput} Réponse HTML ou JSON.
  */
 function doPost(e) {
-  // À implémenter
+  try {
+    if (REQUEST_LOGGING_ENABLED) {
+      logRequest(e);
+    }
+
+    if (!POST_ENDPOINT_ENABLED) {
+      return ContentService.createTextOutput(JSON.stringify({
+        erreur: 'POST désactivé'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var payload = {};
+    if (e && e.postData && e.postData.contents) {
+      if (e.postData.type === 'application/json') {
+        payload = JSON.parse(e.postData.contents);
+      } else {
+        payload = e.parameter;
+      }
+    }
+
+    e.parameter = Object.assign({}, e.parameter, payload);
+
+    if (payload.action) {
+      switch (payload.action) {
+        case 'getConfiguration':
+          return ContentService.createTextOutput(JSON.stringify(getConfiguration()))
+              .setMimeType(ContentService.MimeType.JSON);
+        default:
+          return ContentService.createTextOutput(JSON.stringify({
+            erreur: 'Action inconnue'
+          })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    return doGet(e);
+
+  } catch (error) {
+    Logger.log(`Erreur critique dans doPost: ${error.stack}`);
+    return ContentService.createTextOutput(JSON.stringify({
+      erreur: error.message
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
