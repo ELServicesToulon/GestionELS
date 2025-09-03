@@ -19,6 +19,10 @@ const TVA_APPLICABLE = false;
 const TAUX_TVA = 0.20; // 20%
 const DELAI_PAIEMENT_JOURS = 5;
 
+// --- Paramètres de rétention des données ---
+const ANNEES_RETENTION_FACTURES = 5; // Durée de conservation légale des factures (années)
+const MOIS_RETENTION_LOGS = 12;      // Durée de conservation des logs d'activité (mois)
+
 // --- Identifiants des services Google ---
 const ID_CALENDRIER = "Elservicestoulon@gmail.com";
 const ID_DOCUMENT_CGV = "1ze9U3k_tcS-RlhIcI8zSs2OYom2miVy8WxyxT8ktFp0";
@@ -111,7 +115,9 @@ function getConfig() {
     URGENT_THRESHOLD_MINUTES: URGENT_THRESHOLD_MINUTES,
     HEURE_DEBUT_SERVICE: HEURE_DEBUT_SERVICE,
     HEURE_FIN_SERVICE: HEURE_FIN_SERVICE,
-    TVA_APPLICABLE: typeof TVA_APPLICABLE !== 'undefined' ? TVA_APPLICABLE : false
+    TVA_APPLICABLE: typeof TVA_APPLICABLE !== 'undefined' ? TVA_APPLICABLE : false,
+    ANNEES_RETENTION_FACTURES: ANNEES_RETENTION_FACTURES,
+    MOIS_RETENTION_LOGS: MOIS_RETENTION_LOGS
   };
 }
 
