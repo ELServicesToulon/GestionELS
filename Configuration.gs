@@ -60,7 +60,7 @@ const POST_ENDPOINT_ENABLED = false; // Active le traitement des requêtes POST
 
 const PRIVACY_LINK_ENABLED = false; // Affiche le lien Infos & confidentialité
 
-const THEME_SELECTION_ENABLED = true; // Active le choix de thème côté client
+const THEME_SELECTION_ENABLED = false; // Active le choix de thème côté client
 const THEME_DEFAULT = 'nocturne';
 const THEMES = {
   clarte: 'branding/Theme_Clarte_CSS',

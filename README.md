@@ -34,7 +34,7 @@ Le projet utilise `@google/clasp` version `2.5.0` en local comme en CI.
 3. En cas de conflit, exécuter `npx @google/clasp pull` avant de retenter.
 
 ## Sélecteur de thème
-1. Activer `THEME_SELECTION_ENABLED` dans `Configuration.gs`.
+1. Activer `THEME_SELECTION_ENABLED` dans `Configuration.gs` (désactivé par défaut).
 2. `clasp push -f` puis créer une nouvelle version pour déploiement.
 3. Pour rollback, remettre le flag à `false` et redéployer la version précédente.
 
