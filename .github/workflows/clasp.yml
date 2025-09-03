@@ -11,22 +11,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install Clasp
-        run: npm install -g @google/clasp@2.5.0
-      - name: Authenticate and Push
+      - run: npm ci
+      - name: Authenticate
         env:
           GCP_OAUTH_CREDS: ${{ secrets.GCP_OAUTH_CREDS }}
-          CLASP_SCRIPT_ID: ${{ secrets.CLASP_SCRIPT_ID }}
         run: |
           printf '%s' "$GCP_OAUTH_CREDS" > "$RUNNER_TEMP/creds.json"
-          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/creds.json"
-          clasp login --creds "$GOOGLE_APPLICATION_CREDENTIALS"
-          cat <<EOF > .clasp.json
-          {
-            "scriptId": "$CLASP_SCRIPT_ID",
-            "rootDir": "./",
-            "fileExtension": "gs"
-          }
-          EOF
-          clasp push -f
-          rm -f "$GOOGLE_APPLICATION_CREDENTIALS" .clasp.json
+          npx clasp login --creds "$RUNNER_TEMP/creds.json"
+          rm -f "$RUNNER_TEMP/creds.json"
+      - run: npm run clasp:push

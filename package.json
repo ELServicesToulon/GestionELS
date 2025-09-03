@@ -1,0 +1,12 @@
+{
+  "name": "gestionels",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "@google/clasp": "^2.5.0"
+  },
+  "scripts": {
+    "clasp:push": "clasp push -f"
+  }
+}
+
