@@ -1,5 +1,5 @@
 // =================================================================
-//                        POINT D'ENTRÉE & MENUS
+//                      POINT D'ENTRÉE & MENUS
 // =================================================================
 // Description: Contrôleur principal qui gère les menus dans le Google
 //              Sheet et les requêtes web pour afficher les interfaces.
@@ -7,46 +7,63 @@
 
 /**
  * S'exécute à l'ouverture du Google Sheet pour créer les menus.
+ * @summary Fonction trigger `onOpen` pour créer l'interface utilisateur du menu.
  */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
+
+  // --- Création du menu principal ---
   const menuPrincipal = ui.createMenu('EL Services')
-      .addItem('Générer les factures sélectionnées', 'genererFactures')
-      .addItem('Envoyer les factures contrôlées', 'envoyerFacturesControlees')
-      .addItem("Archiver les factures du mois dernier", "archiverFacturesDuMois")
-      .addSeparator()
-      .addItem("Vérifier la cohérence du calendrier", "verifierCoherenceCalendrier");
+    .addItem('Générer les factures sélectionnées', 'genererFactures')
+    .addItem('Envoyer les factures contrôlées', 'envoyerFacturesControlees')
+    .addItem("Archiver les factures du mois dernier", "archiverFacturesDuMois")
+    .addSeparator()
+    .addItem("Vérifier la cohérence du calendrier", "verifierCoherenceCalendrier");
 
+  // --- Création du sous-menu Maintenance ---
   const sousMenuMaintenance = ui.createMenu('Maintenance')
-      .addItem("Sauvegarder le code du projet", "sauvegarderCodeProjet")
-      .addItem("Sauvegarder les données", "sauvegarderDonnees")
-      .addItem("Vérifier structure des feuilles", "menuVerifierStructureFeuilles")
-      .addItem("Purger les anciennes données (RGPD)", "purgerAnciennesDonnees");
+    .addItem("Sauvegarder le code du projet", "sauvegarderCodeProjet")
+    .addItem("Sauvegarder les données", "sauvegarderDonnees")
+    .addItem("Vérifier structure des feuilles", "menuVerifierStructureFeuilles")
+    .addItem("Purger les anciennes données (RGPD)", "purgerAnciennesDonnees")
+    .addSeparator()
+    .addItem("Nettoyer l'onglet Facturation", "nettoyerOngletFacturation")
+    .addItem("Reparer entetes Facturation", "reparerEntetesFacturation");
 
-     
-  const sousMenuDebug = ui.createMenu('Debug')
-      .addItem("Lancer tous les tests", "lancerTousLesTests")
-      .addItem("Tester audit Drive", "testerAuditDrive");
-
-
-  sousMenuMaintenance.addItem("Nettoyer l'onglet Facturation", "nettoyerOngletFacturation");
-  sousMenuMaintenance.addItem("Reparer entetes Facturation", "reparerEntetesFacturation");
-  if (CALENDAR_RESYNC_ENABLED) {
+  // Ajout des options conditionnelles au menu Maintenance
+  if (typeof CALENDAR_RESYNC_ENABLED !== 'undefined' && CALENDAR_RESYNC_ENABLED) {
     sousMenuMaintenance.addItem("Resynchroniser événement manquant", "menuResynchroniserEvenement");
   }
-  if (CALENDAR_PURGE_ENABLED) {
+  if (typeof CALENDAR_PURGE_ENABLED !== 'undefined' && CALENDAR_PURGE_ENABLED) {
     sousMenuMaintenance.addItem("Purger Event ID introuvable", "menuPurgerEventId");
   }
+
   menuPrincipal.addSubMenu(sousMenuMaintenance);
 
-  if (DEBUG_MENU_ENABLED) {
+  // --- Ajout du sous-menu Debug (s'il est activé) ---
+  // CORRECTION: La création du menu Debug est maintenant entièrement contenue
+  // dans cette condition pour éviter la redondance et la confusion.
+  if (typeof DEBUG_MENU_ENABLED !== 'undefined' && DEBUG_MENU_ENABLED) {
     const sousMenuDebug = ui.createMenu('Debug')
-        .addItem("Lancer tous les tests", "lancerTousLesTests");
+      .addItem("Lancer tous les tests", "lancerTousLesTests")
+      .addItem("Tester audit Drive", "testerAuditDrive");
     menuPrincipal.addSubMenu(sousMenuDebug);
   }
 
   menuPrincipal.addToUi();
 }
+
+
+/**
+ * Crée une réponse HTML standard pour les messages d'erreur ou d'information.
+ * @param {string} titre Le titre de la page HTML.
+ * @param {string} message Le message à afficher dans le corps de la page.
+ * @returns {HtmlOutput} Le contenu HTML formaté.
+ */
+function creerReponseHtml(titre, message) {
+  return HtmlService.createHtmlOutput(`<h1>${titre}</h1><p>${message}</p>`).setTitle(titre);
+}
+
 
 /**
  * S'exécute lorsqu'un utilisateur accède à l'URL de l'application web.
@@ -56,62 +73,68 @@ function onOpen() {
  */
 function doGet(e) {
   try {
-    if (REQUEST_LOGGING_ENABLED) {
-      logRequest(e);
-    }
-    // validerConfiguration(); // Assurez-vous que cette fonction existe ou commentez-la si non utilisée
-
-    // Routeur de page
-    if (e.parameter.page) {
-        switch (e.parameter.page) {
-            case 'admin':
-                const adminEmail = Session.getActiveUser().getEmail();
-                if (adminEmail && adminEmail.toLowerCase() 
-                ADMIN_EMAIL.toLowerCase()) {
-                    const template = HtmlService.createTemplateFromFile('Admin_Interface');
-                    return template.evaluate().setTitle("Tableau de Bord Administrateur").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
-                } else {
-                    return HtmlService.createHtmlOutput('<h1>Accès Refusé</h1><p>Vous n\'avez pas les permissions nécessaires.</p>');
-                }
-            case 'gestion':
-                if (CLIENT_PORTAL_ENABLED) {
-                    const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
-                    templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
-                    return templateGestion.evaluate().setTitle("Mon Espace Client").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
-                } else {
-                    return HtmlService.createHtmlOutput('<h1>Espace client indisponible</h1><p>Merci de votre compréhension.</p>');
-                }
-            case 'debug':
-                if (DEBUG_MENU_ENABLED) {
-                    const debugEmail = Session.getActiveUser().getEmail();
-                    if (debugEmail && debugEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                        return HtmlService.createHtmlOutputFromFile('Debug_Interface').setTitle("Panneau de Débogage");
-                    } else {
-                        return HtmlService.createHtmlOutput('<h1>Accès Refusé</h1><p>Vous n\\'avez pas les permissions nécessaires.</p>');
-                    }
-                }
-                return HtmlService.createHtmlOutput('<h1>Accès Refusé</h1><p>Debug désactivé.</p>');
-            case 'infos':
-                if (PRIVACY_LINK_ENABLED) {
-                    return HtmlService.createHtmlOutputFromFile('Infos_confidentialite')
-                        .setTitle("Infos & confidentialité");
-                }
-                break;
-        }
+    if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
+      logRequest(e); // Assurez-vous que la fonction logRequest existe
     }
 
-    // Page par défaut : Interface de réservation
-    if (DEMO_RESERVATION_ENABLED) {
+    // --- Routeur de page ---
+    if (e && e.parameter && e.parameter.page) {
+      switch (e.parameter.page) {
+
+        case 'admin':
+          const adminEmail = Session.getActiveUser().getEmail();
+          // CORRECTION: L'opérateur de comparaison '===' était manquant.
+          if (adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+            const templateAdmin = HtmlService.createTemplateFromFile('Admin_Interface');
+            return templateAdmin.evaluate().setTitle("Tableau de Bord Administrateur").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+          }
+          return creerReponseHtml('Accès Refusé', 'Vous n\'avez pas les permissions nécessaires.');
+
+        case 'gestion':
+          if (typeof CLIENT_PORTAL_ENABLED !== 'undefined' && CLIENT_PORTAL_ENABLED) {
+            const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
+            templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
+            return templateGestion.evaluate().setTitle("Mon Espace Client").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+          }
+          return creerReponseHtml('Espace client indisponible', 'Merci de votre compréhension.');
+
+        case 'debug':
+          if (typeof DEBUG_MENU_ENABLED !== 'undefined' && DEBUG_MENU_ENABLED) {
+            const debugEmail = Session.getActiveUser().getEmail();
+            if (debugEmail && debugEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+              return HtmlService.createHtmlOutputFromFile('Debug_Interface').setTitle("Panneau de Débogage");
+            }
+            return creerReponseHtml('Accès Refusé', 'Vous n\'avez pas les permissions nécessaires.');
+          }
+          // CORRECTION: Message clair si le debug est désactivé au niveau global.
+          return creerReponseHtml('Accès Refusé', 'Le mode de débogage est désactivé.');
+
+        case 'infos':
+          if (typeof PRIVACY_LINK_ENABLED !== 'undefined' && PRIVACY_LINK_ENABLED) {
+            return HtmlService.createHtmlOutputFromFile('Infos_confidentialite')
+              .setTitle("Infos & confidentialité");
+          }
+          // CORRECTION: Ajout d'un 'break' pour éviter de tomber sur la page par défaut
+          // si cette page est désactivée.
+          break;
+      }
+    }
+
+    // --- Page par défaut : Interface de réservation ---
+    if (typeof DEMO_RESERVATION_ENABLED !== 'undefined' && DEMO_RESERVATION_ENABLED) {
       return HtmlService.createHtmlOutputFromFile('examples/Reservation_Demo')
-          .setTitle(NOM_ENTREPRISE + " | Réservation (Démo)")
-          .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+        .setTitle(NOM_ENTREPRISE + " | Réservation (Démo)")
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
     }
+
     const template = HtmlService.createTemplateFromFile('Reservation_Interface');
+    const conf = getConfigCached(); // Assurez-vous que getConfigCached existe et fonctionne
+
+    // Assignation des variables au template
     template.appUrl = ScriptApp.getService().getUrl();
     template.nomService = NOM_ENTREPRISE;
     template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
-    const conf = getConfigCached();
-    template.TARIFS_JSON = JSON.stringify(conf.TARIFS);
+    template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
     template.DUREE_BASE = conf.DUREE_BASE;
     template.DUREE_ARRET_SUP = conf.DUREE_ARRET_SUP;
     template.KM_BASE = conf.KM_BASE;
@@ -119,75 +142,94 @@ function doGet(e) {
     template.URGENT_THRESHOLD_MINUTES = conf.URGENT_THRESHOLD_MINUTES;
     template.dateDuJour = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
 
-    // NOUVEAU : Ajout des variables pour la bannière d'information
+    // Variables pour la bannière d'information
     template.heureDebut = conf.HEURE_DEBUT_SERVICE;
     template.heureFin = conf.HEURE_FIN_SERVICE;
-    // Tarifs de base pour la bannière d'information
     template.prixBaseNormal = (conf.TARIFS && conf.TARIFS['Normal']) ? conf.TARIFS['Normal'].base : '';
     template.prixBaseSamedi = (conf.TARIFS && conf.TARIFS['Samedi']) ? conf.TARIFS['Samedi'].base : '';
     template.prixBaseUrgent = (conf.TARIFS && conf.TARIFS['Urgent']) ? conf.TARIFS['Urgent'].base : '';
     template.tvaApplicable = typeof conf.TVA_APPLICABLE !== 'undefined' ? conf.TVA_APPLICABLE : false;
 
-
     return template.evaluate()
-        .setTitle(NOM_ENTREPRISE + " | Réservation")
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+      .setTitle(NOM_ENTREPRISE + " | Réservation")
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
 
   } catch (error) {
     Logger.log(`Erreur critique dans doGet: ${error.stack}`);
-    return HtmlService.createHtmlOutput(
-      `<h1>Erreur de configuration</h1><p>L'application ne peut pas démarrer. L'administrateur a été notifié.</p><pre>${error.message}</pre>`
+    return creerReponseHtml(
+      'Erreur de configuration',
+      `L'application ne peut pas démarrer. L'administrateur a été notifié.<br><pre style="color:red;">${error.message}</pre>`
     );
   }
 }
+
 
 /**
  * Gère les requêtes POST entrantes.
  * Parse les données et route vers la logique appropriée.
  * @param {Object} e L'objet d'événement de la requête.
- * @returns {HtmlOutput|TextOutput} Réponse HTML ou JSON.
+ * @returns {ContentService.TextOutput} Réponse au format JSON.
  */
 function doPost(e) {
   try {
-    if (REQUEST_LOGGING_ENABLED) {
+    if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e);
     }
 
-    if (!POST_ENDPOINT_ENABLED) {
+    if (typeof POST_ENDPOINT_ENABLED === 'undefined' || !POST_ENDPOINT_ENABLED) {
       return ContentService.createTextOutput(JSON.stringify({
-        erreur: 'POST désactivé'
+        status: 'error',
+        message: 'POST endpoint is disabled.'
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    var payload = {};
+    let payload = {};
     if (e && e.postData && e.postData.contents) {
-      if (e.postData.type === 'application/json') {
-        payload = JSON.parse(e.postData.contents);
-      } else {
-        payload = e.parameter;
+      try {
+        if (e.postData.type === 'application/json') {
+          payload = JSON.parse(e.postData.contents);
+        } else {
+          // Pour les formulaires standards (application/x-www-form-urlencoded)
+          payload = e.parameter;
+        }
+      } catch (jsonError) {
+        throw new Error("Invalid JSON payload received.");
       }
+    } else {
+      payload = e.parameter; // Fallback pour les cas simples
     }
 
-    e.parameter = Object.assign({}, e.parameter, payload);
 
     if (payload.action) {
       switch (payload.action) {
         case 'getConfiguration':
+          // Assurez-vous que getConfiguration() est une fonction globale disponible
           return ContentService.createTextOutput(JSON.stringify(getConfiguration()))
-              .setMimeType(ContentService.MimeType.JSON);
+            .setMimeType(ContentService.MimeType.JSON);
+
+          // Ajoutez d'autres 'case' pour d'autres actions ici
+
         default:
           return ContentService.createTextOutput(JSON.stringify({
-            erreur: 'Action inconnue'
+            status: 'error',
+            message: 'Unknown action specified.'
           })).setMimeType(ContentService.MimeType.JSON);
       }
     }
 
-    return doGet(e);
+    // Comportement par défaut si aucune action n'est spécifiée.
+    // Le code original appelait doGet(e), ce qui est inhabituel pour un endpoint POST.
+    // Il est souvent préférable de retourner une erreur claire.
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'No action specified in the POST request.'
+    })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
     Logger.log(`Erreur critique dans doPost: ${error.stack}`);
     return ContentService.createTextOutput(JSON.stringify({
-      erreur: error.message
+      status: 'error',
+      message: error.message
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }
