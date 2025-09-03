@@ -27,11 +27,11 @@
     <main id="conteneur-app" class="hidden">
       <div class="carte barre-outils">
         <div class="theme-selector">
-          <button id="btn-theme" class="btn btn-secondaire hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
-          <div id="menu-theme" class="hidden" role="menu">
-            <button class="option-theme btn btn-secondaire" data-theme="clarte" role="menuitem">Clarté</button>
-            <button class="option-theme btn btn-secondaire" data-theme="nocturne" role="menuitem">Nocturne</button>
-          </div>
+          <button id="btn-theme" class="btn btn-secondaire btn--client hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
+            <div id="menu-theme" class="hidden" role="menu">
+              <button class="option-theme btn btn-secondaire btn--client" data-theme="clarte" role="menuitem">Clarté</button>
+              <button class="option-theme btn btn-secondaire btn--client" data-theme="nocturne" role="menuitem">Nocturne</button>
+            </div>
         </div>
       </div>
       <div id="ca-client" class="carte" tabindex="0"></div>
@@ -49,8 +49,8 @@
       </div>
       <div class="carte">
         <p>Pour toute annulation ou pour une modification non disponible ici, veuillez nous contacter directement.</p>
-        <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-secondaire">Faire une nouvelle réservation</a>
-        <a href="mailto:<?= ADMIN_EMAIL ?>" class="btn btn-secondaire" style="margin-left: 10px;">Contacter le support</a>
+        <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-secondaire btn--client">Faire une nouvelle réservation</a>
+        <a href="mailto:<?= ADMIN_EMAIL ?>" class="btn btn-secondaire btn--client" style="margin-left: 10px;">Contacter le support</a>
       </div>
     </main>
 
@@ -62,10 +62,10 @@
             <label for="email-connexion">Votre adresse e-mail :</label>
             <input type="email" id="email-connexion" class="champ-formulaire" required placeholder="exemple@domaine.com">
             <div id="erreur-connexion" class="message-erreur-connexion hidden"></div>
-            <button type="submit" class="btn btn-primaire" style="margin-top: 15px; width: 100%;">Accéder à mes réservations</button>
+            <button type="submit" class="btn btn-primaire btn--client" style="margin-top: 15px; width: 100%;">Accéder à mes réservations</button>
         </form>
 
-        <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-secondaire" style="margin-top: 20px;">Retour à la page de réservation</a>
+        <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-secondaire btn--client" style="margin-top: 20px;">Retour à la page de réservation</a>
     </div>
   </div>
 

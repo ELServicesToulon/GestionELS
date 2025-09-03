@@ -169,8 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
             li.innerHTML = `
                 <span>Facture <strong>${f.numero}</strong> ${dateTxt ? 'du ' + dateTxt : ''} — ${f.montant?.toFixed ? f.montant.toFixed(2) + ' €' : ''}</span>
                 <span style="flex:1"></span>
-                <a class="btn btn-secondaire" href="${f.url}" target="_blank" rel="noopener">Télécharger</a>
-                <button class="btn btn-primaire btn-mail-facture" data-numero="${f.numero}">Recevoir par e-mail</button>
+                <a class="btn btn-secondaire btn--client" href="${f.url}" target="_blank" rel="noopener">Télécharger</a>
+                <button class="btn btn-primaire btn--client btn-mail-facture" data-numero="${f.numero}">Recevoir par e-mail</button>
             `;
             ul.appendChild(li);
         });
@@ -225,8 +225,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>Montant :</strong> ${resa.amount.toFixed(2)} €</p>
                     </div>
                     <div class="reservation-actions">
-                        <button class="btn btn-primaire btn-modifier-arrets">Modifier les arrêts</button>
-                        <button class="btn btn-secondaire btn-deplacer">Déplacer</button>
+                        <button class="btn btn-primaire btn--client btn-modifier-arrets">Modifier les arrêts</button>
+                        <button class="btn btn-secondaire btn--client btn-deplacer">Déplacer</button>
                     </div>
                 </div>
             `;
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="number" id="nouveaux-arrets" class="champ-formulaire" value="${arretsActuels}" min="0">
             </div>
             <div class="modale-actions">
-                <button id="btn-valider-modif-arrets" class="btn btn-primaire">Valider</button>
+                <button id="btn-valider-modif-arrets" class="btn btn-primaire btn--client">Valider</button>
             </div>
         `;
         modale?.classList.remove('hidden');
