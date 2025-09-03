@@ -122,8 +122,12 @@ const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Activé par défaut. Affiche le chiffre d'affaires en cours dans l'interface admin. */
 const CA_EN_COURS_ENABLED = true;
 
+
+const DEMO_RESERVATION_ENABLED = false; // Mettre à true pour servir examples/Reservation_Demo.html à la place de l'interface principale
+=======
 /** @const {boolean} Désactivé par défaut. Sert une version légère de la page de réservation pour démonstration. */
 const DEMO_RESERVATION_ENABLED = false;
+
 
 /** @const {boolean} Désactivé par défaut. Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
