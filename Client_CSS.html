@@ -1,4 +1,5 @@
 <style>
+<?!= include('Styles'); ?>
 /* =================================================================
                       FEUILLE DE STYLE - ESPACE CLIENT
    ================================================================= */
@@ -15,7 +16,7 @@ body {
 }
 
 /* --- ACCESSIBILITÉ : Style pour le focus clavier --- */
-.btn:focus, .champ-formulaire:focus, .btn-fermer:focus {
+.champ-formulaire:focus, .btn-fermer:focus {
   outline: 3px solid var(--couleur-secondaire);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.3);
@@ -71,12 +72,12 @@ body {
 .groupe-formulaire { margin-bottom: 15px; }
 .groupe-formulaire label { display: block; margin-bottom: 5px; font-weight: 500; }
 .champ-formulaire { width: 100%; padding: 12px; border: 1px solid var(--couleur-bordure); border-radius: 8px; box-sizing: border-box; }
-.btn { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s; font-family: var(--police-principale); text-decoration: none; display: inline-block; text-align: center; }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primaire { background-color: var(--couleur-primaire); color: white; }
-.btn-primaire:not(:disabled):hover { background-color: #732d91; }
-.btn-secondaire { background-color: var(--couleur-bordure); color: var(--gris-fonce); }
-.btn-secondaire:not(:disabled):hover { background-color: #dcdfe2; }
+.btn--client.btn-primaire:not(:disabled):hover { background-color: #732d91; }
+.btn--client.btn-secondaire {
+  background-color: var(--couleur-bordure);
+  color: var(--gris-fonce);
+}
+.btn--client.btn-secondaire:not(:disabled):hover { background-color: #dcdfe2; }
 .message-erreur-connexion { color: var(--couleur-erreur); margin-top: 10px; font-size: 0.9em; }
 
 /* --- MODALE --- */
