@@ -15,14 +15,19 @@ function onOpen() {
       .addItem('Envoyer les factures contrôlées', 'envoyerFacturesControlees')
       .addItem("Archiver les factures du mois dernier", "archiverFacturesDuMois")
       .addSeparator()
-      .addItem("Vérifier la cohérence du calendrier", "verifierCoherenceCalendrier")
-      .addItem("Lancer un audit des partages Drive", "lancerAuditDrive");
+      .addItem("Vérifier la cohérence du calendrier", "verifierCoherenceCalendrier");
 
   const sousMenuMaintenance = ui.createMenu('Maintenance')
       .addItem("Sauvegarder le code du projet", "sauvegarderCodeProjet")
       .addItem("Sauvegarder les données", "sauvegarderDonnees")
       .addItem("Vérifier structure des feuilles", "menuVerifierStructureFeuilles")
       .addItem("Purger les anciennes données (RGPD)", "purgerAnciennesDonnees");
+
+      ==
+  const sousMenuDebug = ui.createMenu('Debug')
+      .addItem("Lancer tous les tests", "lancerTousLesTests")
+      .addItem("Tester audit Drive", "testerAuditDrive");
+
 
   sousMenuMaintenance.addItem("Nettoyer l'onglet Facturation", "nettoyerOngletFacturation");
   sousMenuMaintenance.addItem("Reparer entetes Facturation", "reparerEntetesFacturation");
@@ -68,9 +73,13 @@ function doGet(e) {
                     return HtmlService.createHtmlOutput('<h1>Accès Refusé</h1><p>Vous n\'avez pas les permissions nécessaires.</p>');
                 }
             case 'gestion':
-                const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
-                templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
-                return templateGestion.evaluate().setTitle("Mon Espace Client").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+                if (CLIENT_PORTAL_ENABLED) {
+                    const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
+                    templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
+                    return templateGestion.evaluate().setTitle("Mon Espace Client").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+                } else {
+                    return HtmlService.createHtmlOutput('<h1>Espace client indisponible</h1><p>Merci de votre compréhension.</p>');
+                }
             case 'debug':
                 if (DEBUG_MENU_ENABLED) {
                     const debugEmail = Session.getActiveUser().getEmail();
@@ -99,6 +108,7 @@ function doGet(e) {
     const template = HtmlService.createTemplateFromFile('Reservation_Interface');
     template.appUrl = ScriptApp.getService().getUrl();
     template.nomService = NOM_ENTREPRISE;
+    template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
     const conf = getConfigCached();
     template.TARIFS_JSON = JSON.stringify(conf.TARIFS);
     template.DUREE_BASE = conf.DUREE_BASE;

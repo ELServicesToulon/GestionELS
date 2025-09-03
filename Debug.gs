@@ -35,6 +35,7 @@ function lancerTousLesTests() {
   testerGestionClient();
   testerAdministration();
   testerMaintenance();
+  testerAuditDrive();
 
   Logger.log("===== FIN DE LA SUITE DE TESTS COMPLÈTE =====");
   // SpreadsheetApp.getUi().alert("Tests terminés. Consultez les journaux (Logs) pour les résultats détaillés.");
@@ -176,9 +177,19 @@ function testerMaintenance() {
   Logger.log("\n--- Test de Maintenance.gs ---");
   logAdminAction("TEST", "Test de la fonction de log");
   Logger.log("SUCCESS: logAdminAction() exécuté. Vérifiez l'onglet Admin_Logs.");
-  
+
   notifyAdminWithThrottle("TEST_ERREUR", "Email de test", "Ceci est un test de la fonction de notification.");
   Logger.log("SUCCESS: notifyAdminWithThrottle() exécuté. Vérifiez votre boîte de réception.");
+}
+
+function testerAuditDrive() {
+  Logger.log("\n--- Test de lancerAuditDrive() ---");
+  try {
+    lancerAuditDrive();
+    Logger.log("SUCCESS: lancerAuditDrive() s'est exécutée sans erreur.");
+  } catch (e) {
+    Logger.log(`FAILURE: lancerAuditDrive() a échoué. Erreur: ${e.message}`);
+  }
 }
 
 /**
