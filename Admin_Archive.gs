@@ -12,7 +12,7 @@ function archiverFacturesDuMois() {
     const finMoisPrecedent = new Date(debutMoisCourant.getTime() - 24 * 60 * 60 * 1000);
 
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    const feuille = ss.getSheetByName('Facturation');
+    const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
     const lastCol = feuille.getLastColumn();
     const header = feuille.getRange(1, 1, 1, lastCol).getValues()[0].map(v => String(v).trim());
