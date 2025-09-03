@@ -13,4 +13,25 @@ body {
   color: var(--gris-fonce);
   font-family: 'Montserrat', sans-serif;
 }
+
+.theme-selector {
+  position: relative;
+}
+
+#menu-theme {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--gris-clair, var(--bg));
+  border: 1px solid var(--couleur-bordure, var(--muted));
+  padding: 8px;
+  border-radius: var(--radius, 8px);
+  z-index: 1000;
+}
+
+#menu-theme button {
+  display: block;
+  width: 100%;
+  margin: 4px 0;
+}
 </style>
