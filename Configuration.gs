@@ -31,6 +31,22 @@ const ID_MODELE_FACTURE = "1KWDS0gmyK3qrYWJd01vGID5fBVK10xlmErjgr7lrwmU";
 const ID_DOSSIER_ARCHIVES = "1UavaEsq6TkDw1QzJZ91geKyF7hrQY4S8";
 const ID_DOSSIER_TEMPORAIRE = "1yDBSzTqwaUt-abT0s7Z033C2WlN1NSs6";
 
+// --- Noms des feuilles ---
+/** Feuille contenant les données de facturation. */
+const SHEET_FACTURATION = 'Facturation';
+/** Feuille listant les clients. */
+const SHEET_CLIENTS = 'Clients';
+/** Feuille stockant les paramètres globaux. */
+const SHEET_PARAMETRES = 'Paramètres';
+/** Feuille de journalisation pour l'administration. */
+const SHEET_ADMIN_LOGS = 'Admin_Logs';
+/** Feuille de journalisation générale. */
+const SHEET_LOGS = 'Logs';
+/** Feuille des plages horaires bloquées. */
+const SHEET_PLAGES_BLOQUEES = 'Plages_Bloquees';
+/** Feuille par défaut des nouveaux classeurs. */
+const SHEET_DEFAULT = 'Sheet1';
+
 // --- Horaires & Tampons ---
 const HEURE_DEBUT_SERVICE = "08:30";
 const HEURE_FIN_SERVICE = "18:30";
