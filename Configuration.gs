@@ -128,14 +128,30 @@ const DEMO_RESERVATION_ENABLED = false; // Mettre à true pour servir examples/R
 /** @const {boolean} Désactivé par défaut. Sert une version légère de la page de réservation pour démonstration. */
 const DEMO_RESERVATION_ENABLED = false;
 
+const DEBUG_MENU_ENABLED = false; // Affiche le sous-menu Debug et l'interface associée
+
+const SLOTS_AMPM_ENABLED = false; // Sépare les créneaux matin/après-midi
+const THEME_V2_ENABLED = false; // Active la nouvelle version du thème
+const BILLING_V2_DRYRUN = false; // Mode test pour la facturation V2 (aucune écriture)
+const REQUEST_LOGGING_ENABLED = false; // Active la journalisation des requêtes
+const POST_ENDPOINT_ENABLED = false; // Active le traitement des requêtes POST
 
 /** @const {boolean} Désactivé par défaut. Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
 
+
+
+const CLIENT_PORTAL_ENABLED = false; // Active l'espace client
+
+const PRIVACY_LINK_ENABLED = false; // Affiche le lien Infos & confidentialité
+
 /** @const {boolean} Désactivé par défaut. Active la nouvelle version du thème graphique. */
 const THEME_V2_ENABLED = false;
 
+
 const THEME_SELECTION_ENABLED = false; // Active le choix de thème côté client
+
+
 
 /** @const {boolean} Désactivé par défaut. Simule la facturation V2 sans écriture persistante. */
 const BILLING_V2_DRYRUN = false;

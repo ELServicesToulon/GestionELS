@@ -49,6 +49,11 @@ Le projet utilise `@google/clasp` version `2.5.0` en local comme en CI.
 2. `clasp push -f` puis créer une nouvelle version pour déploiement.
 3. Pour rollback, remettre le flag à `false` et redéployer la version précédente.
 
+## Menu Debug
+1. Activer `DEBUG_MENU_ENABLED` dans `Configuration.gs`.
+2. `clasp push -f` puis créer une nouvelle version pour déploiement.
+3. Pour rollback, remettre le flag à `false` et redéployer la version précédente.
+
 ## Tests Manuels
 - Déplacer une facture vers `Facturation_Aout_2025` puis vérifier qu'elle reste visible et envoyable depuis l'espace client.
 
