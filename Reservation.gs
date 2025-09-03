@@ -321,6 +321,7 @@ function trouverAlternativeProche(creneauCible, creneauxDisponibles) {
   return meilleureAlternative;
 }
 
+
 /**
  * Récupère toutes les réservations pour un email client (et optionnellement une date).
  */
@@ -354,6 +355,7 @@ function obtenirReservationsPourClient(email, date) {
   }
   return reservations;
 }
+
 
 
 
