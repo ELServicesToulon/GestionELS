@@ -64,9 +64,13 @@ function doGet(e) {
                     return HtmlService.createHtmlOutput('<h1>Accès Refusé</h1><p>Vous n\'avez pas les permissions nécessaires.</p>');
                 }
             case 'gestion':
-                const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
-                templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
-                return templateGestion.evaluate().setTitle("Mon Espace Client").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+                if (CLIENT_PORTAL_ENABLED) {
+                    const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
+                    templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
+                    return templateGestion.evaluate().setTitle("Mon Espace Client").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+                } else {
+                    return HtmlService.createHtmlOutput('<h1>Espace client indisponible</h1><p>Merci de votre compréhension.</p>');
+                }
             case 'debug':
                  const debugEmail = Session.getActiveUser().getEmail();
                 if (debugEmail && debugEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
@@ -92,6 +96,7 @@ function doGet(e) {
     const template = HtmlService.createTemplateFromFile('Reservation_Interface');
     template.appUrl = ScriptApp.getService().getUrl();
     template.nomService = NOM_ENTREPRISE;
+    template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
     const conf = getConfigCached();
     template.TARIFS_JSON = JSON.stringify(conf.TARIFS);
     template.DUREE_BASE = conf.DUREE_BASE;

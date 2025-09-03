@@ -132,8 +132,14 @@ const DEMO_RESERVATION_ENABLED = false;
 /** @const {boolean} Désactivé par défaut. Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
 
+
+const CLIENT_PORTAL_ENABLED = false; // Active l'espace client
+
+const PRIVACY_LINK_ENABLED = false; // Affiche le lien Infos & confidentialité
+=======
 /** @const {boolean} Désactivé par défaut. Active la nouvelle version du thème graphique. */
 const THEME_V2_ENABLED = false;
+
 
 /** @const {boolean} Désactivé par défaut. Simule la facturation V2 sans écriture persistante. */
 const BILLING_V2_DRYRUN = false;
