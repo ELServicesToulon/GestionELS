@@ -11,6 +11,17 @@ See `AGENTS.md` for project structure, coding style, testing steps, and the pull
 - `clasp open`: Open the Apps Script project in the browser.
 - `clasp push -f`: Push local code to Apps Script (force overwrite).
 
+## Tarifs
+Les tarifs sont centralisés dans `Configuration.gs` via l'objet `TARIFS`.
+
+- **Normal** – livraisons standard du lundi au vendredi.
+- **Samedi** – appliqué aux livraisons du samedi.
+- **Urgent** – déclenché si la réservation est dans le seuil `URGENT_THRESHOLD_MINUTES`.
+- **Special** – base pour tarifs ponctuels ou expérimentaux.
+
+Chaque entrée suit la forme `{ base: <prix premier arrêt>, arrets: [<arrêt 2>, ...] }`.
+Dupliquez une entrée existante pour ajouter un nouveau type puis ajustez les montants.
+
 ## Clasp Version
 Le projet utilise `@google/clasp` version `2.5.0` en local comme en CI.
 
