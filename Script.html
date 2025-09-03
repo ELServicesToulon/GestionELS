@@ -1,52 +1,20 @@
 (() => {
-  const $ = (sel,root=document)=>root.querySelector(sel);
-  const $$ = (sel,root=document)=>[...root.querySelectorAll(sel)];
-
-  // Exemple de données: taux de charge par jour (0..1) + split matin/après-midi
-  const demoWeek = [
-    {date:'Lun', am:.3, pm:.6},
-    {date:'Mar', am:.1, pm:.2},
-    {date:'Mer', am:.8, pm:.9},
-    {date:'Jeu', am:.5, pm:.5},
-    {date:'Ven', am:.2, pm:.7},
-    {date:'Sam', am:.4, pm:.6},
-    {date:'Dim', am:.0, pm:.0},
-  ];
-
-  function mountCalendar(data){
-    const grid = $('#calendar'); grid.innerHTML = '';
-    data.forEach(d=>{
-      const cell = document.createElement('div');
-      cell.className = 'cal-cell'; cell.tabIndex = 0;
-      const lvl = Math.round(Math.max(d.am,d.pm)*100);
-      cell.style.setProperty('--lvl', lvl); cell.dataset.level = lvl;
-      cell.setAttribute('role','gridcell');
-      cell.setAttribute('aria-label',`${d.date} — charge ${lvl}%`);
-      cell.innerHTML = `
-        <div class="cal-day">${d.date}</div>
-        <div class="slot">
-          <button class="chip" data-when="am">Matin ${Math.round(d.am*100)}%</button>
-          <button class="chip" data-when="pm">Après-midi ${Math.round(d.pm*100)}%</button>
-        </div>`;
-      grid.appendChild(cell);
-    });
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+  <? if (DEMO_RESERVATION_ENABLED) { ?>
+  const reservationModules = <?!= JSON.stringify(
+    include('Reservation_JS_UI') +
+    include('Reservation_JS_UI_Elements') +
+    include('Reservation_JS_Calendrier') +
+    include('Reservation_JS_Panier') +
+    include('Reservation_JS_Client') +
+    include('Reservation_JS_Tournee') +
+    include('Reservation_JS_Reservation') +
+    include('Reservation_JS_Principal')
+  ).replace(/<\/script>/g, '<\\/script>') ?>;
+  function initReservation() {
+    document.body.insertAdjacentHTML('beforeend', reservationModules);
   }
-
-  function setupFilters(){
-    $$('#app .chip').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        $$('#app .chip').forEach(c=>c.classList.remove('active'));
-        btn.classList.add('active');
-        // Ici: filtrer les slots / basculer semaine/mois / matin / après-midi
-      });
-    });
-  }
-
-  $('#cta-reserver')?.addEventListener('click', ()=>{
-    // Exemple: notification “panier” (à raccorder à ton Config.gs / Sheets)
-    alert('Réservation ajoutée au panier (démo).');
-  });
-
-  mountCalendar(demoWeek);
-  setupFilters();
+  $('#cta-reserver')?.addEventListener('click', initReservation, { once: true });
+  <? } ?>
 })();

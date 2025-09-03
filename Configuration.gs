@@ -50,7 +50,7 @@ const BILLING_MULTI_SHEET_ENABLED = true; // Agrège toutes les feuilles "Factur
 
 const CA_EN_COURS_ENABLED = true; // Active l'affichage du CA en cours
 
-const DEMO_RESERVATION_ENABLED = false; // Sert une page de réservation démo ultra-légère
+const DEMO_RESERVATION_ENABLED = false; // Active le chargement différé des modules de réservation
 
 const SLOTS_AMPM_ENABLED = false; // Sépare les créneaux matin/après-midi
 const THEME_V2_ENABLED = false; // Active la nouvelle version du thème

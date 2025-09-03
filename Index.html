@@ -39,45 +39,9 @@
   </script>
 </head>
 <body>
-  <header class="els-header" role="banner" aria-label="En-tête">
-    <div class="brand">
-      <span class="logo-pill" aria-hidden="true">●</span>
-      <div>
-        <h1 class="brand-title">EL Services Littoral</h1>
-        <p class="brand-sub">Pharmacie → Domicile & EHPAD (VE 100% électrique)</p>
-      </div>
-    </div>
-    <nav class="els-nav" role="navigation" aria-label="Navigation principale">
-      <button class="btn-pill primary" id="cta-reserver">Réserver</button>
-    </nav>
-  </header>
-
-  <main id="app" class="container" role="main">
-    <section aria-labelledby="cal-titre">
-      <h2 id="cal-titre">Disponibilités</h2>
-      <div id="calendar" class="calendar" role="grid" aria-label="Calendrier des tournées"></div>
-      <div class="filters">
-        <button class="chip active" data-filter="week">Semaine</button>
-        <button class="chip" data-filter="month">Tout le mois</button>
-        <button class="chip" data-filter="am">Matin</button>
-        <button class="chip" data-filter="pm">Après-midi</button>
-      </div>
-    </section>
-
-    <section aria-labelledby="panier-titre" class="panel">
-      <h2 id="panier-titre">Panier & récapitulatif</h2>
-      <div id="cart"></div>
-      <div class="notice eco">Chaque tournée est effectuée en véhicule 100% électrique.</div>
-    </section>
-  </main>
-
-  <footer class="els-footer" role="contentinfo">
-    <small>TVA non applicable (Art. 293 B CGI). Contenu des sacs sous responsabilité du déposant ; toute préparation médicamenteuse doit être dans une boîte scellée par la pharmacie.</small>
-    <? if (PRIVACY_LINK_ENABLED) { ?>
-    <div><a href="?page=infos" rel="nofollow">Infos & confidentialité</a></div>
-    <? } ?>
-  </footer>
-
+  <button class="btn-pill primary" id="cta-reserver">Réserver</button>
+  <div id="calendar" class="calendar" role="grid" aria-label="Calendrier des tournées"></div>
+  <div id="cart"></div>
   <script><?!= include('Script'); ?></script>
 </body>
 </html>
