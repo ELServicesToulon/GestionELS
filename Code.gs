@@ -22,10 +22,12 @@ function onOpen() {
       .addItem("Sauvegarder les données", "sauvegarderDonnees")
       .addItem("Vérifier structure des feuilles", "menuVerifierStructureFeuilles")
       .addItem("Purger les anciennes données (RGPD)", "purgerAnciennesDonnees");
-      
+
+      ==
   const sousMenuDebug = ui.createMenu('Debug')
       .addItem("Lancer tous les tests", "lancerTousLesTests")
       .addItem("Tester audit Drive", "testerAuditDrive");
+
 
   sousMenuMaintenance.addItem("Nettoyer l'onglet Facturation", "nettoyerOngletFacturation");
   sousMenuMaintenance.addItem("Reparer entetes Facturation", "reparerEntetesFacturation");
@@ -35,8 +37,15 @@ function onOpen() {
   if (CALENDAR_PURGE_ENABLED) {
     sousMenuMaintenance.addItem("Purger Event ID introuvable", "menuPurgerEventId");
   }
-  menuPrincipal.addSubMenu(sousMenuMaintenance).addToUi();
-  menuPrincipal.addSubMenu(sousMenuDebug).addToUi();
+  menuPrincipal.addSubMenu(sousMenuMaintenance);
+
+  if (DEBUG_MENU_ENABLED) {
+    const sousMenuDebug = ui.createMenu('Debug')
+        .addItem("Lancer tous les tests", "lancerTousLesTests");
+    menuPrincipal.addSubMenu(sousMenuDebug);
+  }
+
+  menuPrincipal.addToUi();
 }
 
 /**
@@ -72,12 +81,15 @@ function doGet(e) {
                     return HtmlService.createHtmlOutput('<h1>Espace client indisponible</h1><p>Merci de votre compréhension.</p>');
                 }
             case 'debug':
-                 const debugEmail = Session.getActiveUser().getEmail();
-                if (debugEmail && debugEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                    return HtmlService.createHtmlOutputFromFile('Debug_Interface').setTitle("Panneau de Débogage");
-                } else {
-                    return HtmlService.createHtmlOutput('<h1>Accès Refusé</h1><p>Vous n\'avez pas les permissions nécessaires.</p>');
+                if (DEBUG_MENU_ENABLED) {
+                    const debugEmail = Session.getActiveUser().getEmail();
+                    if (debugEmail && debugEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                        return HtmlService.createHtmlOutputFromFile('Debug_Interface').setTitle("Panneau de Débogage");
+                    } else {
+                        return HtmlService.createHtmlOutput('<h1>Accès Refusé</h1><p>Vous n\\'avez pas les permissions nécessaires.</p>');
+                    }
                 }
+                return HtmlService.createHtmlOutput('<h1>Accès Refusé</h1><p>Debug désactivé.</p>');
             case 'infos':
                 if (PRIVACY_LINK_ENABLED) {
                     return HtmlService.createHtmlOutputFromFile('Infos_confidentialite')
