@@ -6,8 +6,7 @@
 // =================================================================
 
 // --- Constantes de Rétention (RGPD) ---
-const ANNEES_RETENTION_FACTURES = 5; // Durée de conservation légale des factures
-const MOIS_RETENTION_LOGS = 12;      // Durée de conservation des logs d'activité
+// Définies dans Configuration.gs : ANNEES_RETENTION_FACTURES, MOIS_RETENTION_LOGS
 
 // =================================================================
 //                      1. JOURNALISATION (LOGGING)
@@ -21,7 +20,7 @@ const MOIS_RETENTION_LOGS = 12;      // Durée de conservation des logs d'activi
 function logAdminAction(action, statut) {
   try {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    let feuilleLog = ss.getSheetByName("Admin_Logs");
+    let feuilleLog = ss.getSheetByName(SHEET_ADMIN_LOGS);
     if (!feuilleLog) {
       feuilleLog = ss.insertSheet("Admin_Logs");
       feuilleLog.appendRow(["Timestamp", "Utilisateur", "Action", "Statut"]);
@@ -44,7 +43,7 @@ function logAdminAction(action, statut) {
 function logActivity(idReservation, emailClient, resume, prix, statut) {
   try {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    let feuilleLog = ss.getSheetByName("Logs");
+    let feuilleLog = ss.getSheetByName(SHEET_LOGS);
     if (!feuilleLog) {
       feuilleLog = ss.insertSheet("Logs");
       feuilleLog.appendRow(["Timestamp", "Reservation ID", "Client Email", "Résumé", "Montant", "Statut"]);
@@ -218,7 +217,7 @@ function sauvegarderDonnees() {
       }
     });
     
-    ssSauvegarde.deleteSheet(ssSauvegarde.getSheetByName('Sheet1'));
+    ssSauvegarde.deleteSheet(ssSauvegarde.getSheetByName(SHEET_DEFAULT));
     
     Logger.log(`Sauvegarde des données réussie. Fichier : ${ssSauvegarde.getUrl()}`);
     logAdminAction("Sauvegarde des données", `Succès : ${ssSauvegarde.getName()}`);
@@ -264,7 +263,7 @@ function purgerAnciennesDonnees() {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
     
     // --- Purge de la feuille de facturation et des PDF ---
-    const feuilleFacturation = ss.getSheetByName("Facturation");
+    const feuilleFacturation = ss.getSheetByName(SHEET_FACTURATION);
     if (feuilleFacturation) {
         const enTeteFact = feuilleFacturation.getRange(1, 1, 1, feuilleFacturation.getLastColumn()).getValues()[0];
         const dateColFact = enTeteFact.indexOf("Date");
@@ -293,7 +292,7 @@ function purgerAnciennesDonnees() {
     }
 
     // --- Purge de la feuille de logs ---
-    const feuilleLog = ss.getSheetByName("Logs");
+    const feuilleLog = ss.getSheetByName(SHEET_LOGS);
     if (feuilleLog) {
         const enTeteLog = feuilleLog.getRange(1, 1, 1, feuilleLog.getLastColumn()).getValues()[0];
         const dateColLog = enTeteLog.indexOf("Timestamp");
@@ -346,7 +345,7 @@ function nettoyerOngletFacturation() {
   const ui = SpreadsheetApp.getUi();
   try {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    const feuille = ss.getSheetByName('Facturation');
+    const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0].map(v => String(v || ''));
@@ -500,7 +499,7 @@ function reparerEntetesFacturation() {
   const ui = SpreadsheetApp.getUi();
   try {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    const sh = ss.getSheetByName('Facturation');
+    const sh = ss.getSheetByName(SHEET_FACTURATION);
     if (!sh) throw new Error("Feuille 'Facturation' introuvable.");
     const lastCol = sh.getLastColumn();
     const headers = sh.getRange(1, 1, 1, lastCol).getValues()[0];
@@ -632,7 +631,7 @@ function resynchroniserEvenement(idReservation) {
   }
   try {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    const feuille = ss.getSheetByName('Facturation');
+    const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const enTetes = [
@@ -687,7 +686,7 @@ function purgerEventIdInexistant(idReservation) {
   }
   try {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    const feuille = ss.getSheetByName('Facturation');
+    const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const enTetes = ['ID Réservation', 'Event ID', 'Note Interne'];
@@ -738,7 +737,7 @@ function verifierCoherenceCalendrier() {
 
   try {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
-    const feuille = ss.getSheetByName("Facturation");
+    const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const enTetesRequis = ["ID Réservation", "Event ID", "Date"];
@@ -827,4 +826,13 @@ function verifierCoherenceCalendrier() {
     logAdminAction("Vérification Cohérence Calendrier", `Échec critique : ${e.message}`);
     ui.alert("Erreur Critique", `L'audit a échoué : ${e.message}`, ui.ButtonSet.OK);
   }
+}
+
+/**
+ * Audit basique des partages Drive (stub).
+ * Affiche un message indiquant que la fonctionnalité n'est pas encore disponible.
+ */
+function lancerAuditDrive() {
+  const ui = SpreadsheetApp.getUi();
+  ui.alert('Audit Drive', 'Fonctionnalité non implémentée.', ui.ButtonSet.OK);
 }

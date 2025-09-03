@@ -35,7 +35,7 @@ function validerClientParEmail(emailClient) {
  */
 function obtenirReservationsClient(emailClient) {
   try {
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName("Facturation");
+    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
     const indices = obtenirIndicesEnTetes(feuille, ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant"]);
     
     const donnees = feuille.getDataRange().getValues();
@@ -114,7 +114,7 @@ function calculerCAEnCoursClient(emailClient) {
     if (!CA_EN_COURS_ENABLED) return 0;
     if (!emailClient) return 0;
 
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName('Facturation');
+    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
     if (!feuille) return 0;
     const indices = obtenirIndicesEnTetes(feuille, ['Date', 'Client (Email)', 'Montant']);
     const lignes = feuille.getDataRange().getValues();
@@ -147,7 +147,7 @@ function obtenirFacturesPourClient(emailClient) {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
     const feuilles = BILLING_MULTI_SHEET_ENABLED
       ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
-      : [ss.getSheetByName('Facturation')];
+      : [ss.getSheetByName(SHEET_FACTURATION)];
     if (!feuilles.length || feuilles.some(f => !f)) throw new Error("La feuille 'Facturation' est introuvable.");
     const factures = [];
     feuilles.forEach(feuille => {
@@ -196,7 +196,7 @@ function envoyerFactureClient(emailClient, numeroFacture) {
     const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
     const feuilles = BILLING_MULTI_SHEET_ENABLED
       ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
-      : [ss.getSheetByName('Facturation')];
+      : [ss.getSheetByName(SHEET_FACTURATION)];
     if (!feuilles.length || feuilles.some(f => !f)) throw new Error("La feuille 'Facturation' est introuvable.");
     let row = null;
     let idx = null;
@@ -243,7 +243,7 @@ function mettreAJourDetailsReservation(idReservation, nouveauxArrets) {
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé, veuillez réessayer." };
 
   try {
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName("Facturation");
+    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
       idResa: enTete.indexOf("ID Réservation"), idEvent: enTete.indexOf("Event ID"),
@@ -319,7 +319,7 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé." };
 
   try {
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName("Facturation");
+    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
       idResa: enTete.indexOf("ID Réservation"), idEvent: enTete.indexOf("Event ID"),

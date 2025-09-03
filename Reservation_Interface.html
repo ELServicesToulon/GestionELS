@@ -41,7 +41,9 @@
             Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
             <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
         </div>
+        <? if (CLIENT_PORTAL_ENABLED) { ?>
         <a href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-espace-client">Mon Espace Client</a>
+        <? } ?>
     </header>
 
     <section id="hero-tarifs" class="hero-tarifs">
@@ -255,7 +257,9 @@
   </div>
 
   <div id="conteneur-notifications" role="alert" aria-live="assertive"></div>
-  <?!= include('Script_ThemeSelector'); ?>
+  <? if (THEME_SELECTION_ENABLED) { ?>
+    <?!= include('Script_ThemeSelector'); ?>
+  <? } ?>
   <?!= include('Reservation_JS_UI'); ?>
   <?!= include('Reservation_JS_UI_Elements'); ?>
   <?!= include('Reservation_JS_Calendrier'); ?>
