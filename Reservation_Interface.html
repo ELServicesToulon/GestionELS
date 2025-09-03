@@ -257,7 +257,9 @@
   </div>
 
   <div id="conteneur-notifications" role="alert" aria-live="assertive"></div>
-  <?!= include('Script_ThemeSelector'); ?>
+  <? if (THEME_SELECTION_ENABLED) { ?>
+    <?!= include('Script_ThemeSelector'); ?>
+  <? } ?>
   <?!= include('Reservation_JS_UI'); ?>
   <?!= include('Reservation_JS_UI_Elements'); ?>
   <?!= include('Reservation_JS_Calendrier'); ?>

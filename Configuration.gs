@@ -149,6 +149,10 @@ const PRIVACY_LINK_ENABLED = false; // Affiche le lien Infos & confidentialité
 const THEME_V2_ENABLED = false;
 
 
+const THEME_SELECTION_ENABLED = false; // Active le choix de thème côté client
+
+
+
 /** @const {boolean} Désactivé par défaut. Simule la facturation V2 sans écriture persistante. */
 const BILLING_V2_DRYRUN = false;
 
@@ -165,6 +169,7 @@ const PRIVACY_LINK_ENABLED = false;
 const THEME_SELECTION_ENABLED = true;
 
 /** @const {string} Thème appliqué par défaut lorsque aucune sélection n'est fournie. */
+
 const THEME_DEFAULT = 'nocturne';
 
 /** @const {Object<string,string>} Associe les clés de thème aux chemins des feuilles de style correspondantes. */
