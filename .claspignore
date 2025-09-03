@@ -12,3 +12,11 @@ README.md
 test/**
 snapshots/**
 Projet2/**
+
+# Local ignores
+snapshots/
+tmp*.txt
+temp_*.txt
+*.pdf
+cache/
+.cache/
