@@ -139,7 +139,7 @@ function doGet(e) {
     }
 
     const template = HtmlService.createTemplateFromFile('Reservation_Interface');
-    const conf = getConfigCached(); // Assurez-vous que getConfigCached existe et fonctionne
+    const conf = getPublicConfig();
 
     // Assignation des variables au template
     template.SEMAINIER_ENABLED = SEMAINIER_ENABLED;
