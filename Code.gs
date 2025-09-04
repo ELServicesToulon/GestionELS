@@ -86,6 +86,7 @@ function doGet(e) {
           // CORRECTION: L'opérateur de comparaison '===' était manquant.
           if (adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
             const templateAdmin = HtmlService.createTemplateFromFile('Admin_Interface');
+            templateAdmin.THEME_SELECTION_ENABLED = THEME_SELECTION_ENABLED;
             return templateAdmin.evaluate().setTitle("Tableau de Bord Administrateur").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
           }
           return creerReponseHtml('Accès Refusé', 'Vous n\'avez pas les permissions nécessaires.');
@@ -94,6 +95,7 @@ function doGet(e) {
           if (typeof CLIENT_PORTAL_ENABLED !== 'undefined' && CLIENT_PORTAL_ENABLED) {
             const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
             templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
+            templateGestion.THEME_SELECTION_ENABLED = THEME_SELECTION_ENABLED;
             return templateGestion.evaluate().setTitle("Mon Espace Client").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
           }
           return creerReponseHtml('Espace client indisponible', 'Merci de votre compréhension.');
@@ -131,6 +133,7 @@ function doGet(e) {
     const conf = getConfigCached(); // Assurez-vous que getConfigCached existe et fonctionne
 
     // Assignation des variables au template
+    template.THEME_SELECTION_ENABLED = THEME_SELECTION_ENABLED;
     template.appUrl = ScriptApp.getService().getUrl();
     template.nomService = NOM_ENTREPRISE;
     template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
