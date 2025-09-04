@@ -264,9 +264,30 @@ const PB = {
  */
 function listWeekSlots(weekStartIso) {
   const ws = weekStartIso || mondayIso_(new Date());
+  const cache = RESERVATION_CACHE_ENABLED ? CacheService.getScriptCache() : null;
+  if (cache) {
+    const cachedWeek = cache.get(`week_${ws}`);
+    if (cachedWeek) return JSON.parse(cachedWeek);
+  }
+
   const days = Array.from({ length: 7 }, (_, i) => addDays_(ws, i));
   const sh = ensureSheet_();
-  const rows = readAll_(sh);
+  let rows = [];
+  if (cache) {
+    days.forEach(d => {
+      const dayKey = `day_${d}`;
+      const cachedDay = cache.get(dayKey);
+      if (cachedDay) {
+        rows = rows.concat(JSON.parse(cachedDay));
+      } else {
+        const r = readAll_(sh, [d]);
+        cache.put(dayKey, JSON.stringify(r), 3600);
+        rows = rows.concat(r);
+      }
+    });
+  } else {
+    rows = readAll_(sh, days);
+  }
 
   const capacity = {};
   Object.keys(PB.WINDOWS).forEach(p => {
@@ -283,7 +304,9 @@ function listWeekSlots(weekStartIso) {
     }
   });
 
-  return { weekStart: ws, capacity, occ };
+  const result = { weekStart: ws, capacity, occ };
+  if (cache) cache.put(`week_${ws}`, JSON.stringify(result), 3600);
+  return result;
 }
 
 /**
@@ -297,7 +320,20 @@ function listAvailableTimes(dateIso, part) {
   if (!win) return [];
   const all = buildTimes_(win[0], win[1], PB.STEP_MIN);
   const sh = ensureSheet_();
-  const rows = readAll_(sh);
+  let rows;
+  const cache = RESERVATION_CACHE_ENABLED ? CacheService.getScriptCache() : null;
+  if (cache) {
+    const dayKey = `day_${dateIso}`;
+    const cachedDay = cache.get(dayKey);
+    if (cachedDay) {
+      rows = JSON.parse(cachedDay);
+    } else {
+      rows = readAll_(sh, [dateIso]);
+      cache.put(dayKey, JSON.stringify(rows), 3600);
+    }
+  } else {
+    rows = readAll_(sh, [dateIso]);
+  }
   const busySet = new Set(rows.filter(r => r.date === dateIso && r.part === part).map(r => r.start));
   return all.map(t => ({ t, available: !busySet.has(t) }));
 }
@@ -319,6 +355,12 @@ function createReservation(payload) {
   const sh = ensureSheet_();
   const lastRow = sh.getLastRow();
   sh.getRange(lastRow + 1, 1, 1, 3).setValues([[dateIso, part, start]]);
+  if (RESERVATION_CACHE_ENABLED) {
+    const cache = CacheService.getScriptCache();
+    const weekKey = `week_${mondayIso_(new Date(dateIso))}`;
+    cache.removeAll([`day_${dateIso}`, weekKey]);
+  }
+  // Invalide le cache afin que les lectures futures reflètent cette réservation.
   return { ok: true, id: 'RES-' + Utilities.getUuid().slice(0, 8) };
 }
 
@@ -333,10 +375,23 @@ function ensureSheet_() {
   return sh;
 }
 
-function readAll_(sh) {
-  const rng = sh.getDataRange().getValues();
-  if (rng.length <= 1) return [];
-  return rng.slice(1).map(r => ({ date: String(r[0]), part: String(r[1]), start: String(r[2]) }));
+function readAll_(sh, dates) {
+  const lastRow = sh.getLastRow();
+  if (lastRow <= 1) return [];
+  if (!dates || dates.length === 0) {
+    const rng = sh.getRange(2, 1, lastRow - 1, 3).getValues();
+    return rng.map(r => ({ date: String(r[0]), part: String(r[1]), start: String(r[2]) }));
+  }
+  const colRange = sh.getRange(2, 1, lastRow - 1, 1);
+  const out = [];
+  dates.forEach(d => {
+    const cells = colRange.createTextFinder(d).matchEntireCell(true).findAll();
+    cells.forEach(c => {
+      const rowValues = sh.getRange(c.getRow(), 1, 1, 3).getValues()[0];
+      out.push({ date: String(rowValues[0]), part: String(rowValues[1]), start: String(rowValues[2]) });
+    });
+  });
+  return out;
 }
 
 // ====== Helpers temps ======

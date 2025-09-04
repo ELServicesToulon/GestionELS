@@ -54,6 +54,11 @@ Le projet utilise `@google/clasp` version `2.5.0` en local comme en CI.
 2. `clasp push -f` puis créer une nouvelle version pour déploiement.
 3. Pour rollback, remettre le flag à `false` et redéployer la version précédente.
 
+## Cache des réservations
+- Activer `RESERVATION_CACHE_ENABLED` dans `Configuration.gs` pour limiter l'accès à la feuille.
+- Les résultats sont mis en cache par semaine (`week_<ISO>`) et par jour (`day_<ISO>`).
+- Lors de la création d'une réservation, les entrées correspondantes sont automatiquement invalidées.
+
 ## Tests Manuels
 - Déplacer une facture vers `Facturation_Aout_2025` puis vérifier qu'elle reste visible et envoyable depuis l'espace client.
 
