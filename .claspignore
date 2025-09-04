@@ -15,6 +15,7 @@ Projet2/**
 
 # Local ignores
 snapshots/
+archive/**
 tmp*.txt
 temp_*.txt
 *.pdf
