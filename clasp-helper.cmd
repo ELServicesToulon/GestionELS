@@ -3,6 +3,15 @@ setlocal
 set "SCRIPT_DIR=%~dp0"
 set "REPO_ROOT=%SCRIPT_DIR%."
 
+cd /d "%REPO_ROOT%"
+
+where clasp >nul 2>&1
+if errorlevel 1 (
+  echo [Erreur] L'outil clasp est introuvable. Veuillez l'installer ou l'ajouter au PATH.
+  pause
+  exit /b 1
+)
+
 where pwsh >nul 2>&1
 if %errorlevel%==0 (
   set "PS=pwsh"
