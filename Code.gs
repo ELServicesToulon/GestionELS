@@ -248,39 +248,131 @@ function doPost(e) {
  * @param {string} dateIso Date au format ISO (YYYY-MM-DD).
  * @return {Object} Modèle initial.
  */
-function getInitialModel(dateIso) {
-  return {
-    date: dateIso || new Date().toISOString().slice(0, 10),
-    ampmEnabled: true,
-    slots: []
-  };
-}
+// ====== PARAMÈTRES SEMAINIER ======
+const PB = {
+  SHEET_NAME: SHEET_RESERVATIONS,
+  STEP_MIN: SEMAINIER_STEP_MIN,
+  WINDOWS: SEMAINIER_WINDOWS
+};
+
+// ====== API appelées par l'UI ======
 
 /**
- * Liste des créneaux pour une date et une demi-journée.
- * @param {string} dateIso Date au format ISO.
- * @param {string} half 'AM' ou 'PM'.
- * @return {Object} Créneaux simulés.
+ * Retourne les agrégats de réservation pour une semaine donnée.
+ * @param {string} weekStartIso ISO du lundi de la semaine.
+ * @return {Object} Modèle pour le semainier.
  */
-function listSlots(dateIso, half) {
-  return {
-    date: dateIso,
-    half: half || null,
-    slots: [
-      { dow: 0, label: '09:00', fill: true },
-      { dow: 0, label: '11:00' },
-      { dow: 2, label: '14:00', fill: true },
-      { dow: 4, label: '16:30' }
-    ]
-  };
+function listWeekSlots(weekStartIso) {
+  const ws = weekStartIso || mondayIso_(new Date());
+  const days = Array.from({ length: 7 }, (_, i) => addDays_(ws, i));
+  const sh = ensureSheet_();
+  const rows = readAll_(sh);
+
+  const capacity = {};
+  Object.keys(PB.WINDOWS).forEach(p => {
+    capacity[p] = countIncrements_(PB.WINDOWS[p][0], PB.WINDOWS[p][1], PB.STEP_MIN);
+  });
+
+  const occ = {};
+  days.forEach(d => (occ[d] = {}));
+  rows.forEach(r => {
+    const d = r.date;
+    const part = r.part;
+    if (occ[d] && capacity[part] != null) {
+      occ[d][part] = (occ[d][part] || 0) + 1;
+    }
+  });
+
+  return { weekStart: ws, capacity, occ };
 }
 
 /**
- * Crée une réservation et renvoie un identifiant.
- * @param {Object} payload Données de la réservation.
- * @return {Object} Résultat avec identifiant simulé.
+ * Liste les horaires disponibles pour une date et une partie de journée.
+ * @param {string} dateIso ISO du jour.
+ * @param {string} part Clé de partie (matin, midi, ...).
+ * @return {Array<Object>} Horaires avec disponibilité.
+ */
+function listAvailableTimes(dateIso, part) {
+  const win = PB.WINDOWS[part];
+  if (!win) return [];
+  const all = buildTimes_(win[0], win[1], PB.STEP_MIN);
+  const sh = ensureSheet_();
+  const rows = readAll_(sh);
+  const busySet = new Set(rows.filter(r => r.date === dateIso && r.part === part).map(r => r.start));
+  return all.map(t => ({ t, available: !busySet.has(t) }));
+}
+
+/**
+ * Crée une nouvelle réservation.
+ * @param {Object} payload Détails de la réservation.
+ * @return {Object} Résultat avec identifiant.
  */
 function createReservation(payload) {
+  const dateIso = payload?.date;
+  const part = payload?.part;
+  const start = payload?.start;
+  if (!dateIso || !part || !start) throw new Error('Paramètres manquants.');
+  if (!isAligned15_(start)) throw new Error("L'heure doit être un multiple de 15 minutes.");
+  const avail = listAvailableTimes(dateIso, part).find(x => x.t === start);
+  if (!avail || !avail.available) throw new Error('Créneau déjà pris.');
+
+  const sh = ensureSheet_();
+  const lastRow = sh.getLastRow();
+  sh.getRange(lastRow + 1, 1, 1, 3).setValues([[dateIso, part, start]]);
   return { ok: true, id: 'RES-' + Utilities.getUuid().slice(0, 8) };
+}
+
+// ====== Helpers feuille ======
+function ensureSheet_() {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(PB.SHEET_NAME);
+  if (!sh) {
+    sh = ss.insertSheet(PB.SHEET_NAME);
+    sh.getRange(1, 1, 1, 3).setValues([['date', 'part', 'start']]);
+  }
+  return sh;
+}
+
+function readAll_(sh) {
+  const rng = sh.getDataRange().getValues();
+  if (rng.length <= 1) return [];
+  return rng.slice(1).map(r => ({ date: String(r[0]), part: String(r[1]), start: String(r[2]) }));
+}
+
+// ====== Helpers temps ======
+function buildTimes_(startHHmm, endHHmm, stepMin) {
+  const [sh, sm] = startHHmm.split(':').map(Number);
+  const [eh, em] = endHHmm.split(':').map(Number);
+  const start = sh * 60 + sm;
+  const end = eh * 60 + em;
+  const out = [];
+  for (let m = start; m < end; m += stepMin) {
+    const hh = String(Math.floor(m / 60)).padStart(2, '0');
+    const mm = String(m % 60).padStart(2, '0');
+    out.push(`${hh}:${mm}`);
+  }
+  return out;
+}
+
+function countIncrements_(s, e, step) {
+  return buildTimes_(s, e, step).length;
+}
+
+function isAligned15_(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  return m % PB.STEP_MIN === 0;
+}
+
+function addDays_(iso, n) {
+  const d = new Date(iso);
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function mondayIso_(d) {
+  const dt = new Date(d);
+  const day = (dt.getDay() + 6) % 7;
+  dt.setDate(dt.getDate() - day);
+  return dt.toISOString().slice(0, 10);
 }
 

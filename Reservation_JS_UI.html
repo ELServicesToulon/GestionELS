@@ -99,6 +99,33 @@
     }
     .link{color:var(--blue);text-decoration:none;font-weight:600}
     .link:focus-visible{outline:var(--focus)}
+    /* ——— PILLBOX ——— */
+    .pillbox-wrap{margin-top:16px}
+    .pillbox{display:grid;grid-template-columns:100px repeat(4,1fr);gap:10px}
+    .pillbox-head{display:contents}
+    .pillbox-head .ph{font-weight:700;color:var(--text);opacity:.8;text-align:center}
+    .pillbox-day{display:flex;align-items:center;justify-content:flex-start;font-weight:700;color:var(--violet);padding:6px 8px}
+    .pillbox-slot{position:relative;min-height:72px;border-radius:16px;background:var(--bg-alt);
+      box-shadow:inset 0 0 0 2px rgba(52,152,219,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;outline:none}
+    .pillbox-slot:focus-visible{outline:var(--focus);outline-offset:2px}
+    .pillbox-slot[data-state="full"]{box-shadow:inset 0 0 0 2px var(--violet)}
+    .pillbox-slot[data-state="busy"]{box-shadow:inset 0 0 0 2px var(--blue)}
+    .pillbox-slot[data-fill]{color:#fff;background:linear-gradient(135deg,var(--violet),var(--blue))}
+    .slot-label{font-size:13px;font-weight:700;letter-spacing:.2px;background:#fff;border-radius:999px;padding:4px 10px;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+    .pillbox-legend{display:flex;gap:10px;align-items:center;margin-top:10px;color:var(--muted);font-size:13px}
+    .pillbox-dot{width:10px;height:10px;border-radius:50%}
+    .pillbox-dot.free{background:var(--bg-alt);box-shadow:inset 0 0 0 2px rgba(52,152,219,.15)}
+    .pillbox-dot.busy{background:var(--blue)}
+    .pillbox-dot.full{background:var(--violet)}
+    /* ——— MODAL ——— */
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+    .modal[hidden]{display:none}
+    .modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.35)}
+    .modal-card{position:relative;background:#fff;border-radius:16px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-width:480px;width:92vw;max-height:80vh;overflow:auto}
+    .time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+    .time-btn{border:2px solid var(--blue);background:#fff;border-radius:999px;padding:8px 10px;font-weight:600;cursor:pointer}
+    .time-btn[disabled]{opacity:.5;cursor:not-allowed}
+    .time-btn.selected{background:var(--blue);color:#fff}
   </style>
   <header>
     <h1 aria-live="polite">Réservation livraison — ELS</h1>
@@ -110,22 +137,42 @@
         <span class="sr-only" id="date-label">Date</span>
         <input id="dateControl" type="date" aria-labelledby="date-label">
       </div>
-
-      <div id="ampmWrap" class="toggle" role="group" aria-label="Créneaux matin/après-midi" hidden>
-        <button id="btnAM" type="button" aria-pressed="true">Matin</button>
-        <button id="btnPM" type="button" aria-pressed="false">Après-midi</button>
-      </div>
-
-      <button id="btnNew" class="pill" type="button">Nouvelle réservation</button>
     </div>
 
-    <section class="card" aria-labelledby="agendaTitle">
-      <h2 id="agendaTitle" class="sr-only">Agenda</h2>
-      <div class="cal-head" aria-hidden="true">
-        <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+    <section class="card pillbox-wrap" aria-labelledby="pillboxTitle">
+      <h2 id="pillboxTitle" class="sr-only">Semainier (Matin, Midi, Après-midi, Soir)</h2>
+
+      <div class="pillbox" id="pillbox" role="grid" aria-describedby="pillboxHelp">
+        <!-- En-têtes colonnes -->
+        <div class="pillbox-head" role="row">
+          <div></div>
+          <div class="ph" role="columnheader" aria-label="Matin">Matin</div>
+          <div class="ph" role="columnheader" aria-label="Midi">Midi</div>
+          <div class="ph" role="columnheader" aria-label="Après-midi">Après-midi</div>
+          <div class="ph" role="columnheader" aria-label="Soir">Soir</div>
+        </div>
+        <!-- Les 7 lignes sont injectées en JS -->
       </div>
-      <div id="calendar" class="calendar"></div>
+
+      <div id="pillboxHelp" class="pillbox-legend">
+        <span class="pillbox-dot free" aria-hidden="true"></span> Dispo
+        <span class="pillbox-dot busy" aria-hidden="true"></span> Occupé
+        <span class="pillbox-dot full" aria-hidden="true"></span> Complet
+      </div>
     </section>
+
+    <!-- MODAL choix horaire -->
+    <div id="timeModal" class="modal" hidden aria-modal="true" role="dialog" aria-labelledby="timeTitle">
+      <div class="modal-backdrop" data-close></div>
+      <div class="modal-card">
+        <h3 id="timeTitle" style="margin:0 0 8px 0;">Choisir l’horaire</h3>
+        <div id="timeList" class="time-grid" role="listbox" aria-label="Horaires disponibles"></div>
+        <div class="row" style="margin-top:12px;">
+          <button id="btnCancelTime" class="pill ghost" type="button">Annuler</button>
+          <button id="btnConfirmTime" class="pill secondary" type="button" disabled>Valider</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
@@ -153,145 +200,130 @@
       el._t = setTimeout(()=>{ el.hidden = true; }, 4000);
     };
 
-    function initDateInput(d){
-      const el = $$('#dateControl');
-      const iso = (d instanceof Date ? d : new Date()).toISOString().slice(0,10);
-      el.value = iso;
-      el.addEventListener('change', () => loadDay(el.value));
-    }
+  // libellés + ordre
+  const PARTS = ["matin","midi","apresmidi","soir"];
+  const PART_LABEL = { matin:"Matin", midi:"Midi", apresmidi:"Après-midi", soir:"Soir" };
+  const DAYS_FR = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 
-    function setAmpmEnabled(enabled){
-      const wrap = $$('#ampmWrap');
-      wrap.hidden = !enabled;
-      if (!enabled) return;
-      const am = $$('#btnAM'); const pm = $$('#btnPM');
-      am.addEventListener('click', () => { am.setAttribute('aria-pressed','true'); pm.setAttribute('aria-pressed','false'); loadDay($$('#dateControl').value,'AM'); });
-      pm.addEventListener('click', () => { am.setAttribute('aria-pressed','false'); pm.setAttribute('aria-pressed','true'); loadDay($$('#dateControl').value,'PM'); });
-    }
+  function mondayIsoOf(dateIso){
+    const d = new Date(dateIso || new Date().toISOString().slice(0,10));
+    const day = (d.getDay()+6)%7; d.setDate(d.getDate()-day);
+    return d.toISOString().slice(0,10);
+  }
+  function addDays(iso,n){ const d=new Date(iso); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+  function labelDay(iso){
+    const d=new Date(iso); const i=(d.getDay()+6)%7;
+    return `${DAYS_FR[i]} ${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`;
+  }
 
-    function renderCalendar(model){
-      // model = { date: 'YYYY-MM-DD', slots:[{dow:0..6, label, fill, pill}], ... }
-      const container = $$('#calendar');
-      const date = model.date ?? new Date().toISOString().slice(0,10);
+  // -------- Rendu semainier agrégé (compte des créneaux réservés vs capacité) --------
+  function renderPillbox(model){
+    const root = document.getElementById('pillbox');
+    root.querySelectorAll('.pillbox-day,.pillbox-slot').forEach(n=>n.remove());
 
-      // grille statique 7 colonnes (lun→dim). On regroupe les créneaux par jour
-      const byDay = Array.from({length:7},()=>[]);
-      (model.slots||[]).forEach(s => {
-        const idx = Math.min(Math.max(Number(s.dow)||0,0),6);
-        byDay[idx].push(s);
+    for (let i=0;i<7;i++){
+      const dayIso = addDays(model.weekStart,i);
+      const dlabel = document.createElement('div');
+      dlabel.className="pillbox-day"; dlabel.setAttribute('role','rowheader'); dlabel.textContent = DAYS_FR[i];
+      root.appendChild(dlabel);
+
+      PARTS.forEach(part=>{
+        const capacity = Number(model.capacity?.[part]||0);
+        const count = Number(model.occ?.[dayIso]?.[part]||0);
+
+        const cell = document.createElement('button');
+        cell.className='pillbox-slot'; cell.type='button'; cell.setAttribute('role','gridcell');
+        cell.dataset.date = dayIso; cell.dataset.part = part;
+        if (capacity===0){ cell.disabled=true; cell.title=`${labelDay(dayIso)} — ${PART_LABEL[part]} indisponible`; }
+        else if (count>=capacity){ cell.dataset.state='full'; cell.dataset.fill='1'; cell.title=`${labelDay(dayIso)} — ${PART_LABEL[part]} : complet (${count}/${capacity})`; }
+        else if (count>0){ cell.dataset.state='busy'; cell.dataset.fill='1'; cell.title=`${labelDay(dayIso)} — ${PART_LABEL[part]} : ${count}/${capacity}`; }
+        else { cell.title=`${labelDay(dayIso)} — ${PART_LABEL[part]} : libre (0/${capacity})`; }
+
+        const badge=document.createElement('span'); badge.className='slot-label'; badge.textContent = capacity ? `${count}/${capacity}` : '—';
+        cell.appendChild(badge);
+
+        cell.addEventListener('click',()=> openTimePicker(dayIso, part));
+        cell.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); cell.click(); } });
+
+        root.appendChild(cell);
       });
+    }
+  }
 
-      container.innerHTML = '';
-      byDay.forEach(items => {
-        const cell = document.createElement('div');
-        cell.className = 'cal-cell';
-        const hasFill = items.some(i => i.fill);
-        if (hasFill) cell.setAttribute('data-fill','1');
+  // -------- Chargement semaine (agrégats) --------
+  function loadWeek(weekStartIso){
+    const ws = weekStartIso || mondayIsoOf(document.getElementById('dateControl').value);
+    if (google?.script?.run){
+      google.script.run
+        .withSuccessHandler(res => renderPillbox(res))
+        .withFailureHandler(e => { console.error(e); toast('Erreur de chargement semaine.'); })
+        .listWeekSlots(ws);
+    } else {
+      const capacity = { matin:16, midi:8, apresmidi:16, soir:12 };
+      const occ = {};
+      occ[ws] = { matin:5 }; occ[addDays(ws,2)] = { midi:7, apresmidi:10 }; occ[addDays(ws,4)] = { soir:4 };
+      renderPillbox({ weekStart: ws, capacity, occ });
+    }
+  }
 
-        const frag = document.createDocumentFragment();
-        items.forEach(i => {
-          const b = document.createElement('span');
-          b.className = 'badge';
-          b.textContent = i.label;
-          frag.appendChild(b);
+  // -------- Modal : choix d’un horaire --------
+  const modal = {
+    el: document.getElementById('timeModal'),
+    list: document.getElementById('timeList'),
+    title: document.getElementById('timeTitle'),
+    btnOk: document.getElementById('btnConfirmTime'),
+    btnCancel: document.getElementById('btnCancelTime'),
+    sel: null,
+    open(dateIso, part){
+      this.el.hidden=false; this.sel=null; this.btnOk.disabled=true;
+      this.title.textContent = `Choisir l’horaire — ${labelDay(dateIso)} • ${PART_LABEL[part]}`;
+      this.list.innerHTML='…';
+      if (google?.script?.run){
+        google.script.run
+          .withSuccessHandler(times => this.renderTimes(dateIso, part, times))
+          .withFailureHandler(e => { console.error(e); toast('Erreur de lecture des horaires.'); })
+          .listAvailableTimes(dateIso, part);
+      } else {
+        const times = Array.from({length:16},(_,i)=>({t:`${String(8+Math.floor(i/4)).padStart(2,'0')}:${String((i%4)*15).padStart(2,'0')}`, available:i%5!==0}));
+        this.renderTimes(dateIso, part, times);
+      }
+    },
+    renderTimes(dateIso, part, times){
+      this.list.innerHTML='';
+      times.forEach(({t,available})=>{
+        const b=document.createElement('button');
+        b.type='button'; b.className='time-btn'; b.textContent=t; b.disabled=!available; b.setAttribute('role','option');
+        b.addEventListener('click', ()=>{
+          this.list.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('selected'));
+          b.classList.add('selected'); this.sel = t; this.btnOk.disabled=false;
         });
-
-        if (items.length === 0) {
-          const small = document.createElement('small');
-          small.style.color = 'var(--muted)';
-          small.textContent = '—';
-          frag.appendChild(small);
-        }
-
-        cell.appendChild(frag);
-        container.appendChild(cell);
+        this.list.appendChild(b);
       });
-    }
+      this.btnOk.onclick = ()=>{
+        if (!this.sel) return;
+        google?.script?.run
+          ?.withSuccessHandler(res=>{ toast('Réservation créée'+(res?.id?` #${res.id}`:'')); this.close(); loadWeek(mondayIsoOf(dateIso)); })
+          ?.withFailureHandler(e=>{ console.error(e); toast('Création impossible.'); })
+          ?.createReservation({ date: dateIso, part, start: this.sel });
+        if (!google?.script?.run){ this.close(); toast(`Mock: ${dateIso} ${part} ${this.sel}`); }
+      };
+    },
+    close(){ this.el.hidden=true; this.sel=null; this.btnOk.disabled=true; }
+  };
+  modal.btnCancel.addEventListener('click',()=>modal.close());
+  modal.el.addEventListener('click', e=>{ if(e.target.hasAttribute('data-close')) modal.close(); });
 
-    function loadDay(dateIso, half){
-      // Appel côté serveur → jamais de fetch direct vers /exec → pas d'erreur JSON/HTML
-      if (window.google && google.script && google.script.run){
-        google.script.run
-          .withSuccessHandler((res)=>{
-            // res attendu : { date, half, slots:[{dow,label,fill}] }
-            renderCalendar({ date: res.date || dateIso, slots: res.slots || [] });
-          })
-          .withFailureHandler((err)=>{
-            console.error(err);
-            toast('Erreur de chargement. Vérifie les autorisations.');
-          })
-          .listSlots(dateIso, half || currentHalf());
-      } else {
-        // Mode hors-GAS (prévisualisation locale) : mock minimal
-        console.warn('google.script.run indisponible — mode mock');
-        const mock = {
-          date: dateIso,
-          slots: [
-            { dow: 0, label: '9:00', fill:true },
-            { dow: 0, label: '11:00' },
-            { dow: 2, label: '14:00', fill:true },
-            { dow: 4, label: '16:30' },
-          ]
-        };
-        renderCalendar(mock);
-        toast('Prévisualisation locale (mock).');
-      }
-    }
+  function openTimePicker(dateIso, part){ modal.open(dateIso, part); }
 
-    function currentHalf(){
-      const am = $$('#btnAM');
-      const pm = $$('#btnPM');
-      if (!am || !pm || $$('#ampmWrap').hidden) return undefined;
-      return am.getAttribute('aria-pressed') === 'true' ? 'AM' : 'PM';
-    }
-
-    function wireNewButton(){
-      $$('#btnNew').addEventListener('click', ()=>{
-        const payload = { date: $$('#dateControl').value, half: currentHalf() };
-        if (window.google && google.script && google.script.run){
-          google.script.run
-            .withSuccessHandler((res)=>{
-              toast('Réservation créée ' + (res?.id ? `#${res.id}` : ''));
-              loadDay(payload.date, payload.half);
-            })
-            .withFailureHandler((e)=>{
-              console.error(e);
-              toast("Impossible de créer la réservation.");
-            })
-            .createReservation(payload);
-        }else{
-          toast('Action mock (hors Apps Script).');
-        }
-      });
-    }
-
-    function boot(){
-      initDateInput(new Date());
-      wireNewButton();
-
-      if (window.google && google.script && google.script.run){
-        // Chargement initial robuste
-        const today = $$('#dateControl').value;
-        google.script.run
-          .withSuccessHandler((model)=>{
-            const enabled = !!(model && (model.ampmEnabled===true || model.SLOTS_AMPM_ENABLED===true));
-            setAmpmEnabled(enabled);
-            renderCalendar({ date: model?.date || today, slots: model?.slots || [] });
-            toast('Agenda chargé.');
-          })
-          .withFailureHandler((err)=>{
-            console.error(err);
-            setAmpmEnabled(false);
-            loadDay(today); // fallback: requête directe des créneaux
-          })
-          .getInitialModel(today);
-      } else {
-        // Preview locale
-        setAmpmEnabled(true);
-        loadDay($$('#dateControl').value,'AM');
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', boot);
+  (function patchDateControlForWeek(){
+    const el=document.getElementById('dateControl'); if(!el) return;
+    el.addEventListener('change', ()=> loadWeek(mondayIsoOf(el.value)));
+  })();
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const today = document.getElementById('dateControl');
+    const iso = today?.value || new Date().toISOString().slice(0,10);
+    if (today) today.value = iso;
+    loadWeek(mondayIsoOf(iso));
+  });
   </script>
 
