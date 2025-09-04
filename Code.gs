@@ -28,7 +28,8 @@ function onOpen() {
     .addItem("Purger les anciennes données (RGPD)", "purgerAnciennesDonnees")
     .addSeparator()
     .addItem("Nettoyer l'onglet Facturation", "nettoyerOngletFacturation")
-    .addItem("Reparer entetes Facturation", "reparerEntetesFacturation");
+    .addItem("Reparer entetes Facturation", "reparerEntetesFacturation")
+    .addItem("Normaliser entetes Facturation", "normaliserEntetesFacturation");
 
   // Ajout des options conditionnelles au menu Maintenance
   if (typeof CALENDAR_RESYNC_ENABLED !== 'undefined' && CALENDAR_RESYNC_ENABLED) {
