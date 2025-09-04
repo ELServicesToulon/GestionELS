@@ -157,6 +157,7 @@ function setUserTheme(theme) {
 function getConfiguration() {
   return {
     slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
+    semainierEnabled: SEMAINIER_ENABLED,
     themeV2Enabled: THEME_V2_ENABLED,
     billingV2Dryrun: BILLING_V2_DRYRUN,
     privacyLinkEnabled: PRIVACY_LINK_ENABLED

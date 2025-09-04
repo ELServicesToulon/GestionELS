@@ -129,8 +129,10 @@ function doGet(e) {
         .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
     }
 
-    if (typeof RESERVATION_UI_V2_ENABLED !== 'undefined' && RESERVATION_UI_V2_ENABLED) {
-      return HtmlService.createHtmlOutputFromFile('Reservation_JS_UI')
+    if (typeof RESERVATION_UI_V2_ENABLED !== 'undefined' && RESERVATION_UI_V2_ENABLED && SEMAINIER_ENABLED) {
+      const tpl = HtmlService.createTemplateFromFile('Reservation_JS_UI');
+      tpl.SEMAINIER_ENABLED = SEMAINIER_ENABLED;
+      return tpl.evaluate()
         .setTitle(NOM_ENTREPRISE + " | Réservation")
         .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
     }
@@ -139,6 +141,7 @@ function doGet(e) {
     const conf = getConfigCached(); // Assurez-vous que getConfigCached existe et fonctionne
 
     // Assignation des variables au template
+    template.SEMAINIER_ENABLED = SEMAINIER_ENABLED;
     template.THEME_SELECTION_ENABLED = THEME_SELECTION_ENABLED;
     template.appUrl = ScriptApp.getService().getUrl();
     template.nomService = NOM_ENTREPRISE;
@@ -263,6 +266,9 @@ const PB = {
  * @return {Object} Modèle pour le semainier.
  */
 function listWeekSlots(weekStartIso) {
+  if (typeof SEMAINIER_ENABLED === 'undefined' || !SEMAINIER_ENABLED) {
+    throw new Error('Semainier désactivé.');
+  }
   const ws = weekStartIso || mondayIso_(new Date());
   const cache = RESERVATION_CACHE_ENABLED ? CacheService.getScriptCache() : null;
   if (cache) {
@@ -316,6 +322,9 @@ function listWeekSlots(weekStartIso) {
  * @return {Array<Object>} Horaires avec disponibilité.
  */
 function listAvailableTimes(dateIso, part) {
+  if (typeof SEMAINIER_ENABLED === 'undefined' || !SEMAINIER_ENABLED) {
+    throw new Error('Semainier désactivé.');
+  }
   const win = PB.WINDOWS[part];
   if (!win) return [];
   const all = buildTimes_(win[0], win[1], PB.STEP_MIN);
@@ -344,6 +353,9 @@ function listAvailableTimes(dateIso, part) {
  * @return {Object} Résultat avec identifiant.
  */
 function createReservation(payload) {
+  if (typeof SEMAINIER_ENABLED === 'undefined' || !SEMAINIER_ENABLED) {
+    throw new Error('Semainier désactivé.');
+  }
   const dateIso = payload?.date;
   const part = payload?.part;
   const start = payload?.start;
