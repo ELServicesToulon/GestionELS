@@ -307,8 +307,10 @@
   <? if (THEME_SELECTION_ENABLED) { ?>
     <?!= include('Script_ThemeSelector'); ?>
   <? } ?>
-  <?!= include('Reservation_JS_UI'); ?>
-  <?!= include('Reservation_JS_UI_Elements'); ?>
+  <? if (THEME_V2_ENABLED) { ?>
+    <?!= include('Reservation_JS_UI'); ?>
+    <?!= include('Reservation_JS_UI_Elements'); ?>
+  <? } ?>
   <?!= include('Reservation_JS_Calendrier'); ?>
   <?!= include('Reservation_JS_Panier'); ?>
   <?!= include('Reservation_JS_Client'); ?>
