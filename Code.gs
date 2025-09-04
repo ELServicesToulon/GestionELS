@@ -237,3 +237,44 @@ function doPost(e) {
   }
 }
 
+/**
+ * Renvoie l'état initial pour l'interface de réservation.
+ * @param {string} dateIso Date au format ISO (YYYY-MM-DD).
+ * @return {Object} Modèle initial.
+ */
+function getInitialModel(dateIso) {
+  return {
+    date: dateIso || new Date().toISOString().slice(0, 10),
+    ampmEnabled: true,
+    slots: []
+  };
+}
+
+/**
+ * Liste des créneaux pour une date et une demi-journée.
+ * @param {string} dateIso Date au format ISO.
+ * @param {string} half 'AM' ou 'PM'.
+ * @return {Object} Créneaux simulés.
+ */
+function listSlots(dateIso, half) {
+  return {
+    date: dateIso,
+    half: half || null,
+    slots: [
+      { dow: 0, label: '09:00', fill: true },
+      { dow: 0, label: '11:00' },
+      { dow: 2, label: '14:00', fill: true },
+      { dow: 4, label: '16:30' }
+    ]
+  };
+}
+
+/**
+ * Crée une réservation et renvoie un identifiant.
+ * @param {Object} payload Données de la réservation.
+ * @return {Object} Résultat avec identifiant simulé.
+ */
+function createReservation(payload) {
+  return { ok: true, id: 'RES-' + Utilities.getUuid().slice(0, 8) };
+}
+
