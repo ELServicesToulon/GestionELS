@@ -21,7 +21,7 @@ function afficherCalendrier(mois, annee) {
       
       if (donnees && donnees.disponibilite && grilleCalendrier && titreCalendrier) {
         window.etat.donneesCalendrier = donnees.disponibilite;
-        grilleCalendrier.innerHTML = '';
+        grilleCalendrier.textContent = '';
         
         titreCalendrier.textContent = new Date(annee, mois - 1).toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
         
@@ -42,7 +42,9 @@ function afficherCalendrier(mois, annee) {
           const disponibilite = window.etat.donneesCalendrier[dateString] || { disponibles: 0, total: 0 };
           
           celluleJour.className = 'jour-calendrier';
-          celluleJour.innerHTML = `<span>${jour}</span>`;
+          const spanJour = document.createElement('span');
+          spanJour.textContent = jour;
+          celluleJour.appendChild(spanJour);
           
           const estPasse = date < aujourdhui;
           const estDimanche = date.getDay() === 0;
@@ -53,11 +55,12 @@ function afficherCalendrier(mois, annee) {
           } else {
             celluleJour.dataset.date = dateString;
             celluleJour.setAttribute('aria-label', `${disponibilite.disponibles} créneaux disponibles`);
-            celluleJour.innerHTML += `
-              <div class="barre-disponibilite">
-                <div style="width:${(disponibilite.disponibles / disponibilite.total) * 100}%"></div>
-              </div>
-            `;
+            const barre = document.createElement('div');
+            barre.className = 'barre-disponibilite';
+            const remplissage = document.createElement('div');
+            remplissage.style.width = `${(disponibilite.disponibles / disponibilite.total) * 100}%`;
+            barre.appendChild(remplissage);
+            celluleJour.appendChild(barre);
           }
           grilleCalendrier.appendChild(celluleJour);
         }

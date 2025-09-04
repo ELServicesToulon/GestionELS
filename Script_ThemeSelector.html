@@ -11,7 +11,7 @@
   function applyTheme(id) {
     const css = THEMES_CSS[id] || THEMES_CSS[THEME_DEFAULT];
     const styleEl = document.getElementById('theme-style');
-    if (styleEl) styleEl.innerHTML = css;
+    if (styleEl) styleEl.textContent = css;
   }
 
   function loadTheme() {
