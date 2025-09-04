@@ -846,20 +846,23 @@ function verifierCoherenceCalendrier() {
         }
         rapportHtml += `${r.idReservation}`;
         if (CALENDAR_RESYNC_ENABLED) {
-          rapportHtml += ` <button id="btn-${r.idReservation}" onclick="resync('${r.idReservation}')">Resync</button>`;
+          rapportHtml += ` <button class="btn-resync" data-id="${r.idReservation}">Resync</button>`;
         }
         rapportHtml += `</li>`;
       });
       rapportHtml += `</ul>`;
       if (CALENDAR_PURGE_ENABLED) {
-        rapportHtml += `<button id="purgerSelection" onclick="purgerSelection()">Purger sélection</button>`;
+        rapportHtml += `<button id="purgerSelection">Purger sélection</button>`;
       }
       rapportHtml += `<script>`;
+      rapportHtml += `window.Maintenance=window.Maintenance||{};`;
       if (CALENDAR_RESYNC_ENABLED) {
-        rapportHtml += `function resync(id){const btn=document.getElementById('btn-'+id);btn.disabled=true;google.script.run.withSuccessHandler(function(){btn.textContent='OK';btn.disabled=false;}).resynchroniserEvenement(id);}`;
+        rapportHtml += `window.Maintenance.resync=function(id,btn){btn.disabled=true;google.script.run.withSuccessHandler(function(){btn.textContent='OK';btn.disabled=false;}).resynchroniserEvenement(id);};`;
+        rapportHtml += `document.querySelectorAll('.btn-resync').forEach(btn=>{btn.addEventListener('click',function(){window.Maintenance.resync(this.dataset.id,this);});});`;
       }
       if (CALENDAR_PURGE_ENABLED) {
-        rapportHtml += `function purgerSelection(){const btn=document.getElementById('purgerSelection');btn.disabled=true;const ids=[...document.querySelectorAll('.purgeBox:checked')].map(cb=>cb.value);if(ids.length===0){btn.disabled=false;return;} (function next(){if(ids.length===0){btn.disabled=false;return;}const id=ids.shift();google.script.run.withSuccessHandler(next).purgerEventIdInexistant(id);})();}`;
+        rapportHtml += `window.Maintenance.purgerSelection=function(btn){btn.disabled=true;const ids=[...document.querySelectorAll('.purgeBox:checked')].map(cb=>cb.value);if(ids.length===0){btn.disabled=false;return;} (function next(){if(ids.length===0){btn.disabled=false;return;}const id=ids.shift();google.script.run.withSuccessHandler(next).purgerEventIdInexistant(id);})();};`;
+        rapportHtml += `const purgeBtn=document.getElementById('purgerSelection');if(purgeBtn){purgeBtn.addEventListener('click',function(){window.Maintenance.purgerSelection(this);});}`;
       }
       rapportHtml += `</script>`;
     }
