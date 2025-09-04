@@ -1,0 +1,32 @@
+<script>
+function escapeHTML(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeHTML(html) {
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  template.content.querySelectorAll('script').forEach(el => el.remove());
+  return template.innerHTML;
+}
+
+function renderText(el, text) {
+  if (el) el.textContent = text;
+}
+
+function renderHTML(el, html) {
+  if (el) el.innerHTML = sanitizeHTML(html);
+}
+
+function renderMessage(el, text, tag = 'p') {
+  if (!el) return;
+  const node = document.createElement(tag);
+  node.textContent = text;
+  el.replaceChildren(node);
+}
+</script>

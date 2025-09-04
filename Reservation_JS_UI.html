@@ -273,7 +273,7 @@
     open(dateIso, part){
       this.el.hidden=false; this.sel=null; this.btnOk.disabled=true; this.btnOk.setAttribute('aria-disabled','true');
       this.title.textContent = `Choisir l’horaire — ${labelDay(dateIso)} • ${PART_LABEL[part]}`;
-      this.list.innerHTML='…';
+      renderText(this.list, '…');
       if (SEMAINIER_ENABLED && google?.script?.run){
         google.script.run
           .withSuccessHandler(times => this.renderTimes(dateIso, part, times))
@@ -285,7 +285,7 @@
       }
     },
     renderTimes(dateIso, part, times){
-      this.list.innerHTML='';
+      renderText(this.list, '');
       times.forEach(({t,available})=>{
         const b=document.createElement('button');
         b.type='button'; b.className='time-btn'; b.textContent=t; b.disabled=!available; b.setAttribute('role','option'); b.setAttribute('aria-selected','false');
