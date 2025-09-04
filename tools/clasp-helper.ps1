@@ -1,6 +1,10 @@
 # Requires: PowerShell 5+, clasp installed and logged in
 # Purpose: Simple modal to Push / Pull / Version for root project or Projet2
 
+$scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+$repoRoot  = if ((Split-Path -Leaf $scriptDir) -eq 'tools') { Split-Path -Parent $scriptDir } else { $scriptDir }
+Push-Location $repoRoot
+
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
@@ -20,10 +24,10 @@ function New-Form {
   $cmbProject.DropDownStyle = 'DropDownList'
   $cmbProject.Location = New-Object System.Drawing.Point(150,16)
   $cmbProject.Size = New-Object System.Drawing.Size(250,22)
-  $root = Get-Location
-  $p2 = Join-Path $root.Path 'Projet2'
-  $cmbProject.Items.Add("Projet 1 (Racine)`t$($root.Path)") | Out-Null
-  if (Test-Path $p2) { $cmbProject.Items.Add("Projet 2 (Projet2)`t$($p2)") | Out-Null }
+    $root = $repoRoot
+    $p2 = Join-Path $root 'Projet2'
+    $cmbProject.Items.Add("Projet 1 (Racine)`t$root") | Out-Null
+    if (Test-Path $p2) { $cmbProject.Items.Add("Projet 2 (Projet2)`t$($p2)") | Out-Null }
   $cmbProject.SelectedIndex = 0
   $form.Controls.Add($cmbProject)
 
@@ -116,7 +120,7 @@ function New-Form {
   $btnCancel.Add_Click({ $form.DialogResult = [System.Windows.Forms.DialogResult]::Cancel; $form.Close() })
   $btnRun.Add_Click({
     $projInfo = $cmbProject.SelectedItem -split "`t",2
-    $projPath = if ($projInfo.Length -ge 2) { $projInfo[1] } else { $root.Path }
+    $projPath = if ($projInfo.Length -ge 2) { $projInfo[1] } else { $root }
     $action = [string]$cmbAction.SelectedItem
     $verName = [string]$txtVersion.Text
     $verNum = [string]$txtVerNum.Text
@@ -238,4 +242,5 @@ function Run-Clasp($spec){
 
 $spec = New-Form
 Run-Clasp $spec
+Pop-Location
 
