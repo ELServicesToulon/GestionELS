@@ -108,6 +108,9 @@ const CALENDAR_RESYNC_ENABLED = true;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
 const CALENDAR_PURGE_ENABLED = true;
 
+/** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
+const RESERVATION_UI_V2_ENABLED = true;
+
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = true;

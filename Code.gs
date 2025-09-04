@@ -129,6 +129,12 @@ function doGet(e) {
         .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
     }
 
+    if (typeof RESERVATION_UI_V2_ENABLED !== 'undefined' && RESERVATION_UI_V2_ENABLED) {
+      return HtmlService.createHtmlOutputFromFile('Reservation_JS_UI')
+        .setTitle(NOM_ENTREPRISE + " | Réservation")
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+    }
+
     const template = HtmlService.createTemplateFromFile('Reservation_Interface');
     const conf = getConfigCached(); // Assurez-vous que getConfigCached existe et fonctionne
 
