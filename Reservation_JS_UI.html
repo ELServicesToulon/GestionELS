@@ -110,7 +110,7 @@
     .pillbox-slot:focus-visible{outline:var(--focus);outline-offset:2px}
     .pillbox-slot[data-state="full"]{box-shadow:inset 0 0 0 2px var(--violet)}
     .pillbox-slot[data-state="busy"]{box-shadow:inset 0 0 0 2px var(--blue)}
-    .pillbox-slot[data-fill]{color:#fff;background:linear-gradient(135deg,var(--violet),var(--blue))}
+    .pillbox-slot[data-fill]{color:#fff;background:linear-gradient(135deg,var(--violet),var(--blue));opacity:calc(.35 + var(--fill)*.65)}
     .slot-label{font-size:13px;font-weight:700;letter-spacing:.2px;background:#fff;border-radius:999px;padding:4px 10px;box-shadow:0 1px 0 rgba(0,0,0,.06)}
     .pillbox-legend{display:flex;gap:10px;align-items:center;margin-top:10px;color:var(--muted);font-size:13px}
     .pillbox-dot{width:10px;height:10px;border-radius:50%}
@@ -230,14 +230,24 @@
       PARTS.forEach(part=>{
         const capacity = Number(model.capacity?.[part]||0);
         const count = Number(model.occ?.[dayIso]?.[part]||0);
+        const ratio = capacity ? count / capacity : 0;
 
         const cell = document.createElement('button');
-        cell.className='pillbox-slot'; cell.type='button'; cell.setAttribute('role','gridcell');
+        cell.className = 'pillbox-slot'; cell.type = 'button'; cell.setAttribute('role', 'gridcell');
         cell.dataset.date = dayIso; cell.dataset.part = part;
-        if (capacity===0){ cell.disabled=true; cell.title=`${labelDay(dayIso)} — ${PART_LABEL[part]} indisponible`; }
-        else if (count>=capacity){ cell.dataset.state='full'; cell.dataset.fill='1'; cell.title=`${labelDay(dayIso)} — ${PART_LABEL[part]} : complet (${count}/${capacity})`; }
-        else if (count>0){ cell.dataset.state='busy'; cell.dataset.fill='1'; cell.title=`${labelDay(dayIso)} — ${PART_LABEL[part]} : ${count}/${capacity}`; }
-        else { cell.title=`${labelDay(dayIso)} — ${PART_LABEL[part]} : libre (0/${capacity})`; }
+        if (capacity === 0) {
+          cell.disabled = true; cell.title = `${labelDay(dayIso)} — ${PART_LABEL[part]} indisponible`;
+        } else if (count >= capacity) {
+          cell.dataset.state = 'full'; cell.title = `${labelDay(dayIso)} — ${PART_LABEL[part]} : complet (${count}/${capacity})`;
+        } else if (count > 0) {
+          cell.dataset.state = 'busy'; cell.title = `${labelDay(dayIso)} — ${PART_LABEL[part]} : ${count}/${capacity}`;
+        } else {
+          cell.title = `${labelDay(dayIso)} — ${PART_LABEL[part]} : libre (0/${capacity})`;
+        }
+        if (ratio > 0) {
+          cell.dataset.fill = ratio.toFixed(2);
+          cell.style.setProperty('--fill', ratio.toFixed(2));
+        }
 
         const badge=document.createElement('span'); badge.className='slot-label'; badge.textContent = capacity ? `${count}/${capacity}` : '—';
         cell.appendChild(badge);
