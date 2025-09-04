@@ -94,7 +94,7 @@ const KM_ARRET_SUP = 3;
 
 // --- Drapeaux de Fonctionnalités Générales ---
 /** @const {boolean} Active l'espace client. */
-const CLIENT_PORTAL_ENABLED = false;
+const CLIENT_PORTAL_ENABLED = true;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
@@ -110,7 +110,7 @@ const CALENDAR_PURGE_ENABLED = true;
 
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
-const DEBUG_MENU_ENABLED = false;
+const DEBUG_MENU_ENABLED = true;
 /** @const {boolean} Sert une version de démo de la page de réservation. */
 const DEMO_RESERVATION_ENABLED = false;
 /** @const {boolean} Active le mode test pour la facturation V2 (aucune écriture). */
@@ -120,11 +120,11 @@ const REQUEST_LOGGING_ENABLED = false;
 /** @const {boolean} Active le traitement des requêtes POST. */
 const POST_ENDPOINT_ENABLED = false;
 /** @const {boolean} Active la mise en cache des paramètres de configuration. */
-const CONFIG_CACHE_ENABLED = false;
+const CONFIG_CACHE_ENABLED = true;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
-const THEME_V2_ENABLED = false;
+const THEME_V2_ENABLED = true;
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
 const THEME_SELECTION_ENABLED = true;
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
