@@ -137,6 +137,8 @@ const REQUEST_LOGGING_ENABLED = false;
 const POST_ENDPOINT_ENABLED = false;
 /** @const {boolean} Active la mise en cache des paramètres de configuration. */
 const CONFIG_CACHE_ENABLED = true;
+/** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
+const RESERVATION_CACHE_ENABLED = false;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
