@@ -254,9 +254,9 @@ function doPost(e) {
  */
 // ====== PARAMÈTRES SEMAINIER ======
 const PB = {
-  SHEET_NAME: SHEET_RESERVATIONS,
-  STEP_MIN: SEMAINIER_STEP_MIN,
-  WINDOWS: SEMAINIER_WINDOWS
+  SHEET_NAME: typeof SHEET_RESERVATIONS !== 'undefined' ? SHEET_RESERVATIONS : 'Réservations',
+  STEP_MIN: typeof SEMAINIER_STEP_MIN !== 'undefined' ? SEMAINIER_STEP_MIN : 15,
+  WINDOWS: typeof SEMAINIER_WINDOWS !== 'undefined' ? SEMAINIER_WINDOWS : {}
 };
 
 // ====== API appelées par l'UI ======
