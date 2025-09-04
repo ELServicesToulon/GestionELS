@@ -112,6 +112,8 @@ const CLIENT_PORTAL_ENABLED = true;
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
+/** @const {boolean} Active le semainier expérimental. */
+const SEMAINIER_ENABLED = false;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
 const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
@@ -217,6 +219,7 @@ function getConfig() {
     MOIS_RETENTION_LOGS: MOIS_RETENTION_LOGS,
     SEMAINIER_WINDOWS: SEMAINIER_WINDOWS,
     SEMAINIER_STEP_MIN: SEMAINIER_STEP_MIN,
+    SEMAINIER_ENABLED: SEMAINIER_ENABLED,
     SHEET_RESERVATIONS: SHEET_RESERVATIONS
   };
 }

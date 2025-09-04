@@ -1,4 +1,5 @@
 <script>
+  const SEMAINIER_ENABLED = <?= SEMAINIER_ENABLED ?>;
   /**
    * LEGACY SHIM — TODO: remove once all deployments use the new UI.
    * Provides inert stubs for legacy global initializers and overwrites
@@ -252,8 +253,9 @@
 
   // -------- Chargement semaine (agrégats) --------
   function loadWeek(weekStartIso){
+    if (!SEMAINIER_ENABLED) return;
     const ws = weekStartIso || mondayIsoOf(document.getElementById('dateControl').value);
-    if (google?.script?.run){
+    if (SEMAINIER_ENABLED && google?.script?.run){
       google.script.run
         .withSuccessHandler(res => renderPillbox(res))
         .withFailureHandler(e => { console.error(e); toast('Erreur de chargement semaine.'); })
@@ -278,7 +280,7 @@
       this.el.hidden=false; this.sel=null; this.btnOk.disabled=true;
       this.title.textContent = `Choisir l’horaire — ${labelDay(dateIso)} • ${PART_LABEL[part]}`;
       this.list.innerHTML='…';
-      if (google?.script?.run){
+      if (SEMAINIER_ENABLED && google?.script?.run){
         google.script.run
           .withSuccessHandler(times => this.renderTimes(dateIso, part, times))
           .withFailureHandler(e => { console.error(e); toast('Erreur de lecture des horaires.'); })
@@ -299,14 +301,17 @@
         });
         this.list.appendChild(b);
       });
-      this.btnOk.onclick = ()=>{
-        if (!this.sel) return;
-        google?.script?.run
-          ?.withSuccessHandler(res=>{ toast('Réservation créée'+(res?.id?` #${res.id}`:'')); this.close(); loadWeek(mondayIsoOf(dateIso)); })
-          ?.withFailureHandler(e=>{ console.error(e); toast('Création impossible.'); })
-          ?.createReservation({ date: dateIso, part, start: this.sel });
-        if (!google?.script?.run){ this.close(); toast(`Mock: ${dateIso} ${part} ${this.sel}`); }
-      };
+        this.btnOk.onclick = ()=>{
+          if (!this.sel) return;
+          if (SEMAINIER_ENABLED && google?.script?.run) {
+            google.script.run
+              .withSuccessHandler(res=>{ toast('Réservation créée'+(res?.id?` #${res.id}`:'')); this.close(); loadWeek(mondayIsoOf(dateIso)); })
+              .withFailureHandler(e=>{ console.error(e); toast('Création impossible.'); })
+              .createReservation({ date: dateIso, part, start: this.sel });
+          } else if (!google?.script?.run) {
+            this.close(); toast(`Mock: ${dateIso} ${part} ${this.sel}`);
+          }
+        };
     },
     close(){ this.el.hidden=true; this.sel=null; this.btnOk.disabled=true; }
   };
@@ -323,7 +328,7 @@
     const today = document.getElementById('dateControl');
     const iso = today?.value || new Date().toISOString().slice(0,10);
     if (today) today.value = iso;
-    loadWeek(mondayIsoOf(iso));
+    if (SEMAINIER_ENABLED) loadWeek(mondayIsoOf(iso));
   });
   </script>
 
