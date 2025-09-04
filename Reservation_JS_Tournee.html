@@ -66,10 +66,34 @@ function mettreAJourResumeTournee() {
   window.etat.tourneeEnCours.totalStops = totalStops;
   window.etat.tourneeEnCours.returnToPharmacy = returnToPharmacy;
   const estimation = calculerInfosTourneeClient(totalStops, returnToPharmacy, window.etat.tourneeEnCours.date, '12h00');
-  ui.resumeConfigTournee.innerHTML = `
-    <div><span>Durée estimée</span><strong>${estimation.duree} min</strong></div>
-    <div><span>Prix estimé</span><strong>~ ${estimation.prix.toFixed(2)} €</strong></div>
-    <div><span>Distance</span><strong>~ ${estimation.km} km</strong></div>`;
+  ui.resumeConfigTournee.textContent = '';
+  const divDuree = document.createElement('div');
+  const spanDuree = document.createElement('span');
+  spanDuree.textContent = 'Durée estimée';
+  const strongDuree = document.createElement('strong');
+  strongDuree.textContent = `${estimation.duree} min`;
+  divDuree.appendChild(spanDuree);
+  divDuree.appendChild(strongDuree);
+
+  const divPrix = document.createElement('div');
+  const spanPrix = document.createElement('span');
+  spanPrix.textContent = 'Prix estimé';
+  const strongPrix = document.createElement('strong');
+  strongPrix.textContent = `~ ${estimation.prix.toFixed(2)} €`;
+  divPrix.appendChild(spanPrix);
+  divPrix.appendChild(strongPrix);
+
+  const divKm = document.createElement('div');
+  const spanKm = document.createElement('span');
+  spanKm.textContent = 'Distance';
+  const strongKm = document.createElement('strong');
+  strongKm.textContent = `~ ${estimation.km} km`;
+  divKm.appendChild(spanKm);
+  divKm.appendChild(strongKm);
+
+  ui.resumeConfigTournee.appendChild(divDuree);
+  ui.resumeConfigTournee.appendChild(divPrix);
+  ui.resumeConfigTournee.appendChild(divKm);
 }
 
 /**
@@ -102,13 +126,33 @@ function afficherSelectionCreneaux(creneaux) {
   ui.modaleConfigTournee.classList.add('hidden');
   ui.titreModaleSelection.textContent = `Créneaux pour le ${new Date(tourneeEnCours.date + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`;
   if (!creneaux || creneaux.length === 0) {
-    ui.grilleSelectionCreneau.innerHTML = '<p class="panier-vide">Aucun créneau disponible pour cette configuration.</p>';
+    ui.grilleSelectionCreneau.textContent = '';
+    const p = document.createElement('p');
+    p.className = 'panier-vide';
+    p.textContent = 'Aucun créneau disponible pour cette configuration.';
+    ui.grilleSelectionCreneau.appendChild(p);
   } else {
-    ui.grilleSelectionCreneau.innerHTML = creneaux.map(creneau => {
+    ui.grilleSelectionCreneau.textContent = '';
+    creneaux.forEach(creneau => {
       const estimation = calculerInfosTourneeClient(tourneeEnCours.totalStops, tourneeEnCours.returnToPharmacy, tourneeEnCours.date, creneau);
       const estUrgent = estimation.typeCourse === 'Urgent';
-      return `<button class="slot-btn ${estUrgent ? 'urgent' : 'standard'}" data-creneau="${creneau}" data-prix="${estimation.prix}" data-tarif="${estimation.typeCourse}"><span class="slot-time">${creneau}</span><span class="slot-rate-label">${estimation.typeCourse}</span></button>`;
-    }).join('');
+      const btn = document.createElement('button');
+      btn.className = `slot-btn ${estUrgent ? 'urgent' : 'standard'}`;
+      btn.dataset.creneau = creneau;
+      btn.dataset.prix = estimation.prix;
+      btn.dataset.tarif = estimation.typeCourse;
+
+      const spanTime = document.createElement('span');
+      spanTime.className = 'slot-time';
+      spanTime.textContent = creneau;
+      const spanRate = document.createElement('span');
+      spanRate.className = 'slot-rate-label';
+      spanRate.textContent = estimation.typeCourse;
+      btn.appendChild(spanTime);
+      btn.appendChild(spanRate);
+
+      ui.grilleSelectionCreneau.appendChild(btn);
+    });
   }
   reinitialiserRecapCreneau();
   if(ui.btnAjouterAuPanier) ui.btnAjouterAuPanier.disabled = true;
@@ -197,16 +241,36 @@ function afficherModaleConfirmationRecurrence(resultats) {
   const modale = document.getElementById('modale-confirmation-recurrence');
   const listeUI = document.getElementById('liste-recurrence-details');
   modale.dataset.recurrenceData = JSON.stringify(resultats);
-  listeUI.innerHTML = resultats.map(res => {
-    let content = '';
+  listeUI.textContent = '';
+  resultats.forEach(res => {
+    const li = document.createElement('li');
+    if (res.status !== 'OK') li.classList.add('conflit');
+
+    const strongDate = document.createElement('strong');
+    strongDate.textContent = res.dateFormatee;
+    li.appendChild(strongDate);
+
     if (res.status === 'OK') {
-      content = `<strong>${res.dateFormatee}</strong> à ${res.creneau} <span class="status-ok">✔ Disponible</span>`;
+      li.appendChild(document.createTextNode(` à ${res.creneau} `));
+      const spanOk = document.createElement('span');
+      spanOk.className = 'status-ok';
+      spanOk.textContent = '✔ Disponible';
+      li.appendChild(spanOk);
     } else {
-      content = `<strong>${res.dateFormatee}</strong> - <span class="status-conflict">⚠ Conflit</span><br>
-                 Créneau initial ${res.original} indisponible. Alternative proposée : <strong>${res.creneau || 'Aucune'}</strong>`;
+      li.appendChild(document.createTextNode(' - '));
+      const spanConflict = document.createElement('span');
+      spanConflict.className = 'status-conflict';
+      spanConflict.textContent = '⚠ Conflit';
+      li.appendChild(spanConflict);
+      li.appendChild(document.createElement('br'));
+      li.appendChild(document.createTextNode(`Créneau initial ${res.original} indisponible. Alternative proposée : `));
+      const strongAlt = document.createElement('strong');
+      strongAlt.textContent = res.creneau || 'Aucune';
+      li.appendChild(strongAlt);
     }
-    return `<li class="${res.status === 'OK' ? '' : 'conflit'}">${content}</li>`;
-  }).join('');
+
+    listeUI.appendChild(li);
+  });
   modale.classList.remove('hidden');
 }
 
