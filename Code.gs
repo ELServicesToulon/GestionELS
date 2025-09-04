@@ -348,6 +348,7 @@ function createReservation(payload) {
   const part = payload?.part;
   const start = payload?.start;
   if (!dateIso || !part || !start) throw new Error('Paramètres manquants.');
+  if (!PB.WINDOWS[part]) throw new Error('Part inconnue');
   if (!isAligned15_(start)) throw new Error("L'heure doit être un multiple de 15 minutes.");
   const avail = listAvailableTimes(dateIso, part).find(x => x.t === start);
   if (!avail || !avail.available) throw new Error('Créneau déjà pris.');
