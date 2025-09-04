@@ -25,7 +25,7 @@ function calculerCAEnCours() {
     return null;
   }
 
-  const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
+  const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
   if (!feuille) return null;
 
   const indices = obtenirIndicesEnTetes(feuille, ["Date", "Montant"]);
@@ -57,7 +57,7 @@ function obtenirToutesReservationsAdmin() {
       return { success: false, error: "Accès non autorisé." };
     }
 
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
+    const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const enTetesRequis = ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant", "Type Remise Appliquée", "Valeur Remise Appliquée", "Tournée Offerte Appliquée", "Statut"];
@@ -77,7 +77,7 @@ function obtenirToutesReservationsAdmin() {
         const eventId = String(ligne[indices["Event ID"]]).trim();
         if (eventId) {
           try {
-            const evenementRessource = Calendar.Events.get(ID_CALENDRIER, eventId);
+            const evenementRessource = Calendar.Events.get(getSecret('ID_CALENDRIER'), eventId);
             // On met à jour avec les infos du calendrier si elles existent, car elles sont plus précises
             dateDebutEvenement = new Date(evenementRessource.start.dateTime || evenementRessource.start.date);
             dateFinEvenement = new Date(evenementRessource.end.dateTime || evenementRessource.end.date);
@@ -151,7 +151,7 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
       return { success: false, error: "Accès non autorisé." };
     }
 
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
+    const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const enTetesRequis = ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant", "Type Remise Appliquée", "Valeur Remise Appliquée", "Tournée Offerte Appliquée", "Statut"];
@@ -180,7 +180,7 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
         const eventId = String(ligne[indices["Event ID"]]).trim();
         if (eventId) {
           try {
-            const evenementRessource = Calendar.Events.get(ID_CALENDRIER, eventId);
+            const evenementRessource = Calendar.Events.get(getSecret('ID_CALENDRIER'), eventId);
             dateDebutEvenement = new Date(evenementRessource.start.dateTime || evenementRessource.start.date);
             dateFinEvenement = new Date(evenementRessource.end.dateTime || evenementRessource.end.date);
           } catch (err) {
@@ -250,7 +250,7 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
  */
 function obtenirTousLesClients() {
     try {
-        const feuilleClients = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_CLIENTS);
+        const feuilleClients = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_CLIENTS);
         if (!feuilleClients) return [];
         const indices = obtenirIndicesEnTetes(feuilleClients, ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES]);
         const donnees = feuilleClients.getDataRange().getValues();
@@ -336,7 +336,7 @@ function creerReservationAdmin(data) {
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${data.client.nom}`;
     const descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${typeCourse}\nID Réservation: ${idReservation}\nArrêts suppl: ${data.additionalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${prix.toFixed(2)} €\nNote: Ajouté par admin.`;
 
-    const evenement = CalendarApp.getCalendarById(ID_CALENDRIER).createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
+    const evenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
 
     if (evenement) {
       const detailsFacturation = `Tournée de ${duree}min (${data.additionalStops} arrêt(s) sup., retour: ${data.returnToPharmacy ? 'oui' : 'non'})`;
@@ -381,7 +381,7 @@ function supprimerReservation(idReservation) {
       return { success: false, error: "Accès non autorisé." };
     }
 
-    const feuilleFacturation = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
+    const feuilleFacturation = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     if (!feuilleFacturation) throw new Error("La feuille 'Facturation' est introuvable.");
 
     const enTete = feuilleFacturation.getRange(1, 1, 1, feuilleFacturation.getLastColumn()).getValues()[0];
@@ -406,7 +406,7 @@ function supprimerReservation(idReservation) {
     const montant = ligneASupprimer[indices.montant];
 
     try {
-      CalendarApp.getCalendarById(ID_CALENDRIER).getEventById(eventId).deleteEvent();
+      CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).getEventById(eventId).deleteEvent();
     } catch (e) {
       Logger.log(`Impossible de supprimer l'événement Calendar ${eventId}: ${e.message}. Il a peut-être déjà été supprimé.`);
     }
@@ -433,7 +433,7 @@ function genererFactures() {
     validerConfiguration();
     logAdminAction("Génération Factures", "Démarrée");
 
-    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuilleFacturation = ss.getSheetByName(SHEET_FACTURATION);
     const feuilleClients = ss.getSheetByName(SHEET_CLIENTS);
     const feuilleParams = ss.getSheetByName(SHEET_PARAMETRES);
@@ -511,18 +511,18 @@ function genererFactures() {
         const totalTTC = totalHT + tva;
         const dateEcheance = new Date(dateFacture.getTime() + (DELAI_PAIEMENT_JOURS * 24 * 60 * 60 * 1000));
 
-        const dossierArchives = DriveApp.getFolderById(ID_DOSSIER_ARCHIVES);
+        const dossierArchives = DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES'));
         const dossierAnnee = obtenirOuCreerDossier(dossierArchives, dateFacture.getFullYear().toString());
         const dossierMois = obtenirOuCreerDossier(dossierAnnee, formaterDatePersonnalise(dateFacture, "MMMM yyyy"));
 
-        const modeleFacture = DriveApp.getFileById(ID_MODELE_FACTURE);
+        const modeleFacture = DriveApp.getFileById(getSecret('ID_MODELE_FACTURE'));
         const copieFactureDoc = modeleFacture.makeCopy(`${numFacture} - ${clientInfos.nom}`, dossierMois);
         const doc = DocumentApp.openById(copieFactureDoc.getId());
         const corps = doc.getBody();
 
         corps.replaceText('{{nom_entreprise}}', NOM_ENTREPRISE);
         corps.replaceText('{{adresse_entreprise}}', ADRESSE_ENTREPRISE);
-        corps.replaceText('{{siret}}', SIRET);
+        corps.replaceText('{{siret}}', getSecret('SIRET'));
         corps.replaceText('{{email_entreprise}}', EMAIL_ENTREPRISE);
         corps.replaceText('{{client_nom}}', clientInfos.nom);
         corps.replaceText('{{client_adresse}}', clientInfos.adresse);
@@ -535,8 +535,8 @@ function genererFactures() {
         corps.replaceText('{{montant_tva}}', tva.toFixed(2));
         corps.replaceText('{{total_ttc}}', totalTTC.toFixed(2));
         corps.replaceText('{{date_echeance}}', formaterDatePersonnalise(dateEcheance, 'dd/MM/yyyy'));
-        corps.replaceText('{{rib_entreprise}}', RIB_ENTREPRISE);
-        corps.replaceText('{{bic_entreprise}}', BIC_ENTREPRISE);
+        corps.replaceText('{{rib_entreprise}}', getSecret('RIB_ENTREPRISE'));
+        corps.replaceText('{{bic_entreprise}}', getSecret('BIC_ENTREPRISE'));
         
         const tableBordereau = trouverTableBordereau(corps);
         if (tableBordereau) {
@@ -609,7 +609,7 @@ function genererFactures() {
 function envoyerFacturesControlees() {
   const ui = SpreadsheetApp.getUi();
   try {
-    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
@@ -642,7 +642,7 @@ function archiverFacturesDuMois() {
     const debutMoisPrecedent = new Date(maintenant.getFullYear(), maintenant.getMonth() - 1, 1);
     const finMoisPrecedent = new Date(debutMoisCourant.getTime() - 24 * 60 * 60 * 1000);
 
-    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
@@ -658,7 +658,7 @@ function archiverFacturesDuMois() {
     }
 
     const donnees = feuille.getDataRange().getValues();
-    const dossierArchives = DriveApp.getFolderById(ID_DOSSIER_ARCHIVES);
+    const dossierArchives = DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES'));
     const dossierAnnee = obtenirOuCreerDossier(dossierArchives, debutMoisPrecedent.getFullYear().toString());
     const libMois = formaterDatePersonnalise(debutMoisPrecedent, "MMMM yyyy");
     const dossierMois = obtenirOuCreerDossier(dossierAnnee, libMois);

@@ -151,6 +151,24 @@ function setUserTheme(theme) {
 }
 
 /**
+ * Récupère un secret depuis les Script Properties.
+ * @param {string} name Nom de la propriété.
+ * @returns {string|null} Valeur du secret.
+ */
+function getSecret(name) {
+  return PropertiesService.getScriptProperties().getProperty(name);
+}
+
+/**
+ * Enregistre un secret dans les Script Properties.
+ * @param {string} name Nom de la propriété.
+ * @param {string} value Valeur à stocker.
+ */
+function setSecret(name, value) {
+  PropertiesService.getScriptProperties().setProperty(name, value);
+}
+
+/**
  * Retourne les flags d'activation pour le client.
  * @returns {Object} Flags configurables depuis Configuration.gs.
  */

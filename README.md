@@ -80,10 +80,16 @@ Si un événement supprimé ne doit pas être recréé, on peut purger sa réfé
 4. Désactiver le flag une fois l'opération terminée.
 
 ## Script Properties
-Define these keys in the Apps Script project via `PropertiesService`:
+Set the following keys in the Apps Script editor (File → Project properties → Script properties):
 
-- `ADRESSE_ENTREPRISE`
+- `SIRET`
 - `RIB_ENTREPRISE`
 - `BIC_ENTREPRISE`
+- `ID_CALENDRIER`
+- `ID_DOCUMENT_CGV`
+- `ID_FEUILLE_CALCUL`
+- `ID_MODELE_FACTURE`
+- `ID_DOSSIER_ARCHIVES`
+- `ID_DOSSIER_TEMPORAIRE`
 
-Run `initScriptProperties()` in `Configuration.gs` to populate default values.
+Open the Apps Script editor, go to **File → Project properties → Script properties**, and add each key with its value.

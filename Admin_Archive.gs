@@ -11,7 +11,7 @@ function archiverFacturesDuMois() {
     const debutMoisPrecedent = new Date(maintenant.getFullYear(), maintenant.getMonth() - 1, 1);
     const finMoisPrecedent = new Date(debutMoisCourant.getTime() - 24 * 60 * 60 * 1000);
 
-    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
     const lastCol = feuille.getLastColumn();
@@ -27,7 +27,7 @@ function archiverFacturesDuMois() {
     }
 
     const donnees = feuille.getDataRange().getValues();
-    const dossierArchives = DriveApp.getFolderById(ID_DOSSIER_ARCHIVES);
+    const dossierArchives = DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES'));
     const dossierAnnee = obtenirOuCreerDossier(dossierArchives, debutMoisPrecedent.getFullYear().toString());
     const libMois = formaterDatePersonnalise(debutMoisPrecedent, "MMMM yyyy");
     const dossierMois = obtenirOuCreerDossier(dossierAnnee, libMois);

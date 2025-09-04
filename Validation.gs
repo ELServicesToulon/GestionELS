@@ -19,8 +19,9 @@ function validerConfiguration() {
     erreurs.push(`Format de l'e-mail administrateur invalide : ${ADMIN_EMAIL}`);
   }
   
-  if (!/^\d{14}$/.test(SIRET)) {
-    erreurs.push(`Format du SIRET invalide. Il doit contenir 14 chiffres. Valeur actuelle : ${SIRET}`);
+  const siret = getSecret('SIRET');
+  if (!/^\d{14}$/.test(siret)) {
+    erreurs.push(`Format du SIRET invalide. Il doit contenir 14 chiffres. Valeur actuelle : ${siret}`);
   }
   
   // --- Vérification de la cohérence ---
@@ -29,12 +30,12 @@ function validerConfiguration() {
   }
 
   // --- Test d'accès aux IDs des services Google ---
-  try { DriveApp.getFolderById(ID_DOSSIER_ARCHIVES); } catch (e) { erreurs.push("L'ID du dossier d'archives (ID_DOSSIER_ARCHIVES) est invalide ou l'accès est refusé."); }
-  try { DriveApp.getFolderById(ID_DOSSIER_TEMPORAIRE); } catch (e) { erreurs.push("L'ID du dossier temporaire (ID_DOSSIER_TEMPORAIRE) est invalide ou l'accès est refusé."); }
-  try { DocumentApp.openById(ID_MODELE_FACTURE); } catch (e) { erreurs.push("L'ID du modèle de facture (ID_MODELE_FACTURE) est invalide ou l'accès est refusé."); }
-  try { SpreadsheetApp.openById(ID_FEUILLE_CALCUL); } catch (e) { erreurs.push("L'ID de la feuille de calcul (ID_FEUILLE_CALCUL) est invalide ou l'accès est refusé."); }
-  try { DocumentApp.openById(ID_DOCUMENT_CGV); } catch (e) { erreurs.push("L'ID du document des CGV (ID_DOCUMENT_CGV) est invalide ou l'accès est refusé."); }
-  try { CalendarApp.getCalendarById(ID_CALENDRIER); } catch (e) { erreurs.push("L'ID du calendrier (ID_CALENDRIER) est invalide ou l'accès est refusé."); }
+  try { DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES')); } catch (e) { erreurs.push("L'ID du dossier d'archives (ID_DOSSIER_ARCHIVES) est invalide ou l'accès est refusé."); }
+  try { DriveApp.getFolderById(getSecret('ID_DOSSIER_TEMPORAIRE')); } catch (e) { erreurs.push("L'ID du dossier temporaire (ID_DOSSIER_TEMPORAIRE) est invalide ou l'accès est refusé."); }
+  try { DocumentApp.openById(getSecret('ID_MODELE_FACTURE')); } catch (e) { erreurs.push("L'ID du modèle de facture (ID_MODELE_FACTURE) est invalide ou l'accès est refusé."); }
+  try { SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')); } catch (e) { erreurs.push("L'ID de la feuille de calcul (ID_FEUILLE_CALCUL) est invalide ou l'accès est refusé."); }
+  try { DocumentApp.openById(getSecret('ID_DOCUMENT_CGV')); } catch (e) { erreurs.push("L'ID du document des CGV (ID_DOCUMENT_CGV) est invalide ou l'accès est refusé."); }
+  try { CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')); } catch (e) { erreurs.push("L'ID du calendrier (ID_CALENDRIER) est invalide ou l'accès est refusé."); }
 
   // --- Gestion centralisée des erreurs ---
   if (erreurs.length > 0) {
