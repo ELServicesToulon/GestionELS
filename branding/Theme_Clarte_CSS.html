@@ -1,37 +1,74 @@
-<style>
-:root {
-  --couleur-primaire: #8e44ad;
-  --couleur-secondaire: #3498db;
-  --couleur-accent: #5dade2;
-  --gris-clair: #ffffff;
-  --gris-moyen: #5f6b7a;
-  --gris-fonce: #1e2430;
-  --couleur-bordure: #e6ebf1;
-}
-body {
-  background-color: var(--gris-clair);
-  color: var(--gris-fonce);
-  font-family: 'Montserrat', sans-serif;
-}
+/* Thème Clarté (Light) */
+  :root {
+    --font: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+    --violet: #8e44ad;
+    --bleu: #3498db;
+    --bleu-clair: #5dade2;
+    --couleur-erreur: #c0392b;
 
-.theme-selector {
-  position: relative;
-}
+    /* Couleurs principales du thème clair */
+    --txt: #212529; /* Texte principal (presque noir) */
+    --bg: #f8f9fa;  /* Fond général (très clair) */
+    --bg-panel: #ffffff; /* Fond des cartes et modales (blanc) */
+    --muted: #6c757d;    /* Texte secondaire (gris) */
+    --couleur-bordure: #dee2e6; /* Bordures (gris clair) */
 
-#menu-theme {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: var(--gris-clair, var(--bg));
-  border: 1px solid var(--couleur-bordure, var(--muted));
-  padding: 8px;
-  border-radius: var(--radius, 8px);
-  z-index: 1000;
-}
+    /* Variables de base */
+    --radius: 12px;
+    --radius-pill: 9999px;
+    --shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    --grad: linear-gradient(135deg, var(--violet), var(--bleu));
+    --grad-soft: linear-gradient(135deg, color-mix(in oklab, var(--violet) 85%, #fff 15%), color-mix(in oklab, var(--bleu) 85%, #fff 15%));
 
-#menu-theme button {
-  display: block;
-  width: 100%;
-  margin: 4px 0;
-}
-</style>
+    /* Alias sémantiques */
+    --couleur-primaire: var(--violet);
+    --couleur-secondaire: var(--bleu);
+    --couleur-succes: var(--bleu-clair);
+    --police-principale: var(--font);
+    --ombre-portee: var(--shadow);
+  }
+
+  /* Ajustements spécifiques pour le thème clair */
+  .btn-primaire {
+    color: #ffffff; /* Texte blanc sur fond violet/bleu */
+  }
+
+  .btn-secondaire {
+    background-color: #e9ecef;
+    color: #343a40;
+  }
+  .btn-secondaire:not(:disabled):hover {
+    background-color: #d1d6db;
+  }
+
+  .slot-btn {
+    color: var(--txt);
+    border-color: var(--couleur-bordure);
+  }
+
+  .slot-btn.standard:not(:disabled):hover {
+    background-color: color-mix(in oklab, var(--violet) 15%, transparent);
+    border-color: var(--violet);
+    color: var(--violet);
+  }
+  .slot-btn.standard.selected {
+    background-color: var(--violet);
+    border-color: var(--violet);
+    color: #ffffff;
+  }
+  .slot-btn.standard.selected .slot-rate-label {
+    color: #ffffff;
+  }
+
+  .indicateur-chargement-overlay {
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+
+  .spinner {
+    border-color: #ced4da;
+    border-top-color: var(--violet);
+  }
+
+  .modale-contenu, .carte, .panel {
+    background-color: var(--bg-panel);
+  }

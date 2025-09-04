@@ -27,25 +27,15 @@
     <main id="conteneur-app" class="hidden">
 
       <div class="carte barre-outils">
-        <div class="theme-selector">
-          <button id="btn-theme" class="btn btn-secondaire btn--client hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
+        <? if (THEME_SELECTION_ENABLED) { ?>
+          <div class="theme-selector">
+            <button id="btn-theme" class="btn btn-secondaire btn--client hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
             <div id="menu-theme" class="hidden" role="menu">
               <button class="option-theme btn btn-secondaire btn--client" data-theme="clarte" role="menuitem">Clarté</button>
               <button class="option-theme btn btn-secondaire btn--client" data-theme="nocturne" role="menuitem">Nocturne</button>
             </div>
-
-        <div class="carte barre-outils">
-          <? if (THEME_SELECTION_ENABLED) { ?>
-            <div class="theme-selector">
-              <button id="btn-theme" class="btn btn-secondaire hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
-              <div id="menu-theme" class="hidden" role="menu">
-                <button class="option-theme btn btn-secondaire" data-theme="clarte" role="menuitem">Clarté</button>
-                <button class="option-theme btn btn-secondaire" data-theme="nocturne" role="menuitem">Nocturne</button>
-              </div>
-            </div>
-          <? } ?>
-
-        </div>
+          </div>
+        <? } ?>
       <div id="ca-client" class="carte" tabindex="0"></div>
       <div id="liste-reservations" class="carte">
         <h3>Vos prochaines courses</h3>
