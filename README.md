@@ -91,5 +91,14 @@ Set the following keys in the Apps Script editor (File → Project properties �
 - `ID_MODELE_FACTURE`
 - `ID_DOSSIER_ARCHIVES`
 - `ID_DOSSIER_TEMPORAIRE`
+- `ELS_SHARED_SECRET` – jeton partagé pour l'authentification des requêtes
 
 Open the Apps Script editor, go to **File → Project properties → Script properties**, and add each key with its value.
+
+## Authentification des requêtes
+Toutes les requêtes vers la web app doivent fournir le jeton défini dans `ELS_SHARED_SECRET`.
+
+- En-tête HTTP `X-ELS-TOKEN: <votre_jeton>`
+- ou paramètre `token=<votre_jeton>` / `X-ELS-TOKEN=<votre_jeton>` dans l'URL ou le corps
+
+Les requêtes sans jeton valide reçoivent une réponse JSON `403`.
