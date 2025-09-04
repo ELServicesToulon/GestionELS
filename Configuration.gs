@@ -13,12 +13,6 @@ const NOM_ENTREPRISE = "EL Services";
 const ADRESSE_ENTREPRISE = "255 Avenue Marcel Castie B, 83000 Toulon";
 /** @const {string} Adresse e-mail de contact de l'entreprise. */
 const EMAIL_ENTREPRISE = "elservicestoulon@gmail.com";
-/** @const {string} Numéro SIRET d'immatriculation de l'entreprise. */
-const SIRET = "48091306000020";
-/** @const {string} IBAN utilisé pour les règlements clients. */
-const RIB_ENTREPRISE = "FR7640618804760004035757187";
-/** @const {string} Code BIC correspondant au compte bancaire de l'entreprise. */
-const BIC_ENTREPRISE = "BOUSFRPPXXX";
 /** @const {string} Adresse e-mail recevant les notifications administratives. */
 const ADMIN_EMAIL = "elservicestoulon@gmail.com";
 
@@ -35,20 +29,6 @@ const DELAI_PAIEMENT_JOURS = 5;
 const ANNEES_RETENTION_FACTURES = 5;
 /** @const {number} Durée de conservation des logs d'activité (mois). */
 const MOIS_RETENTION_LOGS = 12;
-
-// --- Identifiants des services Google ---
-/** @const {string} Identifiant du calendrier Google utilisé pour les réservations. */
-const ID_CALENDRIER = "Elservicestoulon@gmail.com";
-/** @const {string} ID du document Google Docs contenant les CGV. */
-const ID_DOCUMENT_CGV = "1ze9U3k_tcS-RlhIcI8zSs2OYom2miVy8WxyxT8ktFp0";
-/** @const {string} ID de la feuille de calcul Google Sheets principale. */
-const ID_FEUILLE_CALCUL = "1-i8xBlCrl_Rrjo2FgiL33pIRjD1EFqyvU7ILPud3-r4";
-/** @const {string} ID du modèle Google Docs utilisé pour générer les factures PDF. */
-const ID_MODELE_FACTURE = "1KWDS0gmyK3qrYWJd01vGID5fBVK10xlmErjgr7lrwmU";
-/** @const {string} ID du dossier Google Drive où sont archivées les factures. */
-const ID_DOSSIER_ARCHIVES = "1UavaEsq6TkDw1QzJZ91geKyF7hrQY4S8";
-/** @const {string} ID du dossier Google Drive temporaire pour les fichiers intermédiaires. */
-const ID_DOSSIER_TEMPORAIRE = "1yDBSzTqwaUt-abT0s7Z033C2WlN1NSs6";
 
 // --- Noms des feuilles de calcul ---
 /** @const {string} Feuille contenant les données de facturation. */

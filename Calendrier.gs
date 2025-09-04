@@ -13,7 +13,7 @@
  */
 function obtenirEvenementsCalendrierPourPeriode(dateDebut, dateFin) {
   try {
-    const evenements = Calendar.Events.list(ID_CALENDRIER, {
+    const evenements = Calendar.Events.list(getSecret('ID_CALENDRIER'), {
       timeMin: dateDebut.toISOString(),
       timeMax: dateFin.toISOString(),
       singleEvents: true,

@@ -77,7 +77,7 @@ function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
 
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${client.nom}`;
     const descriptionEvenement = `Client: ${client.nom} (${client.email})\nID Réservation: ${idReservation}\nDétails: ${infosTournee.details}\nNote: ${client.note || ''}`;
-    const evenement = CalendarApp.getCalendarById(ID_CALENDRIER).createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
+    const evenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
 
     if (evenement) {
         const infosPrixFinal = calculerPrixEtDureeServeur(totalStops, returnToPharmacy, date, startTime, clientPourCalcul);
@@ -326,7 +326,7 @@ function trouverAlternativeProche(creneauCible, creneauxDisponibles) {
  * Récupère toutes les réservations pour un email client (et optionnellement une date).
  */
 function obtenirReservationsPourClient(email, date) {
-  var sheet = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
+  var sheet = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
   var data = sheet.getDataRange().getValues();
   var headers = data[0];
   var emailIndex = headers.indexOf("Client (Email)");

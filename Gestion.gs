@@ -35,7 +35,7 @@ function validerClientParEmail(emailClient) {
  */
 function obtenirReservationsClient(emailClient) {
   try {
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
+    const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const indices = obtenirIndicesEnTetes(feuille, ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant"]);
     
     const donnees = feuille.getDataRange().getValues();
@@ -58,7 +58,7 @@ function obtenirReservationsClient(emailClient) {
 
         if (eventId) {
           try {
-            const evenementRessource = Calendar.Events.get(ID_CALENDRIER, eventId);
+            const evenementRessource = Calendar.Events.get(getSecret('ID_CALENDRIER'), eventId);
             dateDebut = new Date(evenementRessource.start.dateTime || evenementRessource.start.date);
             dateFin = new Date(evenementRessource.end.dateTime || evenementRessource.end.date);
           } catch (err) {
@@ -114,7 +114,7 @@ function calculerCAEnCoursClient(emailClient) {
     if (!CA_EN_COURS_ENABLED) return 0;
     if (!emailClient) return 0;
 
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
+    const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     if (!feuille) return 0;
     const indices = obtenirIndicesEnTetes(feuille, ['Date', 'Client (Email)', 'Montant']);
     const lignes = feuille.getDataRange().getValues();
@@ -144,7 +144,7 @@ function calculerCAEnCoursClient(emailClient) {
  */
 function obtenirFacturesPourClient(emailClient) {
   try {
-    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuilles = BILLING_MULTI_SHEET_ENABLED
       ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
       : [ss.getSheetByName(SHEET_FACTURATION)];
@@ -193,7 +193,7 @@ function obtenirFacturesPourClient(emailClient) {
 function envoyerFactureClient(emailClient, numeroFacture) {
   try {
     if (!emailClient || !numeroFacture) throw new Error('Paramètres manquants.');
-    const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuilles = BILLING_MULTI_SHEET_ENABLED
       ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
       : [ss.getSheetByName(SHEET_FACTURATION)];
@@ -243,7 +243,7 @@ function mettreAJourDetailsReservation(idReservation, nouveauxArrets) {
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé, veuillez réessayer." };
 
   try {
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
+    const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
       idResa: enTete.indexOf("ID Réservation"), idEvent: enTete.indexOf("Event ID"),
@@ -266,7 +266,7 @@ function mettreAJourDetailsReservation(idReservation, nouveauxArrets) {
 
     try {
       if (idEvenement) {
-        ressourceEvenement = Calendar.Events.get(ID_CALENDRIER, idEvenement);
+        ressourceEvenement = Calendar.Events.get(getSecret('ID_CALENDRIER'), idEvenement);
         dateDebutOriginale = new Date(ressourceEvenement.start.dateTime);
       }
     } catch (e) {
@@ -289,7 +289,7 @@ function mettreAJourDetailsReservation(idReservation, nouveauxArrets) {
         end: { dateTime: nouvelleDateFin.toISOString() },
         description: ressourceEvenement.description.replace(/Total:.*€/, `Total: ${nouveauPrix.toFixed(2)} €`).replace(/Arrêts suppl:.*\n/, `Arrêts suppl: ${nouveauxArrets}, Retour: ${retourPharmacie ? 'Oui' : 'Non'}\n`)
       };
-      Calendar.Events.patch(ressourceMaj, ID_CALENDRIER, idEvenement);
+      Calendar.Events.patch(ressourceMaj, getSecret('ID_CALENDRIER'), idEvenement);
     }
 
     // On met TOUJOURS à jour la feuille de calcul
@@ -319,7 +319,7 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé." };
 
   try {
-    const feuille = SpreadsheetApp.openById(ID_FEUILLE_CALCUL).getSheetByName(SHEET_FACTURATION);
+    const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
       idResa: enTete.indexOf("ID Réservation"), idEvent: enTete.indexOf("Event ID"),
@@ -355,7 +355,7 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
 
     // Essayer de supprimer l'ancien événement s'il existe
     try {
-      if (idEvenementAncien) Calendar.Events.remove(ID_CALENDRIER, idEvenementAncien);
+      if (idEvenementAncien) Calendar.Events.remove(getSecret('ID_CALENDRIER'), idEvenementAncien);
     } catch (e) {
       Logger.log(`L'ancien événement ${idEvenementAncien} n'a pas pu être supprimé (il n'existait probablement plus).`);
     }
@@ -364,7 +364,7 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     const clientInfos = obtenirInfosClientParEmail(emailClient);
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${clientInfos.nom}`;
     const descriptionEvenement = `Client: ${clientInfos.nom} (${emailClient})\nID Réservation: ${idReservation}\nDétails: ${details}\nTotal: ${ligneDonnees[indices.montant].toFixed(2)} €\nNote: Déplacé par admin.`;
-    const nouvelEvenement = CalendarApp.getCalendarById(ID_CALENDRIER).createEvent(titreEvenement, nouvelleDateDebut, nouvelleDateFin, { description: descriptionEvenement });
+    const nouvelEvenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, nouvelleDateDebut, nouvelleDateFin, { description: descriptionEvenement });
 
     if (!nouvelEvenement) {
       throw new Error("La création du nouvel événement dans le calendrier a échoué.");
