@@ -169,7 +169,7 @@
         <div id="timeList" class="time-grid" role="listbox" aria-label="Horaires disponibles"></div>
         <div class="row" style="margin-top:12px;">
           <button id="btnCancelTime" class="pill ghost" type="button">Annuler</button>
-          <button id="btnConfirmTime" class="pill secondary" type="button" disabled>Valider</button>
+          <button id="btnConfirmTime" class="pill secondary" type="button" disabled aria-disabled="true">Valider</button>
         </div>
       </div>
     </div>
@@ -275,7 +275,7 @@
     btnCancel: document.getElementById('btnCancelTime'),
     sel: null,
     open(dateIso, part){
-      this.el.hidden=false; this.sel=null; this.btnOk.disabled=true;
+      this.el.hidden=false; this.sel=null; this.btnOk.disabled=true; this.btnOk.setAttribute('aria-disabled','true');
       this.title.textContent = `Choisir l’horaire — ${labelDay(dateIso)} • ${PART_LABEL[part]}`;
       this.list.innerHTML='…';
       if (google?.script?.run){
@@ -292,10 +292,10 @@
       this.list.innerHTML='';
       times.forEach(({t,available})=>{
         const b=document.createElement('button');
-        b.type='button'; b.className='time-btn'; b.textContent=t; b.disabled=!available; b.setAttribute('role','option');
+        b.type='button'; b.className='time-btn'; b.textContent=t; b.disabled=!available; b.setAttribute('role','option'); b.setAttribute('aria-selected','false');
         b.addEventListener('click', ()=>{
-          this.list.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('selected'));
-          b.classList.add('selected'); this.sel = t; this.btnOk.disabled=false;
+          this.list.querySelectorAll('.time-btn').forEach(x=>{ x.classList.remove('selected'); x.setAttribute('aria-selected','false'); });
+          b.classList.add('selected'); b.setAttribute('aria-selected','true'); this.sel = t; this.btnOk.disabled=false; this.btnOk.setAttribute('aria-disabled','false'); b.focus();
         });
         this.list.appendChild(b);
       });
@@ -308,7 +308,7 @@
         if (!google?.script?.run){ this.close(); toast(`Mock: ${dateIso} ${part} ${this.sel}`); }
       };
     },
-    close(){ this.el.hidden=true; this.sel=null; this.btnOk.disabled=true; }
+    close(){ this.el.hidden=true; this.sel=null; this.btnOk.disabled=true; this.btnOk.setAttribute('aria-disabled','true'); }
   };
   modal.btnCancel.addEventListener('click',()=>modal.close());
   modal.el.addEventListener('click', e=>{ if(e.target.hasAttribute('data-close')) modal.close(); });
