@@ -156,9 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function afficherFactures(factures) {
         const cont = document.getElementById('contenu-factures');
         if (!cont) return;
-        cont.innerHTML = '';
+        renderText(cont, '');
         if (!factures || factures.length === 0) {
-            cont.innerHTML = '<p class="message-aucune-reservation">Aucune facture disponible pour l’instant.</p>';
+            renderMessage(cont, "Aucune facture disponible pour l\u2019instant.");
             return;
         }
         const ul = document.createElement('ul');
@@ -166,12 +166,16 @@ document.addEventListener('DOMContentLoaded', () => {
         factures.forEach(f => {
             const li = document.createElement('li');
             const dateTxt = f.dateISO ? new Date(f.dateISO).toLocaleDateString('fr-FR') : '';
-            li.innerHTML = `
-                <span>Facture <strong>${f.numero}</strong> ${dateTxt ? 'du ' + dateTxt : ''} — ${f.montant?.toFixed ? f.montant.toFixed(2) + ' €' : ''}</span>
+            const numero = escapeHTML(f.numero);
+            const datePart = dateTxt ? 'du ' + escapeHTML(dateTxt) : '';
+            const montantPart = f.montant?.toFixed ? escapeHTML(f.montant.toFixed(2)) + ' €' : '';
+            const url = escapeHTML(f.url);
+            renderHTML(li, `
+                <span>Facture <strong>${numero}</strong> ${datePart} — ${montantPart}</span>
                 <span style="flex:1"></span>
-                <a class="btn btn-secondaire btn--client" href="${f.url}" target="_blank" rel="noopener">Télécharger</a>
-                <button class="btn btn-primaire btn--client btn-mail-facture" data-numero="${f.numero}">Recevoir par e-mail</button>
-            `;
+                <a class="btn btn-secondaire btn--client" href="${url}" target="_blank" rel="noopener">Télécharger</a>
+                <button class="btn btn-primaire btn--client btn-mail-facture" data-numero="${numero}">Recevoir par e-mail</button>
+            `);
             ul.appendChild(li);
         });
         cont.appendChild(ul);
@@ -203,35 +207,34 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function afficherReservations(reservations) {
         if (!contenuReservations) return;
-        contenuReservations.innerHTML = '';
+        renderText(contenuReservations, '');
 
         if (reservations.length === 0) {
-            contenuReservations.innerHTML = '<p class="message-aucune-reservation">Vous n\'avez aucune course à venir.</p>';
+            renderMessage(contenuReservations, "Vous n'avez aucune course à venir.");
             return;
         }
 
         reservations.sort((a, b) => new Date(a.start) - new Date(b.start));
 
+        let html = '';
         reservations.forEach(resa => {
             const dateDebut = new Date(resa.start);
-            const dateFormatee = dateDebut.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            const heureFormatee = dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-
-            const resaHtml = `
-                <div class="reservation-item" data-id="${resa.id}">
+            const dateFormatee = escapeHTML(dateDebut.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+            const heureFormatee = escapeHTML(dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+            html += `
+                <div class="reservation-item" data-id="${escapeHTML(resa.id)}">
                     <div class="reservation-details">
                         <h4>${dateFormatee} à ${heureFormatee}</h4>
-                        <p><strong>Détails :</strong> ${resa.details}</p>
-                        <p><strong>Montant :</strong> ${resa.amount.toFixed(2)} €</p>
+                        <p><strong>Détails :</strong> ${escapeHTML(resa.details)}</p>
+                        <p><strong>Montant :</strong> ${escapeHTML(resa.amount.toFixed(2))} €</p>
                     </div>
                     <div class="reservation-actions">
                         <button class="btn btn-primaire btn--client btn-modifier-arrets">Modifier les arrêts</button>
                         <button class="btn btn-secondaire btn--client btn-deplacer">Déplacer</button>
                     </div>
-                </div>
-            `;
-            contenuReservations.insertAdjacentHTML('beforeend', resaHtml);
+                </div>`;
         });
+        renderHTML(contenuReservations, html);
 
         document.querySelectorAll('.btn-modifier-arrets').forEach(btn => btn.addEventListener('click', (e) => gererModificationArrets(e.target.closest('.reservation-item').dataset.id)));
         document.querySelectorAll('.btn-deplacer').forEach(btn => btn.addEventListener('click', (e) => gererDeplacement(e.target.closest('.reservation-item').dataset.id)));
@@ -248,17 +251,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const matchArrets = resa.details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
         const arretsActuels = matchArrets ? parseInt(matchArrets[1], 10) : 0;
 
-        contenuModale.innerHTML = `
+        renderHTML(contenuModale, `
             <h3 id="modale-modification-titre">Modifier les arrêts</h3>
-            <p><strong>Course :</strong> ${new Date(resa.start).toLocaleString('fr-FR')}</p>
+            <p><strong>Course :</strong> ${escapeHTML(new Date(resa.start).toLocaleString('fr-FR'))}</p>
             <div class="groupe-formulaire">
                 <label for="nouveaux-arrets">Nombre d'arrêts supplémentaires :</label>
-                <input type="number" id="nouveaux-arrets" class="champ-formulaire" value="${arretsActuels}" min="0">
+                <input type="number" id="nouveaux-arrets" class="champ-formulaire" value="${escapeHTML(String(arretsActuels))}" min="0">
             </div>
             <div class="modale-actions">
                 <button id="btn-valider-modif-arrets" class="btn btn-primaire btn--client">Valider</button>
             </div>
-        `;
+        `);
         modale?.classList.remove('hidden');
 
         document.getElementById('btn-valider-modif-arrets').addEventListener('click', () => {
@@ -275,9 +278,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const resa = toutesLesReservationsClient.find(r => r.id === idReservation);
         if (!resa || !contenuModale) return;
 
-        contenuModale.innerHTML = `
+        renderHTML(contenuModale, `
             <h3 id="modale-modification-titre">Déplacer la course</h3>
-            <p><strong>Course actuelle :</strong> ${new Date(resa.start).toLocaleString('fr-FR')}</p>
+            <p><strong>Course actuelle :</strong> ${escapeHTML(new Date(resa.start).toLocaleString('fr-FR'))}</p>
             <div class="groupe-formulaire">
                 <label for="nouvelle-date">Nouvelle date :</label>
                 <input type="date" id="nouvelle-date" class="champ-formulaire">
@@ -286,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label>Nouveau créneau :</label>
                 <div id="grille-creneaux-deplacement" class="grille-creneaux"></div>
             </div>
-        `;
+        `);
         modale?.classList.remove('hidden');
 
         const inputDate = document.getElementById('nouvelle-date');
@@ -304,21 +307,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!resa || !grille) return;
 
         const duree = (new Date(resa.end) - new Date(resa.start)) / 60000;
-        grille.innerHTML = '<div class="spinner"></div>';
-        
+        renderHTML(grille, '<div class="spinner"></div>');
+
         google.script.run
             .withSuccessHandler(creneaux => {
-                grille.innerHTML = '';
+                renderText(grille, '');
                 if (creneaux && creneaux.length > 0) {
-                    creneaux.forEach(heure => {
-                        const btn = document.createElement('button');
-                        btn.className = 'slot-btn';
-                        btn.textContent = heure;
-                        btn.onclick = () => validerDeplacement(idReservation, dateString, heure);
-                        grille.appendChild(btn);
+                    const html = creneaux.map(heure => `<button class="slot-btn">${escapeHTML(heure)}</button>`).join('');
+                    renderHTML(grille, html);
+                    grille.querySelectorAll('.slot-btn').forEach(btn => {
+                        btn.addEventListener('click', () => validerDeplacement(idReservation, dateString, btn.textContent));
                     });
                 } else {
-                    grille.innerHTML = '<p>Aucun créneau disponible.</p>';
+                    renderMessage(grille, 'Aucun créneau disponible.');
                 }
             })
             .withFailureHandler(afficherErreur)
