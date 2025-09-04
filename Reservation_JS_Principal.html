@@ -18,6 +18,16 @@ window.etat = {
 };
 
 /**
+ * Affiche ou masque l'indicateur de chargement global.
+ * @param {boolean} afficher - true pour afficher, false pour masquer.
+ */
+function basculerIndicateurChargement(afficher) {
+  const indicateur = document.getElementById('indicateur-chargement');
+  if (!indicateur) return;
+  indicateur.classList.toggle('hidden', !afficher);
+}
+
+/**
  * Configure tous les écouteurs d'événements de l'application.
  */
 function configurerEcouteursEvenements() {
