@@ -1,0 +1,75 @@
+<style>
+  /* Thème Nocturne (Dark) */
+  :root {
+    --font: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, sans-serif;
+    --violet: #8e44ad;
+    --bleu: #3498db;
+    --bleu-clair: #5dade2;
+    --couleur-erreur: #e74c3c;
+
+    /* Couleurs principales du thème sombre */
+    --txt: #e9edf5;      /* Texte principal (presque blanc) */
+    --bg: #0b0e13;      /* Fond général (très sombre) */
+    --bg-panel: #101724; /* Fond des cartes et modales (légèrement plus clair) */
+    --muted: #8492a6;    /* Texte secondaire (gris) */
+    --couleur-bordure: #2a3246; /* Bordures (bleu/gris sombre) */
+
+    /* Variables de base */
+    --radius: 12px;
+    --radius-pill: 9999px;
+    --shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    --grad: linear-gradient(135deg, var(--violet), var(--bleu));
+    --grad-soft: linear-gradient(135deg, color-mix(in oklab, var(--violet) 85%, #000 15%), color-mix(in oklab, var(--bleu) 85%, #000 15%));
+
+    /* Alias sémantiques */
+    --couleur-primaire: var(--violet);
+    --couleur-secondaire: var(--bleu);
+    --couleur-succes: var(--bleu-clair);
+    --police-principale: var(--font);
+    --ombre-portee: var(--shadow);
+  }
+
+  /* Ajustements spécifiques pour le thème sombre */
+  .btn-primaire {
+    color: #ffffff;
+  }
+
+  .btn-secondaire {
+    background-color: #2a3246;
+    color: var(--txt);
+  }
+  .btn-secondaire:not(:disabled):hover {
+    background-color: #384259;
+  }
+
+  .slot-btn {
+    color: var(--txt);
+    border-color: var(--couleur-bordure);
+  }
+
+  .slot-btn.standard:not(:disabled):hover {
+    background-color: color-mix(in oklab, var(--violet) 25%, transparent);
+    border-color: var(--violet);
+  }
+  .slot-btn.standard.selected {
+    background-color: var(--violet);
+    border-color: var(--violet);
+    color: #ffffff;
+  }
+  .slot-btn.standard.selected .slot-rate-label {
+    color: #ffffff;
+  }
+
+  .indicateur-chargement-overlay {
+    background-color: rgba(11, 14, 19, 0.8);
+  }
+
+  .spinner {
+    border-color: #2a3246;
+    border-top-color: var(--violet);
+  }
+
+  .modale-contenu, .carte, .panel {
+    background-color: var(--bg-panel);
+  }
+</style>
