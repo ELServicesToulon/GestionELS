@@ -1,75 +1,294 @@
-<script>
-/**
- * =================================================================
- * MODULE JAVASCRIPT - INTERFACE UTILISATEUR (UI)
- * =================================================================
- * Description: Gère les composants d'interface utilisateur génériques
- * comme les notifications, les messages d'erreur et
- * l'indicateur de chargement.
- */
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <base target="_top">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ELS — Réservation</title>
+  <!-- Montserrat -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-/**
- * Journalise un avertissement avec le préfixe [ELS].
- * @param {...*} args Contenu à journaliser.
- */
-function logWarn(...args) {
-  console.warn('[ELS]', ...args);
-}
+  <style>
+    :root{
+      --violet:#8e44ad;
+      --blue:#3498db;
+      --blue-200:#5dade2;
+      --text:#1b1f24;
+      --muted:#6b7280;
+      --bg:#ffffff;
+      --bg-alt:#f7f8fa;
+      --radius:16px;
+      --focus: 3px solid #111827;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+    header{
+      position:sticky;top:0;z-index:10;
+      background:linear-gradient(90deg,var(--violet),var(--blue));
+      color:#fff;padding:14px 16px;
+      box-shadow:0 2px 12px rgba(0,0,0,.08);
+    }
+    header h1{margin:0;font-size:18px;font-weight:700;letter-spacing:.2px}
+    main{padding:16px;max-width:980px;margin:0 auto}
+    .toolbar{
+      display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;margin-bottom:16px
+    }
+    .pill{
+      --hpad:14px; --vpad:10px;
+      appearance:none;border:0;border-radius:999px;
+      padding:var(--vpad) var(--hpad);font-weight:600;font-size:14px;cursor:pointer;
+      background:var(--violet);color:#fff;box-shadow:0 1px 0 rgba(0,0,0,.06);
+    }
+    .pill.secondary{background:var(--blue)}
+    .pill.ghost{background:transparent;border:2px solid var(--blue);color:var(--blue)}
+    .pill:focus-visible{outline:var(--focus);outline-offset:2px}
+    .field{
+      display:flex;gap:8px;align-items:center;background:var(--bg-alt);
+      border-radius:999px;padding:6px 10px
+    }
+    .field input[type="date"]{border:0;background:transparent;font:inherit;outline:none;padding:6px}
+    .toggle{
+      display:inline-flex;border:2px solid var(--blue);border-radius:999px;overflow:hidden
+    }
+    .toggle button{
+      background:#fff;color:var(--blue);padding:8px 14px;border:0;cursor:pointer;font-weight:600
+    }
+    .toggle button[aria-pressed="true"]{background:var(--blue);color:#fff}
+    .card{
+      background:#fff;border-radius:var(--radius);
+      box-shadow:0 6px 20px rgba(17,24,39,.06);padding:14px
+    }
+    .calendar{
+      display:grid;grid-template-columns:repeat(7,1fr);gap:8px
+    }
+    .cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px;color:var(--muted);font-weight:600}
+    .cal-cell{
+      min-height:82px;border-radius:14px;background:var(--bg-alt);padding:8px;position:relative;
+      display:flex;flex-direction:column;gap:6px
+    }
+    .cal-cell[data-fill]{
+      background:linear-gradient(135deg,var(--violet),var(--blue));
+      color:#fff;
+    }
+    .badge{
+      display:inline-block;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;
+      background:#fff;color:var(--violet)
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .toast{
+      position:fixed;right:16px;bottom:16px;background:#111827;color:#fff;padding:12px 14px;border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:90vw
+    }
+    .link{color:var(--blue);text-decoration:none;font-weight:600}
+    .link:focus-visible{outline:var(--focus)}
+  </style>
+</head>
 
-/**
- * Journalise une erreur avec le préfixe [ELS].
- * @param {...*} args Contenu à journaliser.
- */
-function logError(...args) {
-  console.error('[ELS]', ...args);
-}
+<body>
+  <header>
+    <h1 aria-live="polite">Réservation livraison — ELS</h1>
+  </header>
 
-/**
- * Affiche une notification animée à l'écran.
- * @param {string} message Le message à afficher.
- * @param {string} [type="info"] Le type de notification ('info', 'succes', 'erreur').
- */
-function afficherNotification(message, type = "info") {
-  const conteneur = document.getElementById('conteneur-notifications');
-  if (!conteneur) {
-    logError("Le conteneur de notifications est introuvable.");
-    return;
-  }
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  notification.textContent = message;
-  conteneur.appendChild(notification);
-  
-  // La notification disparaît automatiquement après 5 secondes.
-  setTimeout(() => {
-    notification.remove();
-  }, 5000);
-}
+  <main>
+    <div class="toolbar" role="region" aria-label="Filtres et actions">
+      <div class="field" role="group" aria-label="Date de consultation">
+        <span class="sr-only" id="date-label">Date</span>
+        <input id="dateControl" type="date" aria-labelledby="date-label">
+      </div>
 
-/**
- * Affiche ou masque l'indicateur de chargement global (spinner).
- * C'est la fonction qui manquait.
- * @param {boolean} afficher True pour afficher, false pour masquer.
- */
-function basculerIndicateurChargement(afficher) {
-  // Cette fonction utilise l'élément que nous avons déjà dans Reservation_Interface.html
-  const indicateur = document.getElementById('indicateur-chargement');
-  if (indicateur) {
-    indicateur.classList.toggle('hidden', !afficher);
-  } else {
-    logWarn("L'élément 'indicateur-chargement' est introuvable dans le DOM.");
-  }
-}
+      <div id="ampmWrap" class="toggle" role="group" aria-label="Créneaux matin/après-midi" hidden>
+        <button id="btnAM" type="button" aria-pressed="true">Matin</button>
+        <button id="btnPM" type="button" aria-pressed="false">Après-midi</button>
+      </div>
 
-/**
- * Gère l'affichage d'une erreur à l'utilisateur et dans la console.
- * @param {Object|string} erreur L'objet d'erreur ou le message à afficher.
- */
-function afficherErreur(erreur) {
-  basculerIndicateurChargement(false); // Toujours masquer le chargement en cas d'erreur.
-  const messageErreur = typeof erreur === 'object' && erreur.message ? erreur.message : String(erreur);
-  afficherNotification(`Erreur : ${messageErreur}`, "erreur");
-  logError(erreur);
-}
-</script>
+      <button id="btnNew" class="pill" type="button">Nouvelle réservation</button>
+    </div>
+
+    <section class="card" aria-labelledby="agendaTitle">
+      <h2 id="agendaTitle" class="sr-only">Agenda</h2>
+      <div class="cal-head" aria-hidden="true">
+        <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+      </div>
+      <div id="calendar" class="calendar"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <noscript>
+    <p>JavaScript est requis pour cette application.</p>
+  </noscript>
+
+  <script>
+    /**
+     * Brancher côté serveur (Code.gs) :
+     * function getInitialModel(dateIso){ return { now: Date.now(), date: dateIso, slots: [], ampmEnabled: true }; }
+     * function listSlots(dateIso, half){ return { date: dateIso, half, slots: [/* ... */] }; }
+     * function createReservation(payload){ return { ok:true, id: 'RES-'+Date.now() }; }
+     */
+
+    const $$ = (sel, root=document) => root.querySelector(sel);
+    const $all = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+    const toast = (msg) => {
+      const el = $$('#toast');
+      el.textContent = msg;
+      el.hidden = false;
+      clearTimeout(el._t);
+      el._t = setTimeout(()=>{ el.hidden = true; }, 4000);
+    };
+
+    function initDateInput(d){
+      const el = $$('#dateControl');
+      const iso = (d instanceof Date ? d : new Date()).toISOString().slice(0,10);
+      el.value = iso;
+      el.addEventListener('change', () => loadDay(el.value));
+    }
+
+    function setAmpmEnabled(enabled){
+      const wrap = $$('#ampmWrap');
+      wrap.hidden = !enabled;
+      if (!enabled) return;
+      const am = $$('#btnAM'); const pm = $$('#btnPM');
+      am.addEventListener('click', () => { am.setAttribute('aria-pressed','true'); pm.setAttribute('aria-pressed','false'); loadDay($$('#dateControl').value,'AM'); });
+      pm.addEventListener('click', () => { am.setAttribute('aria-pressed','false'); pm.setAttribute('aria-pressed','true'); loadDay($$('#dateControl').value,'PM'); });
+    }
+
+    function renderCalendar(model){
+      // model = { date: 'YYYY-MM-DD', slots:[{dow:0..6, label, fill, pill}], ... }
+      const container = $$('#calendar');
+      const date = model.date ?? new Date().toISOString().slice(0,10);
+
+      // grille statique 7 colonnes (lun→dim). On regroupe les créneaux par jour
+      const byDay = Array.from({length:7},()=>[]);
+      (model.slots||[]).forEach(s => {
+        const idx = Math.min(Math.max(Number(s.dow)||0,0),6);
+        byDay[idx].push(s);
+      });
+
+      container.innerHTML = '';
+      byDay.forEach(items => {
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell';
+        const hasFill = items.some(i => i.fill);
+        if (hasFill) cell.setAttribute('data-fill','1');
+
+        const frag = document.createDocumentFragment();
+        items.forEach(i => {
+          const b = document.createElement('span');
+          b.className = 'badge';
+          b.textContent = i.label;
+          frag.appendChild(b);
+        });
+
+        if (items.length === 0) {
+          const small = document.createElement('small');
+          small.style.color = 'var(--muted)';
+          small.textContent = '—';
+          frag.appendChild(small);
+        }
+
+        cell.appendChild(frag);
+        container.appendChild(cell);
+      });
+    }
+
+    function loadDay(dateIso, half){
+      // Appel côté serveur → jamais de fetch direct vers /exec → pas d'erreur JSON/HTML
+      if (window.google && google.script && google.script.run){
+        google.script.run
+          .withSuccessHandler((res)=>{
+            // res attendu : { date, half, slots:[{dow,label,fill}] }
+            renderCalendar({ date: res.date || dateIso, slots: res.slots || [] });
+          })
+          .withFailureHandler((err)=>{
+            console.error(err);
+            toast('Erreur de chargement. Vérifie les autorisations.');
+          })
+          .listSlots(dateIso, half || currentHalf());
+      } else {
+        // Mode hors-GAS (prévisualisation locale) : mock minimal
+        console.warn('google.script.run indisponible — mode mock');
+        const mock = {
+          date: dateIso,
+          slots: [
+            { dow: 0, label: '9:00', fill:true },
+            { dow: 0, label: '11:00' },
+            { dow: 2, label: '14:00', fill:true },
+            { dow: 4, label: '16:30' },
+          ]
+        };
+        renderCalendar(mock);
+        toast('Prévisualisation locale (mock).');
+      }
+    }
+
+    function currentHalf(){
+      const am = $$('#btnAM');
+      const pm = $$('#btnPM');
+      if (!am || !pm || $$('#ampmWrap').hidden) return undefined;
+      return am.getAttribute('aria-pressed') === 'true' ? 'AM' : 'PM';
+    }
+
+    function wireNewButton(){
+      $$('#btnNew').addEventListener('click', ()=>{
+        const payload = { date: $$('#dateControl').value, half: currentHalf() };
+        if (window.google && google.script && google.script.run){
+          google.script.run
+            .withSuccessHandler((res)=>{
+              toast('Réservation créée ' + (res?.id ? `#${res.id}` : ''));
+              loadDay(payload.date, payload.half);
+            })
+            .withFailureHandler((e)=>{
+              console.error(e);
+              toast("Impossible de créer la réservation.");
+            })
+            .createReservation(payload);
+        }else{
+          toast('Action mock (hors Apps Script).');
+        }
+      });
+    }
+
+    function boot(){
+      initDateInput(new Date());
+      wireNewButton();
+
+      if (window.google && google.script && google.script.run){
+        // Chargement initial robuste
+        const today = $$('#dateControl').value;
+        google.script.run
+          .withSuccessHandler((model)=>{
+            const enabled = !!(model && (model.ampmEnabled===true || model.SLOTS_AMPM_ENABLED===true));
+            setAmpmEnabled(enabled);
+            renderCalendar({ date: model?.date || today, slots: model?.slots || [] });
+            toast('Agenda chargé.');
+          })
+          .withFailureHandler((err)=>{
+            console.error(err);
+            setAmpmEnabled(false);
+            loadDay(today); // fallback: requête directe des créneaux
+          })
+          .getInitialModel(today);
+      } else {
+        // Preview locale
+        setAmpmEnabled(true);
+        loadDay($$('#dateControl').value,'AM');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', boot);
+  </script>
+</body>
+</html>
 
