@@ -8,6 +8,11 @@ Push-Location $repoRoot
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+if (-not (Get-Command clasp -ErrorAction SilentlyContinue)) {
+  [System.Windows.Forms.MessageBox]::Show("Le CLI 'clasp' est requis et doit être disponible dans le PATH.",'Clasp Tools',[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Error) | Out-Null
+  return
+}
+
 function New-Form {
   $form = New-Object System.Windows.Forms.Form
   $form.Text = "Clasp Tools"
