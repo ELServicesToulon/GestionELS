@@ -252,13 +252,6 @@ function doPost(e) {
  * @param {string} dateIso Date au format ISO (YYYY-MM-DD).
  * @return {Object} Modèle initial.
  */
-// ====== PARAMÈTRES SEMAINIER ======
-const PB = {
-  SHEET_NAME: SHEET_RESERVATIONS,
-  STEP_MIN: SEMAINIER_STEP_MIN,
-  WINDOWS: SEMAINIER_WINDOWS
-};
-
 // ====== API appelées par l'UI ======
 
 /**
