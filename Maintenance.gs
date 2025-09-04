@@ -583,6 +583,53 @@ function reparerEntetesFacturation() {
   }
 }
 
+/**
+ * Normalise les colonnes de l'onglet "Facturation" :
+ * - Ajoute les en-têtes manquants
+ * - Supprime les colonnes non listées
+ * - Réordonne les colonnes selon la liste de référence
+ */
+function normaliserEntetesFacturation() {
+  const ss = SpreadsheetApp.openById(ID_FEUILLE_CALCUL);
+  const sh = ss.getSheetByName(SHEET_FACTURATION);
+  if (!sh) throw new Error("Feuille 'Facturation' introuvable.");
+
+  const headersRef = [
+    'Date',
+    'Client (Raison S. Client)',
+    'Client (Email)',
+    'Type',
+    'Détails',
+    'Montant',
+    'Statut',
+    'Valider',
+    'N° Facture',
+    'Event ID',
+    'ID Réservation',
+    'Note Interne',
+    'Tournée Offerte Appliquée',
+    'Type Remise Appliquée',
+    'Valeur Remise Appliquée',
+    'Lien Note'
+  ];
+
+  const data = sh.getDataRange().getValues();
+  const currentHeaders = data[0].map(h => String(h).trim());
+  const indexMap = {};
+  currentHeaders.forEach((h, i) => { indexMap[h] = i; });
+
+  const rebuilt = data.map(row => headersRef.map(h =>
+    Object.prototype.hasOwnProperty.call(indexMap, h) ? row[indexMap[h]] : ''
+  ));
+
+  const lastCol = sh.getLastColumn();
+  sh.clearContents();
+  sh.getRange(1, 1, rebuilt.length, headersRef.length).setValues(rebuilt);
+  if (lastCol > headersRef.length) {
+    sh.deleteColumns(headersRef.length + 1, lastCol - headersRef.length);
+  }
+}
+
 // =================================================================
 //                      4. AUDIT & VÉRIFICATION
 // =================================================================
