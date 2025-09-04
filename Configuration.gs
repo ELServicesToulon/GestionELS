@@ -63,6 +63,8 @@ const SHEET_ADMIN_LOGS = 'Admin_Logs';
 const SHEET_LOGS = 'Logs';
 /** @const {string} Feuille des plages horaires bloquées. */
 const SHEET_PLAGES_BLOQUEES = 'Plages_Bloquees';
+/** @const {string} Feuille des réservations. */
+const SHEET_RESERVATIONS = 'Réservations';
 /** @const {string} Feuille par défaut des nouveaux classeurs. */
 const SHEET_DEFAULT = 'Sheet1';
 
@@ -77,6 +79,17 @@ const DUREE_TAMPON_MINUTES = 15;
 const INTERVALLE_CRENEAUX_MINUTES = 15;
 /** @const {number} Délai en minutes en dessous duquel une réservation est considérée comme urgente. */
 const URGENT_THRESHOLD_MINUTES = 30;
+
+// --- Paramètres semainier ---
+/** @const {Object<string,string[]>} Plages horaires par partie de journée. */
+const SEMAINIER_WINDOWS = {
+  matin: ['08:00','12:00'],
+  midi: ['12:00','14:00'],
+  apresmidi: ['14:00','18:00'],
+  soir: ['18:00','21:00']
+};
+/** @const {number} Pas des horaires du semainier en minutes. */
+const SEMAINIER_STEP_MIN = 15;
 
 // --- Durées & Kilométrage des prestations ---
 /** @const {number} Durée standard d'une prise en charge en minutes. */
@@ -201,7 +214,10 @@ function getConfig() {
     HEURE_FIN_SERVICE: HEURE_FIN_SERVICE,
     TVA_APPLICABLE: TVA_APPLICABLE,
     ANNEES_RETENTION_FACTURES: ANNEES_RETENTION_FACTURES,
-    MOIS_RETENTION_LOGS: MOIS_RETENTION_LOGS
+    MOIS_RETENTION_LOGS: MOIS_RETENTION_LOGS,
+    SEMAINIER_WINDOWS: SEMAINIER_WINDOWS,
+    SEMAINIER_STEP_MIN: SEMAINIER_STEP_MIN,
+    SHEET_RESERVATIONS: SHEET_RESERVATIONS
   };
 }
 
