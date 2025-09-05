@@ -1,23 +1,46 @@
-# Exclude common local-only files and folders
+# Ignore files and directories that are not part of the Google Apps Script project.
+
+# Common ignores
+.git/**
+.github/**
 node_modules/**
 dist/**
 build/**
-**/*.map
-package-lock.json
-package.json
-.git/**
-.gitignore
-README.md
-**/*.config.js
 test/**
-snapshots/**
-Projet2/**
-
-# Local ignores
 snapshots/
-archive/**
-tmp*.txt
-temp_*.txt
-*.pdf
+archive/
+Projet2/
 cache/
 .cache/
+
+# Project-specific tools and assets
+tools/
+branding/
+jules-scratch/
+scripts/
+
+# Project-level files
+.clasp.json
+.claspignore
+.gitignore
+AGENTS.md
+package.json
+package-lock.json
+README.md
+
+# Helper scripts
+*.cmd
+*.ps1
+
+# Temporary files
+**/*.map
+tmp*.txt
+temp_*.txt
+tmp.marker
+tmp_admin_js.head
+tmp_admin_js.mid
+tmp_admin_js.tail
+
+# Other
+*.pdf
+**/*.config.js
