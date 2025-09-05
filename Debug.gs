@@ -28,6 +28,7 @@ function lancerTousLesTests() {
 
   testerValidationConfiguration();
   testerCacheConfiguration();
+  testerCoherenceTarifs();
   testerUtilitaires();
   testerFeuilleCalcul();
   testerCalendrier();
@@ -66,6 +67,20 @@ function testerCacheConfiguration() {
   CacheService.getScriptCache().remove('CONFIG_JSON');
   const conf3 = getConfigCached();
   Logger.log(`Après invalidation TARIFS.Normal.base=${conf3.TARIFS.Normal.base}`);
+}
+
+function testerCoherenceTarifs() {
+  Logger.log("\n--- Test de cohérence des TARIFS dans Configuration.gs ---");
+  const conf = getPublicConfig();
+  const types = ['Normal', 'Samedi', 'Urgent'];
+  types.forEach(type => {
+    const tarif = conf.TARIFS && conf.TARIFS[type];
+    if (tarif && typeof tarif.base === 'number') {
+      Logger.log(`SUCCESS: TARIFS.${type}.base = ${tarif.base}`);
+    } else {
+      Logger.log(`FAILURE: TARIFS.${type}.base manquant ou invalide`);
+    }
+  });
 }
 
 function testerUtilitaires() {
