@@ -149,6 +149,7 @@ function doGet(e) {
     template.nomService = NOM_ENTREPRISE;
     template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
     template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
+    template.TARIFS = conf.TARIFS;
     template.DUREE_BASE = conf.DUREE_BASE;
     template.DUREE_ARRET_SUP = conf.DUREE_ARRET_SUP;
     template.KM_BASE = conf.KM_BASE;

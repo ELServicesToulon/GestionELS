@@ -122,28 +122,28 @@
         <div class="tarif-carte">
           <h3>Course de base</h3>
           <ul>
-            <li>3,5&nbsp;€ net</li>
-            <li>3&nbsp;km inclus</li>
-            <li>15&nbsp;min inclus</li>
+            <li><?= TARIFS.Normal.base ?> € TTC</li>
+            <li><?= KM_BASE ?> km inclus</li>
+            <li><?= DUREE_BASE ?> min inclus</li>
           </ul>
           <a href="#vue-calendrier" class="btn btn-primaire">Réserver</a>
         </div>
         <div class="tarif-carte">
           <h3>Arrêts supplémentaires</h3>
           <ul>
-            <li>2<sup>e</sup> arrêt : 3,5&nbsp;€ net</li>
-            <li>3<sup>e</sup> arrêt : 4&nbsp;€ net</li>
-            <li>4<sup>e</sup> arrêt : 4&nbsp;€ net</li>
-            <li>5<sup>e</sup> arrêt : 5&nbsp;€ net</li>
+            <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
+                 var label = (i === TARIFS.Normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
+              <li><?= label ?> arrêt : <?= TARIFS.Normal.arrets[i] ?> € TTC</li>
+            <? } ?>
           </ul>
         </div>
         <div class="tarif-carte">
           <h3>Options</h3>
           <ul>
-            <li>Urgent : +2,5&nbsp;€ net</li>
-            <li>Samedi : +2,5&nbsp;€ net</li>
-            <li>2<sup>e</sup> course du mois : -2,5&nbsp;€ (selon dispo)</li>
+            <li>Urgent : +<?= TARIFS.Urgent.base ?> € TTC</li>
+            <li>Samedi : +<?= TARIFS.Samedi.base ?> € TTC</li>
           </ul>
+          <p style="font-size:0.9em;color:#555;margin-top:0.5rem;">Le samedi est prioritaire sur l’urgent : une course le samedi applique toujours le tarif samedi, même si elle est urgente.</p>
         </div>
       </div>
       <p class="hero-footnote">
@@ -151,83 +151,7 @@
       </p>
     </section>
 
-    <script>
-        (function(){
-          try {
-            const t = (typeof configServeur !== 'undefined' && configServeur.TARIFS) ? configServeur.TARIFS : {};
-            const normal = t['Normal'] || { base: '', arrets: [] };
-            const samedi = t['Samedi'] || { base: '' };
-            const urgent = t['Urgent'] || { base: '' };
-            const km = (typeof configServeur.KM_BASE !== 'undefined') ? configServeur.KM_BASE : '';
-            const min = (typeof configServeur.DUREE_BASE !== 'undefined') ? configServeur.DUREE_BASE : '';
-            const arrets = Array.isArray(normal.arrets) ? normal.arrets : [];
-            const cont = document.querySelector('.tarifs-cartes');
-            if (!cont) return;
-            cont.textContent = '';
-
-            const carteBase = document.createElement('div');
-            carteBase.className = 'tarif-carte';
-            const h3Base = document.createElement('h3');
-            h3Base.textContent = 'Course de base';
-            const ulBase = document.createElement('ul');
-            [ `${normal.base} € TTC`, `${km} km inclus`, `${min} min inclus` ].forEach(txt => {
-              const li = document.createElement('li');
-              li.textContent = txt;
-              ulBase.appendChild(li);
-            });
-            const lienReserver = document.createElement('a');
-            lienReserver.href = '#vue-calendrier';
-            lienReserver.className = 'btn btn-primaire';
-            lienReserver.textContent = 'Réserver';
-            carteBase.appendChild(h3Base);
-            carteBase.appendChild(ulBase);
-            carteBase.appendChild(lienReserver);
-            cont.appendChild(carteBase);
-
-            const carteArrets = document.createElement('div');
-            carteArrets.className = 'tarif-carte';
-            const h3Arrets = document.createElement('h3');
-            h3Arrets.textContent = 'Arrêts supplémentaires';
-            const ulArrets = document.createElement('ul');
-            if (arrets.length > 0) {
-              arrets.forEach((v, i) => {
-                const label = (i === arrets.length - 1) ? `${i + 2}e et +` : `${i + 2}e`;
-                const li = document.createElement('li');
-                li.textContent = `${label} arrêt : ${v} € TTC`;
-                ulArrets.appendChild(li);
-              });
-            } else {
-              const li = document.createElement('li');
-              li.textContent = '—';
-              ulArrets.appendChild(li);
-            }
-            carteArrets.appendChild(h3Arrets);
-            carteArrets.appendChild(ulArrets);
-            cont.appendChild(carteArrets);
-
-            const carteOptions = document.createElement('div');
-            carteOptions.className = 'tarif-carte';
-            const h3Options = document.createElement('h3');
-            h3Options.textContent = 'Options';
-            const ulOptions = document.createElement('ul');
-            const liSamedi = document.createElement('li');
-            liSamedi.textContent = `Samedi (base): ${samedi.base} € TTC`;
-            const liUrgent = document.createElement('li');
-            liUrgent.textContent = `Urgent (base): ${urgent.base} € TTC`;
-            ulOptions.appendChild(liSamedi);
-            ulOptions.appendChild(liUrgent);
-            const pNote = document.createElement('p');
-            pNote.style.fontSize = '0.9em';
-            pNote.style.color = '#555';
-            pNote.style.marginTop = '0.5rem';
-            pNote.textContent = 'Le samedi est prioritaire sur l’urgent : une course le samedi applique toujours le tarif samedi, même si elle est urgente.';
-            carteOptions.appendChild(h3Options);
-            carteOptions.appendChild(ulOptions);
-            carteOptions.appendChild(pNote);
-            cont.appendChild(carteOptions);
-          } catch (e) {}
-        })();
-    </script>
+    <!-- Script supprimé : les cartes tarifs sont désormais générées côté serveur -->
 
     <main id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
       <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
