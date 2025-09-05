@@ -117,7 +117,7 @@ body {
 .item-panier-infos strong { display: block; }
 .item-panier-infos small { color: var(--muted); }
 .item-panier-prix { font-weight: 600; color: var(--violet); }
-.item-panier-supprimer { background: none; border: none; font-size: 1.5em; color: #c0392b; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
+.item-panier-supprimer { background: none; border: none; font-size: 1.5em; color: var(--danger); cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
 .item-panier-supprimer:hover { opacity: 1; }
 #panier-pied-de-page { padding-top: 20px; border-top: 2px solid var(--muted); }
 .panier-total { display: flex; justify-content: space-between; align-items: center; font-size: 1.2em; font-weight: 600; margin-bottom: 20px; }
@@ -202,22 +202,22 @@ body {
 
 /* Créneau urgent - Utilise la couleur d'erreur (rouge) */
 .slot-btn.urgent {
-  color: #c0392b;
+  color: var(--danger);
 }
 .slot-btn.urgent .slot-rate-label {
-  color: #c0392b;
+  color: var(--danger);
 }
 .slot-btn.urgent:not(:disabled):hover {
-  border-color: #c0392b;
+  border-color: var(--danger);
   background-color: var(--bg);
 }
 .slot-btn.urgent.selected {
-  background-color: #c0392b;
-  border-color: #c0392b;
-  color: var(--txt);
+  background-color: var(--danger);
+  border-color: var(--danger);
+  color: var(--bg);
 }
 .slot-btn.urgent.selected .slot-rate-label {
-    color: var(--txt);
+    color: var(--bg);
 }
 
 /* --- STYLES POUR LE RÉCAPITULATIF DANS LA MODALE --- */
@@ -268,7 +268,7 @@ input:checked + .glissiere:before { transform: translateX(22px); }
 #conteneur-notifications { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
 .notification { padding: 15px 20px; border-radius: var(--radius); color: var(--txt); font-weight: 500; box-shadow: var(--shadow); animation: slideIn 0.5s ease-out forwards, slideOut 0.5s ease-in 4.5s forwards; opacity: 0; transform: translateX(100%); max-width: 320px; }
 .notification.succes { background-color: var(--bleu-clair); color: var(--bg); }
-.notification.erreur { background-color: #c0392b; }
+.notification.erreur { background-color: var(--danger); color: var(--bg); }
 .notification.info { background-color: var(--bleu); }
 @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
 @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
