@@ -241,6 +241,7 @@ function checkSharedSecret(e) {
  */
 function getConfiguration() {
   return {
+    clientPortalEnabled: CLIENT_PORTAL_ENABLED,
     slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
     semainierEnabled: SEMAINIER_ENABLED,
     themeV2Enabled: THEME_V2_ENABLED,

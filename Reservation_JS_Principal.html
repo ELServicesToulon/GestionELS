@@ -54,6 +54,32 @@ function afficherErreur(erreur) {
 }
 
 /**
+ * Affiche le conteneur de finalisation et pré-remplit les champs client.
+ */
+function afficherConteneurFinalisation() {
+  const { ui } = window;
+  const { clientReconnu, flags } = window.etat;
+
+  if (flags && flags.clientPortalEnabled === false) return;
+
+  if (clientReconnu) {
+    ui.champEmailClient.value = clientReconnu.email;
+    ui.champNomClient.value = clientReconnu.nom;
+    ui.champAdresseClient.value = clientReconnu.adresse || '';
+    ui.champSiretClient.value = clientReconnu.siret || '';
+    ui.champEmailClient.readOnly = true;
+    ui.champNomClient.readOnly = true;
+  } else {
+    if (ui.formulaireReservation) ui.formulaireReservation.reset();
+    ui.champEmailClient.readOnly = false;
+    ui.champNomClient.readOnly = false;
+  }
+
+  ui.conteneurFinalisation.classList.remove('hidden');
+  ui.champEmailClient.focus();
+}
+
+/**
  * Configure tous les écouteurs d'événements de l'application.
  */
 function configurerEcouteursEvenements() {
