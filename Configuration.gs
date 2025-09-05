@@ -24,6 +24,19 @@ const TAUX_TVA = 0.20;
 /** @const {number} Délai de paiement accordé au client en jours. */
 const DELAI_PAIEMENT_JOURS = 5;
 
+// --- Bloc de facturation générique ---
+/** @const {Object} Paramètres de facturation centralisés. */
+const BILLING = {
+  TVA_APPLICABLE: false,
+  TVA_RATE: 0,
+  TVA_MENTION: "TVA non applicable, art. 293B du CGI",
+  DEVISE: "EUR",
+  PAIEMENT_DELAI_JOURS: { RESIDENT: 0, PRO: 30 },
+  INVOICE_PREFIX: "ELS",
+  FACTURES_FOLDER_ID: "REPLACE_ME_DRIVE_FOLDER_ID",
+  DOC_TEMPLATE_FACTURE_ID: "REPLACE_ME_DOC_TEMPLATE_ID"
+};
+
 // --- Paramètres de rétention des données ---
 /** @const {number} Durée de conservation légale des factures (années). */
 const ANNEES_RETENTION_FACTURES = 5;
@@ -108,6 +121,9 @@ const CALENDAR_PURGE_ENABLED = true;
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
 const RESERVATION_UI_V2_ENABLED = true;
 
+/** @const {boolean} Active la facturation directe au résident. */
+const RESIDENT_BILLING_ENABLED = false;
+
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = true;
@@ -170,6 +186,19 @@ const TARIFS = {
   }
 };
 
+if (TARIFS.SainteMusse_EHPAD_CLASSIC) {
+  TARIFS.SainteMusse_EHPAD_CLASSIC.PRECOLLECTE_VEILLE = {
+    prixParBande: [5, 5, 5, 5],
+    label: "Pré-collecte veille (ordonnance + carte Vitale, J-1)"
+  };
+}
+if (TARIFS.SainteMusse_EHPAD_URGENCE) {
+  TARIFS.SainteMusse_EHPAD_URGENCE.PRECOLLECTE_VEILLE = {
+    prixParBande: [5, 5, 5, 5],
+    label: "Pré-collecte veille (ordonnance + carte Vitale, J-1)"
+  };
+}
+
 
 // --- Noms des colonnes spécifiques (Feuille Clients) ---
 /** @const {string} Nom de la colonne indiquant le type de remise appliqué. */
@@ -199,7 +228,10 @@ const CONFIG = Object.freeze({
   SEMAINIER_WINDOWS,
   SEMAINIER_STEP_MIN,
   SEMAINIER_ENABLED,
-  SHEET_RESERVATIONS
+  SHEET_RESERVATIONS,
+  BILLING,
+  RESIDENT_BILLING_ENABLED,
+  BILLING_V2_DRYRUN
 });
 
 /**
