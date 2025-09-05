@@ -74,6 +74,7 @@ function creerReponseHtml(titre, message) {
  */
 function doGet(e) {
   try {
+    checkSharedSecret(e);
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e); // Assurez-vous que la fonction logRequest existe
     }
@@ -168,6 +169,10 @@ function doGet(e) {
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
 
   } catch (error) {
+    if (error && error.code === 403) {
+      return ContentService.createTextOutput(JSON.stringify({ error: 'Forbidden' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     Logger.log(`Erreur critique dans doGet: ${error.stack}`);
     return creerReponseHtml(
       'Erreur de configuration',
@@ -185,6 +190,7 @@ function doGet(e) {
  */
 function doPost(e) {
   try {
+    checkSharedSecret(e);
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e);
     }
@@ -239,6 +245,10 @@ function doPost(e) {
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
+    if (error && error.code === 403) {
+      return ContentService.createTextOutput(JSON.stringify({ error: 'Forbidden' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     Logger.log(`Erreur critique dans doPost: ${error.stack}`);
     return ContentService.createTextOutput(JSON.stringify({
       status: 'error',
