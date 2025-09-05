@@ -8,13 +8,13 @@
 
 // --- Informations sur l'entreprise ---
 /** @const {string} Nom officiel de l'entreprise utilisé dans l'interface et la facturation. */
-const NOM_ENTREPRISE = "EL Services";
+const NOM_ENTREPRISE = getSecret('NOM_ENTREPRISE');
 /** @const {string} Adresse postale de l'entreprise pour les documents légaux. */
-const ADRESSE_ENTREPRISE = "255 Avenue Marcel Castie B, 83000 Toulon";
+const ADRESSE_ENTREPRISE = getSecret('ADRESSE_ENTREPRISE');
 /** @const {string} Adresse e-mail de contact de l'entreprise. */
-const EMAIL_ENTREPRISE = "elservicestoulon@gmail.com";
+const EMAIL_ENTREPRISE = getSecret('EMAIL_ENTREPRISE');
 /** @const {string} Adresse e-mail recevant les notifications administratives. */
-const ADMIN_EMAIL = "elservicestoulon@gmail.com";
+const ADMIN_EMAIL = getSecret('ADMIN_EMAIL');
 
 // --- Paramètres de facturation ---
 /** @const {boolean} Indique si la TVA est appliquée ; désactivé par défaut. */
