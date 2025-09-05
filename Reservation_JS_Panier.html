@@ -29,7 +29,11 @@ function ajouterTourneeAuPanier() {
     returnToPharmacy: tourneeEnCours.returnToPharmacy,
     prix: parseFloat(creneauSelectionneBtn.dataset.prix),
     duree: tourneeEnCours.duree,
-    details: `Tournée de ${tourneeEnCours.duree}min (${Math.max(0, tourneeEnCours.totalStops - 1)} arrêt(s) sup., retour: ${tourneeEnCours.returnToPharmacy ? 'oui' : 'non'})`,
+    details: (() => {
+      const nbSupp = Math.max(0, tourneeEnCours.totalStops - 1);
+      const labelStops = `${tourneeEnCours.totalStops} arrêt(s) total(s)${nbSupp > 0 ? ` (dont ${nbSupp} supp.)` : ''}`;
+      return `Tournée de ${tourneeEnCours.duree}min (${labelStops}, retour: ${tourneeEnCours.returnToPharmacy ? 'oui' : 'non'})`;
+    })(),
     isRecurrent: estRecurrent // Nouvelle propriété
   };
 
