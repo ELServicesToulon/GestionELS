@@ -1,22 +1,5 @@
 <script>
   const SEMAINIER_ENABLED = <?= SEMAINIER_ENABLED ?>;
-  /**
-   * LEGACY SHIM — TODO: remove once all deployments use the new UI.
-   * Provides inert stubs for legacy global initializers and overwrites
-   * any existing implementations to prevent side effects.
-   */
-  (function (global) {
-    [
-      'basculerIndicateurChargement',
-      'initialiser',
-      'initialiserInterface',
-      'initCalendrier',
-      'initPanier',
-      'initReservation'
-    ].forEach(function (name) {
-      global[name] = function () {};
-    });
-  })(this);
 </script>
 <style>
     :root{
