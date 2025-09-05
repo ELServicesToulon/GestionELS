@@ -197,6 +197,7 @@ function doGet(e) {
     template.THEME_SELECTION_ENABLED = THEME_SELECTION_ENABLED;
     template.appUrl = ScriptApp.getService().getUrl();
     template.nomService = NOM_ENTREPRISE;
+    template.EMAIL_ENTREPRISE = EMAIL_ENTREPRISE;
     template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
     template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
     template.TARIFS = conf.TARIFS;
