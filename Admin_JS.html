@@ -560,7 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             const data = {
                 client: clientData, date: champDateAjout?.value, startTime: creneauSelectionne,
-                additionalStops: parseInt(valeurCompteur?.textContent || '0', 10), returnToPharmacy: checkRetour?.checked || false,
+                totalStops: parseInt(valeurCompteur?.textContent || '1', 10), returnToPharmacy: checkRetour?.checked || false,
                 notifyClient: document.getElementById('check-notifier')?.checked || false,
                 forceUrgent: document.getElementById('check-urgent')?.checked || false
             };

@@ -697,9 +697,13 @@ function resynchroniserEvenement(idReservation) {
     const emailClient = ligne[indices['Client (Email)']];
     const note = ligne[indices['Note Interne']];
 
-    const matchStops = details.match(/(\d+)\s+arrêt\(s\) sup\./i);
-    const additionalStops = matchStops ? parseInt(matchStops[1], 10) : 0;
-    const totalStops = additionalStops + 1;
+    const matchTotal = details.match(/(\d+)\s+arrêt\(s\)\s*total\(s\)/i);
+    const matchSup = matchTotal ? null : details.match(/(\d+)\s+arrêt\(s\)\s*sup/i);
+    const totalStops = matchTotal
+      ? parseInt(matchTotal[1], 10)
+      : matchSup
+        ? parseInt(matchSup[1], 10) + 1
+        : 1;
     const matchRetour = details.match(/retour:\s*(oui|non)/i);
     const returnToPharmacy = matchRetour ? matchRetour[1].toLowerCase() === 'oui' : false;
 

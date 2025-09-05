@@ -341,8 +341,13 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     const details = String(ligneDonnees[indices.details]);
 
     // Calcul de la durée depuis les détails du Sheet (source de vérité)
-    const matchArrets = details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
-    const arrets = matchArrets ? parseInt(matchArrets[1], 10) : 0;
+    const matchTotal = details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);
+    const matchSup = matchTotal ? null : details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
+    const arrets = matchTotal
+      ? Math.max(0, parseInt(matchTotal[1], 10) - 1)
+      : matchSup
+        ? parseInt(matchSup[1], 10)
+        : 0;
     const retour = details.includes('retour: oui');
     const dureeCalculee = DUREE_BASE + ((arrets + (retour ? 1 : 0)) * DUREE_ARRET_SUP);
 

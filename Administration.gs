@@ -105,8 +105,13 @@ function obtenirToutesReservationsAdmin() {
         }
 
         const details = String(ligne[indices["Détails"]]);
-        const matchArrets = details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
-        const arrets = matchArrets ? parseInt(matchArrets[1], 10) : 0;
+        const matchTotal = details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);
+        const matchSup = matchTotal ? null : details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
+        const arrets = matchTotal
+          ? Math.max(0, parseInt(matchTotal[1], 10) - 1)
+          : matchSup
+            ? parseInt(matchSup[1], 10)
+            : 0;
         const retour = details.includes('retour: oui');
 
         if (!dateFinEvenement) {
@@ -207,8 +212,13 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
         }
         
         const details = String(ligne[indices["Détails"]]);
-        const matchArrets = details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
-        const arrets = matchArrets ? parseInt(matchArrets[1], 10) : 0;
+        const matchTotal = details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);
+        const matchSup = matchTotal ? null : details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
+        const arrets = matchTotal
+          ? Math.max(0, parseInt(matchTotal[1], 10) - 1)
+          : matchSup
+            ? parseInt(matchSup[1], 10)
+            : 0;
         const retour = details.includes('retour: oui');
         
         if (!dateFinEvenement) {
