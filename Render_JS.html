@@ -11,7 +11,39 @@ function escapeHTML(str) {
 function sanitizeHTML(html) {
   const template = document.createElement('template');
   template.innerHTML = html;
+  // Remove script tags
   template.content.querySelectorAll('script').forEach(el => el.remove());
+
+  const isSafeUrl = (url) => {
+    if (!url) return true;
+    const u = String(url).trim().toLowerCase();
+    if (u.startsWith('#') || u.startsWith('/') || u.startsWith('./') || u.startsWith('../')) return true;
+    return (
+      u.startsWith('http:') ||
+      u.startsWith('https:') ||
+      u.startsWith('mailto:') ||
+      u.startsWith('tel:')
+    );
+  };
+
+  const sanitizeNode = (node) => {
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    for (const attr of Array.from(node.attributes)) {
+      const name = attr.name.toLowerCase();
+      if (name.startsWith('on')) {
+        node.removeAttribute(attr.name);
+        continue;
+      }
+      if (name === 'href' || name === 'src' || name === 'action') {
+        if (!isSafeUrl(attr.value)) {
+          node.removeAttribute(attr.name);
+        }
+      }
+    }
+    for (const child of Array.from(node.children)) sanitizeNode(child);
+  };
+
+  for (const el of Array.from(template.content.children)) sanitizeNode(el);
   return template.innerHTML;
 }
 

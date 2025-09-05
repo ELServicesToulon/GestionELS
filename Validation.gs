@@ -21,7 +21,7 @@ function validerConfiguration() {
   
   const siret = getSecret('SIRET');
   if (!/^\d{14}$/.test(siret)) {
-    erreurs.push(`Format du SIRET invalide. Il doit contenir 14 chiffres. Valeur actuelle : ${siret}`);
+    erreurs.push('Format du SIRET invalide. Il doit contenir 14 chiffres (valeur masquée).');
   }
   
   // --- Vérification de la cohérence ---

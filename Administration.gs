@@ -326,7 +326,7 @@ function creerReservationAdmin(data) {
       return { success: false, error: `Le créneau ${data.startTime} n'est plus disponible.` };
     }
 
-    const idReservation = 'RESA-' + new Date().getTime() + '-' + Math.floor(Math.random() * 1000);
+    const idReservation = 'RESA-' + Utilities.getUuid();
     const [heure, minute] = data.startTime.split('h').map(Number);
     const [annee, mois, jour] = data.date.split('-').map(Number);
     const dateDebut = new Date(annee, mois - 1, jour, heure, minute);

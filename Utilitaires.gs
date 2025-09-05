@@ -169,6 +169,32 @@ function setSecret(name, value) {
 }
 
 /**
+ * Vérifie un lien signé pour l'espace client.
+ * Le lien doit contenir email, exp (timestamp secondes) et sig (Base64 HMAC-SHA256 de "email|exp").
+ * @param {string} email
+ * @param {string|number} expSeconds
+ * @param {string} sigBase64
+ * @returns {boolean}
+ */
+function verifySignedLink(email, expSeconds, sigBase64) {
+  try {
+    if (!email || !expSeconds || !sigBase64) return false;
+    const exp = Number(expSeconds);
+    if (!isFinite(exp)) return false;
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (exp < nowSec) return false; // expired
+    const secret = getSecret('ELS_SHARED_SECRET');
+    if (!secret) return false;
+    const data = `${String(email).trim().toLowerCase()}|${exp}`;
+    const rawSig = Utilities.computeHmacSha256Signature(data, secret);
+    const expected = Utilities.base64Encode(rawSig);
+    return Utilities.base64DecodeWebSafe(sigBase64, Utilities.Charset.UTF_8) ? (sigBase64 === expected) : (sigBase64 === expected);
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
  * Vérifie le jeton partagé fourni dans la requête.
  * @param {Object} e Objet d'événement de la requête.
  * @throws {Error} Erreur 403 si le jeton est absent ou invalide.

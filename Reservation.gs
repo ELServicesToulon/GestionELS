@@ -73,7 +73,7 @@ function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
     const [annee, mois, jour] = date.split('-').map(Number);
     const dateDebut = new Date(annee, mois - 1, jour, heure, minute);
     const dateFin = new Date(dateDebut.getTime() + duree * 60000);
-    const idReservation = overrideIdReservation || 'RESA-' + new Date().getTime() + '-' + Math.random().toString(36).substr(2, 9);
+    const idReservation = overrideIdReservation || ('RESA-' + Utilities.getUuid());
 
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${client.nom}`;
     const descriptionEvenement = `Client: ${client.nom} (${client.email})\nID Réservation: ${idReservation}\nDétails: ${infosTournee.details}\nNote: ${client.note || ''}`;

@@ -70,12 +70,13 @@
 </head>
 <body>
 
+  <script type="application/json" id="conf-tarifs"><?= TARIFS_JSON ?></script>
   <script>
     // Objet de configuration injecté par le serveur
     const configServeur = {
       appUrl: "<?= appUrl ?>",
       nomService: "<?= nomService ?>",
-      TARIFS: JSON.parse('<?= TARIFS_JSON ?>'),
+      TARIFS: (function(){ try { return JSON.parse(document.getElementById('conf-tarifs').textContent); } catch(e){ return {}; } })(),
       DUREE_BASE: <?= DUREE_BASE ?>,
       DUREE_ARRET_SUP: <?= DUREE_ARRET_SUP ?>,
       KM_BASE: <?= KM_BASE ?>,
