@@ -20,28 +20,71 @@
 <body>
     <h1>Panneau de Débogage</h1>
 
-    <div class="test-suite">
-        <h3>Tests Complets</h3>
-        <p>Lance l'ensemble des tests du back-office. Les résultats s'afficheront dans la console ci-dessous et dans les journaux Apps Script.</p>
-        <button id="btn-run-all">Lancer tous les tests</button>
+  <div class="test-suite">
+    <h3>Tests Complets</h3>
+    <p>Lance l'ensemble des tests du back-office. Les résultats s'afficheront dans la console ci-dessous et dans les journaux Apps Script.</p>
+    <button id="btn-run-all">Lancer tous les tests</button>
+  </div>
+
+  <div class="test-suite">
+    <h3>Générer un lien Espace Client</h3>
+    <p>Crée un lien signé pour accéder à l'espace client (admin requis).</p>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+      <input type="email" id="email-client" placeholder="client@example.com" style="flex:1; min-width:260px; padding:8px; border-radius:6px; border:1px solid #1d2a3a; background:#0b0e13; color:#fff">
+      <input type="number" id="validite-heures" value="168" min="1" step="1" style="width:120px; padding:8px; border-radius:6px; border:1px solid #1d2a3a; background:#0b0e13; color:#fff">
+      <button id="btn-generer">Générer</button>
     </div>
+    <div id="zone-lien" style="margin-top:10px; display:none">
+      <input type="text" id="lien-resultat" readonly style="width:100%; padding:8px; border-radius:6px; border:1px solid #1d2a3a; background:#0b0e13; color:#fff">
+      <div style="margin-top:8px"><button id="btn-copier">Copier</button></div>
+    </div>
+  </div>
     
     <div id="results">
         Cliquez sur un bouton pour lancer les tests...
     </div>
 
     <script>
-        document.getElementById('btn-run-all').addEventListener('click', () => {
-            document.getElementById('results').textContent = 'Lancement des tests... Veuillez patienter.';
-            google.script.run
-                .withSuccessHandler(logs => {
-                    document.getElementById('results').textContent = "Tests terminés !\n\n" + logs;
-                })
-                .withFailureHandler(err => {
-                    document.getElementById('results').textContent = "Une erreur est survenue : " + err.message;
-                })
-                .lancerTousLesTestsEtRetournerLogs();
-        });
+    document.getElementById('btn-run-all').addEventListener('click', () => {
+      document.getElementById('results').textContent = 'Lancement des tests... Veuillez patienter.';
+      google.script.run
+        .withSuccessHandler(logs => {
+          document.getElementById('results').textContent = "Tests terminés !\n\n" + logs;
+        })
+        .withFailureHandler(err => {
+          document.getElementById('results').textContent = "Une erreur est survenue : " + err.message;
+        })
+        .lancerTousLesTestsEtRetournerLogs();
+    });
+
+    document.getElementById('btn-generer').addEventListener('click', () => {
+      const email = String(document.getElementById('email-client').value || '').trim();
+      const heures = parseInt(document.getElementById('validite-heures').value || '168', 10);
+      if (!email) { document.getElementById('results').textContent = 'Email requis'; return; }
+      document.getElementById('results').textContent = 'Génération du lien...';
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.url) {
+            const zone = document.getElementById('zone-lien');
+            zone.style.display = 'block';
+            const input = document.getElementById('lien-resultat');
+            input.value = res.url;
+            document.getElementById('results').textContent = 'Lien généré. Expire le ' + new Date(res.exp*1000).toLocaleString();
+          } else {
+            document.getElementById('results').textContent = 'Échec de génération.';
+          }
+        })
+        .withFailureHandler(err => {
+          document.getElementById('results').textContent = 'Erreur: ' + err.message;
+        })
+        .genererLienEspaceClient(email, heures);
+    });
+
+    document.getElementById('btn-copier').addEventListener('click', () => {
+      const input = document.getElementById('lien-resultat');
+      input.select();
+      try { document.execCommand('copy'); } catch (e) {}
+    });
     </script>
 </body>
 </html>

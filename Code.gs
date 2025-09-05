@@ -16,6 +16,7 @@ function onOpen() {
   const menuPrincipal = ui.createMenu('EL Services')
     .addItem('Générer les factures sélectionnées', 'genererFactures')
     .addItem('Envoyer les factures contrôlées', 'envoyerFacturesControlees')
+    .addItem('Générer lien Espace Client', 'menuGenererLienClient')
     .addItem("Archiver les factures du mois dernier", "archiverFacturesDuMois")
     .addSeparator()
     .addItem("Vérifier la cohérence du calendrier", "verifierCoherenceCalendrier");
@@ -47,11 +48,47 @@ function onOpen() {
   if (typeof DEBUG_MENU_ENABLED !== 'undefined' && DEBUG_MENU_ENABLED) {
     const sousMenuDebug = ui.createMenu('Debug')
       .addItem("Lancer tous les tests", "lancerTousLesTests")
-      .addItem("Tester audit Drive", "testerAuditDrive");
+      .addItem("Tester audit Drive", "testerAuditDrive")
+      .addItem("Générer lien Espace Client", "menuGenererLienClient");
     menuPrincipal.addSubMenu(sousMenuDebug);
   }
 
   menuPrincipal.addToUi();
+}
+
+/**
+ * Menu: Génère un lien signé pour l'Espace Client (admin requis).
+ */
+function menuGenererLienClient() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    if (!CLIENT_PORTAL_SIGNED_LINKS) {
+      ui.alert('Fonction indisponible', "CLIENT_PORTAL_SIGNED_LINKS est désactivé dans la configuration.", ui.ButtonSet.OK);
+      return;
+    }
+    const emailResp = ui.prompt('Générer lien Espace Client', "Email du client:", ui.ButtonSet.OK_CANCEL);
+    if (emailResp.getSelectedButton() !== ui.Button.OK) return;
+    const email = String(emailResp.getResponseText() || '').trim();
+    if (!email) { ui.alert('Erreur', 'Email requis.', ui.ButtonSet.OK); return; }
+    const hoursResp = ui.prompt('Validité du lien', "Durée en heures (défaut 168):", ui.ButtonSet.OK_CANCEL);
+    if (hoursResp.getSelectedButton() !== ui.Button.OK) return;
+    const hours = parseInt(hoursResp.getResponseText() || '168', 10);
+    const res = genererLienEspaceClient(email, isNaN(hours) ? 168 : hours);
+    const html = HtmlService.createHtmlOutput(
+      `<div style="font-family:Montserrat,sans-serif;line-height:1.5">
+         <h3>Lien Espace Client</h3>
+         <p>Ce lien expire à: ${new Date(res.exp*1000).toLocaleString()}</p>
+         <input id="l" type="text" value="${res.url.replace(/&/g,'&amp;').replace(/</g,'&lt;')}" style="width:100%" readonly />
+         <div style="margin-top:8px"><button onclick="copy()">Copier</button></div>
+         <script>
+           function copy(){var i=document.getElementById('l');i.select();try{document.execCommand('copy');}catch(e){} }
+         </script>
+       </div>`
+    ).setWidth(520).setHeight(160);
+    ui.showModalDialog(html, 'Lien Espace Client');
+  } catch (e) {
+    ui.alert('Erreur', e.message, ui.ButtonSet.OK);
+  }
 }
 
 
