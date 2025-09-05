@@ -67,17 +67,19 @@ function obtenirReservationsClient(emailClient) {
         }
         
         const details = String(ligne[indices["Détails"]]);
-        const matchArrets = details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
-        const arrets = matchArrets ? parseInt(matchArrets[1], 10) : 0;
+        const matchTotal = details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);
+        const matchSup = details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
+        const totalStops = matchTotal ? parseInt(matchTotal[1], 10) : (matchSup ? parseInt(matchSup[1], 10) + 1 : 1);
         const retour = details.includes('retour: oui');
-        
+        const nbSupp = Math.max(0, totalStops - 1);
+
         if (!dateFin) {
-            const totalArretsCalcules = arrets + (retour ? 1 : 0);
+            const totalArretsCalcules = nbSupp + (retour ? 1 : 0);
             const dureeEstimee = DUREE_BASE + (totalArretsCalcules * DUREE_ARRET_SUP);
             dateFin = new Date(dateDebut.getTime() + dureeEstimee * 60000);
         }
-        
-        const totalArretsCalculesPourKm = arrets + (retour ? 1 : 0);
+
+        const totalArretsCalculesPourKm = nbSupp + (retour ? 1 : 0);
         const km = KM_BASE + (totalArretsCalculesPourKm * KM_ARRET_SUP);
 
         return {
@@ -235,10 +237,10 @@ function envoyerFactureClient(emailClient, numeroFacture) {
 /**
  * Met à jour les détails (nombre d'arrêts, prix, durée) d'une réservation existante.
  * @param {string} idReservation L'ID unique de la réservation à modifier.
- * @param {number} nouveauxArrets Le nouveau nombre d'arrêts supplémentaires.
+ * @param {number} totalStops Le nouveau nombre d'arrêt(s) total(s).
  * @returns {Object} Un résumé de l'opération.
  */
-function mettreAJourDetailsReservation(idReservation, nouveauxArrets) {
+function mettreAJourDetailsReservation(idReservation, totalStops) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé, veuillez réessayer." };
 
@@ -279,15 +281,16 @@ function mettreAJourDetailsReservation(idReservation, nouveauxArrets) {
     const retourPharmacie = detailsAnciens.includes('retour: oui');
 
     const clientPourCalcul = obtenirInfosClientParEmail(emailClient);
-    const { prix: nouveauPrix, duree: nouvelleDuree } = calculerPrixEtDureeServeur(nouveauxArrets + 1, retourPharmacie, dateEvenement, heureEvenement, clientPourCalcul);
-    const nouveauxDetails = `Tournée de ${nouvelleDuree}min (${nouveauxArrets} arrêt(s) sup., retour: ${retourPharmacie ? 'oui' : 'non'})`;
+    const { prix: nouveauPrix, duree: nouvelleDuree, details: nouveauxDetails } = calculerPrixEtDureeServeur(totalStops, retourPharmacie, dateEvenement, heureEvenement, clientPourCalcul);
     
     // Si l'événement existe, on le met à jour
     if (ressourceEvenement) {
       const nouvelleDateFin = new Date(dateDebutOriginale.getTime() + nouvelleDuree * 60000);
       const ressourceMaj = {
         end: { dateTime: nouvelleDateFin.toISOString() },
-        description: ressourceEvenement.description.replace(/Total:.*€/, `Total: ${nouveauPrix.toFixed(2)} €`).replace(/Arrêts suppl:.*\n/, `Arrêts suppl: ${nouveauxArrets}, Retour: ${retourPharmacie ? 'Oui' : 'Non'}\n`)
+        description: ressourceEvenement.description
+          .replace(/Total:.*€/, `Total: ${nouveauPrix.toFixed(2)} €`)
+          .replace(/Arrêts (?:suppl|totaux):.*\n/, `Arrêts totaux: ${totalStops}, Retour: ${retourPharmacie ? 'Oui' : 'Non'}\n`)
       };
       Calendar.Events.patch(ressourceMaj, getSecret('ID_CALENDRIER'), idEvenement);
     }
@@ -295,8 +298,8 @@ function mettreAJourDetailsReservation(idReservation, nouveauxArrets) {
     // On met TOUJOURS à jour la feuille de calcul
     feuille.getRange(indexLigne + 1, indices.details + 1).setValue(nouveauxDetails);
     feuille.getRange(indexLigne + 1, indices.montant + 1).setValue(nouveauPrix);
-    
-    logActivity(idReservation, emailClient, `Modification: ${nouveauxArrets} arrêts supplémentaires.`, nouveauPrix, "Modification");
+
+    logActivity(idReservation, emailClient, `Modification: ${totalStops} arrêts totaux.`, nouveauPrix, "Modification");
     return { success: true };
 
   } catch (e) {
@@ -338,8 +341,13 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     const details = String(ligneDonnees[indices.details]);
 
     // Calcul de la durée depuis les détails du Sheet (source de vérité)
-    const matchArrets = details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
-    const arrets = matchArrets ? parseInt(matchArrets[1], 10) : 0;
+    const matchTotal = details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);
+    const matchSup = matchTotal ? null : details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
+    const arrets = matchTotal
+      ? Math.max(0, parseInt(matchTotal[1], 10) - 1)
+      : matchSup
+        ? parseInt(matchSup[1], 10)
+        : 0;
     const retour = details.includes('retour: oui');
     const dureeCalculee = DUREE_BASE + ((arrets + (retour ? 1 : 0)) * DUREE_ARRET_SUP);
 

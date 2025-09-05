@@ -211,31 +211,21 @@ function calculerInfosTourneeBase(totalStops, returnToPharmacy, dateString, star
   const heureNormalisee = startTime.replace('h', ':');
   const dateCourse = new Date(`${dateString}T${heureNormalisee}`);
   const maintenant = new Date();
-  let typeCourse = 'Normal';
+  let urgent = false;
+  let samedi = false;
 
   // Prioriser le samedi sur l'urgent
   if (dateCourse.getDay() === 6) {
-    typeCourse = 'Samedi';
+    samedi = true;
   } else if ((dateCourse.getTime() - maintenant.getTime()) / 60000 < URGENT_THRESHOLD_MINUTES) {
-    typeCourse = 'Urgent';
+    urgent = true;
   }
 
-  const reglesTarifaires = TARIFS[typeCourse] || TARIFS['Normal'];
-  let prixFinal = reglesTarifaires.base;
-
-  for (let i = 0; i < arretsSupplementaires; i++) {
-    const prixArret = reglesTarifaires.arrets[i] || reglesTarifaires.arrets[reglesTarifaires.arrets.length - 1];
-    prixFinal += prixArret;
-  }
-  
-  if (returnToPharmacy) {
-      const dernierIndexArretSup = arretsSupplementaires;
-      const prixRetour = reglesTarifaires.arrets[dernierIndexArretSup] || reglesTarifaires.arrets[reglesTarifaires.arrets.length - 1];
-      prixFinal += prixRetour;
-  }
-
-  const details = `Tournée de ${duree}min (${arretsSupplementaires} arrêt(s) sup., retour: ${returnToPharmacy ? 'oui' : 'non'})`;
-  return { prix: prixFinal, duree: duree, km: km, details: details, typeCourse: typeCourse };
+  const tarif = computeCoursePrice({ totalStops, retour: returnToPharmacy, urgent, samedi });
+  const typeCourse = samedi ? 'Samedi' : urgent ? 'Urgent' : 'Normal';
+  const labelStops = `${totalStops} arrêt(s) total(s)${tarif.nbSupp > 0 ? ` (dont ${tarif.nbSupp} supp.)` : ''}`;
+  const details = `Tournée de ${duree}min (${labelStops}, retour: ${returnToPharmacy ? 'oui' : 'non'})`;
+  return { prix: tarif.total, duree: duree, km: km, details: details, typeCourse: typeCourse };
 }
 
 /**

@@ -248,15 +248,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const resa = toutesLesReservationsClient.find(r => r.id === idReservation);
         if (!resa || !contenuModale) return;
 
-        const matchArrets = resa.details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
-        const arretsActuels = matchArrets ? parseInt(matchArrets[1], 10) : 0;
+        const matchTotal = resa.details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);
+        const matchSup = resa.details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
+        const arretsActuels = matchTotal ? parseInt(matchTotal[1], 10) : (matchSup ? parseInt(matchSup[1], 10) + 1 : 1);
 
         renderHTML(contenuModale, `
             <h3 id="modale-modification-titre">Modifier les arrêts</h3>
             <p><strong>Course :</strong> ${escapeHTML(new Date(resa.start).toLocaleString('fr-FR'))}</p>
             <div class="groupe-formulaire">
-                <label for="nouveaux-arrets">Nombre d'arrêts supplémentaires :</label>
-                <input type="number" id="nouveaux-arrets" class="champ-formulaire" value="${escapeHTML(String(arretsActuels))}" min="0">
+                <label for="nouveaux-arrets">Nombre d'arrêt(s) total(s) :</label>
+                <input type="number" id="nouveaux-arrets" class="champ-formulaire" value="${escapeHTML(String(arretsActuels))}" min="1">
             </div>
             <div class="modale-actions">
                 <button id="btn-valider-modif-arrets" class="btn btn-primaire btn--client">Valider</button>
@@ -329,9 +330,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Valide et envoie la modification du nombre d'arrêts.
      * @param {string} idReservation L'ID de la réservation.
-     * @param {number} nouveauxArrets Le nouveau nombre d'arrêts.
+     * @param {number} totalStops Le nouveau nombre d'arrêts totaux.
      */
-    function validerModificationArrets(idReservation, nouveauxArrets) {
+    function validerModificationArrets(idReservation, totalStops) {
         basculerIndicateurChargement(true);
         modale?.classList.add('hidden');
         google.script.run
@@ -344,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .mettreAJourDetailsReservation(idReservation, nouveauxArrets);
+            .mettreAJourDetailsReservation(idReservation, totalStops);
     }
 
     /**
