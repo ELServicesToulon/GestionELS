@@ -1,8 +1,18 @@
 <script>
 (function() {
+  // Util: retire un éventuel wrapper <style> ... </style>
+  function stripStyleTags(s) {
+    if (!s) return '';
+    try {
+      return String(s)
+        .replace(/<\/?style[^>]*>/gi, '')
+        .trim();
+    } catch (_) { return String(s); }
+  }
+
   const THEMES_CSS = {
     <? for (var key in THEMES) { ?>
-    "<?= key ?>": `<?!= include('<?= THEMES[key] ?>') ?>`,
+    "<?= key ?>": stripStyleTags(`<?!= include('<?= THEMES[key] ?>') ?>`),
     <? } ?>
   };
   const THEME_DEFAULT = "<?= THEME_DEFAULT ?>";

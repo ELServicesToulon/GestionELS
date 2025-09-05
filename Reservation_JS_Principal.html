@@ -18,6 +18,21 @@ window.etat = {
 };
 
 /**
+ * Affiche une notification éphémère.
+ * @param {string} message
+ * @param {('succes'|'info'|'erreur')} [type='succes']
+ */
+function afficherNotification(message, type = 'succes') {
+  const conteneur = document.getElementById('conteneur-notifications');
+  if (!conteneur) return;
+  const notif = document.createElement('div');
+  notif.className = `notification ${type}`;
+  notif.textContent = message;
+  conteneur.appendChild(notif);
+  setTimeout(() => notif.remove(), 5000);
+}
+
+/**
  * Affiche ou masque l'indicateur de chargement global.
  * @param {boolean} afficher - true pour afficher, false pour masquer.
  */
@@ -25,6 +40,17 @@ function basculerIndicateurChargement(afficher) {
   const indicateur = document.getElementById('indicateur-chargement');
   if (!indicateur) return;
   indicateur.classList.toggle('hidden', !afficher);
+}
+
+/**
+ * Gestion d'erreur standardisée.
+ * @param {any} erreur
+ */
+function afficherErreur(erreur) {
+  basculerIndicateurChargement(false);
+  const message = (erreur && erreur.message) ? erreur.message : String(erreur || 'Erreur inconnue');
+  console.error('[ELS]', erreur);
+  afficherNotification(`Erreur : ${message}`, 'erreur');
 }
 
 /**

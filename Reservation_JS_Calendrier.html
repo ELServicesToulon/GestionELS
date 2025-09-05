@@ -1,0 +1,85 @@
+<script>
+/**
+ * =================================================================
+ * MODULE JAVASCRIPT - CALENDRIER
+ * =================================================================
+ * Affiche le calendrier mensuel et gère l'état de disponibilité.
+ */
+
+/**
+ * Affiche le calendrier pour un mois et une année donnés.
+ * @param {number} mois 1=Janvier ... 12=Décembre
+ * @param {number} annee Année (ex: 2025)
+ */
+function afficherCalendrier(mois, annee) {
+  basculerIndicateurChargement(true);
+
+  google.script.run
+    .withSuccessHandler(donnees => {
+      const { grilleCalendrier, titreCalendrier } = window.ui || {};
+      if (!grilleCalendrier || !titreCalendrier) {
+        basculerIndicateurChargement(false);
+        return;
+      }
+
+      if (donnees && donnees.disponibilite) {
+        window.etat.donneesCalendrier = donnees.disponibilite;
+        grilleCalendrier.textContent = '';
+
+        titreCalendrier.textContent = new Date(annee, mois - 1)
+          .toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+
+        const premierJour = new Date(annee, mois - 1, 1).getDay();
+        const joursDansLeMois = new Date(annee, mois, 0).getDate();
+        const aujourdhui = new Date();
+        aujourdhui.setHours(0, 0, 0, 0);
+
+        // Cases vides d'offset (lundi=1 -> 0 offset, dimanche=0 -> 6)
+        for (let i = 0; i < (premierJour === 0 ? 6 : premierJour - 1); i++) {
+          grilleCalendrier.appendChild(document.createElement('div'));
+        }
+
+        for (let jour = 1; jour <= joursDansLeMois; jour++) {
+          const cellule = document.createElement('div');
+          const date = new Date(annee, mois - 1, jour);
+          const y = annee;
+          const m = String(mois).padStart(2, '0');
+          const d = String(jour).padStart(2, '0');
+          const dateISO = `${y}-${m}-${d}`;
+          const dispo = window.etat.donneesCalendrier[dateISO] || { disponibles: 0, total: 0 };
+
+          cellule.className = 'jour-calendrier';
+          const spanJour = document.createElement('span');
+          spanJour.textContent = jour;
+          cellule.appendChild(spanJour);
+
+          const estPasse = date < aujourdhui;
+          const estDimanche = date.getDay() === 0;
+          const estComplet = dispo.disponibles === 0;
+
+          if (estPasse || estDimanche || estComplet) {
+            cellule.classList.add('desactive');
+          } else {
+            cellule.dataset.date = dateISO;
+            cellule.setAttribute('aria-label', `${dispo.disponibles} créneaux disponibles`);
+            const barre = document.createElement('div');
+            barre.className = 'barre-disponibilite';
+            const rempl = document.createElement('div');
+            const ratio = (dispo.total > 0) ? (dispo.disponibles / dispo.total) : 0;
+            rempl.style.width = `${Math.min(100, Math.max(0, ratio * 100))}%`;
+            barre.appendChild(rempl);
+            cellule.appendChild(barre);
+          }
+
+          grilleCalendrier.appendChild(cellule);
+        }
+      } else {
+        afficherErreur("Les données du calendrier n'ont pas pu être chargées.");
+      }
+      basculerIndicateurChargement(false);
+    })
+    .withFailureHandler(afficherErreur)
+    .obtenirDonneesCalendrierPublic(mois, annee);
+}
+</script>
+
