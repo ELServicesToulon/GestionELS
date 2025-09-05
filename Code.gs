@@ -74,7 +74,11 @@ function creerReponseHtml(titre, message) {
  */
 function doGet(e) {
   try {
-    checkSharedSecret(e);
+    const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : '';
+    // N'exige le jeton que pour les pages sensibles
+    if (page === 'admin' || page === 'debug') {
+      checkSharedSecret(e);
+    }
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e); // Assurez-vous que la fonction logRequest existe
     }
@@ -95,6 +99,15 @@ function doGet(e) {
 
         case 'gestion':
           if (typeof CLIENT_PORTAL_ENABLED !== 'undefined' && CLIENT_PORTAL_ENABLED) {
+            if (typeof CLIENT_PORTAL_SIGNED_LINKS !== 'undefined' && CLIENT_PORTAL_SIGNED_LINKS) {
+              const params = (e && e.parameter) || {};
+              const emailParam = params.email || '';
+              const exp = params.exp || '';
+              const sig = params.sig || '';
+              if (!verifySignedLink(emailParam, exp, sig)) {
+                return creerReponseHtml('Lien invalide', 'Authentification requise pour accéder à l\'espace client.');
+              }
+            }
             const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
             templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
             templateGestion.THEME_SELECTION_ENABLED = THEME_SELECTION_ENABLED;

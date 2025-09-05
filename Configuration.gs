@@ -88,6 +88,8 @@ const KM_ARRET_SUP = 3;
 // --- Drapeaux de Fonctionnalités Générales ---
 /** @const {boolean} Active l'espace client. */
 const CLIENT_PORTAL_ENABLED = true;
+/** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
+const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */

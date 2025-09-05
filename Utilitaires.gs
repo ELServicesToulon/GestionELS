@@ -188,7 +188,8 @@ function verifySignedLink(email, expSeconds, sigBase64) {
     const data = `${String(email).trim().toLowerCase()}|${exp}`;
     const rawSig = Utilities.computeHmacSha256Signature(data, secret);
     const expected = Utilities.base64Encode(rawSig);
-    return Utilities.base64DecodeWebSafe(sigBase64, Utilities.Charset.UTF_8) ? (sigBase64 === expected) : (sigBase64 === expected);
+    const expectedWeb = Utilities.base64EncodeWebSafe(rawSig);
+    return sigBase64 === expected || sigBase64 === expectedWeb;
   } catch (e) {
     return false;
   }
