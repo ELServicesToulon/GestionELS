@@ -112,10 +112,6 @@ function creerReponseHtml(titre, message) {
 function doGet(e) {
   try {
     const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : '';
-    // N'exige le jeton que pour les pages sensibles
-    if (page === 'admin' || page === 'debug') {
-      checkSharedSecret(e);
-    }
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e); // Assurez-vous que la fonction logRequest existe
     }
@@ -242,7 +238,6 @@ function doGet(e) {
  */
 function doPost(e) {
   try {
-    checkSharedSecret(e);
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e);
     }
