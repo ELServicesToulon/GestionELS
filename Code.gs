@@ -65,21 +65,6 @@ function creerReponseHtml(titre, message) {
   return HtmlService.createHtmlOutput(`<h1>${titre}</h1><p>${message}</p>`).setTitle(titre);
 }
 
-/**
- * Vérifie la présence et la validité du jeton ELS.
- * @param {Object} e L'objet d'événement de la requête.
- * @returns {boolean} `true` si le jeton correspond au secret partagé.
- */
-function isValidElsToken_(e) {
-  const props = PropertiesService.getScriptProperties();
-  const secret = props.getProperty('ELS_SHARED_SECRET');
-  if (!secret) return false;
-  const headers = e && e.headers ? e.headers : {};
-  const token = headers['X-ELS-TOKEN'] || headers['x-els-token'] ||
-    (e && e.parameter && (e.parameter['X-ELS-TOKEN'] || e.parameter.token));
-  return token && token === secret;
-}
-
 
 /**
  * S'exécute lorsqu'un utilisateur accède à l'URL de l'application web.
@@ -91,13 +76,6 @@ function doGet(e) {
   try {
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e); // Assurez-vous que la fonction logRequest existe
-    }
-
-    if (!isValidElsToken_(e)) {
-      return ContentService.createTextOutput(JSON.stringify({
-        status: 'error',
-        message: 'Forbidden'
-      })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // --- Routeur de page ---
@@ -209,13 +187,6 @@ function doPost(e) {
   try {
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e);
-    }
-
-    if (!isValidElsToken_(e)) {
-      return ContentService.createTextOutput(JSON.stringify({
-        status: 'error',
-        message: 'Forbidden'
-      })).setMimeType(ContentService.MimeType.JSON);
     }
 
     if (typeof POST_ENDPOINT_ENABLED === 'undefined' || !POST_ENDPOINT_ENABLED) {
