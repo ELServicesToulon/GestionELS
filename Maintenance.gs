@@ -831,7 +831,7 @@ function verifierCoherenceCalendrier() {
     rapportHtml += `<p><strong>${reservationsVerifiees}</strong> réservations ont été analysées.</p>`;
 
     if (incoherences.length === 0) {
-      rapportHtml += `<p style="color: green;"><strong>Aucune incohérence trouvée.</strong> Tout est synchronisé !</p>`;
+      rapportHtml += `<p style="color: #2b76c6;"><strong>Aucune incohérence trouvée.</strong> Tout est synchronisé !</p>`;
     } else {
       rapportHtml += `<p style="color: red;"><strong>${incoherences.length} incohérence(s) détectée(s) :</strong></p>`;
       rapportHtml += `<pre>${incoherences.join('<br>')}</pre>`;
