@@ -153,10 +153,15 @@ function setUserTheme(theme) {
 /**
  * Récupère un secret depuis les Script Properties.
  * @param {string} name Nom de la propriété.
- * @returns {string|null} Valeur du secret.
+ * @returns {string} Valeur du secret.
+ * @throws {Error} Si la propriété est absente.
  */
 function getSecret(name) {
-  return PropertiesService.getScriptProperties().getProperty(name);
+  const value = PropertiesService.getScriptProperties().getProperty(name);
+  if (value === null || value === '') {
+    throw new Error(`Propriété manquante: ${name}`);
+  }
+  return value;
 }
 
 /**
