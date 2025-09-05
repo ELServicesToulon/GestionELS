@@ -169,6 +169,22 @@ function setSecret(name, value) {
 }
 
 /**
+ * Vérifie le jeton partagé fourni dans la requête.
+ * @param {Object} e Objet d'événement de la requête.
+ * @throws {Error} Erreur 403 si le jeton est absent ou invalide.
+ */
+function checkSharedSecret(e) {
+  const expected = getSecret('ELS_SHARED_SECRET');
+  const token = (e && e.parameter && e.parameter.token) ||
+    (e && e.headers && e.headers['X-ELS-TOKEN']);
+  if (!token || !expected || token !== expected) {
+    const err = new Error('Forbidden');
+    err.code = 403;
+    throw err;
+  }
+}
+
+/**
  * Retourne les flags d'activation pour le client.
  * @returns {Object} Flags configurables depuis Configuration.gs.
  */

@@ -96,9 +96,11 @@ Set the following keys in the Apps Script editor (File → Project properties �
 Open the Apps Script editor, go to **File → Project properties → Script properties**, and add each key with its value.
 
 ## Authentification des requêtes
-Toutes les requêtes vers la web app doivent fournir le jeton défini dans `ELS_SHARED_SECRET`.
+Les fonctions `doGet` et `doPost` appellent `checkSharedSecret(e)` pour valider le jeton stocké dans `ELS_SHARED_SECRET`.
+
+Fournissez ce jeton :
 
 - En-tête HTTP `X-ELS-TOKEN: <votre_jeton>`
-- ou paramètre `token=<votre_jeton>` / `X-ELS-TOKEN=<votre_jeton>` dans l'URL ou le corps
+- ou paramètre `token=<votre_jeton>` dans l'URL ou le corps
 
-Les requêtes sans jeton valide reçoivent une réponse JSON `403`.
+Sans jeton valide, la web app renvoie `{"error":"Forbidden"}`.
