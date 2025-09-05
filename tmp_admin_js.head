@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const titreReservations = document.getElementById('titre-reservations');
     const btnAjouterReservation = document.getElementById('btn-ajouter-reservation');
     const btnToutVoir = document.getElementById('btn-tout-voir');
-    const btnGenererLienClient = document.getElementById('btn-generer-lien-client');
     const modale = document.getElementById('modale-action');
     const contenuModale = document.getElementById('contenu-modale-wrapper');
     const btnFermerModale = document.getElementById('btn-fermer-modale');
@@ -53,86 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         btnToutVoir?.addEventListener('click', chargerToutesReservationsAdmin);
         btnAjouterReservation?.addEventListener('click', ouvrirModaleAjout);
-        btnGenererLienClient?.addEventListener('click', ouvrirModaleLienClient);
         btnFermerModale?.addEventListener('click', () => modale?.classList.add('hidden'));
 
         chargerClients(() => {
             chargerReservationsParDate(aujourdhui);
-        });
-    }
-
-    /**
-     * Ouvre une modale pour générer un lien signé vers l'espace client.
-     */
-    function ouvrirModaleLienClient() {
-        const optionsClient = tousLesClients.map(c => `<option value="${escapeHTML(c.email)}">${escapeHTML(c.nom)} (${escapeHTML(c.email)})</option>`).join('');
-        if (!contenuModale) return;
-        renderHTML(contenuModale, `
-            <h3 id="modale-titre">Générer un lien espace client</h3>
-            <div class="groupe-formulaire"><label for="select-client-lien">Client</label><select id="select-client-lien" class="champ-formulaire"><option value="">-- Sélectionner --</option>${optionsClient}</select></div>
-            <div class="groupe-formulaire"><label>Email</label><input type="email" id="champ-email-lien" class="champ-formulaire" placeholder="client@example.com"></div>
-            <div class="groupe-formulaire"><label>Validité (heures)</label><input type="number" id="champ-heures-validite" class="champ-formulaire" min="1" step="1" value="168"></div>
-            <div class="modale-pied-de-page">
-                <button type="button" id="btn-generer-lien" class="btn btn-primaire">Générer</button>
-            </div>
-            <div id="resultat-lien" class="hidden" style="margin-top:12px; display:flex; gap:8px; align-items:center;">
-                <input type="text" id="champ-lien-resultat" class="champ-formulaire" readonly style="flex:1"/>
-                <button type="button" id="btn-copier-lien" class="btn btn-secondaire">Copier</button>
-            </div>
-        `);
-        if (modale) modale.classList.remove('hidden');
-        attacherEcouteursModaleLienClient();
-    }
-
-    function attacherEcouteursModaleLienClient() {
-        const selectClient = document.getElementById('select-client-lien');
-        const emailInput = document.getElementById('champ-email-lien');
-        const heuresInput = document.getElementById('champ-heures-validite');
-        const btnGenerer = document.getElementById('btn-generer-lien');
-        const zoneResultat = document.getElementById('resultat-lien');
-        const champLien = document.getElementById('champ-lien-resultat');
-        const btnCopier = document.getElementById('btn-copier-lien');
-
-        selectClient?.addEventListener('change', () => {
-            const c = tousLesClients.find(x => x.email === selectClient.value);
-            if (c) emailInput.value = c.email;
-        });
-
-        btnGenerer?.addEventListener('click', () => {
-            const email = (emailInput?.value || '').trim();
-            const heures = parseInt(heuresInput?.value || '168', 10);
-            if (!email) { afficherErreur('Email requis.'); return; }
-            basculerIndicateurChargement(true);
-            google.script.run
-                .withSuccessHandler(res => {
-                    basculerIndicateurChargement(false);
-                    if (res && res.url) {
-                        zoneResultat?.classList.remove('hidden');
-                        if (champLien) {
-                            champLien.value = res.url;
-                            try {
-                                if (navigator.clipboard && navigator.clipboard.writeText) {
-                                    navigator.clipboard.writeText(res.url).then(() => afficherNotification('Lien copié dans le presse-papiers.'));
-                                }
-                            } catch (e) { /* fallback below */ }
-                        }
-                    } else {
-                        afficherErreur('Impossible de générer le lien.');
-                    }
-                })
-                .withFailureHandler(afficherErreur)
-                .genererLienEspaceClient(email, heures);
-        });
-
-        btnCopier?.addEventListener('click', () => {
-            if (!champLien) return;
-            champLien.select();
-            try {
-                document.execCommand('copy');
-                afficherNotification('Lien copié dans le presse-papiers.');
-            } catch (e) {
-                afficherErreur('Copie impossible. Sélectionnez et copiez manuellement.');
-            }
         });
     }
 
@@ -475,118 +398,4 @@ document.addEventListener('DOMContentLoaded', () => {
         basculerIndicateurChargement(true);
         modale?.classList.add('hidden');
         google.script.run.withSuccessHandler(reponse => {
-            basculerIndicateurChargement(false);
-            if (reponse.success) {
-                afficherNotification("Course ajoutée avec succès !", "succes");
-                rafraichirVueActuelle();
-            } else { afficherErreur(reponse.error); }
-        }).withFailureHandler(afficherErreur).creerReservationAdmin(data);
-    }
-    function attacherEcouteursModaleAjout() {
-        const selectClient = document.getElementById('select-client');
-        const champsClient = {
-            email: document.getElementById('champ-email-client'), nom: document.getElementById('champ-nom-client'),
-            adresse: document.getElementById('champ-adresse-client'), siret: document.getElementById('champ-siret-client'),
-            typeRemise: document.getElementById('type-remise'), valeurRemise: document.getElementById('valeur-remise'),
-            nbTourneesOffertes: document.getElementById('nb-tournees-offertes')
-        };
-        const conteneurValeurRemise = document.getElementById('conteneur-valeur-remise');
-        const conteneurNbTourneesOffertes = document.getElementById('conteneur-nb-tournees-offertes');
-        const champDateAjout = document.getElementById('champ-date-ajout');
-        const valeurCompteur = modale.querySelector('.valeur-compteur');
-        const checkRetour = document.getElementById('check-retour');
-        const conteneurCreneaux = document.getElementById('conteneur-creneaux-ajout');
-        const grilleCreneaux = document.getElementById('grille-creneaux-ajout');
-        const btnConfirmer = document.getElementById('btn-confirmer-ajout');
-        let creneauSelectionne = null;
-        const majAffichageRemise = () => {
-            if (!champsClient.typeRemise || !conteneurValeurRemise || !conteneurNbTourneesOffertes) return;
-            const typeSelectionne = champsClient.typeRemise.value;
-            conteneurValeurRemise.classList.toggle('hidden', typeSelectionne !== 'Pourcentage' && typeSelectionne !== 'Montant Fixe');
-            conteneurNbTourneesOffertes.classList.toggle('hidden', typeSelectionne !== 'Tournées Offertes');
-        };
-        const remplirChampsClient = (client) => {
-            champsClient.email.value = client ? client.email : ''; champsClient.nom.value = client ? client.nom : '';
-            champsClient.adresse.value = client ? client.adresse : ''; champsClient.siret.value = client ? client.siret : '';
-            champsClient.typeRemise.value = client ? (client.typeRemise || '') : ''; champsClient.valeurRemise.value = client ? (client.valeurRemise || 0) : 0;
-            champsClient.nbTourneesOffertes.value = client ? (client.nbTourneesOffertes || 0) : 0;
-            const isNewClient = !client;
-            Object.values(champsClient).forEach(champ => { if (champ.id !== 'type-remise' && champ.id !== 'valeur-remise' && champ.id !== 'nb-tournees-offertes') { champ.readOnly = !isNewClient; } });
-            majAffichageRemise();
-        };
-        selectClient?.addEventListener('change', () => { const selectedEmail = selectClient.value; remplirChampsClient(selectedEmail === 'new' ? null : tousLesClients.find(c => c.email === selectedEmail)); });
-        champsClient.typeRemise?.addEventListener('change', majAffichageRemise);
-        modale.querySelector('.btn-ajouter')?.addEventListener('click', () => { if(valeurCompteur) valeurCompteur.textContent = parseInt(valeurCompteur.textContent, 10) + 1; mettreAJourCreneauxDisponibles(); });
-        modale.querySelector('.btn-retirer')?.addEventListener('click', () => { if(valeurCompteur) { let arrets = parseInt(valeurCompteur.textContent, 10); if(arrets > 0) valeurCompteur.textContent = arrets - 1; mettreAJourCreneauxDisponibles(); } });
-        champDateAjout?.addEventListener('change', mettreAJourCreneauxDisponibles);
-        checkRetour?.addEventListener('change', mettreAJourCreneauxDisponibles);
-        function mettreAJourCreneauxDisponibles() {
-            const arretsSupplementaires = parseInt(valeurCompteur?.textContent || '0', 10);
-            const retour = checkRetour?.checked || false;
-            const date = champDateAjout?.value;
-            const DUREE_BASE = 30; const DUREE_ARRET_SUP = 15;
-            const duree = DUREE_BASE + (arretsSupplementaires + (retour ? 1 : 0)) * DUREE_ARRET_SUP;
-            if (!date) return;
-            conteneurCreneaux?.classList.remove('hidden');
-            if (grilleCreneaux) renderMessage(grilleCreneaux, 'Chargement...', 'i');
-            if (btnConfirmer) btnConfirmer.disabled = true;
-            creneauSelectionne = null;
-            google.script.run.withSuccessHandler(creneaux => {
-                if (grilleCreneaux) {
-                    if (creneaux && creneaux.length > 0) {
-                        const buttons = creneaux.map(c => `<button class="btn-creneau-replanif" data-creneau="${escapeHTML(c)}">${escapeHTML(c)}</button>`).join('');
-                        renderHTML(grilleCreneaux, buttons);
-                    } else {
-                        renderMessage(grilleCreneaux, 'Aucun créneau disponible.');
-                    }
-                }
-            }).withFailureHandler(afficherErreur).obtenirCreneauxDisponiblesPourDate(date, duree);
-        }
-        grilleCreneaux?.addEventListener('click', e => {
-            if (e.target.classList.contains('btn-creneau-replanif')) {
-                modale.querySelectorAll('.btn-creneau-replanif').forEach(btn => btn.classList.remove('selected'));
-                e.target.classList.add('selected');
-                creneauSelectionne = e.target.dataset.creneau;
-                if (btnConfirmer) btnConfirmer.disabled = false;
-            }
-        });
-        btnConfirmer?.addEventListener('click', () => {
-            const clientData = {
-                email: champsClient.email.value.trim(), nom: champsClient.nom.value.trim(), adresse: champsClient.adresse.value.trim(),
-                siret: champsClient.siret.value.trim(), typeRemise: champsClient.typeRemise.value,
-                valeurRemise: parseFloat(champsClient.valeurRemise.value) || 0, nbTourneesOffertes: parseInt(champsClient.nbTourneesOffertes.value) || 0
-            };
-            const data = {
-                client: clientData, date: champDateAjout?.value, startTime: creneauSelectionne,
-                additionalStops: parseInt(valeurCompteur?.textContent || '0', 10), returnToPharmacy: checkRetour?.checked || false,
-                notifyClient: document.getElementById('check-notifier')?.checked || false,
-                forceUrgent: document.getElementById('check-urgent')?.checked || false
-            };
-            gererSoumissionCreation(data);
-        });
-        remplirChampsClient(null);
-        mettreAJourCreneauxDisponibles();
-    }
-
-    // --- FONCTIONS UTILITAIRES ---
-    function basculerIndicateurChargement(afficher) { if(indicateurChargement) indicateurChargement.classList.toggle('hidden', !afficher); }
-    function afficherNotification(message, type = "succes") {
-        const conteneur = document.getElementById('conteneur-notifications'); if(!conteneur) return;
-        const notif = document.createElement('div');
-        notif.className = `notification ${type}`;
-        notif.textContent = message;
-        conteneur.appendChild(notif);
-        setTimeout(() => notif.remove(), 5000);
-    }
-    function afficherErreur(erreur) {
-        basculerIndicateurChargement(false);
-        const message = typeof erreur === 'object' && erreur.message ? erreur.message : String(erreur);
-        afficherNotification(`Erreur : ${message}`, "erreur");
-        logError(erreur);
-    }
-
-    // --- Point de départ ---
-    initialiser();
-});
-</script>
 

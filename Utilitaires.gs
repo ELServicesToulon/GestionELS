@@ -196,6 +196,25 @@ function verifySignedLink(email, expSeconds, sigBase64) {
 }
 
 /**
+ * Génère un lien signé pour l'Espace Client.
+ * Sig = Base64(HMAC-SHA256("email|exp", ELS_SHARED_SECRET)) (web-safe)
+ * @param {string} email Adresse e-mail du client.
+ * @param {number} [ttlSeconds=86400] Durée de validité en secondes (défaut 24h).
+ * @returns {{url:string, exp:number}} URL complète + timestamp d'expiration.
+ */
+function generateSignedClientLink(email, ttlSeconds) {
+  if (!email) throw new Error('Email requis');
+  const exp = Math.floor(Date.now() / 1000) + (Number(ttlSeconds) > 0 ? Number(ttlSeconds) : 86400);
+  const secret = getSecret('ELS_SHARED_SECRET');
+  if (!secret) throw new Error('Secret manquant: ELS_SHARED_SECRET');
+  const data = `${String(email).trim().toLowerCase()}|${exp}`;
+  const sig = Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(data, secret));
+  const baseUrl = ScriptApp.getService().getUrl();
+  const url = `${baseUrl}?page=gestion&email=${encodeURIComponent(email)}&exp=${exp}&sig=${encodeURIComponent(sig)}`;
+  return { url: url, exp: exp };
+}
+
+/**
  * Vérifie le jeton partagé fourni dans la requête.
  * @param {Object} e Objet d'événement de la requête.
  * @throws {Error} Erreur 403 si le jeton est absent ou invalide.

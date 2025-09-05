@@ -47,6 +47,24 @@ function calculerCAEnCours() {
 }
 
 /**
+ * Génère un lien signé pour l'espace client (réservé à l'admin).
+ * @param {string} emailClient
+ * @param {number} [heuresValidite=168] Durée de validité en heures (défaut 7 jours).
+ * @returns {{url:string, exp:number}} Lien et timestamp d'expiration (secondes epoch).
+ */
+function genererLienEspaceClient(emailClient, heuresValidite) {
+  const userEmail = Session.getActiveUser().getEmail();
+  if (!userEmail || userEmail.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    throw new Error('Accès non autorisé.');
+  }
+  if (!CLIENT_PORTAL_SIGNED_LINKS) {
+    throw new Error('CLIENT_PORTAL_SIGNED_LINKS est désactivé.');
+  }
+  const ttl = (Number(heuresValidite) > 0 ? Number(heuresValidite) : 168) * 3600;
+  return generateSignedClientLink(emailClient, ttl);
+}
+
+/**
  * Récupère TOUTES les réservations (passées, actuelles, futures) sans aucun filtre par date/email.
  * @returns {Object} Un objet avec le statut et la liste complète des réservations.
  */
