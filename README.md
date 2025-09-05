@@ -95,16 +95,7 @@ Set the following keys in the Apps Script editor (File → Project properties �
 - `ID_DOSSIER_TEMPORAIRE` – dossier Drive temporaire pour génération des PDF
 - `ID_FEUILLE_CALCUL` – feuille de calcul principale
 - `ID_CALENDRIER` – calendrier Google utilisé pour les créneaux
-- `ELS_SHARED_SECRET` – jeton partagé pour l'authentification des requêtes
+- `ELS_SHARED_SECRET` – clé secrète pour signer les liens d'accès à l'espace client
 
 Open the Apps Script editor, go to **File → Project properties → Script properties**, and add each key with its value.
 
-## Authentification des requêtes
-Les fonctions `doGet` et `doPost` appellent `checkSharedSecret(e)` pour valider le jeton stocké dans `ELS_SHARED_SECRET`.
-
-Fournissez ce jeton :
-
-- En-tête HTTP `X-ELS-TOKEN: <votre_jeton>`
-- ou paramètre `token=<votre_jeton>` dans l'URL ou le corps
-
-Sans jeton valide, la web app renvoie `{"error":"Forbidden"}`.
