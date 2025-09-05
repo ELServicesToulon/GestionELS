@@ -82,15 +82,23 @@ Si un événement supprimé ne doit pas être recréé, on peut purger sa réfé
 ## Script Properties
 Set the following keys in the Apps Script editor (File → Project properties → Script properties):
 
-- `SIRET`
-- `RIB_ENTREPRISE`
-- `BIC_ENTREPRISE`
-- `ID_CALENDRIER`
-- `ID_DOCUMENT_CGV`
-- `ID_FEUILLE_CALCUL`
-- `ID_MODELE_FACTURE`
-- `ID_DOSSIER_ARCHIVES`
-- `ID_DOSSIER_TEMPORAIRE`
+- `NOM_ENTREPRISE` – nom affiché sur les factures
+- `SIRET` – identifiant légal pour la facturation
+- `ADRESSE_ENTREPRISE` – adresse postale de l'entreprise
+- `EMAIL_ENTREPRISE` – contact principal pour les clients
+- `ADMIN_EMAIL` – destinataire des notifications internes
+- `WEBAPP_URL` – URL publique de la web app
+- `RIB_ENTREPRISE` – IBAN utilisé pour les paiements
+- `BIC_ENTREPRISE` – BIC associé au RIB
+- `DOC_RIB_ID` – identifiant Drive du document RIB
+- `DOC_KBIS_ID` – identifiant Drive du document Kbis
+- `DOCS_PUBLIC_FOLDER_ID` – dossier Drive pour les documents publics
+- `ID_DOCUMENT_CGV` – document des conditions générales de vente
+- `ID_MODELE_FACTURE` – modèle Google Docs pour générer les factures
+- `ID_DOSSIER_ARCHIVES` – dossier Drive d'archivage des factures
+- `ID_DOSSIER_TEMPORAIRE` – dossier Drive temporaire pour génération des PDF
+- `ID_FEUILLE_CALCUL` – feuille de calcul principale
+- `ID_CALENDRIER` – calendrier Google utilisé pour les créneaux
 - `ELS_SHARED_SECRET` – jeton partagé pour l'authentification des requêtes
 
 Open the Apps Script editor, go to **File → Project properties → Script properties**, and add each key with its value.
