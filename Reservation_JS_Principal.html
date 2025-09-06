@@ -26,6 +26,7 @@ function initializeFlags(flags = {}) {
     calendarPurgeEnabled: false,
     reservationUiV2Enabled: false,
     residentBillingEnabled: false,
+    billingModalEnabled: false,
     debugMenuEnabled: false,
     demoReservationEnabled: false,
     billingV2Dryrun: false,
@@ -181,6 +182,116 @@ function envoyerDevis(email) {
 }
 
 /**
+ * Ouvre la modale de coordonnées de facturation et gère la saisie.
+ * @param {Object} opts
+ */
+function openBillingModal(opts = {}) {
+  const modal = document.getElementById('modale-billing');
+  if (!modal) return;
+  const form = document.getElementById('formulaire-billing');
+  const btnAnnuler = document.getElementById('btn-billing-annuler');
+  const btnFermer = document.getElementById('btn-fermer-billing');
+  const btnSwitch = document.getElementById('btn-billing-switch');
+  let lastFocus = document.activeElement;
+
+  function remplir(data) {
+    form.billingNom.value = data.nom || '';
+    form.billingAdresse.value = data.adresse || '';
+    form.billingEmail.value = data.email || '';
+    form.billingTelephone.value = data.telephone || '';
+    form.billingSiret.value = data.siret || '';
+    form.billingTva.value = data.tva || '';
+  }
+
+  if (opts.defaults) {
+    remplir(opts.defaults);
+  } else {
+    google.script.run.withSuccessHandler(r => {
+      if (r && r.defaults) remplir(r.defaults);
+    }).doGetBillingDefaults(opts.orderId, opts.billTo, opts.ctx);
+  }
+
+  if (opts.mode === 'existant') {
+    Array.from(form.elements).forEach(el => {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.readOnly = true;
+      }
+    });
+    btnSwitch.classList.remove('hidden');
+  } else {
+    btnSwitch.classList.add('hidden');
+  }
+
+  function activerEdition() {
+    Array.from(form.elements).forEach(el => {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.readOnly = false;
+      }
+    });
+    btnSwitch.classList.add('hidden');
+  }
+  btnSwitch.addEventListener('click', activerEdition, { once: true });
+
+  function fermer() {
+    modal.classList.add('hidden');
+    form.reset();
+    btnSwitch.classList.add('hidden');
+    modal.removeEventListener('keydown', trap);    
+    if (lastFocus) lastFocus.focus();
+  }
+
+  btnAnnuler.addEventListener('click', fermer, { once: true });
+  btnFermer.addEventListener('click', fermer, { once: true });
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const payload = {
+      orderId: opts.orderId,
+      billTo: opts.billTo,
+      nom: form.billingNom.value.trim(),
+      adresse: form.billingAdresse.value.trim(),
+      email: form.billingEmail.value.trim(),
+      telephone: form.billingTelephone.value.trim(),
+      siret: form.billingSiret.value.trim(),
+      tva: form.billingTva.value.trim()
+    };
+    google.script.run.withSuccessHandler(res => {
+      if (res && res.success) {
+        fermer();
+        window.dispatchEvent(new CustomEvent('billing:saved', { detail: res }));
+      } else {
+        afficherNotification('Erreur lors de l\'enregistrement.', 'erreur');
+      }
+    }).doSaveBillingForOrder(payload);
+  }, { once: true });
+
+  function trap(ev) {
+    if (ev.key === 'Escape') {
+      fermer();
+    }
+    if (ev.key === 'Tab') {
+      const focusables = modal.querySelectorAll('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])');
+      const list = Array.prototype.filter.call(focusables, el => !el.disabled && el.offsetParent !== null);
+      if (list.length === 0) return;
+      const first = list[0];
+      const last = list[list.length - 1];
+      if (ev.shiftKey && document.activeElement === first) {
+        ev.preventDefault();
+        last.focus();
+      } else if (!ev.shiftKey && document.activeElement === last) {
+        ev.preventDefault();
+        first.focus();
+      }
+    }
+  }
+  modal.addEventListener('keydown', trap);
+
+  modal.classList.remove('hidden');
+  const firstField = modal.querySelector('input, textarea, select, button');
+  if (firstField) firstField.focus();
+}
+
+/**
 
  * Gère la soumission du formulaire de réservation final.
  * @param {SubmitEvent} e
@@ -195,8 +306,6 @@ function gererSoumissionReservation(e) {
     return;
   }
 
-  basculerIndicateurChargement(true);
-
   const donneesReservation = {
     client: {
       email: ui.champEmailClient.value.trim(),
@@ -208,27 +317,41 @@ function gererSoumissionReservation(e) {
     items: panier
   };
 
-  google.script.run
-    .withSuccessHandler(reponse => {
-      basculerIndicateurChargement(false);
-      if (reponse.success) {
-        afficherNotification("Réservation confirmée ! Un email vous a été envoyé.", 'succes');
-        window.etat.panier = [];
-        sauvegarderPanierDansLocalStorage();
-        afficherPanier();
-        ui.conteneurFinalisation.classList.add('hidden');
-        localStorage.setItem(CLE_LOCALSTORAGE_CLIENT, JSON.stringify(donneesReservation.client));
-      } else {
-        afficherErreur(reponse.summary || "Une erreur est survenue lors de la réservation.");
-        if (reponse.failedItemIds && reponse.failedItemIds.length > 0) {
-          window.etat.panier = window.etat.panier.filter(item => !reponse.failedItemIds.includes(item.id));
+  function envoyer() {
+    basculerIndicateurChargement(true);
+    google.script.run
+      .withSuccessHandler(reponse => {
+        basculerIndicateurChargement(false);
+        if (reponse.success) {
+          afficherNotification("Réservation confirmée ! Un email vous a été envoyé.", 'succes');
+          window.etat.panier = [];
           sauvegarderPanierDansLocalStorage();
           afficherPanier();
+          ui.conteneurFinalisation.classList.add('hidden');
+          localStorage.setItem(CLE_LOCALSTORAGE_CLIENT, JSON.stringify(donneesReservation.client));
+        } else {
+          afficherErreur(reponse.summary || "Une erreur est survenue lors de la réservation.");
+          if (reponse.failedItemIds && reponse.failedItemIds.length > 0) {
+            window.etat.panier = window.etat.panier.filter(item => !reponse.failedItemIds.includes(item.id));
+            sauvegarderPanierDansLocalStorage();
+            afficherPanier();
+          }
         }
-      }
-    })
-    .withFailureHandler(afficherErreur)
-    .reserverPanier(donneesReservation);
+      })
+      .withFailureHandler(afficherErreur)
+      .reserverPanier(donneesReservation);
+  }
+
+  if (window.etat.flags.billingModalEnabled) {
+    openBillingModal({ orderId: Date.now().toString(), billTo: 'resident', mode: 'existant' });
+    const handler = () => {
+      window.removeEventListener('billing:saved', handler);
+      envoyer();
+    };
+    window.addEventListener('billing:saved', handler);
+  } else {
+    envoyer();
+  }
 }
 
 /**
@@ -289,6 +412,10 @@ function configurerEcouteursEvenements() {
   ui.formulaireReservation?.addEventListener('submit', gererSoumissionReservation);
   ui.btnAnnulerReservation?.addEventListener('click', () => ui.conteneurFinalisation.classList.add('hidden'));
   ui.listePanier?.addEventListener('click', gererActionsPanier);
+
+  window.addEventListener('billing:saved', () => {
+    afficherNotification('Coordonnées de facturation enregistrées.', 'succes');
+  });
 
   // Écouteurs pour la modale de demande d'email pour le devis
   const modaleEmailDevis = document.getElementById('modale-email-devis');

@@ -124,6 +124,9 @@ const RESERVATION_UI_V2_ENABLED = true;
 /** @const {boolean} Active la facturation directe au résident. */
 const RESIDENT_BILLING_ENABLED = true;
 
+/** @const {boolean} Active la modale de coordonnées de facturation. */
+const BILLING_MODAL_ENABLED = false;
+
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = true;
@@ -166,6 +169,7 @@ const FLAGS = Object.freeze({
   calendarPurgeEnabled: CALENDAR_PURGE_ENABLED,
   reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
   residentBillingEnabled: RESIDENT_BILLING_ENABLED,
+  billingModalEnabled: BILLING_MODAL_ENABLED,
   debugMenuEnabled: DEBUG_MENU_ENABLED,
   demoReservationEnabled: DEMO_RESERVATION_ENABLED,
   billingV2Dryrun: BILLING_V2_DRYRUN,
@@ -254,6 +258,7 @@ const CONFIG = Object.freeze({
   SEMAINIER_ENABLED,
   SHEET_RESERVATIONS,
   BILLING,
+  BILLING_MODAL_ENABLED,
   RESIDENT_BILLING_ENABLED,
   BILLING_V2_DRYRUN
 });
