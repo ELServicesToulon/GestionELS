@@ -1,0 +1,140 @@
+/* =========================
+   Design tokens & reset
+   ========================= */
+:root{
+  --els-primary:#8e44ad;
+  --els-primary-600:#7a3c99;
+  --els-accent:#3498db;
+  --els-accent-300:#5dade2;
+  --els-bg:#fafbff;
+  --els-card:#ffffff;
+  --els-text:#1f2a37;
+  --els-muted:#6b7280;
+  --ring:0 0 0 3px rgba(52,152,219,.35);
+  --radius-xl:1rem;
+  --shadow-md:0 8px 24px rgba(2,6,23,.08);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+html,body{
+  font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  color:var(--els-text);
+  background:var(--els-bg);
+  line-height:1.5;
+}
+img{max-width:100%;height:auto}
+button{font:inherit}
+
+/* Utils */
+.muted{color:var(--els-muted)}
+.sep{border:none;height:1px;background:#e5e7eb;margin:1rem 0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* =========================
+   Layout
+   ========================= */
+.header{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  margin:1rem auto;max-width:1200px;
+}
+.header__left{display:flex;align-items:center;gap:.75rem}
+.app-title{font-size:1.1rem}
+
+.layout{
+  display:grid;gap:1rem;grid-template-columns:1fr 320px;
+  align-items:start;max-width:1200px;margin:0 auto 2rem;padding:0 1rem;
+}
+@media (max-width: 960px){
+  .layout{grid-template-columns:1fr}
+  .cart{position:static}
+}
+
+/* =========================
+   Card & Button
+   ========================= */
+.card{
+  background:var(--els-card);
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow-md);
+  padding:1rem;
+}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+  padding:.6rem 1rem;border-radius:999px;border:1px solid transparent;
+  background:var(--els-primary);color:#fff;font-weight:600;cursor:pointer;
+  transition:transform .06s ease, opacity .2s ease, box-shadow .2s ease;
+  box-shadow:var(--shadow-md);
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:focus-visible{outline:none;box-shadow:var(--ring)}
+.btn[disabled]{opacity:.55;pointer-events:none}
+.btn.secondary{background:linear-gradient(90deg,var(--els-accent),var(--els-accent-300))}
+.btn.ghost{background:transparent;color:var(--els-primary);border-color:currentColor}
+
+/* =========================
+   Pricing
+   ========================= */
+#tit-tarifs{margin:0 0 .5rem}
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.pricing__col h3{margin:.25rem 0 .5rem;font-size:1rem}
+.pricing__col ul{margin:0;padding-left:1.1rem}
+@media (max-width: 720px){ .pricing{grid-template-columns:1fr} }
+
+/* =========================
+   Badges
+   ========================= */
+.badge{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.2rem .6rem;border-radius:999px;font-size:.85rem;font-weight:600;
+}
+.badge.urgent{background:#fff0f1;color:#b42318;border:1px solid #f3b4b7}
+.badge.samedi{background:#eef6ff;color:#1e40af;border:1px solid #c7d2fe}
+.badge.ehpad{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+
+/* =========================
+   Fields
+   ========================= */
+.field-group{display:grid;gap:.75rem;margin:.5rem 0 1rem}
+.field{display:grid;gap:.25rem}
+.field > span{font-weight:600}
+.field input, .field select, .field textarea{
+  width:100%;padding:.6rem .75rem;border-radius:.75rem;border:1px solid #e5e7eb;background:#fff;
+}
+.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible{
+  outline:none;box-shadow:var(--ring);border-color:#bfdbfe;
+}
+.check{display:flex;align-items:center;gap:.5rem;margin:.5rem 0}
+
+/* =========================
+   Cart
+   ========================= */
+.cart{position:sticky;top:1rem}
+.cart-empty{color:var(--els-muted);font-style:italic}
+.cart-list{display:grid;gap:.5rem;list-style:none;padding:0;margin:.5rem 0}
+.cart-item{display:flex;align-items:center;justify-content:space-between;gap:.5rem;border:1px dashed #e5e7eb;border-radius:.75rem;padding:.5rem .75rem;background:#fff}
+.cart-total{display:flex;align-items:center;justify-content:space-between;margin:.5rem 0;font-size:1.05rem}
+.cart-actions{display:flex;gap:.5rem}
+
+/* =========================
+   Modal (<dialog>)
+   ========================= */
+.modal{max-width:680px;width:100%;border:none;padding:0}
+.modal::backdrop{background:rgba(15,23,42,.45)}
+.modal__header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1rem .5rem .5rem}
+.modal__body{padding:0 1rem 1rem}
+.modal__footer{display:flex;gap:.5rem;justify-content:flex-end;padding:0 1rem 1rem}
+.modal__close{line-height:1;width:40px}
+
+/* =========================
+   Notice / Toast
+   ========================= */
+.notice{
+  max-width:1200px;margin:0 auto 1rem;padding:.75rem 1rem;border:1px solid #e5e7eb;border-radius:.75rem;background:#fff;
+}
+.toast{
+  position:fixed;inset:auto 1rem 1rem auto;min-width:240px;max-width:min(90vw,420px);
+  padding:.75rem 1rem;border-radius:.75rem;background:#111827;color:#fff;box-shadow:var(--shadow-md);z-index:50;
+}
