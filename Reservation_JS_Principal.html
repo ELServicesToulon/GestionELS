@@ -34,7 +34,12 @@ function initializeFlags(flags = {}) {
     configCacheEnabled: false,
     reservationCacheEnabled: false,
     themeV2Enabled: false,
+
+    themeSelectionEnabled: false,
+    devisEnabled: false
+
     themeSelectionEnabled: false
+
   };
   return Object.assign({}, defaults, flags);
 }
@@ -176,6 +181,59 @@ function envoyerDevis(email) {
 }
 
 /**
+
+ * Gère la soumission du formulaire de réservation final.
+ * @param {SubmitEvent} e
+ */
+function gererSoumissionReservation(e) {
+  e.preventDefault();
+  const { ui } = window;
+  const { panier } = window.etat;
+
+  if (panier.length === 0) {
+    afficherNotification("Votre panier est vide.", 'erreur');
+    return;
+  }
+
+  basculerIndicateurChargement(true);
+
+  const donneesReservation = {
+    client: {
+      email: ui.champEmailClient.value.trim(),
+      nom: ui.champNomClient.value.trim(),
+      adresse: ui.champAdresseClient.value.trim(),
+      siret: ui.champSiretClient.value.trim(),
+      note: ui.champNoteReservation.value.trim()
+    },
+    items: panier
+  };
+
+  google.script.run
+    .withSuccessHandler(reponse => {
+      basculerIndicateurChargement(false);
+      if (reponse.success) {
+        afficherNotification("Réservation confirmée ! Un email vous a été envoyé.", 'succes');
+        window.etat.panier = [];
+        sauvegarderPanierDansLocalStorage();
+        afficherPanier();
+        ui.conteneurFinalisation.classList.add('hidden');
+        localStorage.setItem(CLE_LOCALSTORAGE_CLIENT, JSON.stringify(donneesReservation.client));
+      } else {
+        afficherErreur(reponse.summary || "Une erreur est survenue lors de la réservation.");
+        if (reponse.failedItemIds && reponse.failedItemIds.length > 0) {
+          window.etat.panier = window.etat.panier.filter(item => !reponse.failedItemIds.includes(item.id));
+          sauvegarderPanierDansLocalStorage();
+          afficherPanier();
+        }
+      }
+    })
+    .withFailureHandler(afficherErreur)
+    .reserverPanier(donneesReservation);
+}
+
+/**
+
+
  * Configure tous les écouteurs d'événements de l'application.
  */
 function configurerEcouteursEvenements() {
