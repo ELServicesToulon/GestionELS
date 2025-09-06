@@ -1,1 +1,82 @@
-x
+<style>
+:root{
+  --font:'Montserrat',system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif;
+  --violet:#8e44ad; --blue:#3498db; --light:#5dade2;
+  --bg:#f7f9fc; --card:#fff; --text:#0f172a; --muted:#64748b; --border:#e5e7eb;
+  --radius:16px; --shadow:0 6px 22px rgba(16,24,40,.08); --focus:2px solid #1f6feb;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;font-family:var(--font);color:var(--text);background:linear-gradient(120deg,var(--bg),#fff 60%)}
+
+/* ——— reset lisibilité ——— */
+h1,h2,h3{margin:.2rem 0 1rem;font-weight:700;letter-spacing:.1px}
+p{margin:.5rem 0 1rem}
+a{color:var(--violet)} a:focus-visible{outline:var(--focus);border-radius:4px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+/* ——— container propre ——— */
+.container,.wrap,.page{max-width:1100px;margin:28px auto;padding:0 16px}
+
+/* ——— boutons gélule ——— */
+button,.btn{appearance:none;border:0;background:#fff;color:var(--text);
+  border:1px solid #ffffff80;padding:10px 14px;font-weight:600;cursor:pointer;
+  transition:transform .05s ease,box-shadow .2s ease;border-radius:999px}
+button:focus-visible,.btn:focus-visible{outline:var(--focus)}
+button:hover,.btn:hover{box-shadow:0 6px 16px rgba(0,0,0,.12)}
+button:active,.btn:active{transform:translateY(1px)}
+.btn-primary{background:linear-gradient(90deg,var(--violet),var(--blue));color:#fff;border-color:transparent}
+
+/* ——— tableau/listes (p.ex. factures) ——— */
+.table-wrap{max-height:68vh;overflow:auto;border-radius:calc(var(--radius) - 2px)}
+.table-wrap:focus{outline:var(--focus)}
+table{width:100%;border-collapse:separate;border-spacing:0}
+thead th{position:sticky;top:0;z-index:1;text-align:left;font-weight:600;font-size:.93rem;color:#0f172a;
+  background:linear-gradient(180deg,#fff,#f2f6ff);border-bottom:1px solid var(--border);padding:10px 12px}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:.95rem}
+tbody tr:hover{background:linear-gradient(180deg,#fff,#f9fbff)}
+
+/* ——— HERO / panneau tarifs : on supprime le gros dégradé et on “cardifie” ——— */
+/* attrape large sans toucher ta structure */
+section, article, .panel, .hero, .intro, .banner{
+  background-image:none !important;
+}
+[class*="hero" i],[class*="intro" i],[class*="banner" i],
+[class*="tarif" i],[class*="pricing" i],[id*="tarif" i]{
+  background:#fff !important;border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:28px 22px;margin:0 auto 24px;max-width:1100px;
+}
+/* colonnes tarifs propres (si listes/col) */
+[class*="tarif" i] .cols,[class*="pricing" i] .cols,[class*="hero" i] .cols{
+  display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:16px;align-items:start
+}
+[class*="tarif" i] h2,[class*="pricing" i] h2,[class*="hero" i] h2{font-size:1.15rem;margin:.2rem 0 .75rem}
+[class*="tarif" i] li,[class*="pricing" i] li{line-height:1.5}
+
+/* ——— entêtes / logo barre supérieure ——— */
+.header,.topbar,.app-header{
+  position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;color:#fff;background:linear-gradient(90deg,var(--violet),var(--blue));box-shadow:var(--shadow)
+}
+.header a,.topbar a,.app-header a{color:#fff;text-decoration:none;font-weight:600}
+
+/* ——— champs ——— */
+input[type="search"],input[type="text"],input[type="email"],input[type="number"],select{
+  height:42px;border-radius:999px;border:1px solid var(--border);padding:0 14px;outline:none;width:100%;
+  box-shadow:inset 0 1px 0 rgba(0,0,0,.02)
+}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(52,152,219,.15)}
+
+/* ——— utilitaires ——— */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.muted{color:var(--muted)} .center{display:flex;align-items:center;justify-content:center}
+
+/* ——— mobile ——— */
+@media (max-width:720px){
+  [class*="tarif" i] .cols,[class*="pricing" i] .cols,[class*="hero" i] .cols{grid-template-columns:1fr}
+  .container,.wrap,.page{padding:0 12px}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+
