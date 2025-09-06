@@ -219,16 +219,9 @@ function generateSignedClientLink(email, ttlSeconds) {
   return { url: url, exp: exp };
 }
 /**
- * Retourne les flags d'activation pour le client.
- * @returns {Object} Flags configurables depuis Configuration.gs.
+ * Retourne l'ensemble des drapeaux de configuration exposés au client.
+ * @returns {Object} Drapeaux issus de Configuration.gs.
  */
 function getConfiguration() {
-  return {
-    clientPortalEnabled: CLIENT_PORTAL_ENABLED,
-    slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
-    semainierEnabled: SEMAINIER_ENABLED,
-    themeV2Enabled: THEME_V2_ENABLED,
-    billingV2Dryrun: BILLING_V2_DRYRUN,
-    privacyLinkEnabled: PRIVACY_LINK_ENABLED
-  };
+  return Object.assign({}, FLAGS);
 }
