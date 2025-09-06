@@ -62,5 +62,12 @@ function closeDialog(el){
 }
 
 // Expose global (facile à utiliser dans app.js)
+
+if (typeof window !== "undefined") {
+  window.openDialog = openDialog;
+  window.closeDialog = closeDialog;
+}
+
 window.openDialog = openDialog;
 window.closeDialog = closeDialog;
+
