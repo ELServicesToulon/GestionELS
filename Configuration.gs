@@ -112,7 +112,7 @@ const RESERVATION_UI_V2_ENABLED = true;
 const RESIDENT_BILLING_ENABLED = true;
 
 /** @const {boolean} Active la modale de coordonnées de facturation. */
-const BILLING_MODAL_ENABLED = false;
+const BILLING_MODAL_ENABLED = true;
 
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
@@ -132,11 +132,11 @@ const RESERVATION_CACHE_ENABLED = true;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
-const THEME_V2_ENABLED = true;
+const THEME_V2_ENABLED = false;
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
-const THEME_SELECTION_ENABLED = true;
+const THEME_SELECTION_ENABLED =false;
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
-const THEME_DEFAULT = 'nocturne';
+const THEME_DEFAULT = '  clarte';
 /** @const {Object<string,string>} Associe les clés de thème aux chemins des fichiers CSS. */
 const THEMES = {
   clarte: 'branding/Theme_Clarte_CSS',
