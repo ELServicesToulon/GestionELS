@@ -1,0 +1,25 @@
+<style>
+  :root {
+    --font-family: 'Montserrat', sans-serif;
+    --color-violet: #8e44ad;
+    --color-blue: #3498db;
+    --color-light-blue: #5dade2;
+    --gradient-violet-blue: linear-gradient(135deg, var(--color-violet), var(--color-blue));
+  }
+
+  .btn-pill {
+    font-family: var(--font-family);
+    background: var(--gradient-violet-blue);
+    color: #fff;
+    border: none;
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+  }
+
+  .btn-pill:hover,
+  .btn-pill:focus {
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+    outline: none;
+  }
+</style>
