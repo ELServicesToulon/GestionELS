@@ -34,8 +34,12 @@ function initializeFlags(flags = {}) {
     configCacheEnabled: false,
     reservationCacheEnabled: false,
     themeV2Enabled: false,
+
     themeSelectionEnabled: false,
     devisEnabled: false
+
+    themeSelectionEnabled: false
+
   };
   return Object.assign({}, defaults, flags);
 }
@@ -177,6 +181,7 @@ function envoyerDevis(email) {
 }
 
 /**
+
  * Gère la soumission du formulaire de réservation final.
  * @param {SubmitEvent} e
  */
@@ -227,6 +232,8 @@ function gererSoumissionReservation(e) {
 }
 
 /**
+
+
  * Configure tous les écouteurs d'événements de l'application.
  */
 function configurerEcouteursEvenements() {

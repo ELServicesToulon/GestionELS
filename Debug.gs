@@ -28,7 +28,9 @@ function lancerTousLesTests() {
 
   testerValidationConfiguration();
   testerCacheConfiguration();
+  testerFlagsSerialization();
   testerCoherenceTarifs();
+  testerComputeCoursePriceTarifVide();
   testerUtilitaires();
   testerFeuilleCalcul();
   testerCalendrier();
@@ -69,6 +71,25 @@ function testerCacheConfiguration() {
   Logger.log(`Après invalidation TARIFS.Normal.base=${conf3.TARIFS.Normal.base}`);
 }
 
+function testerFlagsSerialization() {
+  Logger.log("\n--- Test de sérialisation des flags ---");
+  const flags = getConfiguration();
+  const expected = Object.keys(FLAGS).sort();
+  const received = Object.keys(flags).sort();
+  const missing = expected.filter(k => !received.includes(k));
+  const extra = received.filter(k => !expected.includes(k));
+  if (missing.length === 0 && extra.length === 0) {
+    Logger.log("SUCCESS: getConfiguration() expose tous les flags.");
+  } else {
+    if (missing.length) {
+      Logger.log(`FAILURE: Flags manquants - ${missing.join(', ')}`);
+    }
+    if (extra.length) {
+      Logger.log(`FAILURE: Flags inattendus - ${extra.join(', ')}`);
+    }
+  }
+}
+
 function testerCoherenceTarifs() {
   Logger.log("\n--- Test de cohérence des TARIFS dans Configuration.gs ---");
   const conf = getPublicConfig();
@@ -81,6 +102,24 @@ function testerCoherenceTarifs() {
       Logger.log(`FAILURE: TARIFS.${type}.base manquant ou invalide`);
     }
   });
+}
+
+function testerComputeCoursePriceTarifVide() {
+  Logger.log("\n--- Test de computeCoursePrice() avec TARIFS vide ---");
+  const backup = JSON.parse(JSON.stringify(TARIFS));
+  try {
+    Object.keys(TARIFS).forEach(k => delete TARIFS[k]);
+    const res = computeCoursePrice({ totalStops: 2 });
+    if (res && typeof res.total === 'number') {
+      Logger.log('SUCCESS: computeCoursePrice() ne jette pas d\'exception avec TARIFS vide.');
+    } else {
+      Logger.log('FAILURE: computeCoursePrice() n\'a pas retourné de résultat valide avec TARIFS vide.');
+    }
+  } catch (e) {
+    Logger.log(`FAILURE: computeCoursePrice() a levé une exception avec TARIFS vide: ${e.message}`);
+  } finally {
+    Object.assign(TARIFS, backup);
+  }
 }
 
 function testerUtilitaires() {

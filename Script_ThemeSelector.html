@@ -50,9 +50,16 @@
     const menu = document.getElementById('menu-theme');
     if (!btn || !menu) return;
     btn.classList.remove('hidden');
+    btn.setAttribute('aria-expanded', 'false');
     btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
       menu.classList.toggle('hidden');
-      menu.querySelector('button').focus();
+      if (!expanded) {
+        menu.querySelector('button').focus();
+      } else {
+        btn.focus();
+      }
     });
     menu.querySelectorAll('.option-theme').forEach(opt => {
       opt.addEventListener('click', () => {
@@ -66,6 +73,23 @@
     document.addEventListener('click', e => {
       if (!menu.contains(e.target) && e.target !== btn) {
         menu.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (menu.classList.contains('hidden')) return;
+      if (e.key === 'Escape') {
+        menu.classList.add('hidden');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.focus();
+      } else if (e.key === 'Tab') {
+        setTimeout(() => {
+          if (!menu.contains(document.activeElement)) {
+            menu.classList.add('hidden');
+            btn.setAttribute('aria-expanded', 'false');
+            btn.focus();
+          }
+        }, 0);
       }
     });
   }
