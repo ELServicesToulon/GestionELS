@@ -1,12 +1,69 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <base target="_top">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=()" />
-    <title>Panneau de Débogage</title>
-    <style>
+  <? var appUrl = ScriptApp.getService().getUrl(); var nomService = NOM_ENTREPRISE; ?>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=()" />
+  <meta name="description" content="Livraison pharmacie à domicile et EHPAD sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol et Bandol.">
+  <link rel="canonical" href="<?= appUrl ?>">
+  <meta property="og:title" content="<?= nomService ?> | Panneau de Débogage">
+  <meta property="og:description" content="Livraison pharmacie à domicile et EHPAD sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol et Bandol.">
+  <meta property="og:url" content="<?= appUrl ?>">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="<?= nomService ?> | Panneau de Débogage">
+  <meta name="twitter:description" content="Livraison pharmacie à domicile et EHPAD sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol et Bandol.">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "@id": "<?= appUrl ?>#business",
+        "name": "<?= nomService ?>",
+        "description": "Livraison pharmacie à domicile et EHPAD sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol et Bandol.",
+        "url": "<?= appUrl ?>",
+        "email": "<?= EMAIL_ENTREPRISE ?>",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Six-Fours-les-Plages",
+          "addressCountry": "FR"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 43.0842,
+          "longitude": 5.8009
+        },
+        "areaServed": [
+          { "@type": "Place", "name": "Tamaris" },
+          { "@type": "Place", "name": "Mar Vivo" },
+          { "@type": "Place", "name": "Six-Fours-les-Plages" },
+          { "@type": "Place", "name": "Sanary" },
+          { "@type": "Place", "name": "Portissol" },
+          { "@type": "Place", "name": "Bandol" }
+        ]
+      },
+      {
+        "@type": "Service",
+        "@id": "<?= appUrl ?>#service",
+        "serviceType": "Livraison de pharmacie",
+        "provider": { "@id": "<?= appUrl ?>#business" },
+        "areaServed": [
+          { "@type": "Place", "name": "Tamaris" },
+          { "@type": "Place", "name": "Mar Vivo" },
+          { "@type": "Place", "name": "Six-Fours-les-Plages" },
+          { "@type": "Place", "name": "Sanary" },
+          { "@type": "Place", "name": "Portissol" },
+          { "@type": "Place", "name": "Bandol" }
+        ]
+      }
+    ]
+  }
+  </script>
+  <title><?= nomService ?> | Panneau de Débogage</title>
+  <style>
         body { font-family: Montserrat, sans-serif; margin: 20px; background-color: #0b0e13; color: #fff; }
         h1 { color: #fff; }
         .test-suite { background-color: #0f151f; border: 1px solid #1d2a3a; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
