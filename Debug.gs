@@ -201,16 +201,6 @@ function testerReservation() {
     Logger.log("FAILURE: calculerPrixEtDureeServeur()");
   }
 
-  try {
-    createReservation({ date: dateTest, part: 'X', start: '10:00' });
-    Logger.log("FAILURE: createReservation() n'a pas détecté la part inconnue.");
-  } catch (e) {
-    if (e.message === 'Part inconnue') {
-      Logger.log("SUCCESS: createReservation() détecte une part inconnue.");
-    } else {
-      Logger.log(`FAILURE: createReservation() erreur inattendue: ${e.message}`);
-    }
-  }
 }
 
 function testerGestionClient() {

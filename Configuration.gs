@@ -73,17 +73,6 @@ const INTERVALLE_CRENEAUX_MINUTES = 15;
 /** @const {number} Délai en minutes en dessous duquel une réservation est considérée comme urgente. */
 const URGENT_THRESHOLD_MINUTES = 30;
 
-// --- Paramètres semainier ---
-/** @const {Object<string,string[]>} Plages horaires par partie de journée. */
-const SEMAINIER_WINDOWS = {
-  matin: ['08:00','12:00'],
-  midi: ['12:00','14:00'],
-  apresmidi: ['14:00','18:00'],
-  soir: ['18:00','21:00']
-};
-/** @const {number} Pas des horaires du semainier en minutes. */
-const SEMAINIER_STEP_MIN = 15;
-
 // --- Durées & Kilométrage des prestations ---
 /** @const {number} Durée standard d'une prise en charge en minutes. */
 const DUREE_BASE = 30;
@@ -107,8 +96,6 @@ const CLIENT_PORTAL_SIGNED_LINKS = false;
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
-/** @const {boolean} Active le semainier expérimental. */
-const SEMAINIER_ENABLED = false;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
 const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
@@ -159,7 +146,6 @@ const FLAGS = Object.freeze({
   clientPortalSignedLinks: CLIENT_PORTAL_SIGNED_LINKS,
   privacyLinkEnabled: PRIVACY_LINK_ENABLED,
   slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
-  semainierEnabled: SEMAINIER_ENABLED,
   billingMultiSheetEnabled: BILLING_MULTI_SHEET_ENABLED,
   caEnCoursEnabled: CA_EN_COURS_ENABLED,
   calendarResyncEnabled: CALENDAR_RESYNC_ENABLED,
@@ -249,9 +235,6 @@ const CONFIG = Object.freeze({
   TVA_APPLICABLE,
   ANNEES_RETENTION_FACTURES,
   MOIS_RETENTION_LOGS,
-  SEMAINIER_WINDOWS,
-  SEMAINIER_STEP_MIN,
-  SEMAINIER_ENABLED,
   SHEET_RESERVATIONS,
   BILLING,
   RESIDENT_BILLING_ENABLED,
@@ -276,10 +259,7 @@ function getPublicConfig() {
     URGENT_THRESHOLD_MINUTES: CONFIG.URGENT_THRESHOLD_MINUTES,
     HEURE_DEBUT_SERVICE: CONFIG.HEURE_DEBUT_SERVICE,
     HEURE_FIN_SERVICE: CONFIG.HEURE_FIN_SERVICE,
-    TVA_APPLICABLE: CONFIG.TVA_APPLICABLE,
-    SEMAINIER_WINDOWS: CONFIG.SEMAINIER_WINDOWS,
-    SEMAINIER_STEP_MIN: CONFIG.SEMAINIER_STEP_MIN,
-    SEMAINIER_ENABLED: CONFIG.SEMAINIER_ENABLED
+    TVA_APPLICABLE: CONFIG.TVA_APPLICABLE
   };
 }
 
