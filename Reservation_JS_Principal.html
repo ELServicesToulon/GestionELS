@@ -8,13 +8,44 @@
  * d'événements et lance l'affichage initial.
  */
 
+/**
+ * Initialise les drapeaux avec des valeurs par défaut et les fusionne avec ceux fournis.
+ * @param {Object} [flags={}] Drapeaux provenant du serveur.
+ * @returns {Object} Objet de drapeaux complété.
+ */
+function initializeFlags(flags = {}) {
+  const defaults = {
+    clientPortalEnabled: false,
+    clientPortalSignedLinks: false,
+    privacyLinkEnabled: false,
+    slotsAmpmEnabled: false,
+    semainierEnabled: false,
+    billingMultiSheetEnabled: false,
+    caEnCoursEnabled: false,
+    calendarResyncEnabled: false,
+    calendarPurgeEnabled: false,
+    reservationUiV2Enabled: false,
+    residentBillingEnabled: false,
+    debugMenuEnabled: false,
+    demoReservationEnabled: false,
+    billingV2Dryrun: false,
+    requestLoggingEnabled: false,
+    postEndpointEnabled: false,
+    configCacheEnabled: false,
+    reservationCacheEnabled: false,
+    themeV2Enabled: false,
+    themeSelectionEnabled: false
+  };
+  return Object.assign({}, defaults, flags);
+}
+
 // État global de l'application côté client
 window.etat = {
   dateActuelle: new Date(),
   panier: [],
   tourneeEnCours: {}, // Sera peuplé lors de la configuration
   clientReconnu: null,
-  flags: {} // Flags d'activation issus de Configuration.gs
+  flags: initializeFlags() // Flags d'activation issus de Configuration.gs
 };
 
 /**
@@ -84,16 +115,21 @@ function afficherConteneurFinalisation() {
  */
 function gererDemandeDevis() {
   const { ui } = window;
-  const { panier, clientReconnu } = window.etat;
+  const { panier, flags } = window.etat;
+
+  if (flags?.devisEnabled === false) {
+    afficherNotification('La demande de devis est désactivée.', 'info');
+    return;
+  }
 
   if (panier.length === 0) {
-    afficherNotification("Votre panier est vide.", "erreur");
+    afficherNotification('Votre panier est vide.', 'erreur');
     return;
   }
 
   let email = ui.champEmailClient?.value.trim();
-  if (!email && clientReconnu) {
-    email = clientReconnu.email;
+  if (!email && window.etat.clientReconnu) {
+    email = window.etat.clientReconnu.email;
   }
 
   if (email) {
@@ -104,19 +140,24 @@ function gererDemandeDevis() {
 }
 
 /**
- * Collecte les données et appelle la fonction serveur pour envoyer le devis.
- * @param {string} email L'adresse email du client.
+ * Collecte les données et appelle le serveur pour envoyer le devis.
+ * @param {string} email
  */
 function envoyerDevis(email) {
   const { ui } = window;
-  const { panier, clientReconnu } = window.etat;
+  const { panier, flags } = window.etat;
+
+  if (flags?.devisEnabled === false) {
+    afficherNotification('La demande de devis est désactivée.', 'info');
+    return;
+  }
 
   basculerIndicateurChargement(true);
 
   const donneesDevis = {
     client: {
-      email,
-      nom: ui.champNomClient?.value.trim() || clientReconnu?.nom || ''
+      email: email,
+      nom: ui.champNomClient?.value.trim() || window.etat.clientReconnu?.nom || ''
     },
     items: panier
   };
@@ -270,7 +311,7 @@ function configurerEcouteursEvenements() {
  */
 document.addEventListener('DOMContentLoaded', () => {
   google.script.run.withSuccessHandler(cfg => {
-    window.etat.flags = cfg;
+    window.etat.flags = initializeFlags(cfg);
   }).getConfiguration();
   chargerPanierDepuisLocalStorage();
   verifierSessionClient();
