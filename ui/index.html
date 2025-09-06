@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ELS • Réservations</title>
+
+  <!-- Police -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./theme.css">
+  <link rel="stylesheet" href="./calendar.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="card header" role="banner" aria-label="Système de réservation ELS">
+    <div class="header__left">
+      <img src="./assets/logo.svg" alt="Logo ELS" width="40" height="40" />
+      <strong class="app-title">ELS • Système de réservation</strong>
+    </div>
+    <nav class="header__right" aria-label="Liens principaux">
+      <button class="btn ghost" id="btn-espace-client" type="button">Mon Espace Client</button>
+    </nav>
+  </header>
+
+  <!-- Bandeau info (optionnel) -->
+  <div class="notice" role="status">
+    <strong>Info :</strong> Créneaux toutes <b>15 min</b>, journée continue <b>07:00 → 21:00</b>. 
+  </div>
+
+  <!-- Grille 2 colonnes -->
+  <main class="layout">
+    <section aria-labelledby="tit-tarifs" class="card">
+      <h2 id="tit-tarifs">Tarifs et options</h2>
+      <div class="pricing">
+        <div class="pricing__col">
+          <h3>Course de base</h3>
+          <ul>
+            <li>15 € TTC</li>
+            <li>9 km inclus</li>
+            <li>30 min inclus</li>
+          </ul>
+          <button class="btn" id="btn-reserver" type="button">Réserver</button>
+        </div>
+        <div class="pricing__col">
+          <h3>Arrêts supplémentaires</h3>
+          <ul>
+            <li>2e arrêt : 5 € TTC</li>
+            <li>3e arrêt : 4 € TTC</li>
+            <li>4e arrêt : 3 € TTC</li>
+            <li>5e arrêt : 4 € TTC</li>
+            <li>6e+ arrêt : 5 € TTC</li>
+          </ul>
+        </div>
+        <div class="pricing__col">
+          <h3>Options</h3>
+          <ul>
+            <li><span class="badge urgent" aria-label="Option Urgent">Urgent</span> : +20 € TTC</li>
+            <li><span class="badge samedi" aria-label="Option Samedi">Samedi</span> : +25 € TTC</li>
+          </ul>
+          <p class="muted">Le samedi est prioritaire sur l’urgent. Une course le samedi applique toujours le tarif samedi, même si elle est urgente.</p>
+        </div>
+      </div>
+      <hr class="sep">
+      <button class="btn" data-open="dlg-proxy" type="button">Déclencher pour un résident</button>
+    </section>
+
+    <!-- Calendrier -->
+    <section class="calendar card" aria-labelledby="tit-cal">
+      <div class="calendar__toolbar">
+        <button class="btn ghost" id="prev-week" aria-label="Semaine précédente" type="button">◀</button>
+        <h2 id="tit-cal">Réservez vos tournées pro en 1 clic</h2>
+        <button class="btn ghost" id="next-week" aria-label="Semaine suivante" type="button">▶</button>
+      </div>
+
+      <div class="weekbar" role="row" id="weekbar">
+        <div aria-hidden="true"></div>
+        <div class="day" role="columnheader" data-day="0">Lun</div>
+        <div class="day" role="columnheader" data-day="1">Mar</div>
+        <div class="day" role="columnheader" data-day="2">Mer</div>
+        <div class="day" role="columnheader" data-day="3">Jeu</div>
+        <div class="day" role="columnheader" data-day="4">Ven</div>
+        <div class="day" role="columnheader" data-day="5">Sam</div>
+        <div class="day" role="columnheader" data-day="6">Dim</div>
+      </div>
+
+      <div id="cal-grid" class="grid" role="grid" aria-describedby="leg-plages">
+        <!-- Colonnes générées par JS -->
+      </div>
+      <p id="leg-plages" class="muted">Créneaux toutes 15 min (journée continue).</p>
+    </section>
+
+    <!-- Panier -->
+    <aside class="card cart" aria-labelledby="tit-panier">
+      <h2 id="tit-panier">Panier de réservation</h2>
+      <p id="cart-empty" class="cart-empty">Votre panier est vide.</p>
+      <ul id="cart-list" class="cart-list"></ul>
+      <div class="cart-total">
+        <span>Total estimé</span>
+        <strong id="cart-total">0,00 €</strong>
+      </div>
+      <div class="cart-actions">
+        <button class="btn secondary" id="btn-valider" type="button">Valider</button>
+        <button class="btn ghost" id="btn-vider" type="button">Vider</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Modale Déclenchement par tiers -->
+  <dialog id="dlg-proxy" class="modal card" aria-labelledby="dlg-proxy-title" aria-modal="true">
+    <form id="frm-proxy" method="dialog">
+      <header class="modal__header">
+        <h2 id="dlg-proxy-title">Déclenchement par pharmacien / infirmier</h2>
+        <button class="btn ghost modal__close" data-close type="button" aria-label="Fermer">✕</button>
+      </header>
+      <div class="modal__body">
+        <p class="muted">La modale peut préremplir avec les infos du résident/EHPAD. Vous pouvez modifier si besoin.</p>
+        <fieldset class="field-group">
+          <legend>Résident / EHPAD</legend>
+          <label class="field">
+            <span>Nom du résident</span>
+            <input type="text" name="residentName" required autocomplete="name" />
+          </label>
+          <label class="field">
+            <span>EHPAD / Service</span>
+            <input type="text" name="org" autocomplete="organization" />
+          </label>
+          <label class="field">
+            <span>Téléphone</span>
+            <input type="tel" name="phone" inputmode="tel" autocomplete="tel" />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" autocomplete="email" />
+          </label>
+        </fieldset>
+
+        <label class="check">
+          <input type="checkbox" id="chk-billing" />
+          <span>Renseigner des <b>coordonnées à facturer</b> différentes</span>
+        </label>
+
+        <fieldset class="field-group" id="billing-fields" hidden>
+          <legend>Coordonnées à facturer</legend>
+          <label class="field">
+            <span>Nom / Raison sociale</span>
+            <input type="text" name="billingName" />
+          </label>
+          <label class="field">
+            <span>Email facturation</span>
+            <input type="email" name="billingEmail" />
+          </label>
+          <label class="field">
+            <span>Référence interne (optionnel)</span>
+            <input type="text" name="billingRef" />
+          </label>
+        </fieldset>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn" value="save" type="submit">Enregistrer</button>
+        <button class="btn ghost" value="cancel" data-close type="button">Annuler</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Zone notifications -->
+  <div id="toast" role="status" aria-live="polite" class="toast" hidden></div>
+
+  <!-- Scripts -->
+  <script src="./a11y.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
