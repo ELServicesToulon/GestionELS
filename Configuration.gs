@@ -102,7 +102,7 @@ const KM_ARRET_SUP = 3;
 /** @const {boolean} Active l'espace client. */
 const CLIENT_PORTAL_ENABLED = true;
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
-const CLIENT_PORTAL_SIGNED_LINKS = true;
+const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
@@ -122,7 +122,7 @@ const CALENDAR_PURGE_ENABLED = true;
 const RESERVATION_UI_V2_ENABLED = true;
 
 /** @const {boolean} Active la facturation directe au résident. */
-const RESIDENT_BILLING_ENABLED = false;
+const RESIDENT_BILLING_ENABLED = true;
 
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
@@ -138,7 +138,7 @@ const POST_ENDPOINT_ENABLED = false;
 /** @const {boolean} Active la mise en cache des paramètres de configuration. */
 const CONFIG_CACHE_ENABLED = true;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
-const RESERVATION_CACHE_ENABLED = false;
+const RESERVATION_CACHE_ENABLED = true;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
