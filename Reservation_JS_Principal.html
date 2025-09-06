@@ -80,6 +80,71 @@ function afficherConteneurFinalisation() {
 }
 
 /**
+ * Gère la demande d'envoi de devis par email.
+ */
+function gererDemandeDevis() {
+  const { ui } = window;
+  const { panier, flags } = window.etat;
+
+  if (flags?.devisEnabled === false) {
+    afficherNotification('La demande de devis est désactivée.', 'info');
+    return;
+  }
+
+  if (panier.length === 0) {
+    afficherNotification('Votre panier est vide.', 'erreur');
+    return;
+  }
+
+  let email = ui.champEmailClient?.value.trim();
+  if (!email && window.etat.clientReconnu) {
+    email = window.etat.clientReconnu.email;
+  }
+
+  if (email) {
+    envoyerDevis(email);
+  } else {
+    document.getElementById('modale-email-devis')?.classList.remove('hidden');
+  }
+}
+
+/**
+ * Collecte les données et appelle le serveur pour envoyer le devis.
+ * @param {string} email
+ */
+function envoyerDevis(email) {
+  const { ui } = window;
+  const { panier, flags } = window.etat;
+
+  if (flags?.devisEnabled === false) {
+    afficherNotification('La demande de devis est désactivée.', 'info');
+    return;
+  }
+
+  basculerIndicateurChargement(true);
+
+  const donneesDevis = {
+    client: {
+      email: email,
+      nom: ui.champNomClient?.value.trim() || window.etat.clientReconnu?.nom || ''
+    },
+    items: panier
+  };
+
+  google.script.run
+    .withSuccessHandler(reponse => {
+      basculerIndicateurChargement(false);
+      if (reponse.success) {
+        afficherNotification(`Un devis a été envoyé à ${email}`, 'succes');
+      } else {
+        afficherErreur(reponse.error || "L'envoi du devis a échoué.");
+      }
+    })
+    .withFailureHandler(afficherErreur)
+    .envoyerDevisParEmail(donneesDevis);
+}
+
+/**
  * Configure tous les écouteurs d'événements de l'application.
  */
 function configurerEcouteursEvenements() {
