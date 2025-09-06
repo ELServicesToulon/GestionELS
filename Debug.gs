@@ -29,6 +29,7 @@ function lancerTousLesTests() {
   testerValidationConfiguration();
   testerCacheConfiguration();
   testerCoherenceTarifs();
+  testerComputeCoursePriceTarifVide();
   testerUtilitaires();
   testerFeuilleCalcul();
   testerCalendrier();
@@ -81,6 +82,24 @@ function testerCoherenceTarifs() {
       Logger.log(`FAILURE: TARIFS.${type}.base manquant ou invalide`);
     }
   });
+}
+
+function testerComputeCoursePriceTarifVide() {
+  Logger.log("\n--- Test de computeCoursePrice() avec TARIFS vide ---");
+  const backup = JSON.parse(JSON.stringify(TARIFS));
+  try {
+    Object.keys(TARIFS).forEach(k => delete TARIFS[k]);
+    const res = computeCoursePrice({ totalStops: 2 });
+    if (res && typeof res.total === 'number') {
+      Logger.log('SUCCESS: computeCoursePrice() ne jette pas d\'exception avec TARIFS vide.');
+    } else {
+      Logger.log('FAILURE: computeCoursePrice() n\'a pas retourné de résultat valide avec TARIFS vide.');
+    }
+  } catch (e) {
+    Logger.log(`FAILURE: computeCoursePrice() a levé une exception avec TARIFS vide: ${e.message}`);
+  } finally {
+    Object.assign(TARIFS, backup);
+  }
 }
 
 function testerUtilitaires() {
