@@ -1,12 +1,14 @@
 ELS Brand Theme (Phase 1)
 =========================
 
+**Note:** The legacy theme CSS file has been removed from the repository.
+
+
 Scope
 - Weekly calendar UI and the “réserver votre livraison” modals.
 - CSS-only brand layer: no markup or JS changes.
 
 Files
-- `branding/ELS_Theme_CSS.html`: Brand tokens + scoped overrides.
 - `branding/assets/` (place your logos here):
   - `logo-complet.svg`
   - `logo-complet-blanc.svg`
@@ -16,15 +18,8 @@ Files
   - `pilulier-reference.png` (visual reference for blister/pill pattern)
 
 How to include
-1) Open `Reservation_Interface.html` and, after the existing line:
-   `<?!= include('Reservation_CSS'); ?>`
-   add this line right after it:
-   `<?!= include('branding/ELS_Theme_CSS'); ?>`
-
-2) Push to Apps Script:
-   - `clasp push -f`
-
-3) Manually test critical flows (calendar selection → modal → panier → finalisation).
+- The theme file has been removed; no additional CSS inclusion is required.
+- Manually test critical flows (calendar selection → modal → panier → finalisation).
 
 Design intent (B2B santé/logistique)
 - Palette: medical blue (trust), teal (competence), green (success), red (urgent), high-contrast neutrals.
