@@ -153,6 +153,30 @@ const THEMES = {
   nocturne: 'branding/Theme_Nocturne_CSS'
 };
 
+// Objet regroupant tous les drapeaux de fonctionnalité exposés au client
+const FLAGS = Object.freeze({
+  clientPortalEnabled: CLIENT_PORTAL_ENABLED,
+  clientPortalSignedLinks: CLIENT_PORTAL_SIGNED_LINKS,
+  privacyLinkEnabled: PRIVACY_LINK_ENABLED,
+  slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
+  semainierEnabled: SEMAINIER_ENABLED,
+  billingMultiSheetEnabled: BILLING_MULTI_SHEET_ENABLED,
+  caEnCoursEnabled: CA_EN_COURS_ENABLED,
+  calendarResyncEnabled: CALENDAR_RESYNC_ENABLED,
+  calendarPurgeEnabled: CALENDAR_PURGE_ENABLED,
+  reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
+  residentBillingEnabled: RESIDENT_BILLING_ENABLED,
+  debugMenuEnabled: DEBUG_MENU_ENABLED,
+  demoReservationEnabled: DEMO_RESERVATION_ENABLED,
+  billingV2Dryrun: BILLING_V2_DRYRUN,
+  requestLoggingEnabled: REQUEST_LOGGING_ENABLED,
+  postEndpointEnabled: POST_ENDPOINT_ENABLED,
+  configCacheEnabled: CONFIG_CACHE_ENABLED,
+  reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
+  themeV2Enabled: THEME_V2_ENABLED,
+  themeSelectionEnabled: THEME_SELECTION_ENABLED
+});
+
 
 // =================================================================
 //              SYSTÈME DE TARIFICATION FLEXIBLE

@@ -28,6 +28,7 @@ function lancerTousLesTests() {
 
   testerValidationConfiguration();
   testerCacheConfiguration();
+  testerFlagsSerialization();
   testerCoherenceTarifs();
   testerComputeCoursePriceTarifVide();
   testerUtilitaires();
@@ -68,6 +69,25 @@ function testerCacheConfiguration() {
   CacheService.getScriptCache().remove('CONFIG_JSON');
   const conf3 = getConfigCached();
   Logger.log(`Après invalidation TARIFS.Normal.base=${conf3.TARIFS.Normal.base}`);
+}
+
+function testerFlagsSerialization() {
+  Logger.log("\n--- Test de sérialisation des flags ---");
+  const flags = getConfiguration();
+  const expected = Object.keys(FLAGS).sort();
+  const received = Object.keys(flags).sort();
+  const missing = expected.filter(k => !received.includes(k));
+  const extra = received.filter(k => !expected.includes(k));
+  if (missing.length === 0 && extra.length === 0) {
+    Logger.log("SUCCESS: getConfiguration() expose tous les flags.");
+  } else {
+    if (missing.length) {
+      Logger.log(`FAILURE: Flags manquants - ${missing.join(', ')}`);
+    }
+    if (extra.length) {
+      Logger.log(`FAILURE: Flags inattendus - ${extra.join(', ')}`);
+    }
+  }
 }
 
 function testerCoherenceTarifs() {
