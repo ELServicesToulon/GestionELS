@@ -3,6 +3,37 @@
  * Génère les lignes de facture et envoie un PDF par e-mail.
  */
 
+/**
+ * Renvoie les coordonnées de facturation par défaut selon le type.
+ * @param {string} orderId
+ * @param {string} billTo
+ * @param {Object} ctx
+ * @return {Object}
+ */
+function doGetBillingDefaults(orderId, billTo, ctx) {
+  return {
+    success: true,
+    defaults: {
+      nom: '',
+      adresse: '',
+      email: '',
+      telephone: '',
+      siret: '',
+      tva: ''
+    }
+  };
+}
+
+/**
+ * Persiste les coordonnées de facturation pour une commande.
+ * @param {Object} payload
+ * @return {Object}
+ */
+function doSaveBillingForOrder(payload) {
+  // TODO: écrire dans la feuille "Réservations" ou la table "Facturation".
+  return { success: true };
+}
+
 function bandIndexFromKm(km, bands) {
   for (var i = 0; i < bands.length; i++) {
     if (km <= bands[i]) {
