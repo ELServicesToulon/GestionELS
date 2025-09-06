@@ -1,6 +1,6 @@
 /* ELS Theme Preview CSS (autonomous)
    - Loads system fonts only
-   - Includes brand tokens and component styles (copied from branding/ELS_Theme_CSS.html)
+   - Includes brand tokens and component styles (inline copy of retired theme)
    - Keeps low specificity with :where() and respects reduced motion */
 
 /* Minimal reset and preview layout */
