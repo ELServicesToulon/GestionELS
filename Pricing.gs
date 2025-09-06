@@ -4,9 +4,7 @@
  */
 
 function computeSupplementCost(nSupp) {
-  const arr = (typeof TARIFS !== 'undefined' && TARIFS.Normal && TARIFS.Normal.arrets)
-    ? TARIFS.Normal.arrets
-    : [];
+  const arr = TARIFS?.Normal?.arrets || [];
   const fallback = arr.length ? arr[arr.length - 1] : 0;
   let sum = 0;
   for (let i = 0; i < nSupp; i++) sum += (i < arr.length ? arr[i] : fallback);
@@ -22,11 +20,37 @@ function computeCoursePrice(opts) {
   const remise = opts.remise || 0;
 
   const nbSupp = Math.max(0, (totalStops | 0) - 1);
-  const base = TARIFS.Normal.base;
+  const base = TARIFS?.Normal?.base || 0;
+  if (!TARIFS?.Normal?.base) {
+    return {
+      total: 0,
+      nbSupp: nbSupp,
+      error: 'Tarif Normal.base manquant',
+      breakdown: { base: 0, supplements: 0, retour: 0, urgent: 0, samedi: 0, remise: remise }
+    };
+  }
   const supplements = computeSupplementCost(nbSupp);
   const retourFee = retour ? (computeSupplementCost(nbSupp + 1) - supplements) : 0;
-  const surcUrg = urgent ? (TARIFS.Urgent.base - base) : 0;
-  const surcSam = samedi ? (TARIFS.Samedi.base - base) : 0;
+  const urgentBase = TARIFS?.Urgent?.base || 0;
+  if (urgent && !TARIFS?.Urgent?.base) {
+    return {
+      total: 0,
+      nbSupp: nbSupp,
+      error: 'Tarif Urgent.base manquant',
+      breakdown: { base: base, supplements: supplements, retour: retourFee, urgent: 0, samedi: 0, remise: remise }
+    };
+  }
+  const surcUrg = urgent ? (urgentBase - base) : 0;
+  const samediBase = TARIFS?.Samedi?.base || 0;
+  if (samedi && !TARIFS?.Samedi?.base) {
+    return {
+      total: 0,
+      nbSupp: nbSupp,
+      error: 'Tarif Samedi.base manquant',
+      breakdown: { base: base, supplements: supplements, retour: retourFee, urgent: surcUrg, samedi: 0, remise: remise }
+    };
+  }
+  const surcSam = samedi ? (samediBase - base) : 0;
 
   let total = base + supplements + retourFee + surcUrg + surcSam - remise;
 
