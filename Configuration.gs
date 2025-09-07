@@ -95,16 +95,6 @@ const CLIENT_PORTAL_SIGNED_LINKS = false;
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
 /** Feature flag — OFF by default to avoid crashes if the property is missing */
-var SLOTS_AMPM_ENABLED = (function () {
-  try {
-    var v = PropertiesService.getScriptProperties().getProperty('SLOTS_AMPM_ENABLED');
-    if (v === null || v === undefined || v === '') return false; // default OFF
-    v = String(v).toLowerCase();
-    return v === 'true' || v === '1';
-  } catch (e) {
-    return false; // safeguard
-  }
-})();
 
 const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
@@ -142,13 +132,13 @@ const FLAGS = Object.freeze({
   clientPortalEnabled: CLIENT_PORTAL_ENABLED,
   clientPortalSignedLinks: CLIENT_PORTAL_SIGNED_LINKS,
   privacyLinkEnabled: PRIVACY_LINK_ENABLED,
-  slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
+ 
   billingMultiSheetEnabled: BILLING_MULTI_SHEET_ENABLED,
   caEnCoursEnabled: CA_EN_COURS_ENABLED,
   calendarResyncEnabled: CALENDAR_RESYNC_ENABLED,
   calendarPurgeEnabled: CALENDAR_PURGE_ENABLED,
-  reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
-  residentBillingEnabled: RESIDENT_BILLING_ENABLED,
+ 
+
   billingModalEnabled: BILLING_MODAL_ENABLED,
   debugMenuEnabled: DEBUG_MENU_ENABLED,
   demoReservationEnabled: DEMO_RESERVATION_ENABLED,
@@ -233,10 +223,10 @@ const CONFIG = Object.freeze({
   TVA_APPLICABLE,
   ANNEES_RETENTION_FACTURES,
   MOIS_RETENTION_LOGS,
-  SHEET_RESERVATIONS,
+ 
   BILLING,
   BILLING_MODAL_ENABLED,
-  RESIDENT_BILLING_ENABLED,
+  
   BILLING_V2_DRYRUN
 });
 
