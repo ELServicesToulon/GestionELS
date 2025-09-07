@@ -411,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .mettreAJourDetailsReservation(idReservation, totalStops);
+            .mettreAJourDetailsReservation(idReservation, totalStops, emailClientCourant);
     }
 
     /**
@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .replanifierReservation(idReservation, nouvelleDate, nouvelleHeure);
+            .replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emailClientCourant);
     }
 
     function afficherErreurConnexion(message) {

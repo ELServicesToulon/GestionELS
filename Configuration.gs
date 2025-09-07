@@ -117,6 +117,8 @@ const RESIDENT_BILLING_ENABLED = true;
 const BILLING_MODAL_ENABLED = true;
 /** @const {boolean} Active la réinitialisation du panier côté client. */
 const CART_RESET_ENABLED = true;
+/** @const {boolean} Vérifie que l'e-mail authentifié correspond à la réservation lors des modifications. */
+const RESERVATION_EMAIL_MATCH_ENABLED = false;
 /** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
 const RETURN_IMPACTS_ESTIMATES_ENABLED = false;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
@@ -174,6 +176,7 @@ const FLAGS = Object.freeze({
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
+  reservationEmailMatchEnabled: RESERVATION_EMAIL_MATCH_ENABLED,
   proofSocialEnabled: PROOF_SOCIAL_ENABLED,
   proQaEnabled: PRO_QA_ENABLED,
   themeV2Enabled: THEME_V2_ENABLED,

@@ -238,9 +238,10 @@ function envoyerFactureClient(emailClient, numeroFacture) {
  * Met à jour les détails (nombre d'arrêts, prix, durée) d'une réservation existante.
  * @param {string} idReservation L'ID unique de la réservation à modifier.
  * @param {number} totalStops Le nouveau nombre d'arrêt(s) total(s).
+ * @param {string} authEmail L'e-mail authentifié du client.
  * @returns {Object} Un résumé de l'opération.
  */
-function mettreAJourDetailsReservation(idReservation, totalStops) {
+function mettreAJourDetailsReservation(idReservation, totalStops, authEmail) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé, veuillez réessayer." };
 
@@ -262,6 +263,15 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
     const idEvenement = String(ligneDonnees[indices.idEvent]).trim();
     const detailsAnciens = String(ligneDonnees[indices.details]);
     const emailClient = ligneDonnees[indices.email];
+
+    if (RESERVATION_EMAIL_MATCH_ENABLED) {
+      const courant = String(authEmail || '').trim().toLowerCase();
+      const enregistre = String(emailClient || '').trim().toLowerCase();
+      const isAdmin = Session.getActiveUser().getEmail().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      if (!isAdmin && courant !== enregistre) {
+        return { success: false, error: "Adresse e-mail non autorisée." };
+      }
+    }
     
     let ressourceEvenement = null;
     let dateDebutOriginale = new Date(ligneDonnees[indices.date]); // Fallback sur la date du Sheet
@@ -315,9 +325,10 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
  * @param {string} idReservation L'ID de la réservation à déplacer.
  * @param {string} nouvelleDate La nouvelle date.
  * @param {string} nouvelleHeure La nouvelle heure.
+ * @param {string} authEmail L'e-mail authentifié du client.
  * @returns {Object} Un résumé de l'opération.
  */
-function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
+function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, authEmail) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé." };
 
@@ -339,6 +350,15 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     const idEvenementAncien = String(ligneDonnees[indices.idEvent]).trim();
     const emailClient = ligneDonnees[indices.email];
     const details = String(ligneDonnees[indices.details]);
+
+    if (RESERVATION_EMAIL_MATCH_ENABLED) {
+      const courant = String(authEmail || '').trim().toLowerCase();
+      const enregistre = String(emailClient || '').trim().toLowerCase();
+      const isAdmin = Session.getActiveUser().getEmail().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      if (!isAdmin && courant !== enregistre) {
+        return { success: false, error: "Adresse e-mail non autorisée." };
+      }
+    }
 
     // Calcul de la durée depuis les détails du Sheet (source de vérité)
     const matchTotal = details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);
