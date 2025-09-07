@@ -116,7 +116,7 @@ const CALENDAR_RESYNC_ENABLED = true;
 const CALENDAR_PURGE_ENABLED = true;
 
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
-const CALENDAR_BAR_OPACITY_ENABLED = false;
+const CALENDAR_BAR_OPACITY_ENABLED = true;
 
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = true;
@@ -132,9 +132,9 @@ const BILLING_MODAL_ENABLED = true;
 /** @const {boolean} Active la réinitialisation du panier côté client. */
 const CART_RESET_ENABLED = true;
 /** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
-const RETURN_IMPACTS_ESTIMATES_ENABLED = false;
+const RETURN_IMPACTS_ESTIMATES_ENABLED = true;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
-const PRICING_RULES_V2_ENABLED = false;
+const PRICING_RULES_V2_ENABLED = true;
 
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
 const PROOF_SOCIAL_ENABLED = true;
@@ -147,7 +147,7 @@ const DEBUG_MENU_ENABLED = true;
 /** @const {boolean} Sert une version de démo de la page de réservation. */
 const DEMO_RESERVATION_ENABLED = false;
 /** @const {boolean} Active l'écriture des logs de facturation. */
-const BILLING_LOG_ENABLED = false;
+const BILLING_LOG_ENABLED = true;
 /** @const {boolean} Active le mode test pour la facturation V2 (aucune écriture). */
 const BILLING_V2_DRYRUN = false;
 /** @const {boolean} Active la journalisation détaillée des requêtes web. */
@@ -165,7 +165,7 @@ const RESERVATION_CACHE_ENABLED = true;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
-const THEME_V2_ENABLED = false;
+const THEME_V2_ENABLED = true;
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
 // const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
