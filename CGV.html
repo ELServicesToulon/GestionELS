@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <? var appUrl = ScriptApp.getService().getUrl(); var nomService = NOM_ENTREPRISE; ?>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Conditions générales de vente du service de livraison pharmaceutique.">
+  <link rel="canonical" href="<?= appUrl ?>">
+  <meta property="og:title" content="<?= nomService ?> | CGV">
+  <meta property="og:description" content="Conditions générales de vente du service de livraison pharmaceutique.">
+  <meta property="og:url" content="<?= appUrl ?>">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="<?= nomService ?> | CGV">
+  <meta name="twitter:description" content="Conditions générales de vente du service de livraison pharmaceutique.">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "@id": "<?= appUrl ?>#business",
+        "name": "<?= nomService ?>",
+        "description": "Livraison pharmacie à domicile et EHPAD sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol et Bandol.",
+        "url": "<?= appUrl ?>",
+        "email": "<?= EMAIL_ENTREPRISE ?>",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Six-Fours-les-Plages",
+          "addressCountry": "FR"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 43.0842,
+          "longitude": 5.8009
+        },
+        "areaServed": [
+          { "@type": "Place", "name": "Tamaris" },
+          { "@type": "Place", "name": "Mar Vivo" },
+          { "@type": "Place", "name": "Six-Fours-les-Plages" },
+          { "@type": "Place", "name": "Sanary" },
+          { "@type": "Place", "name": "Portissol" },
+          { "@type": "Place", "name": "Bandol" }
+        ]
+      },
+      {
+        "@type": "Service",
+        "@id": "<?= appUrl ?>#service",
+        "serviceType": "Livraison de pharmacie",
+        "provider": { "@id": "<?= appUrl ?>#business" },
+        "areaServed": [
+          { "@type": "Place", "name": "Tamaris" },
+          { "@type": "Place", "name": "Mar Vivo" },
+          { "@type": "Place", "name": "Six-Fours-les-Plages" },
+          { "@type": "Place", "name": "Sanary" },
+          { "@type": "Place", "name": "Portissol" },
+          { "@type": "Place", "name": "Bandol" }
+        ]
+      }
+    ]
+  }
+  </script>
+  <title><?= nomService ?> | CGV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <style><?!= include('Styles'); ?></style>
+  <?!= include('charte'); ?>
+</head>
+<body>
+  <main class="container" role="main">
+    <h1>Conditions Générales de Vente (CGV) – Livraison pharmaceutique</h1>
+    <p><strong>Prestataire :</strong> EI LECOURT EMMANUEL — Nom commercial « EL Services » • <strong>Adresse :</strong> 255 Bis Avenue Marcel Castie, B, 83000 TOULON • <strong>SIRET :</strong> 480 913 060 00020 • <strong>APE :</strong> 53.20Z • <strong>TVA :</strong> non applicable (art. 293 B CGI) • <strong>E-mail :</strong> <a href="mailto:elservicestoulon@gmail.com">elservicestoulon@gmail.com</a></p>
+    <p><strong>Coordonnées de paiement :</strong> IBAN FR76 4061 8804 7600 0403 5757 187 — BIC BOUSFRPPXXX — Chèque à l’ordre de « EI Emmanuel LECOURT Titulaire du compte ».</p>
+    <p><strong>Version :</strong> 07/09/2025</p>
+
+    <h2>1. Objet</h2>
+    <p>Les présentes CGV encadrent les prestations de collecte, transport et remise en main propre de médicaments et documents associés réalisées par le Prestataire pour pharmacies d’officine, EHPAD, professionnels de santé, résidents et particuliers, sur les secteurs couverts par EL Services.</p>
+
+    <h2>2. Définitions</h2>
+    <p>Client / Destinataire / Course / Pré-collecte / Produits thermosensibles (2–8 °C sauf mention contraire).</p>
+
+    <h2>3. Acceptation</h2>
+    <p>Toute commande emporte acceptation sans réserve des CGV, qui prévalent sur les conditions du Client, sauf accord écrit contraire. Applicables B2B et B2C, dispositions spécifiques en tant que de besoin.</p>
+
+    <h2>4. Nature des services</h2>
+    <p>Collecte à l’officine, service hospitalier ou EHPAD • Transport adapté (glacières/accumulateurs pour thermosensibles) • Remise en main propre contre signature/habilitation • Traçabilité (horodatage, preuve de remise, fiche navette, registre stupéfiants si besoin).</p>
+    <p><strong>EL Services n’est pas une pharmacie :</strong> pas d’ouverture des conditionnements ni de conseil pharmaceutique. Le contenu des paquets scellés relève de la responsabilité de l’officine.</p>
+
+    <h2>5. Commande &amp; réservation</h2>
+    <p>Commande via lien espace client, e-mail, téléphone ou interface dédiée. Confirmation par écrit/clic/bon de transport. Refus possible si conditions réglementaires non réunies (paquet non scellé, absence d’habilitation, chaîne du froid non assurée par l’expéditeur, etc.).</p>
+
+    <h2>6. Tarifs, suppléments &amp; facturation</h2>
+    <p><strong>Base :</strong> selon zone/temps/retour.<br>
+    <strong>Suppléments :</strong> pré-collecte, urgence, nuit/jours fériés, temps d’attente, étages sans ascenseur, arrêts multiples (le premier arrêt est compris&nbsp;; les arrêts totaux au-delà du premier sont facturés unitairement), seconde présentation, stationnement payant.<br>
+    <strong>Payeur :</strong> pharmacie, EHPAD, résident ou particulier, à la commande.<br>
+    Tarifs nets de taxe (franchise en base de TVA).</p>
+
+    <h2>7. Paiement</h2>
+    <p><strong>B2B :</strong> facture par course ou mensuelle, 30 jours fin de mois. Indemnité forfaitaire de 40 € en cas de retard (L441-10 C. com.).<br>
+    <strong>B2C :</strong> paiement comptant (virement, carte, chèque selon limites légales).<br>
+    Pénalités de retard : taux légal majoré, exigibles de plein droit.<br>
+    Coordonnées : IBAN et BIC ci-dessus&nbsp;; Chèque à l’ordre indiqué.</p>
+
+    <h2>8. Exécution, délais &amp; remise</h2>
+    <p>Délais indicatifs, priorisant sécurité et conformité. Remise en main propre au destinataire habilité, contre signature/nom lisible (et cachet de service si applicable). Jamais de dépôt en libre accès. Absence/refus : course due ; seconde présentation possible et facturée.</p>
+
+    <h2>9. Conformité &amp; obligations – Livraison de médicaments en EHPAD &amp; à domicile</h2>
+    <p><strong>Cadre légal :</strong> CSP R.5125-47 à R.5125-52 (paquet scellé, nominatif, transport adapté) ; CSP L.5126-10 (libre choix du pharmacien pour chaque résident) ; recommandations Ordre des pharmaciens et OMéDIT/ARS.<br>
+    <strong>Obligations pratiques :</strong> paquet scellé, opaque, nominatif (préparé par l’officine) ; chaîne du froid respectée pour thermosensibles ; stupéfiants : emballage séparé et sécurisé, remise contre signature d’un professionnel habilité + traçabilité (registre/fiche navette) ; remise en main propre uniquement (jamais laissée en libre accès).<br>
+    <strong>Effet recherché :</strong> rassurer patients, familles, partenaires ; livraison rapide, sécurisée et 100 % conforme.</p>
+
+    <h2>10. Stupéfiants &amp; produits sensibles</h2>
+    <p>Stupéfiants/psychotropes : présentation des pièces par destinataire habilité et signature d’un professionnel identifié ; à défaut, remise refusée et course due. Thermosensibles : contenants isothermes adaptés ; preuve de température possible (option).</p>
+
+    <h2>11. Responsabilités</h2>
+    <p>Responsabilité du transport dans les limites légales. Exclusions : contenu des paquets scellés (préparation officinale), retards de force majeure (accident, réquisition, intempéries…), refus de remise pour non-conformité. Limitation : au prix de la course (sauf faute lourde ou règles d’ordre public).</p>
+
+    <h2>12. Obligations du Client</h2>
+    <p>Le Client garantit : (i) paquet conforme (scellé, nominatif, doc. joints) ; (ii) adresses/contacts/habilitations exactes ; (iii) disponibilité du destinataire ; (iv) respect des prescriptions de conservation avant prise en charge.</p>
+
+    <h2>13. Données personnelles (RGPD)</h2>
+    <p>Données : identité, coordonnées, informations logistiques, preuves de remise. Base légale : exécution du contrat/intérêt légitime (traçabilité). Durée : relation + 3 ans (sauf obligation plus longue). Droits : accès, rectification, effacement, opposition, limitation (dans les limites légales). Les données de santé ne sont pas consultées ; seules les infos strictement nécessaires à la logistique sont traitées.</p>
+
+    <h2>14. Droit de rétractation (consommateurs)</h2>
+    <p>Commande à distance : 14 jours sauf exécution intégrale avant fin du délai après accord exprès/renonciation. Les prestations déjà exécutées restent dues.</p>
+
+    <h2>15. Force majeure</h2>
+    <p>Suspension des obligations pendant l’événement. Aucune responsabilité de la partie empêchée.</p>
+
+    <h2>16. Médiation &amp; réclamations</h2>
+    <p>Réclamation : <a href="mailto:elservicestoulon@gmail.com">elservicestoulon@gmail.com</a>. Médiation consommation : [à compléter : nom/coordonnées du médiateur].</p>
+
+    <h2>17. Modifications</h2>
+    <p>La version applicable est celle en vigueur à la date de commande.</p>
+
+    <h2>18. Droit applicable &amp; juridiction</h2>
+    <p>Droit français. En B2B : juridictions du siège du Prestataire ; en B2C : juridictions légalement compétentes.</p>
+
+    <hr>
+    <h2>Encadré « Conformité &amp; obligations » — version courte réutilisable</h2>
+    <p><strong>Livraison EHPAD &amp; domicile :</strong> CSP R.5125-47 à R.5125-52 (paquet scellé, nominatif, transport adapté) ; CSP L.5126-10 (libre choix du pharmacien) ; Guides Ordre/OMéDIT/ARS. Remise en main propre, jamais en libre accès. Thermosensibles : chaîne du froid. Stupéfiants : colis séparé, sécurisé, signature pro habilité + traçabilité.</p>
+  </main>
+</body>
+</html>
