@@ -19,6 +19,10 @@ function computeCoursePrice(opts) {
   const samedi = opts.samedi === true;
   const remise = opts.remise || 0;
 
+  // Apply V2 rules if enabled: Saturday overrides urgent (no stacking)
+  var isSamedi = samedi === true;
+  var isUrgent = urgent === true && (!(typeof PRICING_RULES_V2_ENABLED !== 'undefined' && PRICING_RULES_V2_ENABLED) || !isSamedi);
+
   const nbSupp = Math.max(0, (totalStops | 0) - 1);
   const base = TARIFS?.Normal?.base || 0;
   if (!TARIFS?.Normal?.base) {
@@ -32,7 +36,7 @@ function computeCoursePrice(opts) {
   const supplements = computeSupplementCost(nbSupp);
   const retourFee = retour ? (computeSupplementCost(nbSupp + 1) - supplements) : 0;
   const urgentBase = TARIFS?.Urgent?.base || 0;
-  if (urgent && !TARIFS?.Urgent?.base) {
+  if (isUrgent && !TARIFS?.Urgent?.base) {
     return {
       total: 0,
       nbSupp: nbSupp,
@@ -40,9 +44,9 @@ function computeCoursePrice(opts) {
       breakdown: { base: base, supplements: supplements, retour: retourFee, urgent: 0, samedi: 0, remise: remise }
     };
   }
-  const surcUrg = urgent ? (urgentBase - base) : 0;
+  const surcUrg = isUrgent ? (urgentBase - base) : 0;
   const samediBase = TARIFS?.Samedi?.base || 0;
-  if (samedi && !TARIFS?.Samedi?.base) {
+  if (isSamedi && !TARIFS?.Samedi?.base) {
     return {
       total: 0,
       nbSupp: nbSupp,
@@ -50,7 +54,7 @@ function computeCoursePrice(opts) {
       breakdown: { base: base, supplements: supplements, retour: retourFee, urgent: surcUrg, samedi: 0, remise: remise }
     };
   }
-  const surcSam = samedi ? (samediBase - base) : 0;
+  const surcSam = isSamedi ? (samediBase - base) : 0;
 
   let total = base + supplements + retourFee + surcUrg + surcSam - remise;
 

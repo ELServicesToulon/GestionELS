@@ -160,7 +160,8 @@ const FLAGS = Object.freeze({
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
-  themeV2Enabled: THEME_V2_ENABLED
+  themeV2Enabled: THEME_V2_ENABLED,
+  pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED
 });
 
 
@@ -282,4 +283,6 @@ function getConfigCached() {
   // Met en cache la configuration pour 10 minutes (600 secondes)
   cache.put('CONFIG_JSON', JSON.stringify(config), 600);
   return config;
+/** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
+const PRICING_RULES_V2_ENABLED = false;
 }

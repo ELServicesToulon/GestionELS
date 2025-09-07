@@ -19,6 +19,10 @@ function computeCoursePrice(opts = {}) {
     remise = 0
   } = opts;
 
+  const applyV2 = !!(typeof configServeur !== 'undefined' && configServeur.PRICING_RULES_V2_ENABLED);
+  const isSamedi = !!samedi;
+  const isUrgent = !!urgent && (!applyV2 || !isSamedi);
+
   const nbSupp = Math.max(0, (totalStops | 0) - 1);
   const base = configServeur?.TARIFS?.Normal?.base || 0;
   if (!configServeur?.TARIFS?.Normal?.base) {
@@ -32,7 +36,7 @@ function computeCoursePrice(opts = {}) {
   const supplements = computeSupplementCost(nbSupp);
   const retourFee = retour ? (computeSupplementCost(nbSupp + 1) - supplements) : 0;
   const urgentBase = configServeur?.TARIFS?.Urgent?.base || 0;
-  if (urgent && !configServeur?.TARIFS?.Urgent?.base) {
+  if (isUrgent && !configServeur?.TARIFS?.Urgent?.base) {
     return {
       total: 0,
       nbSupp,
@@ -40,9 +44,9 @@ function computeCoursePrice(opts = {}) {
       breakdown: { base, supplements, retour: retourFee, urgent: 0, samedi: 0, remise }
     };
   }
-  const surcUrg = urgent ? (urgentBase - base) : 0;
+  const surcUrg = isUrgent ? (urgentBase - base) : 0;
   const samediBase = configServeur?.TARIFS?.Samedi?.base || 0;
-  if (samedi && !configServeur?.TARIFS?.Samedi?.base) {
+  if (isSamedi && !configServeur?.TARIFS?.Samedi?.base) {
     return {
       total: 0,
       nbSupp,
@@ -50,7 +54,7 @@ function computeCoursePrice(opts = {}) {
       breakdown: { base, supplements, retour: retourFee, urgent: surcUrg, samedi: 0, remise }
     };
   }
-  const surcSam = samedi ? (samediBase - base) : 0;
+  const surcSam = isSamedi ? (samediBase - base) : 0;
 
   let total = base + supplements + retourFee + surcUrg + surcSam - remise;
 
