@@ -410,6 +410,7 @@ function configurerEcouteursEvenements() {
   ui.listePanier?.addEventListener('click', gererActionsPanier);
 
   if (window.etat.flags.cartResetEnabled) {
+    ui.btnViderPanier?.classList.remove('hidden');
     ui.btnViderPanier?.addEventListener('click', viderPanier);
   } else {
     ui.btnViderPanier?.classList.add('hidden');
@@ -449,11 +450,11 @@ function configurerEcouteursEvenements() {
 document.addEventListener('DOMContentLoaded', () => {
   google.script.run.withSuccessHandler(cfg => {
     window.etat.flags = initializeFlags(cfg);
+    configurerEcouteursEvenements();
   }).getConfiguration();
   chargerPanierDepuisLocalStorage();
   verifierSessionClient();
   afficherCalendrier(window.etat.dateActuelle.getMonth() + 1, window.etat.dateActuelle.getFullYear());
-  configurerEcouteursEvenements();
 });
 
 /**
