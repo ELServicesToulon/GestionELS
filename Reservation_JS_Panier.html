@@ -119,9 +119,13 @@ function afficherPanier() {
 function gererActionsPanier(e) {
   if (e.target.classList.contains('item-panier-supprimer')) {
     const itemId = e.target.closest('.item-panier').dataset.idItem;
+    const item = window.etat.panier.find(i => i.id === itemId);
     window.etat.panier = window.etat.panier.filter(item => item.id !== itemId);
     afficherPanier();
     sauvegarderPanierDansLocalStorage();
+    if (item && typeof ajusterDisponibiliteJour === 'function') {
+      try { ajusterDisponibiliteJour(item.date, +1); } catch (err) {}
+    }
     afficherNotification("Tournée retirée du panier.", "info");
   }
 }

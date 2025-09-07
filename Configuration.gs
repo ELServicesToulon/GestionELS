@@ -132,16 +132,13 @@ const RESERVATION_CACHE_ENABLED = true;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
-const THEME_V2_ENABLED = false;
+const THEME_V2_ENABLED = true;
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
-const THEME_SELECTION_ENABLED =false;
+// const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
-const THEME_DEFAULT = '  clarte';
+// const THEME_DEFAULT = 'clarte'; // supprimé
 /** @const {Object<string,string>} Associe les clés de thème aux chemins des fichiers CSS. */
-const THEMES = {
-  clarte: 'branding/Theme_Clarte_CSS',
-  nocturne: 'branding/Theme_Nocturne_CSS'
-};
+// const THEMES = {}; // supprimé
 
 // Objet regroupant tous les drapeaux de fonctionnalité exposés au client
 const FLAGS = Object.freeze({
@@ -163,8 +160,7 @@ const FLAGS = Object.freeze({
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
-  themeV2Enabled: THEME_V2_ENABLED,
-  themeSelectionEnabled: THEME_SELECTION_ENABLED
+  themeV2Enabled: THEME_V2_ENABLED
 });
 
 

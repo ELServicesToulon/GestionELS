@@ -314,6 +314,10 @@ function ajouterTourneeAuPanier(isRecurrentItem = false, recurrenceData = null) 
   window.etat.panier.push(nouvelleTournee);
   afficherPanier();
   sauvegarderPanierDansLocalStorage();
+  // Mise a jour rapide de l'UI calendrier (barre de dispo)
+  if (typeof ajusterDisponibiliteJour === 'function') {
+    try { ajusterDisponibiliteJour(date, -1); } catch (e) {}
+  }
   if (!isRecurrentItem) {
       document.getElementById('modale-selection-creneau').classList.add('hidden');
       afficherNotification("Tournée ajoutée au panier !", "succes");

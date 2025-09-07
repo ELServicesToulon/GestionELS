@@ -95,15 +95,12 @@
     
     <header class="app-en-tete" role="banner" aria-label="En-tête de la page de réservation">
         <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
-          <? if (THEME_SELECTION_ENABLED) { ?>
-            <div class="theme-selector">
               <button id="btn-theme" class="btn btn-secondaire btn-sm hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
               <div id="menu-theme" class="hidden" role="menu" style="min-width: 100px;">
                 <button class="option-theme btn btn-secondaire btn-sm" data-theme="clarte" role="menuitem">Clarté</button>
                 <button class="option-theme btn btn-secondaire btn-sm" data-theme="nocturne" role="menuitem">Nocturne</button>
               </div>
             </div>
-          <? } ?>
           <? if (CLIENT_PORTAL_ENABLED) { ?>
             <a href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm btn-espace-client">Mon Espace Client</a>
           <? } ?>
@@ -326,9 +323,12 @@
   </div>
 
   <div id="conteneur-notifications" role="alert" aria-live="assertive"></div>
-  <? if (THEME_SELECTION_ENABLED) { ?>
-    <?!= include('Script_ThemeSelector'); ?>
-  <? } ?>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.theme-selector, #btn-theme, #menu-theme').forEach(el => el && el.remove());
+    });
+  </script>
+  
   <? if (THEME_V2_ENABLED) { ?>
   <?!= include('Render_JS'); ?>
   <?!= include('Pricing_JS'); ?>
@@ -341,5 +341,6 @@
   <? } ?>
 </body>
 </html>
+
 
 
