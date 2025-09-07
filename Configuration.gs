@@ -107,6 +107,9 @@ const CALENDAR_RESYNC_ENABLED = true;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
 const CALENDAR_PURGE_ENABLED = true;
 
+/** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
+const RESERVATION_VERIFY_ENABLED = false;
+
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
 const RESERVATION_UI_V2_ENABLED = true;
 
@@ -257,6 +260,7 @@ const CONFIG = Object.freeze({
   BILLING,
   BILLING_MODAL_ENABLED,
   RESIDENT_BILLING_ENABLED,
+  RESERVATION_VERIFY_ENABLED,
   BILLING_V2_DRYRUN
 });
 

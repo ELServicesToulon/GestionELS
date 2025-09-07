@@ -77,9 +77,20 @@ function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
 
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${client.nom}`;
     const descriptionEvenement = `Client: ${client.nom} (${client.email})\nID Réservation: ${idReservation}\nDétails: ${infosTournee.details}\nNote: ${client.note || ''}`;
-    const evenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
+    const calendrier = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER'));
+    const evenement = calendrier.createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
 
     if (evenement) {
+        if (RESERVATION_VERIFY_ENABLED) {
+          const eventCheck = calendrier.getEventById(evenement.getId());
+          const startOk = eventCheck && eventCheck.getStartTime().getTime() === dateDebut.getTime();
+          const endOk = eventCheck && eventCheck.getEndTime().getTime() === dateFin.getTime();
+          if (!startOk || !endOk || reservationIdExiste(idReservation)) {
+            evenement.deleteEvent();
+            return null;
+          }
+        }
+
         const infosPrixFinal = calculerPrixEtDureeServeur(totalStops, returnToPharmacy, date, startTime, clientPourCalcul);
         if (!skipFacturation) {
           enregistrerReservationPourFacturation(dateDebut, client.nom, client.email, infosTournee.typeCourse, infosTournee.details, infosPrixFinal.prix, evenement.getId(), idReservation, client.note, infosPrixFinal.tourneeOfferteAppliquee, clientPourCalcul.typeRemise, clientPourCalcul.valeurRemise);
@@ -344,6 +355,39 @@ function obtenirReservationsPourClient(email, date) {
     }
   }
   return reservations;
+}
+
+/**
+ * Vérifie si l'ID de réservation existe déjà dans la feuille des réservations.
+ * @param {string} idReservation L'identifiant à vérifier.
+ * @returns {boolean} true si l'identifiant est présent.
+ */
+function reservationIdExiste(idReservation) {
+  try {
+    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
+    const sheet = ss.getSheetByName(SHEET_RESERVATIONS);
+    if (!sheet) {
+      return false;
+    }
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) {
+      return false;
+    }
+    const headers = data[0];
+    const idx = headers.indexOf('ID Réservation');
+    if (idx === -1) {
+      return false;
+    }
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][idx]).trim() === String(idReservation).trim()) {
+        return true;
+      }
+    }
+    return false;
+  } catch (e) {
+    Logger.log(`Erreur lors de la vérification de l'unicité ID: ${e.stack}`);
+    return false;
+  }
 }
 
 

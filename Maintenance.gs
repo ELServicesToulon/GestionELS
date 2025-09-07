@@ -890,3 +890,53 @@ function lancerAuditDrive() {
   const ui = SpreadsheetApp.getUi();
   ui.alert('Audit Drive', 'Fonctionnalité non implémentée.', ui.ButtonSet.OK);
 }
+
+// =================================================================
+//                      6. DÉDUPLICATION
+// =================================================================
+
+/**
+ * Détecte les doublons d'ID Réservation dans la feuille dédiée.
+ * @param {boolean} remove Supprime les doublons détectés si true.
+ * @returns {string[]} Liste des ID en doublon.
+ */
+function deduplicateReservations(remove = false) {
+  try {
+    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
+    const sheet = ss.getSheetByName(SHEET_RESERVATIONS);
+    if (!sheet) {
+      throw new Error(`Feuille '${SHEET_RESERVATIONS}' introuvable.`);
+    }
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) {
+      return [];
+    }
+    const headers = data[0].map(h => String(h).trim());
+    const idx = headers.indexOf('ID Réservation');
+    if (idx === -1) {
+      throw new Error("Colonne 'ID Réservation' manquante.");
+    }
+    const seen = new Map();
+    const duplicates = [];
+    const rowsToDelete = [];
+    for (let i = 1; i < data.length; i++) {
+      const id = String(data[i][idx]).trim();
+      if (!id) {
+        continue;
+      }
+      if (seen.has(id)) {
+        duplicates.push(id);
+        rowsToDelete.push(i + 1);
+      } else {
+        seen.set(id, i + 1);
+      }
+    }
+    if (remove && rowsToDelete.length > 0) {
+      rowsToDelete.sort((a, b) => b - a).forEach(r => sheet.deleteRow(r));
+    }
+    return duplicates;
+  } catch (e) {
+    Logger.log(`Erreur lors de la déduplication : ${e.stack}`);
+    return [];
+  }
+}
