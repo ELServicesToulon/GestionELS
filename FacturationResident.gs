@@ -222,12 +222,21 @@ function creerEtEnvoyerFactureResident(res) {
   var pdfFile = DriveApp.getFolderById(BILLING.FACTURES_FOLDER_ID).createFile(pdf).setName(num + '.pdf');
   DriveApp.getFileById(tmpl.getId()).setTrashed(true);
 
+  var status;
   if (res.RESIDENT_EMAIL) {
     GmailApp.sendEmail(res.RESIDENT_EMAIL, '[' + BILLING.INVOICE_PREFIX + '] Votre facture ' + num,
       'Bonjour,\n\nVeuillez trouver votre facture en pièce jointe.\nMontant TTC: ' + ttc.toFixed(2) + ' €.\n' + (BILLING.TVA_APPLICABLE ? '' : BILLING.TVA_MENTION) + '\n\nMerci,',
       { attachments: [pdfFile.getBlob()] }
     );
+    status = 'ENVOYEE';
+  } else {
+    status = 'EMAIL_MANQUANT';
   }
 
-  // TODO: écrire retour dans la feuille (FACTURE_NUM, FACTURE_URL, STATUT)
+  if (BILLING_LOG_ENABLED) {
+    var sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_FACTURATION);
+    if (sheet) {
+      sheet.appendRow([num, pdfFile.getUrl(), status]);
+    }
+  }
 }
