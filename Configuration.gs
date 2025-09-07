@@ -113,6 +113,8 @@ const RESIDENT_BILLING_ENABLED = true;
 
 /** @const {boolean} Active la modale de coordonnées de facturation. */
 const BILLING_MODAL_ENABLED = true;
+/** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
+const RETURN_IMPACTS_ESTIMATES_ENABLED = false;
 
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
@@ -161,7 +163,8 @@ const FLAGS = Object.freeze({
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
   themeV2Enabled: THEME_V2_ENABLED,
-  pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED
+  pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
+  returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED
 });
 
 

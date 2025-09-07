@@ -14,8 +14,13 @@ function calculerInfosTourneeClient(totalStops, returnToPharmacy, dateString, st
   const KM_BASE_NUM = parseInt(configServeur.KM_BASE, 10);
   const KM_ARRET_SUP_NUM = parseInt(configServeur.KM_ARRET_SUP, 10);
   const arretsSupplementaires = Math.max(0, totalStops - 1);
-  const duree = DUREE_BASE_NUM + (arretsSupplementaires * DUREE_ARRET_SUP_NUM);
-  const km = KM_BASE_NUM + (arretsSupplementaires * KM_ARRET_SUP_NUM);
+  let duree = DUREE_BASE_NUM + (arretsSupplementaires * DUREE_ARRET_SUP_NUM);
+  let km = KM_BASE_NUM + (arretsSupplementaires * KM_ARRET_SUP_NUM);
+  // Si activé, le retour à la pharmacie impacte les estimations (UI uniquement)
+  if (returnToPharmacy && configServeur.RETURN_IMPACTS_ESTIMATES_ENABLED) {
+    duree += DUREE_ARRET_SUP_NUM;
+    km += KM_ARRET_SUP_NUM;
+  }
   const heureNormalisee = startTime.replace('h', ':');
   const dateCourse = new Date(`${dateString}T${heureNormalisee}`);
   const maintenant = new Date();

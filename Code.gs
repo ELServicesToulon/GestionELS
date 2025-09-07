@@ -192,6 +192,7 @@ function doGet(e) {
     template.URGENT_THRESHOLD_MINUTES = conf.URGENT_THRESHOLD_MINUTES;
     template.dateDuJour = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
     template.PRICING_RULES_V2_ENABLED = (typeof PRICING_RULES_V2_ENABLED !== 'undefined') ? PRICING_RULES_V2_ENABLED : false;
+    template.RETURN_IMPACTS_ESTIMATES_ENABLED = (typeof RETURN_IMPACTS_ESTIMATES_ENABLED !== 'undefined') ? RETURN_IMPACTS_ESTIMATES_ENABLED : false;
 
     // Variables pour la bannière d'information
     template.heureDebut = conf.HEURE_DEBUT_SERVICE;
