@@ -70,6 +70,10 @@ function afficherCalendrier(mois, annee) {
             const rempl = document.createElement('div');
             const ratio = (dispo.total > 0) ? (dispo.disponibles / dispo.total) : 0;
             rempl.style.width = `${Math.min(100, Math.max(0, ratio * 100))}%`;
+            if (window.etat?.flags?.calendarBarOpacityEnabled) {
+              const charge = 1 - ratio;
+              rempl.style.opacity = Math.min(1, Math.max(0, charge));
+            }
             barre.appendChild(rempl);
             cellule.appendChild(barre);
           }
