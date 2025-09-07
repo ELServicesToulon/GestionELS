@@ -85,6 +85,10 @@ const KM_BASE = 9;
 /** @const {number} Kilométrage ajouté pour chaque arrêt supplémentaire en kilomètres. */
 const KM_ARRET_SUP = 3;
 
+// --- Sessions client ---
+/** @const {number} Durée de validité d'une session client en heures. */
+const CLIENT_SESSION_TTL_HOURS = 24;
+
 // =================================================================
 //              DRAPEAUX D'ACTIVATION (FEATURE FLAGS)
 // =================================================================
@@ -98,6 +102,8 @@ const CLIENT_PORTAL_SIGNED_LINKS = false;
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
+/** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
+const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
 const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
@@ -159,6 +165,7 @@ const FLAGS = Object.freeze({
   clientPortalSignedLinks: CLIENT_PORTAL_SIGNED_LINKS,
   privacyLinkEnabled: PRIVACY_LINK_ENABLED,
   slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
+  clientSessionOpaqueIdEnabled: CLIENT_SESSION_OPAQUE_ID_ENABLED,
   billingMultiSheetEnabled: BILLING_MULTI_SHEET_ENABLED,
   caEnCoursEnabled: CA_EN_COURS_ENABLED,
   calendarResyncEnabled: CALENDAR_RESYNC_ENABLED,
