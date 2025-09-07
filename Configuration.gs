@@ -94,6 +94,17 @@ const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
+/** Feature flag — OFF by default to avoid crashes if the property is missing */
+var SLOTS_AMPM_ENABLED = (function () {
+  try {
+    var v = PropertiesService.getScriptProperties().getProperty('SLOTS_AMPM_ENABLED');
+    if (v === null || v === undefined || v === '') return false; // default OFF
+    v = String(v).toLowerCase();
+    return v === 'true' || v === '1';
+  } catch (e) {
+    return false; // safeguard
+  }
+})();
 
 const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
