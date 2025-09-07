@@ -155,6 +155,14 @@
       document.querySelectorAll('.theme-selector, #btn-theme, #menu-theme').forEach(el => el && el.remove());
     });
   </script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    window.CLIENT_PARAMS = {
+      email: params.get('email') || '',
+      exp: params.get('exp') || '',
+      sig: params.get('sig') || ''
+    };
+  </script>
   <?!= include('Render_JS'); ?>
   <?!= include('Client_JS'); ?>
 </body>

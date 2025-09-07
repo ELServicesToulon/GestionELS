@@ -93,7 +93,9 @@ const KM_ARRET_SUP = 3;
 /** @const {boolean} Active l'espace client. */
 const CLIENT_PORTAL_ENABLED = true;
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
-const CLIENT_PORTAL_SIGNED_LINKS = false;
+const CLIENT_PORTAL_SIGNED_LINKS = true;
+/** @const {number} Durée de validité d'un lien client signé (heures). */
+const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
