@@ -126,6 +126,9 @@
       <p class="hero-sous-titre">Fiabilité éprouvée, sacs scellés sécurisés et respect du patient garanti.</p>
       <div class="tarifs-cartes">
         <div class="tarif-carte">
+          <div class="tarif-icone">
+            <?!= include('icone-pilulier.svg'); ?>
+          </div>
           <h3>Course de base</h3>
           <ul>
             <li><?= TARIFS.Normal.base ?> € TTC</li>
@@ -135,6 +138,9 @@
           <a href="#vue-calendrier" class="btn btn-primaire">Réserver</a>
         </div>
         <div class="tarif-carte">
+          <div class="tarif-icone">
+            <?!= include('icone-flacon.svg'); ?>
+          </div>
           <h3>Arrêts supplémentaires</h3>
           <ul>
             <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
@@ -144,6 +150,9 @@
           </ul>
         </div>
         <div class="tarif-carte">
+          <div class="tarif-icone">
+            <?!= include('icone-tampon.svg'); ?>
+          </div>
           <h3>Options</h3>
           <ul>
             <li>Urgent : +<?= TARIFS.Urgent.base ?> € TTC</li>
