@@ -351,8 +351,21 @@ function gererSoumissionReservation(e) {
 }
 
 /**
+ * Affiche ou masque le bouton "Vider Panier" et gère son écouteur.
+ */
+function mettreAJourBoutonViderPanier() {
+  const { ui } = window;
 
+  ui.btnViderPanier?.removeEventListener('click', viderPanier);
+  if (window.etat.flags.cartResetEnabled) {
+    ui.btnViderPanier?.classList.remove('hidden');
+    ui.btnViderPanier?.addEventListener('click', viderPanier);
+  } else {
+    ui.btnViderPanier?.classList.add('hidden');
+  }
+}
 
+/**
  * Configure tous les écouteurs d'événements de l'application.
  */
 function configurerEcouteursEvenements() {
@@ -408,13 +421,7 @@ function configurerEcouteursEvenements() {
   ui.formulaireReservation?.addEventListener('submit', gererSoumissionReservation);
   ui.btnAnnulerReservation?.addEventListener('click', () => ui.conteneurFinalisation.classList.add('hidden'));
   ui.listePanier?.addEventListener('click', gererActionsPanier);
-
-  if (window.etat.flags.cartResetEnabled) {
-    ui.btnViderPanier?.classList.remove('hidden');
-    ui.btnViderPanier?.addEventListener('click', viderPanier);
-  } else {
-    ui.btnViderPanier?.classList.add('hidden');
-  }
+  mettreAJourBoutonViderPanier();
 
   window.addEventListener('billing:saved', () => {
     afficherNotification('Coordonnées de facturation enregistrées.', 'succes');
@@ -450,6 +457,7 @@ function configurerEcouteursEvenements() {
 document.addEventListener('DOMContentLoaded', () => {
   google.script.run.withSuccessHandler(cfg => {
     window.etat.flags = initializeFlags(cfg);
+    mettreAJourBoutonViderPanier();
     configurerEcouteursEvenements();
   }).getConfiguration();
   chargerPanierDepuisLocalStorage();
