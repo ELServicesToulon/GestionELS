@@ -156,7 +156,7 @@ function logRequest(e) {
  * @returns {string} Le contenu du fichier.
  */
 function include(nomFichier) {
-  return HtmlService.createHtmlOutputFromFile(nomFichier).getContent();
+  return HtmlService.createTemplateFromFile(nomFichier).evaluate().getContent();
 }
 
 // Thèmes désactivés: pas de thème utilisateur
