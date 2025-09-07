@@ -51,6 +51,50 @@ function validerClientParEmail(emailClient) {
 }
 
 /**
+ * Génère un identifiant opaque à partir de l'email.
+ * @param {string} email Email du client.
+ * @returns {string} Identifiant hexadécimal.
+ */
+function genererIdentifiantClient(email) {
+  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(email).trim().toLowerCase());
+  return digest.map(b => ("0" + (b & 0xff).toString(16)).slice(-2)).join("");
+}
+
+/**
+ * Recherche un client via son identifiant opaque.
+ * @param {string} identifiant Jeton opaque du client.
+ * @returns {Object|null} Informations du client si trouvé.
+ */
+function rechercherClientParIdentifiant(identifiant) {
+  try {
+    if (!identifiant) return null;
+    const feuilleClients = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_CLIENTS);
+    if (!feuilleClients) return null;
+    const donnees = feuilleClients.getDataRange().getValues();
+    const enTetes = donnees[0];
+    const idxEmail = enTetes.indexOf('Email');
+    const idxNom = enTetes.indexOf('Raison Sociale');
+    const idxAdresse = enTetes.indexOf('Adresse');
+    const idxSiret = enTetes.indexOf('SIRET');
+    for (let i = 1; i < donnees.length; i++) {
+      const email = String(donnees[i][idxEmail]).trim();
+      if (genererIdentifiantClient(email) === identifiant) {
+        return {
+          email: email,
+          nom: donnees[i][idxNom] || '',
+          adresse: donnees[i][idxAdresse] || '',
+          siret: donnees[i][idxSiret] || ''
+        };
+      }
+    }
+    return null;
+  } catch (e) {
+    Logger.log(`Erreur dans rechercherClientParIdentifiant: ${e.stack}`);
+    return null;
+  }
+}
+
+/**
  * Récupère toutes les réservations futures pour un client donné.
  * @param {string} emailClient L'e-mail du client.
  * @returns {Object} Un objet contenant les réservations futures du client.
