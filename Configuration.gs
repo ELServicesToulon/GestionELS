@@ -60,6 +60,8 @@ const SHEET_PLAGES_BLOQUEES = 'Plages_Bloquees';
 const SHEET_RESERVATIONS = 'Réservations';
 /** @const {string} Feuille par défaut des nouveaux classeurs. */
 const SHEET_DEFAULT = 'Sheet1';
+/** @const {string} Feuille stockant les questions des professionnels. */
+const SHEET_QUESTIONS = 'Questions';
 
 // --- Horaires & Tampons ---
 /** @const {string} Heure d'ouverture du service au format HH:MM. */
@@ -122,6 +124,8 @@ const PRICING_RULES_V2_ENABLED = false;
 
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
 const PROOF_SOCIAL_ENABLED = true;
+/** @const {boolean} Active le module Questions/Réponses pour les professionnels. */
+const PRO_QA_ENABLED = false;
 
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
@@ -171,6 +175,7 @@ const FLAGS = Object.freeze({
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
   proofSocialEnabled: PROOF_SOCIAL_ENABLED,
+  proQaEnabled: PRO_QA_ENABLED,
   themeV2Enabled: THEME_V2_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED
