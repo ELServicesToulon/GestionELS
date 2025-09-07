@@ -121,10 +121,17 @@ function obtenirReservationsClient(emailClient, token) {
 /**
  * Calcule le chiffre d'affaires futur pour un client donné.
  * @param {string} emailClient L'e-mail du client.
+ * @param {{email:string,exp:string,sig:string}} token Paramètres signés du lien.
  * @returns {number} Le total des montants à venir.
  */
-function calculerCAEnCoursClient(emailClient) {
+function calculerCAEnCoursClient(emailClient, token) {
   try {
+    if (CLIENT_PORTAL_STRICT_CHECK) {
+      if (!token || !verifySignedLink(token.email, token.exp, token.sig) ||
+          String(emailClient).trim().toLowerCase() !== String(token.email).trim().toLowerCase()) {
+        return 0;
+      }
+    }
     if (!CA_EN_COURS_ENABLED) return 0;
     if (!emailClient) return 0;
 
