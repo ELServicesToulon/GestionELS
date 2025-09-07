@@ -147,5 +147,21 @@ function chargerPanierDepuisLocalStorage() {
     afficherPanier();
   }
 }
+
+/**
+ * Vide complètement le panier et restaure les disponibilités.
+ */
+function viderPanier() {
+  const { panier } = window.etat;
+  panier.forEach(item => {
+    if (typeof ajusterDisponibiliteJour === 'function') {
+      try { ajusterDisponibiliteJour(item.date, +1); } catch (err) {}
+    }
+  });
+  window.etat.panier = [];
+  sauvegarderPanierDansLocalStorage();
+  afficherPanier();
+  afficherNotification("Panier vidé.", "info");
+}
 </script>
 

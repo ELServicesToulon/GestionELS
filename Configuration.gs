@@ -113,6 +113,8 @@ const RESIDENT_BILLING_ENABLED = true;
 
 /** @const {boolean} Active la modale de coordonnées de facturation. */
 const BILLING_MODAL_ENABLED = true;
+/** @const {boolean} Active la réinitialisation du panier côté client. */
+const CART_RESET_ENABLED = false;
 /** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
 const RETURN_IMPACTS_ESTIMATES_ENABLED = false;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
@@ -157,6 +159,7 @@ const FLAGS = Object.freeze({
   reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
   residentBillingEnabled: RESIDENT_BILLING_ENABLED,
   billingModalEnabled: BILLING_MODAL_ENABLED,
+  cartResetEnabled: CART_RESET_ENABLED,
   debugMenuEnabled: DEBUG_MENU_ENABLED,
   demoReservationEnabled: DEMO_RESERVATION_ENABLED,
   billingV2Dryrun: BILLING_V2_DRYRUN,

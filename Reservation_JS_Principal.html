@@ -34,6 +34,7 @@ function initializeFlags(flags = {}) {
     configCacheEnabled: false,
     reservationCacheEnabled: false,
     themeV2Enabled: false,
+    cartResetEnabled: false,
     devisEnabled: false
 
   };
@@ -407,6 +408,12 @@ function configurerEcouteursEvenements() {
   ui.formulaireReservation?.addEventListener('submit', gererSoumissionReservation);
   ui.btnAnnulerReservation?.addEventListener('click', () => ui.conteneurFinalisation.classList.add('hidden'));
   ui.listePanier?.addEventListener('click', gererActionsPanier);
+
+  if (window.etat.flags.cartResetEnabled) {
+    ui.btnViderPanier?.addEventListener('click', viderPanier);
+  } else {
+    ui.btnViderPanier?.classList.add('hidden');
+  }
 
   window.addEventListener('billing:saved', () => {
     afficherNotification('Coordonnées de facturation enregistrées.', 'succes');
