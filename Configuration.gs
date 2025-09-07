@@ -120,6 +120,9 @@ const RETURN_IMPACTS_ESTIMATES_ENABLED = false;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
 const PRICING_RULES_V2_ENABLED = false;
 
+/** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
+const PROOF_SOCIAL_ENABLED = false;
+
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = true;
@@ -167,6 +170,7 @@ const FLAGS = Object.freeze({
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
+  proofSocialEnabled: PROOF_SOCIAL_ENABLED,
   themeV2Enabled: THEME_V2_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED
