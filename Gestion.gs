@@ -15,11 +15,33 @@ function validerClientParEmail(emailClient) {
     if (!emailClient || typeof emailClient !== 'string') {
       return { success: false, error: "Email non fourni ou invalide." };
     }
-    const infosClient = obtenirInfosClientParEmail(emailClient.trim());
+    const email = emailClient.trim().toLowerCase();
+    const cacheKey = `login_fail_${email}`;
+    if (CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED) {
+      const cache = CacheService.getScriptCache();
+      const attempts = parseInt(cache.get(cacheKey) || '0', 10);
+      if (attempts >= CLIENT_PORTAL_MAX_ATTEMPTS) {
+        return { success: false, error: "Trop de tentatives, réessayez plus tard." };
+      }
+    }
+
+    const infosClient = obtenirInfosClientParEmail(email);
 
     if (infosClient) {
+      if (CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED) {
+        CacheService.getScriptCache().remove(cacheKey);
+      }
       return { success: true, client: { nom: infosClient.nom } };
     } else {
+      if (CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED) {
+        const cache = CacheService.getScriptCache();
+        const attempts = parseInt(cache.get(cacheKey) || '0', 10) + 1;
+        cache.put(cacheKey, String(attempts), 3600);
+        logFailedLogin(email, 'N/A');
+        if (attempts >= CLIENT_PORTAL_MAX_ATTEMPTS) {
+          return { success: false, error: "Trop de tentatives, réessayez plus tard." };
+        }
+      }
       return { success: false, error: "Aucun client trouvé avec cette adresse e-mail." };
     }
   } catch (e) {

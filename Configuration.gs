@@ -138,6 +138,10 @@ const BILLING_V2_DRYRUN = false;
 const REQUEST_LOGGING_ENABLED = false;
 /** @const {boolean} Active le traitement des requêtes POST. */
 const POST_ENDPOINT_ENABLED = false;
+/** @const {boolean} Limite le nombre de tentatives de connexion au portail client. */
+const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = false;
+/** @const {number} Nombre maximum de tentatives avant blocage. */
+const CLIENT_PORTAL_MAX_ATTEMPTS = 5;
 /** @const {boolean} Active la mise en cache des paramètres de configuration. */
 const CONFIG_CACHE_ENABLED = true;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
@@ -172,6 +176,7 @@ const FLAGS = Object.freeze({
   billingV2Dryrun: BILLING_V2_DRYRUN,
   requestLoggingEnabled: REQUEST_LOGGING_ENABLED,
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
+  clientPortalAttemptLimitEnabled: CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED,
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
   proofSocialEnabled: PROOF_SOCIAL_ENABLED,
@@ -253,6 +258,8 @@ const CONFIG = Object.freeze({
   TVA_APPLICABLE,
   ANNEES_RETENTION_FACTURES,
   MOIS_RETENTION_LOGS,
+  CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED,
+  CLIENT_PORTAL_MAX_ATTEMPTS,
   SHEET_RESERVATIONS,
   BILLING,
   BILLING_MODAL_ENABLED,

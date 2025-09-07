@@ -55,6 +55,31 @@ function logActivity(idReservation, emailClient, resume, prix, statut) {
 }
 
 /**
+ * Supprime les entrées de logs plus anciennes que MOIS_RETENTION_LOGS.
+ */
+function purgeOldLogs() {
+  try {
+    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
+    const sheet = ss.getSheetByName(SHEET_LOGS);
+    if (!sheet) return;
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return;
+    const limite = new Date();
+    limite.setMonth(limite.getMonth() - MOIS_RETENTION_LOGS);
+    const rowsToDelete = [];
+    for (let i = data.length - 1; i > 0; i--) {
+      const date = new Date(data[i][0]);
+      if (date && !isNaN(date) && date < limite) {
+        rowsToDelete.push(i + 1);
+      }
+    }
+    rowsToDelete.forEach(r => sheet.deleteRow(r));
+  } catch (e) {
+    Logger.log(`Erreur purgeOldLogs : ${e.toString()}`);
+  }
+}
+
+/**
  * Envoie une notification d'erreur à l'admin en limitant la fréquence pour éviter le spam.
  * @param {string} typeErreur Une clé unique pour le type d'erreur (ex: 'ERREUR_AUDIT_DRIVE').
  * @param {string} sujet Le sujet de l'e-mail.

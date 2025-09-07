@@ -118,6 +118,25 @@ function trouverTableBordereau(corps) {
     return null;
 }
 
+/**
+ * Journalise une tentative de connexion échouée dans SHEET_LOGS.
+ * @param {string} email Adresse e-mail du client.
+ * @param {string} ip Adresse IP source.
+ */
+function logFailedLogin(email, ip) {
+  try {
+    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
+    let feuilleLog = ss.getSheetByName(SHEET_LOGS);
+    if (!feuilleLog) {
+      feuilleLog = ss.insertSheet('Logs');
+      feuilleLog.appendRow(['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut']);
+    }
+    feuilleLog.appendRow([new Date(), '', email, `Connexion échouée (IP: ${ip || 'N/A'})`, '', 'Échec']);
+  } catch (e) {
+    Logger.log(`Impossible de journaliser l'échec de connexion : ${e.toString()}`);
+  }
+}
+
 // --- FONCTIONS PARTAGÉES DÉPLACÉES DE Code.gs ---
 
 /**
