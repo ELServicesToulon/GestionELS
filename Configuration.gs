@@ -101,11 +101,11 @@ const CLIENT_PORTAL_SIGNED_LINKS = true;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
-const PRIVACY_LINK_ENABLED = false;
+const PRIVACY_LINK_ENABLED = true;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
-const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
+const CLIENT_SESSION_OPAQUE_ID_ENABLED = true;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
 const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
@@ -116,7 +116,7 @@ const CALENDAR_RESYNC_ENABLED = true;
 const CALENDAR_PURGE_ENABLED = true;
 
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
-const RESERVATION_VERIFY_ENABLED = false;
+const RESERVATION_VERIFY_ENABLED = true;
 
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
 const RESERVATION_UI_V2_ENABLED = true;
@@ -136,7 +136,7 @@ const PRICING_RULES_V2_ENABLED = false;
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
 const PROOF_SOCIAL_ENABLED = true;
 /** @const {boolean} Active le module Questions/Réponses pour les professionnels. */
-const PRO_QA_ENABLED = false;
+const PRO_QA_ENABLED = true;
 
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
@@ -146,13 +146,13 @@ const DEMO_RESERVATION_ENABLED = false;
 /** @const {boolean} Active le mode test pour la facturation V2 (aucune écriture). */
 const BILLING_V2_DRYRUN = false;
 /** @const {boolean} Active la journalisation détaillée des requêtes web. */
-const REQUEST_LOGGING_ENABLED = false;
+const REQUEST_LOGGING_ENABLED = true;
 /** @const {boolean} Active le traitement des requêtes POST. */
-const POST_ENDPOINT_ENABLED = false;
+const POST_ENDPOINT_ENABLED = true;
 /** @const {boolean} Limite le nombre de tentatives de connexion au portail client. */
-const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = false;
+const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = true;
 /** @const {number} Nombre maximum de tentatives avant blocage. */
-const CLIENT_PORTAL_MAX_ATTEMPTS = 5;
+const CLIENT_PORTAL_MAX_ATTEMPTS = 10;
 /** @const {boolean} Active la mise en cache des paramètres de configuration. */
 const CONFIG_CACHE_ENABLED = true;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
@@ -160,7 +160,7 @@ const RESERVATION_CACHE_ENABLED = true;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
-const THEME_V2_ENABLED = true;
+const THEME_V2_ENABLED = false;
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
 // const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
