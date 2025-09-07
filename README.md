@@ -136,3 +136,6 @@ Open the Apps Script editor, go to **File → Project properties → Script prop
 - Code de la santé publique – art. R.5125-47 à R.5125-52
 - Ordre des pharmaciens – livraison et dispensation
 - OMéDIT – Transport en EHPAD
+
+## License
+Ce projet est distribué sous la licence MIT. Consultez le fichier `LICENSE` pour plus d'informations.
