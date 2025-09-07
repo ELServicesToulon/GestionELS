@@ -99,3 +99,26 @@ Set the following keys in the Apps Script editor (File → Project properties �
 
 Open the Apps Script editor, go to **File → Project properties → Script properties**, and add each key with its value.
 
+## Obligations lors de la livraison de médicaments
+
+### Conditionnement
+- ✅ Paquet scellé, opaque, nominatif
+- ✅ Boîte ou sac fermé permettant de vérifier toute ouverture
+
+### Médicaments sensibles
+- ✅ Respect de la chaîne du froid (conteneurs isothermes adaptés)
+- ⚠️ Ne jamais laisser sans surveillance
+
+### Stupéfiants et produits à usage restreint
+- ✅ Emballage séparé et sécurisé
+- ✅ Livraison uniquement contre signature d’une personne habilitée (pharmacien, infirmier référent, cadre de santé)
+- ✅ Traçabilité assurée (registre / fiche de suivi signée à chaque transfert)
+
+### Remise
+- ✅ En main propre au patient ou au professionnel désigné
+- ⚠️ Jamais déposés en libre accès
+
+### Références officielles
+- Code de la santé publique – art. R.5125-47 à R.5125-52
+- Ordre des pharmaciens – livraison et dispensation
+- OMéDIT – Transport en EHPAD
