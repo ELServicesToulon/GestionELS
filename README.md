@@ -3,6 +3,14 @@
 ## Contributing
 See `AGENTS.md` for project structure, coding style, testing steps, and the pull request process.
 
+## Installation locale
+
+Installez les dépendances Node locales :
+
+```bash
+npm install
+```
+
 ## Useful Tools
 - `./clasp-helper.cmd`: Launches a small GUI to Push/Pull/Version/Deploy and manage snapshots.
 - Scripts overview: see `scripts/README.md` for `open-projet*.cmd` launchers.
