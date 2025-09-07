@@ -114,14 +114,14 @@ const RESIDENT_BILLING_ENABLED = true;
 /** @const {boolean} Active la modale de coordonnées de facturation. */
 const BILLING_MODAL_ENABLED = true;
 /** @const {boolean} Active la réinitialisation du panier côté client. */
-const CART_RESET_ENABLED = false;
+const CART_RESET_ENABLED = true;
 /** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
 const RETURN_IMPACTS_ESTIMATES_ENABLED = false;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
 const PRICING_RULES_V2_ENABLED = false;
 
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
-const PROOF_SOCIAL_ENABLED = false;
+const PROOF_SOCIAL_ENABLED = true;
 
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
