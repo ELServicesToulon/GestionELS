@@ -34,10 +34,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const formulaireConnexionClient = document.getElementById('formulaire-connexion-client');
     const emailConnexionInput = document.getElementById('email-connexion');
     const erreurConnexionDiv = document.getElementById('erreur-connexion');
+    const listeQuestions = document.getElementById('liste-questions');
+    const formQuestion = document.getElementById('form-question');
+    const questionTexte = document.getElementById('question-texte');
 
     // --- Variable d'état pour stocker les réservations chargées ---
     let toutesLesReservationsClient = [];
     let toutesLesFacturesClient = [];
+    let emailClientCourant = '';
 
     /**
      * Initialise l'espace client.
@@ -56,6 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (email) {
                     validerEtChargerClient(email);
                 }
+            });
+        }
+
+        if (formQuestion) {
+            formQuestion.addEventListener('submit', (e) => {
+                e.preventDefault();
+                posterQuestion();
             });
         }
     }
@@ -88,8 +99,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('message-bienvenue-client').textContent = `Bienvenue, ${reponse.client.nom}`;
                     document.getElementById('conteneur-app').classList.remove('hidden');
                     document.getElementById('non-connecte').classList.add('hidden');
+                    emailClientCourant = email;
                     chargerReservationsClient(email);
                     chargerFacturesClient(email);
+                    if (typeof PRO_QA_ENABLED !== 'undefined' && PRO_QA_ENABLED) {
+                        chargerQuestions();
+                    }
                 } else {
                     afficherErreurConnexion(reponse.error);
                     basculerIndicateurChargement(false);
@@ -199,6 +214,57 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .withFailureHandler(afficherErreur)
             .envoyerFactureClient(email, numero);
+    }
+
+    /**
+     * Charge et affiche les questions du client.
+     */
+    function chargerQuestions() {
+        if (!listeQuestions) return;
+        renderText(listeQuestions, '');
+        google.script.run
+            .withSuccessHandler(qs => {
+                if (qs && qs.length > 0) {
+                    const html = qs.map(q => {
+                        const repHtml = q.reponses && q.reponses.length
+                            ? '<ul>' + q.reponses.map(r => `<li>${escapeHTML(r.auteur)}: ${escapeHTML(r.texte)}</li>`).join('') + '</ul>'
+                            : '';
+                        return `<div class="question-item"><p><strong>${escapeHTML(q.auteur)}:</strong> ${escapeHTML(q.question)}</p>${repHtml}</div>`;
+                    }).join('');
+                    renderHTML(listeQuestions, html);
+                } else {
+                    renderMessage(listeQuestions, 'Aucune question pour le moment.');
+                }
+            })
+            .withFailureHandler(afficherErreur)
+            .getQuestions();
+    }
+
+    function posterQuestion() {
+        if (!questionTexte) return;
+        const texte = questionTexte.value.trim();
+        if (!texte || !emailClientCourant) return;
+        basculerIndicateurChargement(true);
+        google.script.run
+            .withSuccessHandler(() => {
+                questionTexte.value = '';
+                chargerQuestions();
+                basculerIndicateurChargement(false);
+            })
+            .withFailureHandler(afficherErreur)
+            .addQuestion(texte, emailClientCourant);
+    }
+
+    function posterReponse(questionId, reponse) {
+        if (!questionId || !reponse || !emailClientCourant) return;
+        basculerIndicateurChargement(true);
+        google.script.run
+            .withSuccessHandler(() => {
+                chargerQuestions();
+                basculerIndicateurChargement(false);
+            })
+            .withFailureHandler(afficherErreur)
+            .addAnswer(questionId, reponse, emailClientCourant);
     }
 
     /**

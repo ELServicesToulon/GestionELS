@@ -107,6 +107,17 @@
           <!-- Les factures seront injectées ici par le script JS -->
         </div>
       </div>
+      <? if (typeof PRO_QA_ENABLED !== 'undefined' && PRO_QA_ENABLED) { ?>
+      <div id="bloc-questions" class="carte">
+        <h3>Vos questions</h3>
+        <div id="liste-questions" aria-live="polite"></div>
+        <form id="form-question" class="groupe-formulaire" autocomplete="off">
+          <label for="question-texte">Posez votre question</label>
+          <input type="text" id="question-texte" class="champ-formulaire" required aria-required="true">
+          <button type="submit" class="btn btn-primaire btn--client" style="margin-top:10px;">Envoyer</button>
+        </form>
+      </div>
+      <? } ?>
       <div class="carte">
         <p>Pour toute annulation ou pour une modification non disponible ici, veuillez nous contacter directement.</p>
         <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-secondaire btn--client">Faire une nouvelle réservation</a>
