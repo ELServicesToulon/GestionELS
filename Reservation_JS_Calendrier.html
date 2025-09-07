@@ -36,11 +36,14 @@ function afficherCalendrier(mois, annee) {
 
         // Cases vides d'offset (lundi=1 -> 0 offset, dimanche=0 -> 6)
         for (let i = 0; i < (premierJour === 0 ? 6 : premierJour - 1); i++) {
-          grilleCalendrier.appendChild(document.createElement('div'));
+          const celluleVide = document.createElement('div');
+          celluleVide.setAttribute('role', 'gridcell');
+          grilleCalendrier.appendChild(celluleVide);
         }
 
         for (let jour = 1; jour <= joursDansLeMois; jour++) {
           const cellule = document.createElement('div');
+          cellule.setAttribute('role', 'gridcell');
           const date = new Date(annee, mois - 1, jour);
           const y = annee;
           const m = String(mois).padStart(2, '0');
