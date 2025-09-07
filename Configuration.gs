@@ -94,6 +94,8 @@ const KM_ARRET_SUP = 3;
 const CLIENT_PORTAL_ENABLED = true;
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
 const CLIENT_PORTAL_SIGNED_LINKS = false;
+/** @const {boolean} Vérifie strictement le lien signé sur chaque action client. */
+const CLIENT_PORTAL_STRICT_CHECK = false;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
@@ -157,6 +159,7 @@ const THEME_V2_ENABLED = true;
 const FLAGS = Object.freeze({
   clientPortalEnabled: CLIENT_PORTAL_ENABLED,
   clientPortalSignedLinks: CLIENT_PORTAL_SIGNED_LINKS,
+  clientPortalStrictCheck: CLIENT_PORTAL_STRICT_CHECK,
   privacyLinkEnabled: PRIVACY_LINK_ENABLED,
   slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
   billingMultiSheetEnabled: BILLING_MULTI_SHEET_ENABLED,

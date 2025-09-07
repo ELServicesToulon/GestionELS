@@ -10,8 +10,14 @@
  * @param {string} emailClient L'e-mail à vérifier.
  * @returns {Object} Un objet indiquant le succès et les informations du client si trouvé.
  */
-function validerClientParEmail(emailClient) {
+function validerClientParEmail(emailClient, token) {
   try {
+    if (CLIENT_PORTAL_STRICT_CHECK) {
+      if (!token || !verifySignedLink(token.email, token.exp, token.sig) ||
+          String(emailClient).trim().toLowerCase() !== String(token.email).trim().toLowerCase()) {
+        return { success: false, error: "Lien invalide ou expiré." };
+      }
+    }
     if (!emailClient || typeof emailClient !== 'string') {
       return { success: false, error: "Email non fourni ou invalide." };
     }
@@ -33,8 +39,14 @@ function validerClientParEmail(emailClient) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {Object} Un objet contenant les réservations futures du client.
  */
-function obtenirReservationsClient(emailClient) {
+function obtenirReservationsClient(emailClient, token) {
   try {
+    if (CLIENT_PORTAL_STRICT_CHECK) {
+      if (!token || !verifySignedLink(token.email, token.exp, token.sig) ||
+          String(emailClient).trim().toLowerCase() !== String(token.email).trim().toLowerCase()) {
+        return { success: false, error: "Lien invalide ou expiré." };
+      }
+    }
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const indices = obtenirIndicesEnTetes(feuille, ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant"]);
     
@@ -144,8 +156,14 @@ function calculerCAEnCoursClient(emailClient) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {Object} success + liste des factures { numero, dateISO, montant, url, idPdf }.
  */
-function obtenirFacturesPourClient(emailClient) {
+function obtenirFacturesPourClient(emailClient, token) {
   try {
+    if (CLIENT_PORTAL_STRICT_CHECK) {
+      if (!token || !verifySignedLink(token.email, token.exp, token.sig) ||
+          String(emailClient).trim().toLowerCase() !== String(token.email).trim().toLowerCase()) {
+        return { success: false, error: "Lien invalide ou expiré." };
+      }
+    }
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuilles = BILLING_MULTI_SHEET_ENABLED
       ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
@@ -240,11 +258,16 @@ function envoyerFactureClient(emailClient, numeroFacture) {
  * @param {number} totalStops Le nouveau nombre d'arrêt(s) total(s).
  * @returns {Object} Un résumé de l'opération.
  */
-function mettreAJourDetailsReservation(idReservation, totalStops) {
+function mettreAJourDetailsReservation(idReservation, totalStops, token) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé, veuillez réessayer." };
 
   try {
+    if (CLIENT_PORTAL_STRICT_CHECK) {
+      if (!token || !verifySignedLink(token.email, token.exp, token.sig)) {
+        return { success: false, error: "Lien invalide ou expiré." };
+      }
+    }
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
@@ -262,6 +285,11 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
     const idEvenement = String(ligneDonnees[indices.idEvent]).trim();
     const detailsAnciens = String(ligneDonnees[indices.details]);
     const emailClient = ligneDonnees[indices.email];
+    if (CLIENT_PORTAL_STRICT_CHECK) {
+      if (String(token.email).trim().toLowerCase() !== String(emailClient).trim().toLowerCase()) {
+        return { success: false, error: "Lien invalide ou expiré." };
+      }
+    }
     
     let ressourceEvenement = null;
     let dateDebutOriginale = new Date(ligneDonnees[indices.date]); // Fallback sur la date du Sheet
@@ -317,11 +345,16 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
  * @param {string} nouvelleHeure La nouvelle heure.
  * @returns {Object} Un résumé de l'opération.
  */
-function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
+function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, token) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé." };
 
   try {
+    if (CLIENT_PORTAL_STRICT_CHECK) {
+      if (!token || !verifySignedLink(token.email, token.exp, token.sig)) {
+        return { success: false, error: "Lien invalide ou expiré." };
+      }
+    }
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
@@ -339,6 +372,11 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     const idEvenementAncien = String(ligneDonnees[indices.idEvent]).trim();
     const emailClient = ligneDonnees[indices.email];
     const details = String(ligneDonnees[indices.details]);
+    if (CLIENT_PORTAL_STRICT_CHECK) {
+      if (String(token.email).trim().toLowerCase() !== String(emailClient).trim().toLowerCase()) {
+        return { success: false, error: "Lien invalide ou expiré." };
+      }
+    }
 
     // Calcul de la durée depuis les détails du Sheet (source de vérité)
     const matchTotal = details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);

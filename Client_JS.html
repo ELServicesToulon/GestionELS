@@ -38,6 +38,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const formQuestion = document.getElementById('form-question');
     const questionTexte = document.getElementById('question-texte');
 
+    const params = new URLSearchParams(window.location.search);
+    const signedParams = {
+        email: params.get('email'),
+        exp: params.get('exp'),
+        sig: params.get('sig')
+    };
+
     // --- Variable d'état pour stocker les réservations chargées ---
     let toutesLesReservationsClient = [];
     let toutesLesFacturesClient = [];
@@ -75,8 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Gère l'affichage initial en fonction des paramètres de l'URL.
      */
     function gererAffichageInitial() {
-        const params = new URLSearchParams(window.location.search);
-        const email = params.get('email');
+        const email = signedParams.email;
         
         if (email) {
             validerEtChargerClient(email);
@@ -114,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 afficherErreurConnexion("Une erreur de communication est survenue.");
                 basculerIndicateurChargement(false);
             })
-            .validerClientParEmail(email);
+            .validerClientParEmail(email, signedParams);
     }
 
     /**
@@ -135,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         })
                         .withFailureHandler(err => logError(err))
-                        .calculerCAEnCoursClient(email);
+                        .calculerCAEnCoursClient(email, signedParams);
                 } else {
                     afficherErreur(reponse.error);
                 }
@@ -145,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 afficherErreur(err);
                 basculerIndicateurChargement(false);
             })
-            .obtenirReservationsClient(email);
+            .obtenirReservationsClient(email, signedParams);
     }
 
     /**
@@ -162,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .obtenirFacturesPourClient(email);
+            .obtenirFacturesPourClient(email, signedParams);
     }
 
     /**
@@ -200,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function envoyerFactureParEmail(numero) {
-        const email = new URLSearchParams(window.location.search).get('email') || document.getElementById('email-connexion')?.value;
+        const email = signedParams.email || document.getElementById('email-connexion')?.value;
         if (!email) return;
         basculerIndicateurChargement(true);
         google.script.run
@@ -213,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .envoyerFactureClient(email, numero);
+            .envoyerFactureClient(email, numero, signedParams);
     }
 
     /**
@@ -237,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .getQuestions();
+            .getQuestions(signedParams);
     }
 
     function posterQuestion() {
@@ -252,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 basculerIndicateurChargement(false);
             })
             .withFailureHandler(afficherErreur)
-            .addQuestion(texte, emailClientCourant);
+            .addQuestion(texte, emailClientCourant, signedParams);
     }
 
     function posterReponse(questionId, reponse) {
@@ -264,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 basculerIndicateurChargement(false);
             })
             .withFailureHandler(afficherErreur)
-            .addAnswer(questionId, reponse, emailClientCourant);
+            .addAnswer(questionId, reponse, emailClientCourant, signedParams);
     }
 
     /**
@@ -390,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .obtenirCreneauxDisponiblesPourDate(dateString, duree, resa.eventId);
+            .obtenirCreneauxDisponiblesPourDate(dateString, duree, resa.eventId, signedParams);
     }
 
     /**
@@ -405,13 +411,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
                     afficherNotification("Réservation mise à jour avec succès !");
-                    chargerReservationsClient(new URLSearchParams(window.location.search).get('email'));
+                    chargerReservationsClient(emailClientCourant);
                 } else {
                     afficherErreur(reponse.error);
                 }
             })
             .withFailureHandler(afficherErreur)
-            .mettreAJourDetailsReservation(idReservation, totalStops);
+            .mettreAJourDetailsReservation(idReservation, totalStops, signedParams);
     }
 
     /**
@@ -427,13 +433,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
                     afficherNotification("Réservation déplacée avec succès !");
-                    chargerReservationsClient(new URLSearchParams(window.location.search).get('email'));
+                    chargerReservationsClient(emailClientCourant);
                 } else {
                     afficherErreur(reponse.error);
                 }
             })
             .withFailureHandler(afficherErreur)
-            .replanifierReservation(idReservation, nouvelleDate, nouvelleHeure);
+            .replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, signedParams);
     }
 
     function afficherErreurConnexion(message) {
