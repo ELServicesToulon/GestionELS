@@ -115,6 +115,9 @@ const CALENDAR_RESYNC_ENABLED = true;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
 const CALENDAR_PURGE_ENABLED = true;
 
+/** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
+const CALENDAR_BAR_OPACITY_ENABLED = false;
+
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = false;
 
@@ -179,6 +182,7 @@ const FLAGS = Object.freeze({
   caEnCoursEnabled: CA_EN_COURS_ENABLED,
   calendarResyncEnabled: CALENDAR_RESYNC_ENABLED,
   calendarPurgeEnabled: CALENDAR_PURGE_ENABLED,
+  calendarBarOpacityEnabled: CALENDAR_BAR_OPACITY_ENABLED,
   reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
   residentBillingEnabled: RESIDENT_BILLING_ENABLED,
   billingModalEnabled: BILLING_MODAL_ENABLED,
