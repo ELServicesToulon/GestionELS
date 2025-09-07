@@ -30,8 +30,67 @@ function doGetBillingDefaults(orderId, billTo, ctx) {
  * @return {Object}
  */
 function doSaveBillingForOrder(payload) {
-  // TODO: écrire dans la feuille "Réservations" ou la table "Facturation".
-  return { success: true };
+  if (BILLING_V2_DRYRUN) {
+    Logger.log('DRYRUN doSaveBillingForOrder', payload);
+    return { success: true, row: 0 };
+  }
+
+  try {
+    var ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
+    var sheet = ss.getSheetByName(SHEET_RESERVATIONS);
+    if (!sheet) {
+      sheet = ss.insertSheet(SHEET_RESERVATIONS);
+    }
+
+    var headers = ['ID Réservation', 'Facturation Nom', 'Facturation Adresse', 'Facturation Email', 'Facturation Téléphone', 'Facturation SIRET', 'Facturation TVA'];
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(headers);
+    }
+
+    var existingHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var missing = headers.filter(function (h) {
+      return existingHeaders.indexOf(h) === -1;
+    });
+    if (missing.length > 0) {
+      sheet.getRange(1, existingHeaders.length + 1, 1, missing.length).setValues([missing]);
+      existingHeaders = existingHeaders.concat(missing);
+    }
+
+    var indices = obtenirIndicesEnTetes(sheet, headers);
+    var data = sheet.getDataRange().getValues();
+    var rowIndex = -1;
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][indices['ID Réservation']]) === String(payload.orderId)) {
+        rowIndex = i + 1;
+        break;
+      }
+    }
+
+    if (rowIndex === -1) {
+      var row = new Array(sheet.getLastColumn()).fill('');
+      row[indices['ID Réservation']] = payload.orderId;
+      row[indices['Facturation Nom']] = payload.nom;
+      row[indices['Facturation Adresse']] = payload.adresse;
+      row[indices['Facturation Email']] = payload.email;
+      row[indices['Facturation Téléphone']] = payload.telephone;
+      row[indices['Facturation SIRET']] = payload.siret;
+      row[indices['Facturation TVA']] = payload.tva;
+      sheet.appendRow(row);
+      rowIndex = sheet.getLastRow();
+    } else {
+      sheet.getRange(rowIndex, indices['Facturation Nom'] + 1).setValue(payload.nom);
+      sheet.getRange(rowIndex, indices['Facturation Adresse'] + 1).setValue(payload.adresse);
+      sheet.getRange(rowIndex, indices['Facturation Email'] + 1).setValue(payload.email);
+      sheet.getRange(rowIndex, indices['Facturation Téléphone'] + 1).setValue(payload.telephone);
+      sheet.getRange(rowIndex, indices['Facturation SIRET'] + 1).setValue(payload.siret);
+      sheet.getRange(rowIndex, indices['Facturation TVA'] + 1).setValue(payload.tva);
+    }
+
+    return { success: true, row: rowIndex };
+  } catch (e) {
+    Logger.log('ERREUR doSaveBillingForOrder ' + e.message);
+    return { success: false, message: e.message };
+  }
 }
 
 function bandIndexFromKm(km, bands) {
