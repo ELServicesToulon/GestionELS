@@ -143,6 +143,8 @@ const PRO_QA_ENABLED = false;
 const DEBUG_MENU_ENABLED = true;
 /** @const {boolean} Sert une version de démo de la page de réservation. */
 const DEMO_RESERVATION_ENABLED = false;
+/** @const {boolean} Active l'écriture des logs de facturation. */
+const BILLING_LOG_ENABLED = false;
 /** @const {boolean} Active le mode test pour la facturation V2 (aucune écriture). */
 const BILLING_V2_DRYRUN = false;
 /** @const {boolean} Active la journalisation détaillée des requêtes web. */
@@ -186,6 +188,7 @@ const FLAGS = Object.freeze({
   debugMenuEnabled: DEBUG_MENU_ENABLED,
   demoReservationEnabled: DEMO_RESERVATION_ENABLED,
   billingV2Dryrun: BILLING_V2_DRYRUN,
+  billingLogEnabled: BILLING_LOG_ENABLED,
   requestLoggingEnabled: REQUEST_LOGGING_ENABLED,
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
   clientPortalAttemptLimitEnabled: CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED,
@@ -277,6 +280,7 @@ const CONFIG = Object.freeze({
   BILLING_MODAL_ENABLED,
   RESIDENT_BILLING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
+  BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN
 });
 
