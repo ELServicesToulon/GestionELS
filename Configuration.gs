@@ -118,6 +118,9 @@ const CALENDAR_PURGE_ENABLED = true;
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = false;
 
+/** @const {boolean} Restrict updates to matching signed-in email. */
+const RESERVATION_EMAIL_MATCH_ENABLED = true;
+
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
 const RESERVATION_UI_V2_ENABLED = true;
 
@@ -277,6 +280,7 @@ const CONFIG = Object.freeze({
   BILLING_MODAL_ENABLED,
   RESIDENT_BILLING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
+  RESERVATION_EMAIL_MATCH_ENABLED,
   BILLING_V2_DRYRUN
 });
 

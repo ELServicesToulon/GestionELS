@@ -311,6 +311,9 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé, veuillez réessayer." };
 
   try {
+    const current = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();
+    const isAdmin = current === String(ADMIN_EMAIL || '').trim().toLowerCase();
+
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
@@ -328,7 +331,13 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
     const idEvenement = String(ligneDonnees[indices.idEvent]).trim();
     const detailsAnciens = String(ligneDonnees[indices.details]);
     const emailClient = ligneDonnees[indices.email];
-    
+
+    if (RESERVATION_EMAIL_MATCH_ENABLED && !isAdmin) {
+      if (!current || current !== String(emailClient || '').toLowerCase()) {
+        return { success: false, error: 'Adresse e-mail non autorisée.' };
+      }
+    }
+
     let ressourceEvenement = null;
     let dateDebutOriginale = new Date(ligneDonnees[indices.date]); // Fallback sur la date du Sheet
 
@@ -388,6 +397,9 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé." };
 
   try {
+    const current = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();
+    const isAdmin = current === String(ADMIN_EMAIL || '').trim().toLowerCase();
+
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
@@ -405,6 +417,12 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     const idEvenementAncien = String(ligneDonnees[indices.idEvent]).trim();
     const emailClient = ligneDonnees[indices.email];
     const details = String(ligneDonnees[indices.details]);
+
+    if (RESERVATION_EMAIL_MATCH_ENABLED && !isAdmin) {
+      if (!current || current !== String(emailClient || '').toLowerCase()) {
+        return { success: false, error: 'Adresse e-mail non autorisée.' };
+      }
+    }
 
     // Calcul de la durée depuis les détails du Sheet (source de vérité)
     const matchTotal = details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);
