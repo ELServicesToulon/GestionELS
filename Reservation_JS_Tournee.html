@@ -74,6 +74,16 @@ function mettreAJourResumeTournee() {
   strongPrix.textContent = `~ ${estimation.prix.toFixed(2)} €`;
   divPrix.appendChild(spanPrix);
   divPrix.appendChild(strongPrix);
+  // Normalisation de l'affichage du prix (euro, fallback)
+  (function(){
+    try {
+      const prixStrong = divPrix.querySelector('strong');
+      const prixNumber = Number(estimation.prix);
+      if (prixStrong) {
+        prixStrong.textContent = Number.isFinite(prixNumber) ? `~ ${prixNumber.toFixed(2)} \u20AC` : '—';
+      }
+    } catch(e) {}
+  })();
 
   const divKm = document.createElement('div');
   const spanKm = document.createElement('span');
@@ -324,4 +334,6 @@ function ajouterTourneeAuPanier(isRecurrentItem = false, recurrenceData = null) 
   }
 }
 </script>
+
+
 
