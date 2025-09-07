@@ -85,7 +85,7 @@
     <main id="conteneur-app" class="hidden">
 
       <div class="carte barre-outils">
-        <? if (THEME_SELECTION_ENABLED) { ?>
+        <? if (typeof THEME_SELECTION_ENABLED !== 'undefined' && THEME_SELECTION_ENABLED) { ?>
           <div class="theme-selector">
             <button id="btn-theme" class="btn btn-secondaire btn--client hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
             <div id="menu-theme" class="hidden" role="menu">
