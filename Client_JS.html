@@ -37,11 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const listeQuestions = document.getElementById('liste-questions');
     const formQuestion = document.getElementById('form-question');
     const questionTexte = document.getElementById('question-texte');
+    const linkEmail = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.email) || '';
+    const linkExp = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.exp) || '';
+    const linkSig = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.sig) || '';
 
     // --- Variable d'état pour stocker les réservations chargées ---
     let toutesLesReservationsClient = [];
     let toutesLesFacturesClient = [];
-    let emailClientCourant = '';
+    let emailClientCourant = linkEmail || '';
 
     /**
      * Initialise l'espace client.
@@ -75,11 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * Gère l'affichage initial en fonction des paramètres de l'URL.
      */
     function gererAffichageInitial() {
-        const params = new URLSearchParams(window.location.search);
-        const email = params.get('email');
-        
-        if (email) {
-            validerEtChargerClient(email);
+        if (linkEmail && linkExp && linkSig) {
+            validerEtChargerClient(linkEmail);
         } else {
             document.getElementById('conteneur-app')?.classList.add('hidden');
             document.getElementById('non-connecte')?.classList.remove('hidden');
@@ -92,6 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} email L'email à valider.
      */
     function validerEtChargerClient(email) {
+        if (!linkEmail || !linkExp || !linkSig) {
+            document.getElementById('conteneur-app')?.classList.add('hidden');
+            document.getElementById('non-connecte')?.classList.remove('hidden');
+            basculerIndicateurChargement(false);
+            return;
+        }
         basculerIndicateurChargement(true);
         google.script.run
             .withSuccessHandler(reponse => {
@@ -114,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 afficherErreurConnexion("Une erreur de communication est survenue.");
                 basculerIndicateurChargement(false);
             })
-            .validerClientParEmail(email);
+            .validerClientParEmail(email, linkExp, linkSig);
     }
 
     /**
@@ -135,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         })
                         .withFailureHandler(err => logError(err))
-                        .calculerCAEnCoursClient(email);
+                        .calculerCAEnCoursClient(email, linkExp, linkSig);
                 } else {
                     afficherErreur(reponse.error);
                 }
@@ -145,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 afficherErreur(err);
                 basculerIndicateurChargement(false);
             })
-            .obtenirReservationsClient(email);
+            .obtenirReservationsClient(email, linkExp, linkSig);
     }
 
     /**
@@ -162,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .obtenirFacturesPourClient(email);
+            .obtenirFacturesPourClient(email, linkExp, linkSig);
     }
 
     /**
@@ -200,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function envoyerFactureParEmail(numero) {
-        const email = new URLSearchParams(window.location.search).get('email') || document.getElementById('email-connexion')?.value;
+        const email = linkEmail;
         if (!email) return;
         basculerIndicateurChargement(true);
         google.script.run
@@ -213,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .envoyerFactureClient(email, numero);
+            .envoyerFactureClient(email, numero, linkExp, linkSig);
     }
 
     /**
@@ -237,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .getQuestions();
+            .getQuestions(linkEmail, linkExp, linkSig);
     }
 
     function posterQuestion() {
@@ -252,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 basculerIndicateurChargement(false);
             })
             .withFailureHandler(afficherErreur)
-            .addQuestion(texte, emailClientCourant);
+            .addQuestion(texte, emailClientCourant, linkExp, linkSig);
     }
 
     function posterReponse(questionId, reponse) {
@@ -264,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 basculerIndicateurChargement(false);
             })
             .withFailureHandler(afficherErreur)
-            .addAnswer(questionId, reponse, emailClientCourant);
+            .addAnswer(questionId, reponse, emailClientCourant, linkExp, linkSig);
     }
 
     /**
@@ -390,7 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .obtenirCreneauxDisponiblesPourDate(dateString, duree, resa.eventId);
+            .obtenirCreneauxDisponiblesPourDate(dateString, duree, resa.eventId, linkEmail, linkExp, linkSig);
     }
 
     /**
@@ -405,13 +411,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
                     afficherNotification("Réservation mise à jour avec succès !");
-                    chargerReservationsClient(new URLSearchParams(window.location.search).get('email'));
+                    chargerReservationsClient(linkEmail);
                 } else {
                     afficherErreur(reponse.error);
                 }
             })
             .withFailureHandler(afficherErreur)
-            .mettreAJourDetailsReservation(idReservation, totalStops);
+            .mettreAJourDetailsReservation(idReservation, totalStops, linkEmail, linkExp, linkSig);
     }
 
     /**
@@ -427,13 +433,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
                     afficherNotification("Réservation déplacée avec succès !");
-                    chargerReservationsClient(new URLSearchParams(window.location.search).get('email'));
+                    chargerReservationsClient(linkEmail);
                 } else {
                     afficherErreur(reponse.error);
                 }
             })
             .withFailureHandler(afficherErreur)
-            .replanifierReservation(idReservation, nouvelleDate, nouvelleHeure);
+            .replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, linkEmail, linkExp, linkSig);
     }
 
     function afficherErreurConnexion(message) {

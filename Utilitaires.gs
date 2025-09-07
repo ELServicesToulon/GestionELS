@@ -179,7 +179,8 @@ function verifySignedLink(email, expSeconds, sigBase64) {
     const exp = Number(expSeconds);
     if (!isFinite(exp)) return false;
     const nowSec = Math.floor(Date.now() / 1000);
-    if (exp < nowSec) return false; // expired
+    const ttl = (typeof CLIENT_PORTAL_LINK_TTL_HOURS !== 'undefined' ? Number(CLIENT_PORTAL_LINK_TTL_HOURS) : 24) * 3600;
+    if (exp < nowSec || exp - nowSec > ttl) return false;
     const secret = getSecret('ELS_SHARED_SECRET');
     if (!secret) return false;
     const data = `${String(email).trim().toLowerCase()}|${exp}`;
@@ -201,7 +202,8 @@ function verifySignedLink(email, expSeconds, sigBase64) {
  */
 function generateSignedClientLink(email, ttlSeconds) {
   if (!email) throw new Error('Email requis');
-  const exp = Math.floor(Date.now() / 1000) + (Number(ttlSeconds) > 0 ? Number(ttlSeconds) : 86400);
+  const ttl = (Number(ttlSeconds) > 0 ? Number(ttlSeconds) : (typeof CLIENT_PORTAL_LINK_TTL_HOURS !== 'undefined' ? Number(CLIENT_PORTAL_LINK_TTL_HOURS) : 24) * 3600);
+  const exp = Math.floor(Date.now() / 1000) + ttl;
   const secret = getSecret('ELS_SHARED_SECRET');
   if (!secret) throw new Error('Secret manquant: ELS_SHARED_SECRET');
   const data = `${String(email).trim().toLowerCase()}|${exp}`;
