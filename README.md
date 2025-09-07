@@ -11,6 +11,12 @@ See `AGENTS.md` for project structure, coding style, testing steps, and the pull
 - `clasp open`: Open the Apps Script project in the browser.
 - `clasp push -f`: Push local code to Apps Script (force overwrite).
 
+## Accès au calendrier
+1. Ouvrir l'éditeur Apps Script puis **Deploy → Manage deployments**.
+2. Sur la ligne du déploiement actif, copier l'URL du Web App pour accéder au calendrier.
+3. Si le lien est perdu, créer un nouveau déploiement : chaque version génère une URL unique.
+4. Pour activer le nouveau thème du calendrier, ajuster le flag `THEME_V2_ENABLED` dans `Configuration.gs` avant de déployer.
+
 ## Tarifs
 Les tarifs sont centralisés dans `Configuration.gs` via l'objet `TARIFS`.
 
