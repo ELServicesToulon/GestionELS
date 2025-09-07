@@ -56,7 +56,8 @@ const SHEET_ADMIN_LOGS = 'Admin_Logs';
 const SHEET_LOGS = 'Logs';
 /** @const {string} Feuille des plages horaires bloquées. */
 const SHEET_PLAGES_BLOQUEES = 'Plages_Bloquees';
-
+/** @const {string} Feuille des réservations. */
+const SHEET_RESERVATIONS = 'Réservations';
 /** @const {string} Feuille par défaut des nouveaux classeurs. */
 const SHEET_DEFAULT = 'Sheet1';
 
@@ -94,8 +95,8 @@ const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
 const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
-/** Feature flag — OFF by default to avoid crashes if the property is missing */
-
+const SLOTS_AMPM_ENABLED = false;
+/** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
 const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
 const CA_EN_COURS_ENABLED = true;
@@ -104,7 +105,11 @@ const CALENDAR_RESYNC_ENABLED = true;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
 const CALENDAR_PURGE_ENABLED = true;
 
+/** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
+const RESERVATION_UI_V2_ENABLED = true;
 
+/** @const {boolean} Active la facturation directe au résident. */
+const RESIDENT_BILLING_ENABLED = true;
 
 /** @const {boolean} Active la modale de coordonnées de facturation. */
 const BILLING_MODAL_ENABLED = true;
@@ -125,20 +130,31 @@ const CONFIG_CACHE_ENABLED = true;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
 const RESERVATION_CACHE_ENABLED = true;
 
-
+// --- Drapeaux de Thème ---
+/** @const {boolean} Active la nouvelle version du thème graphique (V2). */
+const THEME_V2_ENABLED = false;
+/** @const {boolean} Permet aux clients de choisir leur thème visuel. */
+const THEME_SELECTION_ENABLED =false;
+/** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
+const THEME_DEFAULT = '  clarte';
+/** @const {Object<string,string>} Associe les clés de thème aux chemins des fichiers CSS. */
+const THEMES = {
+  clarte: 'branding/Theme_Clarte_CSS',
+  nocturne: 'branding/Theme_Nocturne_CSS'
+};
 
 // Objet regroupant tous les drapeaux de fonctionnalité exposés au client
 const FLAGS = Object.freeze({
   clientPortalEnabled: CLIENT_PORTAL_ENABLED,
   clientPortalSignedLinks: CLIENT_PORTAL_SIGNED_LINKS,
   privacyLinkEnabled: PRIVACY_LINK_ENABLED,
- 
+  slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
   billingMultiSheetEnabled: BILLING_MULTI_SHEET_ENABLED,
   caEnCoursEnabled: CA_EN_COURS_ENABLED,
   calendarResyncEnabled: CALENDAR_RESYNC_ENABLED,
   calendarPurgeEnabled: CALENDAR_PURGE_ENABLED,
- 
-
+  reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
+  residentBillingEnabled: RESIDENT_BILLING_ENABLED,
   billingModalEnabled: BILLING_MODAL_ENABLED,
   debugMenuEnabled: DEBUG_MENU_ENABLED,
   demoReservationEnabled: DEMO_RESERVATION_ENABLED,
@@ -147,8 +163,8 @@ const FLAGS = Object.freeze({
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
-  
-  
+  themeV2Enabled: THEME_V2_ENABLED,
+  themeSelectionEnabled: THEME_SELECTION_ENABLED
 });
 
 
@@ -223,10 +239,10 @@ const CONFIG = Object.freeze({
   TVA_APPLICABLE,
   ANNEES_RETENTION_FACTURES,
   MOIS_RETENTION_LOGS,
- 
+  SHEET_RESERVATIONS,
   BILLING,
   BILLING_MODAL_ENABLED,
-  
+  RESIDENT_BILLING_ENABLED,
   BILLING_V2_DRYRUN
 });
 
