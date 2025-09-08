@@ -1,66 +1,10 @@
-:root{
-  --violet:#8e44ad; --blue:#3498db; --blue-light:#5dade2;
-  --ink:#0f172a; --muted:#566174; --bg:#f7f7fb; --card:#fff; --line:#e6e8ee;
-  --shadow-sm:0 4px 10px rgba(13,16,23,.08);
-  --shadow-md:0 10px 24px rgba(13,16,23,.10);
-  --radius:20px;
-  --font:"Inter",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans";
-}
-*{box-sizing:border-box} html,body{height:100%}
-body{margin:0;font-family:var(--font);color:var(--ink);background:var(--bg);
-  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
-.container{max-width:1152px;margin-inline:auto;padding:24px}
-
-/* Blister alu (section/fonds) */
+:root{ --violet:#8e44ad; --blue:#3498db; --blueLight:#5dade2; --radius:16px; }
+body{ font-family: Montserrat,system-ui,sans-serif; background:#f3f4f6; }
 .blister-bg{
-  --alu-a:#eeeeef; --alu-b:#dcdde1;
-  background:
-    repeating-linear-gradient(135deg,var(--alu-a)0 6px,var(--alu-b)6px 12px),
-    linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.6));
-  position:relative;border-radius:24px;border:1px solid #d9dbe2;box-shadow:var(--shadow-md);
+  background-image:radial-gradient(circle,rgba(0,0,0,.25)10%,transparent 11%);
+  background-size:24px 24px; opacity:.08;
 }
-.blister-bg::before{
-  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
-  background:radial-gradient(1200px 400px at 20% -10%,rgba(255,255,255,.9),transparent 60%),
-             radial-gradient(1000px 500px at 80% 120%,rgba(255,255,255,.7),transparent 60%);
-  mix-blend-mode:overlay;opacity:.7;
-}
-
-/* Capsule CSS (fallback si pas de sprite) */
-.capsule{--w:240px;--h:100px;--r:50px;position:relative;display:inline-block;
-  width:var(--w);height:var(--h);border-radius:var(--r);
-  filter:drop-shadow(0 8px 12px rgba(0,0,0,.12));}
-.capsule__half{position:absolute;top:0;height:100%;width:50%;border-radius:var(--r)}
-.capsule__half--color{left:0;background:linear-gradient(90deg,var(--violet),var(--blue)70%,var(--blue-light))}
-.capsule__half--white{right:0;background:#fff}
-.capsule::after{content:"";position:absolute;left:calc(50% - 2px);top:0;width:4px;height:100%;border-radius:2px;
-  background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.08))}
-.capsule__gloss{content:"";position:absolute;left:6%;right:6%;top:8%;height:38%;border-radius:999px;
-  background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,0));pointer-events:none}
-.capsule--mini{--w:72px;--h:28px;--r:14px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.10))}
-.capsule--tiny{--w:44px;--h:18px;--r:9px;filter:none}
-
-/* Header/Nav */
-header{position:sticky;top:0;z-index:40;backdrop-filter:saturate(1.2) blur(6px);
-  background:rgba(247,247,251,.75);border-bottom:1px solid var(--line)}
-.nav{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{display:flex;align-items:center;gap:12px;font-weight:700}
-.brand .tag{font-size:12px;color:var(--muted)}
-
-/* Cartes & boutons */
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
-.card .inner{padding:20px}
-.btn{appearance:none;border:0;padding:12px 18px;border-radius:14px;font-weight:600;cursor:pointer;transition:.2s ease;
-  background:linear-gradient(90deg,var(--violet),var(--blue));color:#fff;box-shadow:var(--shadow-sm)}
-.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
-.btn--ghost{background:transparent;color:var(--blue);border:1px solid #cfe6fb}
-
-/* Grilles calendrier / slots */
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.slot{display:flex;align-items:center;gap:10px;padding:14px;background:#fff;border:1px solid var(--line);border-radius:16px}
-.slot h4{margin:0;font-size:14px;font-weight:700}
-.slot small{color:var(--muted)}
-.slot[data-state="full"]{opacity:.45;filter:grayscale(.3)}
-/* Variante urgent : surcharge gradient via classe */
-.capsule-svg.urgent stop[offset="0%"]{stop-color:#e11d48}
-.capsule-svg.urgent stop[offset="70%"]{stop-color:#fb923c}
+.card{ border-radius:var(--radius); box-shadow:0 8px 24px rgba(0,0,0,.08); }
+.btn{ border-radius:999px; padding:.7rem 1.1rem; }
+.btn-primary{ background:linear-gradient(90deg,var(--violet),var(--blue)); color:#fff; }
+.btn:focus-visible{ outline:3px solid var(--blueLight); outline-offset:2px; }
