@@ -408,6 +408,50 @@ function reservationIdExiste(idReservation) {
   }
 }
 
+/**
+ * Création simplifiée d'une réservation.
+ * @param {Object} payload Données de la réservation.
+ * @returns {Object} Résultat de l'opération.
+ */
+function createBooking(payload) {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    throw new Error('LOCK_TIMEOUT');
+  }
+  try {
+    var p = validateReservationPayload(payload);
+    p.montant = computePrice(p);
+
+    var cal = CalendarApp.getCalendarById(getEnv().ID_CALENDRIER);
+    var start = p.date instanceof Date ? p.date : new Date(p.date);
+    var end = new Date(start.getTime() + 60 * 60 * 1000);
+
+    var title = `Réservation ${NOM_ENTREPRISE} - ${(p.client && p.client.nom) || ''}`;
+    var desc = `Client: ${(p.client && p.client.nom) || ''} (${(p.client && p.client.email) || ''})\nType: ${p.typeCourse}`;
+
+    var event = null;
+    if (p.eventId) {
+      event = cal.getEventById(p.eventId);
+      if (event) {
+        event.setTime(start, end);
+        event.setTitle(title);
+        event.setDescription(desc);
+      } else {
+        event = cal.createEvent(title, start, end, { description: desc });
+      }
+    } else {
+      event = cal.createEvent(title, start, end, { description: desc });
+    }
+    p.eventId = event.getId();
+
+    appendFacturationRow_(p);
+
+    return { ok: true, montant: p.montant, eventId: p.eventId };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 
 
 
