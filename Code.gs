@@ -184,6 +184,7 @@ function doGet(e) {
     template.nomService = NOM_ENTREPRISE;
     template.EMAIL_ENTREPRISE = EMAIL_ENTREPRISE;
     template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
+    template.CLIENT_SESSION_OPAQUE_ID_ENABLED = CLIENT_SESSION_OPAQUE_ID_ENABLED;
     template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
     template.TARIFS = conf.TARIFS;
     template.DUREE_BASE = conf.DUREE_BASE;
