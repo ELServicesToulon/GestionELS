@@ -170,6 +170,8 @@ const RESERVATION_CACHE_ENABLED = true;
 const THEME_V2_ENABLED = false;
 /** @const {boolean} Active le thème graphique V3 (header sticky, capsules). */
 const THEME_V3_ENABLED = true;
+/** @const {boolean} Active la capsule de thème (styles capsules). */
+const THEME_CAPSULE_ENABLED = false;
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
 // const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
@@ -207,6 +209,7 @@ const FLAGS = Object.freeze({
   extraIconsEnabled: EXTRA_ICONS_ENABLED,
   themeV2Enabled: THEME_V2_ENABLED,
   themeV3Enabled: THEME_V3_ENABLED,
+  themeCapsuleEnabled: THEME_CAPSULE_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED
 });
