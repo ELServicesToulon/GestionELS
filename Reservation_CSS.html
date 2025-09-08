@@ -4,8 +4,19 @@
   --els-font: 'Montserrat', sans-serif;
   --els-violet: #8e44ad;
   --els-bleu: #3498db;
-  --els-bleu-clair: #5dade2;
-  --els-gradient: linear-gradient(90deg, #8e44ad 0%, #3498db 100%);
+  --els-bleu2: #5dade2;
+  --els-grad: linear-gradient(90deg, var(--els-violet) 0%, var(--els-bleu) 100%);
+  --img-capsule: image-set(
+    url('branding/ui/capsule1x.png') 1x,
+    url('branding/ui/capsule2x.png') 2x
+  );
+  --img-blister-vide: image-set(
+    url('branding/ui/blister_vide1x.png') 1x,
+    url('branding/ui/blister_vide2x.png') 2x
+  );
+  --shadow: 0 6px 18px rgba(15,23,42,.14);
+  --radius: 20px;
+  --muted: #64748b;
 }
 /* =================================================================
                       FEUILLE DE STYLE - INTERFACE DE RÉSERVATION
@@ -180,20 +191,14 @@ body {
 }
 .els-ui-theming .jour-calendrier:not(.desactive) {
   background: transparent;
-  background-image: image-set(
-    url('data:image/png;base64,<?!= include("Capsule1x_b64") ?>') 1x,
-    url('data:image/png;base64,<?!= include("Capsule2x_b64") ?>') 2x
-  );
+  background-image: var(--img-capsule);
   background-repeat: no-repeat;
   background-position: center;
   background-size: 92% auto;
   color: var(--txt);
 }
 .els-ui-theming .jour-calendrier.desactive {
-  background-image: image-set(
-    url('data:image/png;base64,<?!= include("Blister1x_b64") ?>') 1x,
-    url('data:image/png;base64,<?!= include("Blister2x_b64") ?>') 2x
-  );
+  background-image: var(--img-blister-vide);
   background-repeat: no-repeat;
   background-position: center;
   background-size: 92% auto;
@@ -216,7 +221,7 @@ body {
   background: var(--bg);
 }
 .els-ui-theming .slot-btn.standard.selected {
-  background: var(--els-gradient);
+  background: var(--els-grad);
   color: var(--txt);
   border-color: transparent;
   box-shadow: var(--shadow);
@@ -226,10 +231,7 @@ body {
   color: var(--txt);
 }
 .els-ui-theming .slot-btn:disabled {
-  background-image: image-set(
-    url('data:image/png;base64,<?!= include("Blister1x_b64") ?>') 1x,
-    url('data:image/png;base64,<?!= include("Blister2x_b64") ?>') 2x
-  );
+  background-image: var(--img-blister-vide);
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;
