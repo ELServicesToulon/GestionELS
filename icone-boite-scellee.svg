@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img" aria-label="Boîte scellée">
+  <defs>
+    <linearGradient id="boiteGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8e44ad" />
+      <stop offset="100%" stop-color="#3498db" />
+    </linearGradient>
+  </defs>
+  <rect x="6" y="14" width="36" height="24" rx="2" fill="url(#boiteGradient)" />
+  <rect x="6" y="14" width="36" height="6" fill="#5dade2" />
+  <rect x="18" y="22" width="12" height="16" fill="#ffffff" opacity="0.3" />
+</svg>

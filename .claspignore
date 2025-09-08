@@ -28,6 +28,9 @@ package.json
 package-lock.json
 README.md
 
+# Icon SVGs
+!icone-*.svg
+
 # Helper scripts
 *.cmd
 *.ps1

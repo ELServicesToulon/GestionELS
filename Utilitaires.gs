@@ -156,7 +156,12 @@ function logRequest(e) {
  * @returns {string} Le contenu du fichier.
  */
 function include(nomFichier) {
-  return HtmlService.createTemplateFromFile(nomFichier).evaluate().getContent();
+  try {
+    return HtmlService.createTemplateFromFile(nomFichier).evaluate().getContent();
+  } catch (e) {
+    console.error('Fichier inclus introuvable: ' + nomFichier);
+    return '';
+  }
 }
 
 // Thèmes désactivés: pas de thème utilisateur
