@@ -159,6 +159,33 @@ function enregistrerReservationPourFacturation(dateHeureDebut, nomClient, emailC
 }
 
 /**
+ * Helper interne pour écrire une ligne de facturation à partir d'un objet.
+ * @param {Object} p Données de réservation enrichies.
+ */
+function appendFacturationRow_(p) {
+  try {
+    if (!p) return;
+    const dateHeure = p.date instanceof Date ? p.date : new Date(p.date);
+    enregistrerReservationPourFacturation(
+      dateHeure,
+      p.client && p.client.nom ? p.client.nom : '',
+      p.client && p.client.email ? p.client.email : '',
+      p.typeCourse || '',
+      p.details || '',
+      p.montant || 0,
+      p.eventId || '',
+      p.idReservation || p.reservationId || '',
+      p.note || '',
+      p.tourneeOfferteAppliquee || false,
+      p.typeRemiseAppliquee || '',
+      p.valeurRemiseAppliquee || 0
+    );
+  } catch (e) {
+    Logger.log('Erreur dans appendFacturationRow_: ' + e.stack);
+  }
+}
+
+/**
  * Récupère les plages horaires bloquées pour une date.
  * @param {Date} date La date à vérifier.
  * @returns {Array<Object>} Une liste d'intervalles bloqués.
