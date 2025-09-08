@@ -93,67 +93,27 @@ function doSaveBillingForOrder(payload) {
   }
 }
 
-function bandIndexFromKm(km, bands) {
-  for (var i = 0; i < bands.length; i++) {
-    if (km <= bands[i]) {
-      return i;
-    }
-  }
-  return bands.length - 1;
-}
-
-function buildInvoiceLinesSainteMusseEHPAD(opts) {
-  var mode = opts.mode;
-  var t = mode === 'Urgence' ? TARIFS.SainteMusse_EHPAD_URGENCE : TARIFS.SainteMusse_EHPAD_CLASSIC;
-  var idx = bandIndexFromKm(opts.km, t.bands);
-  var zoneLabel = ['Zone A ≤18km', 'Zone B ≤24km', 'Zone C ≤30km', 'Zone D ≤36km'][idx] || 'Zone D';
-  var base = t.bands[idx].prix;
-
+function buildInvoiceLines(opts) {
+  var tarif = computeCoursePrice({
+    totalStops: opts.nbArretsTotaux,
+    urgent: opts.mode === 'Urgence',
+    samedi: opts.samedi,
+    precollecte: opts.precollecteVeille
+  });
   var lines = [];
-  var libBase = mode === 'Urgence'
-    ? 'URGENCE — Sainte-Musse ↔ EHPAD (' + zoneLabel + ', retour inclus)'
-    : 'Classique — Sainte-Musse → EHPAD (' + zoneLabel + ')';
-  lines.push({ label: libBase, qty: 1, unit: 'forfait', pu: base, total: base });
-
-  var extras = Math.max(0, opts.nbArretsTotaux - 1);
-  for (var i = 0; i < extras; i++) {
-    var puExtra = t.PDL_PRIX[Math.min(i, t.PDL_PRIX.length - 1)];
-    lines.push({ label: 'Arrêt supplémentaire #' + (i + 2), qty: 1, unit: 'arrêt', pu: puExtra, total: puExtra });
+  lines.push({ label: 'Course de base', qty: 1, unit: 'forfait', pu: tarif.breakdown.base, total: tarif.breakdown.base });
+  if (tarif.breakdown.supplements) {
+    lines.push({ label: 'Arrêts supplémentaires', qty: 1, unit: 'forfait', pu: tarif.breakdown.supplements, total: tarif.breakdown.supplements });
   }
-
-  if (opts.precollecteVeille) {
-    lines.push({
-      label: 'Pré-collecte veille (ordonnance + carte Vitale, J-1)',
-      qty: 1,
-      unit: 'forfait',
-      pu: 5,
-      total: 5
-    });
+  if (tarif.breakdown.urgent) {
+    lines.push({ label: 'Majoration urgent', qty: 1, unit: 'forfait', pu: tarif.breakdown.urgent, total: tarif.breakdown.urgent });
   }
-
-  if (opts.samedi) {
-    lines.push({
-      label: 'Majoration samedi',
-      qty: 1,
-      unit: 'forfait',
-      pu: t.SAMEDI_SURC,
-      total: t.SAMEDI_SURC
-    });
+  if (tarif.breakdown.samedi) {
+    lines.push({ label: 'Majoration samedi', qty: 1, unit: 'forfait', pu: tarif.breakdown.samedi, total: tarif.breakdown.samedi });
   }
-
-  var over = Math.max(0, opts.minutesAttente - t.ATTENTE.graceMin);
-  if (over > 0) {
-    var tranches = Math.ceil(over / t.ATTENTE.palierMin);
-    var totalAttente = tranches * t.ATTENTE.prixParPalier;
-    lines.push({
-      label: 'Attente au-delà de ' + t.ATTENTE.graceMin + ' min',
-      qty: tranches,
-      unit: t.ATTENTE.palierMin + ' min',
-      pu: t.ATTENTE.prixParPalier,
-      total: totalAttente
-    });
+  if (tarif.breakdown.precollecte) {
+    lines.push({ label: 'Pré-collecte veille', qty: 1, unit: 'forfait', pu: tarif.breakdown.precollecte, total: tarif.breakdown.precollecte });
   }
-
   return lines;
 }
 
@@ -185,7 +145,7 @@ function creerEtEnvoyerFactureResident(res) {
     minutesAttente: Number(res.ATTENTE_MIN || 0)
   };
 
-  var lines = buildInvoiceLinesSainteMusseEHPAD(opts);
+  var lines = buildInvoiceLines(opts);
   var ht = sumHT(lines);
   var tva = computeTVA(ht);
   var ttc = ht + tva;

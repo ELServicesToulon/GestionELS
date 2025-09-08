@@ -80,7 +80,6 @@
 
   <div id="app-conteneur-principal">
 
-    <? if (THEME_V3_ENABLED) { ?>
     <header class="app-header" role="banner">
       <?!= include('Logo'); ?>
       <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-primaire" role="button" aria-label="Nouvelle réservation">Réserver</a>
@@ -92,27 +91,11 @@
         <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-primaire" role="button" aria-label="Faire une réservation">Nouvelle réservation</a>
       </div>
     </section>
-    <? } ?>
-
-    <? if (!THEME_V3_ENABLED) { ?>
-    <header class="app-en-tete">
-      <?!= include('Logo'); ?>
-      <p id="message-bienvenue-client"></p>
-    </header>
-    <? } ?>
 
     <main id="conteneur-app" class="hidden">
 
       <div class="carte card barre-outils">
-        <? if (typeof THEME_SELECTION_ENABLED !== 'undefined' && THEME_SELECTION_ENABLED) { ?>
-          <div class="theme-selector">
-            <button id="btn-theme" class="btn btn-secondaire btn--client hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
-            <div id="menu-theme" class="hidden" role="menu">
-              <button class="option-theme btn btn-secondaire btn--client" data-theme="clarte" role="menuitem">Clarté</button>
-              <button class="option-theme btn btn-secondaire btn--client" data-theme="nocturne" role="menuitem">Nocturne</button>
-            </div>
-          </div>
-        <? } ?>
+        
         <div id="ca-client" class="carte card slot" tabindex="0"></div>
         <div id="liste-reservations" class="carte card slot">
   <div class="inner">

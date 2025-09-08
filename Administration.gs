@@ -18,8 +18,6 @@ function invaliderCacheConfiguration() {
  * @return {number|null} Total du CA ou null si désactivé ou non autorisé.
  */
 function calculerCAEnCours() {
-  if (!CA_EN_COURS_ENABLED) return null;
-
   const userEmail = Session.getActiveUser().getEmail();
   if (!userEmail || userEmail.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
     return null;

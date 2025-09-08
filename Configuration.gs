@@ -6,6 +6,23 @@
 //              personnalisables de l'application.
 // =================================================================
 
+// === Feature flags (socle simplifié) ===
+const THEME_V2_ENABLED          = true;   // thème blister partout
+const BLISTER_BG_ENABLED        = true;   // fond blister
+const PRICING_RULES_V2_ENABLED  = true;   // prix par arrêts totaux
+const DEBUG_MENU_ENABLED        = true;   // visible le temps du rollout
+const CALENDAR_RESYNC_ENABLED   = true;   // outils de resync calendrier
+const CALENDAR_PURGE_ENABLED    = false;  // sécurité
+const RESERVATION_CACHE_ENABLED = true;   // cache semaine/jour
+
+const DEFAULT_TZ = 'Europe/Paris';
+
+// Tarifs centralisés : 1er arrêt inclus, suivants par paliers
+const TARIFS = {
+  normal: { base: 20, arrets: [5, 5, 5] },
+  surcharges: { URGENT: 10, SAMEDI: 8, PRECOLLECTE: 5 }
+};
+
 // --- Informations sur l'entreprise ---
 /** @const {string} Nom officiel de l'entreprise utilisé dans l'interface et la facturation. */
 const NOM_ENTREPRISE = getSecret('NOM_ENTREPRISE');
@@ -102,18 +119,14 @@ const CLIENT_PORTAL_SIGNED_LINKS = true;
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
 const PRIVACY_LINK_ENABLED = true;
-/** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
-const SLOTS_AMPM_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
 const CLIENT_SESSION_OPAQUE_ID_ENABLED = true;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
 const BILLING_MULTI_SHEET_ENABLED = true;
-/** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
-const CA_EN_COURS_ENABLED = true;
 /** @const {boolean} Resynchronise les événements manquants du calendrier Google. */
-const CALENDAR_RESYNC_ENABLED = true;
+// CALENDAR_RESYNC_ENABLED défini plus haut
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
-const CALENDAR_PURGE_ENABLED = true;
+// CALENDAR_PURGE_ENABLED défini plus haut
 
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
 const CALENDAR_BAR_OPACITY_ENABLED = true;
@@ -134,7 +147,7 @@ const CART_RESET_ENABLED = true;
 /** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
 const RETURN_IMPACTS_ESTIMATES_ENABLED = true;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
-const PRICING_RULES_V2_ENABLED = true;
+// PRICING_RULES_V2_ENABLED défini plus haut
 
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
 const PROOF_SOCIAL_ENABLED = true;
@@ -145,7 +158,7 @@ const PRO_QA_ENABLED = true;
 const EXTRA_ICONS_ENABLED = true;
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
-const DEBUG_MENU_ENABLED = true;
+// DEBUG_MENU_ENABLED défini plus haut
 /** @const {boolean} Sert une version de démo de la page de réservation. */
 const DEMO_RESERVATION_ENABLED = false;
 /** @const {boolean} Active l'écriture des logs de facturation. */
@@ -163,29 +176,23 @@ const CLIENT_PORTAL_MAX_ATTEMPTS = 10;
 /** @const {boolean} Active la mise en cache des paramètres de configuration. */
 const CONFIG_CACHE_ENABLED = true;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
-const RESERVATION_CACHE_ENABLED = true;
+// RESERVATION_CACHE_ENABLED défini plus haut
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
-const THEME_V2_ENABLED = false;
-/** @const {boolean} Active le thème graphique V3 (header sticky, capsules). */
-const THEME_V3_ENABLED = true;
+// THEME_V2_ENABLED défini plus haut
+/** @const {boolean} Active le thème graphique V3 (legacy) -- supprimé */
+// THEME_V3_ENABLED retiré
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
-// const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
-/** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
-// const THEME_DEFAULT = 'clarte'; // supprimé
-/** @const {Object<string,string>} Associe les clés de thème aux chemins des fichiers CSS. */
-// const THEMES = {}; // supprimé
+// THEME_SELECTION_ENABLED supprimé
 
 // Objet regroupant tous les drapeaux de fonctionnalité exposés au client
 const FLAGS = Object.freeze({
   clientPortalEnabled: CLIENT_PORTAL_ENABLED,
   clientPortalSignedLinks: CLIENT_PORTAL_SIGNED_LINKS,
   privacyLinkEnabled: PRIVACY_LINK_ENABLED,
-  slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
   clientSessionOpaqueIdEnabled: CLIENT_SESSION_OPAQUE_ID_ENABLED,
   billingMultiSheetEnabled: BILLING_MULTI_SHEET_ENABLED,
-  caEnCoursEnabled: CA_EN_COURS_ENABLED,
   calendarResyncEnabled: CALENDAR_RESYNC_ENABLED,
   calendarPurgeEnabled: CALENDAR_PURGE_ENABLED,
   calendarBarOpacityEnabled: CALENDAR_BAR_OPACITY_ENABLED,
@@ -206,56 +213,10 @@ const FLAGS = Object.freeze({
   proQaEnabled: PRO_QA_ENABLED,
   extraIconsEnabled: EXTRA_ICONS_ENABLED,
   themeV2Enabled: THEME_V2_ENABLED,
-  themeV3Enabled: THEME_V3_ENABLED,
+  blisterBgEnabled: BLISTER_BG_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED
 });
-
-
-// =================================================================
-//              SYSTÈME DE TARIFICATION FLEXIBLE
-// =================================================================
-// Schéma des tarifs:
-// { 'Type': { base: number, arrets: number[] } }
-// - 'Type': 'Normal', 'Samedi', 'Urgent', 'Special'
-// - base: Prix du premier arrêt (prise en charge)
-// - arrets: Tarifs des arrêts suivants; le dernier s'applique au-delà
-// Exemple Grille (Normal): 1=15€, 2=20€ (15+5), 3=24€ (20+4), etc.
-/**
- * @const {Object<string,{base:number, arrets:number[]}>}
- * Grille tarifaire unique pilotant tous les calculs de prix.
- */
-const TARIFS = {
-  'Normal': { // Tarifs standard du lundi au vendredi
-    base: 15,
-    arrets: [5, 4, 3, 4, 5] // Prix pour Arrêt 2, 3, 4, 5, et 6+
-  },
-  'Samedi': { // Livraisons effectuées le samedi
-    base: 25,
-    arrets: [5, 4, 3, 4, 5]
-  },
-  'Urgent': { // Réservations dans le délai URGENT_THRESHOLD_MINUTES
-    base: 20,
-    arrets: [5, 4, 3, 4, 5]
-  },
-  'Special': { // Cas particuliers ou tarifs temporaires
-    base: 30,
-    arrets: [5, 4, 3, 4, 5]
-  }
-};
-
-if (TARIFS.SainteMusse_EHPAD_CLASSIC) {
-  TARIFS.SainteMusse_EHPAD_CLASSIC.PRECOLLECTE_VEILLE = {
-    prixParBande: [5, 5, 5, 5],
-    label: "Pré-collecte veille (ordonnance + carte Vitale, J-1)"
-  };
-}
-if (TARIFS.SainteMusse_EHPAD_URGENCE) {
-  TARIFS.SainteMusse_EHPAD_URGENCE.PRECOLLECTE_VEILLE = {
-    prixParBande: [5, 5, 5, 5],
-    label: "Pré-collecte veille (ordonnance + carte Vitale, J-1)"
-  };
-}
 
 
 // --- Noms des colonnes spécifiques (Feuille Clients) ---
@@ -273,6 +234,7 @@ const COLONNE_NB_TOURNEES_OFFERTES = "Nombre Tournées Offertes";
 
 const CONFIG = Object.freeze({
   TARIFS,
+  DEFAULT_TZ,
   DUREE_BASE,
   DUREE_ARRET_SUP,
   KM_BASE,
@@ -305,6 +267,7 @@ function getConfig() {
 function getPublicConfig() {
   return {
     TARIFS: CONFIG.TARIFS,
+    DEFAULT_TZ: CONFIG.DEFAULT_TZ,
     DUREE_BASE: CONFIG.DUREE_BASE,
     DUREE_ARRET_SUP: CONFIG.DUREE_ARRET_SUP,
     KM_BASE: CONFIG.KM_BASE,

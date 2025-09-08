@@ -100,7 +100,6 @@
 
     <div id="app-conteneur-principal">
 
-      <? if (THEME_V3_ENABLED) { ?>
       <header class="app-header" role="banner">
         <?!= include('Logo'); ?>
         <a href="#vue-calendrier" class="btn btn-primaire" role="button" aria-label="Voir les créneaux">Réserver</a>
@@ -112,28 +111,6 @@
           <a href="#vue-calendrier" class="btn btn-primaire" role="button" aria-label="Voir les créneaux">Voir les créneaux</a>
         </div>
       </section>
-      <? } ?>
-
-      <? if (!THEME_V3_ENABLED) { ?>
-      <header class="app-en-tete" role="banner" aria-label="En-tête de la page de réservation">
-        <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
-              <button id="btn-theme" class="btn btn-secondaire btn-sm hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
-              <div id="menu-theme" class="hidden" role="menu" style="min-width: 100px;">
-                <button class="option-theme btn btn-secondaire btn-sm" data-theme="clarte" role="menuitem">Clarté</button>
-                <button class="option-theme btn btn-secondaire btn-sm" data-theme="nocturne" role="menuitem">Nocturne</button>
-              </div>
-            </div>
-          <? if (CLIENT_PORTAL_ENABLED) { ?>
-            <a href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm btn-espace-client">Mon Espace Client</a>
-          <? } ?>
-        </div>
-
-        <?!= include('Logo'); ?>
-        <div id="banniere-client-reconnu" class="hidden">
-            Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
-            <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
-        </div>
-    </header>
 
     <section id="hero-tarifs" class="hero-tarifs">
       <div class="hero-titre">
@@ -173,7 +150,7 @@
           </div>
           <h3>Course de base</h3>
           <ul>
-            <li><?= TARIFS.Normal.base ?> € TTC</li>
+            <li><?= TARIFS.normal.base ?> € TTC</li>
             <li><?= KM_BASE ?> km inclus</li>
             <li><?= DUREE_BASE ?> min inclus</li>
           </ul>
@@ -187,9 +164,9 @@
           </div>
           <h3>Arrêts supplémentaires</h3>
           <ul>
-            <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
-                 var label = (i === TARIFS.Normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
-              <li><?= label ?> arrêt : <?= TARIFS.Normal.arrets[i] ?> € TTC</li>
+            <? for (var i = 0; i < TARIFS.normal.arrets.length; i++) {
+                 var label = (i === TARIFS.normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
+              <li><?= label ?> arrêt : <?= TARIFS.normal.arrets[i] ?> € TTC</li>
             <? } ?>
           </ul>
         </div>
@@ -201,8 +178,9 @@
           </div>
           <h3>Options</h3>
           <ul>
-            <li>Urgent : +<?= TARIFS.Urgent.base ?> € TTC</li>
-            <li>Samedi : +<?= TARIFS.Samedi.base ?> € TTC</li>
+            <li>Urgent : +<?= TARIFS.surcharges.URGENT ?> € TTC</li>
+            <li>Samedi : +<?= TARIFS.surcharges.SAMEDI ?> € TTC</li>
+            <li>Pré-collecte veille : +<?= TARIFS.surcharges.PRECOLLECTE ?> € TTC</li>
           </ul>
           <p style="font-size:0.9em;color:#555;margin-top:0.5rem;">Le samedi est prioritaire sur l’urgent : une course le samedi applique toujours le tarif samedi, même si elle est urgente.</p>
         </div>
