@@ -239,6 +239,26 @@ body {
 }
 .els-ui-theming .slot-btn:focus { outline: 3px solid var(--bleu); outline-offset: 2px; }
 
+/* --- THEME ELS: Titre + en-têtes calendrier (gradient text) --- */
+.els-ui-theming #titre-calendrier {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--els-violet);
+  background: var(--els-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.els-ui-theming .calendrier-jours-semaine {
+  font-weight: 600;
+  color: var(--els-violet);
+  background: var(--els-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 /* --- PANIER --- */
 #liste-panier { list-style: none; padding: 0; margin: 0; }
 .panier-vide { text-align: center; color: var(--muted); padding: 20px 0; }
