@@ -168,6 +168,8 @@ const RESERVATION_CACHE_ENABLED = true;
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
 const THEME_V2_ENABLED = true;
+/** @const {boolean} Active le thème graphique V3 (header sticky, capsules). */
+const THEME_V3_ENABLED = false;
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
 // const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
@@ -204,6 +206,7 @@ const FLAGS = Object.freeze({
   proQaEnabled: PRO_QA_ENABLED,
   extraIconsEnabled: EXTRA_ICONS_ENABLED,
   themeV2Enabled: THEME_V2_ENABLED,
+  themeV3Enabled: THEME_V3_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED
 });

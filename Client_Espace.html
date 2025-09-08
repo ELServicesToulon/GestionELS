@@ -78,14 +78,31 @@
   </div>
 
   <div id="app-conteneur-principal">
+
+    <? if (THEME_V3_ENABLED) { ?>
+    <header class="app-header" role="banner">
+      <?!= include('Logo'); ?>
+      <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-primaire" role="button" aria-label="Nouvelle réservation">Réserver</a>
+    </header>
+    <section class="blister-bg" role="region" aria-label="Espace client">
+      <div class="hero card">
+        <h1>Mon espace client</h1>
+        <p>Consultez vos réservations et factures.</p>
+        <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-primaire" role="button" aria-label="Faire une réservation">Nouvelle réservation</a>
+      </div>
+    </section>
+    <? } ?>
+
+    <? if (!THEME_V3_ENABLED) { ?>
     <header class="app-en-tete">
       <?!= include('Logo'); ?>
       <p id="message-bienvenue-client"></p>
     </header>
+    <? } ?>
 
     <main id="conteneur-app" class="hidden">
 
-      <div class="carte barre-outils">
+      <div class="carte card barre-outils">
         <? if (typeof THEME_SELECTION_ENABLED !== 'undefined' && THEME_SELECTION_ENABLED) { ?>
           <div class="theme-selector">
             <button id="btn-theme" class="btn btn-secondaire btn--client hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
@@ -95,21 +112,21 @@
             </div>
           </div>
         <? } ?>
-      <div id="ca-client" class="carte" tabindex="0"></div>
-      <div id="liste-reservations" class="carte">
+        <div id="ca-client" class="carte card slot" tabindex="0"></div>
+        <div id="liste-reservations" class="carte card slot">
         <h3>Vos prochaines courses</h3>
         <div id="contenu-reservations">
           <!-- Les réservations seront injectées ici par le script JS -->
         </div>
       </div>
-      <div id="liste-factures" class="carte">
+        <div id="liste-factures" class="carte card slot">
         <h3>Vos factures</h3>
         <div id="contenu-factures">
           <!-- Les factures seront injectées ici par le script JS -->
         </div>
       </div>
       <? if (typeof PRO_QA_ENABLED !== 'undefined' && PRO_QA_ENABLED) { ?>
-      <div id="bloc-questions" class="carte">
+        <div id="bloc-questions" class="carte card">
         <h3>Vos questions</h3>
         <div id="liste-questions" aria-live="polite"></div>
         <form id="form-question" class="groupe-formulaire" autocomplete="off">
@@ -119,14 +136,14 @@
         </form>
       </div>
       <? } ?>
-      <div class="carte">
+        <div class="carte card">
         <p>Pour toute annulation ou pour une modification non disponible ici, veuillez nous contacter directement.</p>
         <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-secondaire btn--client">Faire une nouvelle réservation</a>
         <a href="mailto:<?= ADMIN_EMAIL ?>" class="btn btn-secondaire btn--client" style="margin-left: 10px;">Contacter le support</a>
       </div>
     </main>
 
-    <div id="non-connecte" class="carte hidden">
+    <div id="non-connecte" class="carte card hidden">
         <h3>Accès à l'espace client</h3>
         <p>Pour consulter vos réservations, veuillez utiliser le lien qui vous a été envoyé par e-mail ou saisissez votre adresse ci-dessous.</p>
         
