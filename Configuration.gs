@@ -272,7 +272,12 @@ function getConfigCached() {
   const cache = CacheService.getScriptCache();
   const cachedConfig = cache.get('CONFIG_JSON');
   if (cachedConfig) {
-    return JSON.parse(cachedConfig);
+    try {
+      return JSON.parse(cachedConfig);
+    } catch (e) {
+      console.error('Failed to parse cached configuration', e);
+      CacheService.getScriptCache().remove('CONFIG_JSON');
+    }
   }
   const config = getConfig();
   // Met en cache la configuration pour 10 minutes (600 secondes)
