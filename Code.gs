@@ -75,7 +75,7 @@ function menuGenererLienClient() {
     const hours = parseInt(hoursResp.getResponseText() || '168', 10);
     const res = genererLienEspaceClient(email, isNaN(hours) ? 168 : hours);
     const html = HtmlService.createHtmlOutput(
-      `<div style="font-family:Montserrat,sans-serif;line-height:1.5">
+        `<div style="font-family:'Montserrat',system-ui,sans-serif;line-height:1.5">
          <h3>Lien Espace Client</h3>
          <p>Ce lien expire à: ${new Date(res.exp*1000).toLocaleString()}</p>
          <input id="l" type="text" value="${res.url.replace(/&/g,'&amp;').replace(/</g,'&lt;')}" style="width:100%" readonly />

@@ -134,7 +134,7 @@ function envoyerDevisParEmail(donneesDevis) {
 
     const sujet = `Votre devis de réservation - ${NOM_ENTREPRISE}`;
     const corpsHtml = `
-      <div style="font-family: Montserrat, sans-serif; color: #333;">
+        <div style="font-family: 'Montserrat', system-ui, sans-serif; color: #333;">
         <h2>Devis pour vos réservations de tournées</h2>
         <p>Bonjour ${client.nom || ''},</p>
         <p>Voici le détail du devis pour les tournées actuellement dans votre panier. Ce devis est valable 24 heures, sous réserve de disponibilité des créneaux.</p>
