@@ -71,6 +71,9 @@
   <?!= include('charte'); ?>
 </head>
 <body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <?!= include('icons.svg'); ?>
+  </svg>
 
   <script type="application/json" id="conf-tarifs"><?!= TARIFS_JSON ?></script>
   <script>
@@ -119,28 +122,38 @@
     <section id="hero-tarifs" class="hero-tarifs">
       <div class="hero-titre">
         <div class="hero-icone">
-          <?!= include('icone-gelule.svg'); ?>
+          <svg width="48" height="48" role="img" aria-label="Gélule de pharmacie" focusable="false">
+            <use href="#icone-gelule"></use>
+          </svg>
         </div>
         <h1>Gagnez du temps au comptoir : la tournée pharmacie pensée pour pharmaciens, préparateurs, infirmiers</h1>
       </div>
       <p class="hero-sous-titre">Fiabilité éprouvée, sacs scellés sécurisés et respect du patient garanti.</p>
       <? if (EXTRA_ICONS_ENABLED) { ?>
-      <div class="hero-icones">
-        <div class="hero-icone">
-          <?!= include('icone-semainier.svg'); ?>
+        <div class="hero-icones">
+          <div class="hero-icone">
+            <svg width="48" height="48" role="img" aria-label="Semainier" focusable="false">
+              <use href="#icone-semainier"></use>
+            </svg>
+          </div>
+          <div class="hero-icone">
+            <svg width="48" height="48" role="img" aria-label="Boîte scellée" focusable="false">
+              <use href="#icone-boite-scellee"></use>
+            </svg>
+          </div>
+          <div class="hero-icone">
+            <svg width="48" height="48" role="img" aria-label="Livraison à domicile" focusable="false">
+              <use href="#icone-livraison"></use>
+            </svg>
+          </div>
         </div>
-        <div class="hero-icone">
-          <?!= include('icone-boite-scellee.svg'); ?>
-        </div>
-        <div class="hero-icone">
-          <?!= include('icone-livraison.svg'); ?>
-        </div>
-      </div>
       <? } ?>
       <div class="tarifs-cartes">
         <div class="tarif-carte">
           <div class="tarif-icone">
-            <?!= include('icone-pilulier.svg'); ?>
+            <svg width="48" height="48" role="img" aria-label="Pilulier pharmaceutique" focusable="false">
+              <use href="#icone-pilulier"></use>
+            </svg>
           </div>
           <h3>Course de base</h3>
           <ul>
@@ -152,7 +165,9 @@
         </div>
         <div class="tarif-carte">
           <div class="tarif-icone">
-            <?!= include('icone-flacon.svg'); ?>
+            <svg width="48" height="48" role="img" aria-label="Flacon de médicament" focusable="false">
+              <use href="#icone-flacon"></use>
+            </svg>
           </div>
           <h3>Arrêts supplémentaires</h3>
           <ul>
@@ -164,7 +179,9 @@
         </div>
         <div class="tarif-carte">
           <div class="tarif-icone">
-            <?!= include('icone-tampon.svg'); ?>
+            <svg width="48" height="48" role="img" aria-label="Tampon officinal" focusable="false">
+              <use href="#icone-tampon"></use>
+            </svg>
           </div>
           <h3>Options</h3>
           <ul>
