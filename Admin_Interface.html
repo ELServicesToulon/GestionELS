@@ -68,8 +68,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
-  <?!= include('ThemeCapsule') ?>
-  <style id="theme-style"></style>
+  <?!= include('theme.css') ?>
   <?!= include('Admin_CSS'); ?>
   <?!= include('charte'); ?>
 </head>
@@ -126,11 +125,6 @@
   </div>
 
   <div id="conteneur-notifications" role="alert" aria-live="assertive"></div>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.theme-selector, #btn-theme, #menu-theme').forEach(el => el && el.remove());
-    });
-  </script>
   <?!= include('Render_JS'); ?>
   <?!= include('Admin_JS'); ?>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">

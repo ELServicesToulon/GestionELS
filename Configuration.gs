@@ -7,7 +7,6 @@
 // =================================================================
 
 // === Feature flags (socle simplifié) ===
-const THEME_V2_ENABLED          = true;   // thème blister partout
 const BLISTER_BG_ENABLED        = true;   // fond blister
 const PRICING_RULES_V2_ENABLED  = true;   // prix par arrêts totaux
 const DEBUG_MENU_ENABLED        = true;   // visible le temps du rollout
@@ -173,14 +172,6 @@ const CONFIG_CACHE_ENABLED = true;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
 // RESERVATION_CACHE_ENABLED défini plus haut
 
-// --- Drapeaux de Thème ---
-/** @const {boolean} Active la nouvelle version du thème graphique (V2). */
-// THEME_V2_ENABLED défini plus haut
-/** @const {boolean} Active le thème graphique V3 (legacy) -- supprimé */
-// THEME_V3_ENABLED retiré
-/** @const {boolean} Permet aux clients de choisir leur thème visuel. */
-// THEME_SELECTION_ENABLED supprimé
-
 // Objet regroupant tous les drapeaux de fonctionnalité exposés au client
 const FLAGS = Object.freeze({
   clientPortalEnabled: CLIENT_PORTAL_ENABLED,
@@ -205,7 +196,6 @@ const FLAGS = Object.freeze({
   proofSocialEnabled: PROOF_SOCIAL_ENABLED,
   proQaEnabled: PRO_QA_ENABLED,
   extraIconsEnabled: EXTRA_ICONS_ENABLED,
-  themeV2Enabled: THEME_V2_ENABLED,
   blisterBgEnabled: BLISTER_BG_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED
