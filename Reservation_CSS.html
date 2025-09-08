@@ -322,6 +322,24 @@ body {
   cursor: pointer;
   transition: transform .06s ease, box-shadow .2s ease;
 }
+
+/* --- Option: fond aluminium (si assets présents) --- */
+body.els-ui-theming {
+  background-image: image-set(
+    url('branding/ui/aluminium1x.png') 1x,
+    url('branding/ui/aluminium2x.png') 2x
+  );
+  background-size: 64px 64px;
+  background-attachment: fixed;
+}
+
+/* Subtle clarity on surfaces */
+.els-ui-theming main,
+.els-ui-theming .card,
+.els-ui-theming .dialog {
+  backdrop-filter: saturate(1.05) contrast(1.02);
+  -webkit-backdrop-filter: saturate(1.05) contrast(1.02);
+}
 .els-ui-theming #modale-selection-creneau .slot-btn:disabled,
 .els-ui-theming #modale-selection-creneau .slot-btn.indispo,
 .els-ui-theming .modale-creneaux .slot-btn:disabled,
