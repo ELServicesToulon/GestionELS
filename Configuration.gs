@@ -142,7 +142,7 @@ const PROOF_SOCIAL_ENABLED = true;
 const PRO_QA_ENABLED = true;
 
 /** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
-const EXTRA_ICONS_ENABLED = false;
+const EXTRA_ICONS_ENABLED = true;
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = true;
@@ -157,7 +157,7 @@ const REQUEST_LOGGING_ENABLED = true;
 /** @const {boolean} Active le traitement des requêtes POST. */
 const POST_ENDPOINT_ENABLED = true;
 /** @const {boolean} Limite le nombre de tentatives de connexion au portail client. */
-const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = true;
+const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = false;
 /** @const {number} Nombre maximum de tentatives avant blocage. */
 const CLIENT_PORTAL_MAX_ATTEMPTS = 10;
 /** @const {boolean} Active la mise en cache des paramètres de configuration. */
@@ -167,9 +167,9 @@ const RESERVATION_CACHE_ENABLED = true;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
-const THEME_V2_ENABLED = true;
+const THEME_V2_ENABLED = false;
 /** @const {boolean} Active le thème graphique V3 (header sticky, capsules). */
-const THEME_V3_ENABLED = false;
+const THEME_V3_ENABLED = true;
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
 // const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
