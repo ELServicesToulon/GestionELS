@@ -318,9 +318,16 @@ function creerReservationAdmin(data) {
     const clientPourCalcul = obtenirInfosClientParEmail(data.client.email);
 
     // Admin calculation: force type (Normal/Samedi) and avoid automatic Urgent pricing
-    const totalStops = data.totalStops || (data.additionalStops + 1);
+    let totalStops = data.totalStops || (data.additionalStops + 1);
     const samedi = new Date(data.date + 'T00:00:00').getDay() === 6;
     const urgent = data.forceUrgent === true;
+    const typeCourse = samedi ? 'Samedi' : (urgent ? 'Urgent' : 'Normal');
+    ({ arretsTotaux: totalStops } = validateReservationPayload({
+      client: data.client,
+      date: data.date,
+      typeCourse: typeCourse,
+      arretsTotaux: totalStops
+    }));
     const tarif = computeCoursePrice({
       totalStops: totalStops,
       retour: data.returnToPharmacy,
@@ -329,7 +336,6 @@ function creerReservationAdmin(data) {
     });
     const duree = DUREE_BASE + (tarif.nbSupp * DUREE_ARRET_SUP);
     let prix = tarif.total;
-    const typeCourse = samedi ? 'Samedi' : (urgent ? 'Urgent' : 'Normal');
 
     let tourneeOfferteAppliquee = false;
     if (clientPourCalcul) {
