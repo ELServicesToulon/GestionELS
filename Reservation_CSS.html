@@ -206,6 +206,14 @@ body {
   background-size: 92% auto;
   color: var(--txt);
 }
+.els-ui-theming .jour-calendrier:not(.desactive):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(15,23,42,.20);
+}
+.els-ui-theming .jour-calendrier:not(.desactive):active {
+  transform: translateY(0);
+  box-shadow: var(--shadow);
+}
 .els-ui-theming .jour-calendrier.desactive {
   background-image: var(--img-blister-vide);
   background-repeat: no-repeat;
@@ -213,6 +221,7 @@ body {
   background-size: 92% auto;
   border: 0;
   color: var(--muted);
+  filter: saturate(.92) brightness(.98);
   cursor: not-allowed;
 }
 .els-ui-theming .jour-calendrier:not(.desactive):hover,
