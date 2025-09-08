@@ -79,19 +79,36 @@
   </div>
 
   <div id="app-conteneur-principal">
+
+    <? if (THEME_V3_ENABLED) { ?>
+    <header class="app-header" role="banner">
+      <?!= include('Logo'); ?>
+      <a href="<?= appUrl ?>" class="btn btn-primaire" role="button" aria-label="Nouvelle réservation">Réserver</a>
+    </header>
+    <section class="blister-bg" role="region" aria-label="Tableau de bord">
+      <div class="hero card">
+        <h1>Administration</h1>
+        <p>Gestion et supervision des courses.</p>
+        <a href="#" class="btn btn-primaire" role="button" aria-label="Ajouter une course">Ajouter une course</a>
+      </div>
+    </section>
+    <? } ?>
+
+    <? if (!THEME_V3_ENABLED) { ?>
     <header class="app-en-tete">
       <?!= include('Logo'); ?>
       <p>Gestion et supervision des courses</p>
     </header>
+    <? } ?>
 
-    <div class="carte barre-outils">
+    <div class="carte card barre-outils">
         <div class="selecteur-date">
           <label for="date-livraison">Afficher les courses pour le :</label>
           <input type="date" id="date-livraison" class="champ-formulaire">
         </div>
-        <button id="btn-tout-voir" class="btn btn-secondaire">Toutes les courses</button>
-        <button id="btn-ajouter-reservation" class="btn btn-primaire">Ajouter une course</button>
-        <button id="btn-generer-lien-client" class="btn btn-secondaire">Lien espace client</button>
+        <button id="btn-tout-voir" class="btn btn-secondaire" role="button">Toutes les courses</button>
+        <button id="btn-ajouter-reservation" class="btn btn-primaire" role="button">Ajouter une course</button>
+        <button id="btn-generer-lien-client" class="btn btn-secondaire" role="button">Lien espace client</button>
         <? if (typeof THEME_SELECTION_ENABLED !== 'undefined' && THEME_SELECTION_ENABLED) { ?>
           <div class="theme-selector">
             <button id="btn-theme" class="btn btn-secondaire hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
@@ -104,8 +121,8 @@
         <div id="ca-en-cours" class="hidden" role="status" aria-live="polite"></div>
     </div>
 
-    <main id="conteneur-app">
-      <div id="liste-reservations" class="carte">
+      <main id="conteneur-app">
+        <div id="liste-reservations" class="carte card slot">
         <h3 id="titre-reservations">Courses du jour</h3>
         <div id="contenu-reservations">
           <p>Veuillez sélectionner une date pour afficher les livraisons.</p>

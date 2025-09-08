@@ -97,9 +97,24 @@
     <div class="spinner"></div>
   </div>
 
-  <div id="app-conteneur-principal">
-    
-    <header class="app-en-tete" role="banner" aria-label="En-tête de la page de réservation">
+    <div id="app-conteneur-principal">
+
+      <? if (THEME_V3_ENABLED) { ?>
+      <header class="app-header" role="banner">
+        <?!= include('Logo'); ?>
+        <a href="#vue-calendrier" class="btn btn-primaire" role="button" aria-label="Voir les créneaux">Réserver</a>
+      </header>
+      <section class="blister-bg" role="region" aria-label="Présentation du service">
+        <div class="hero card slot">
+          <h1>Livraison pharmacie sur Tamaris et alentours</h1>
+          <p>Réservez vos tournées pour pharmaciens, préparateurs et infirmiers.</p>
+          <a href="#vue-calendrier" class="btn btn-primaire" role="button" aria-label="Voir les créneaux">Voir les créneaux</a>
+        </div>
+      </section>
+      <? } ?>
+
+      <? if (!THEME_V3_ENABLED) { ?>
+      <header class="app-en-tete" role="banner" aria-label="En-tête de la page de réservation">
         <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
               <button id="btn-theme" class="btn btn-secondaire btn-sm hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
               <div id="menu-theme" class="hidden" role="menu" style="min-width: 100px;">
@@ -194,9 +209,10 @@
       <p class="hero-footnote">
         TVA non applicable (Art. 293 B CGI) — Tarifs &amp; forfaits modifiables à tout moment par l'administrateur — Paiement &amp; sécurité garanties — Contact : elservicestoulon@gmail.com
       </p>
-    </section>
+      </section>
+      <? } ?>
 
-    <? if (PROOF_SOCIAL_ENABLED) { ?>
+      <? if (PROOF_SOCIAL_ENABLED) { ?>
     <section class="preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
       <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
       <ul class="avis-list">
