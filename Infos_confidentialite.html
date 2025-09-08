@@ -65,6 +65,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
+  <?!= include('ThemeCapsule') ?>
   <style><?!= include('Styles'); ?></style>
   <?!= include('charte'); ?>
 </head>
@@ -74,5 +75,27 @@
     <p>Nous ne collectons que les données strictement nécessaires à la livraison et à la facturation. Aucune donnée superflue n'est conservée.</p>
     <p>Pour exercer vos droits RGPD (accès, rectification, suppression), contactez-nous à <a href="mailto:elservicestoulon@gmail.com">elservicestoulon@gmail.com</a>.</p>
   </main>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="icon-capsule-h" viewBox="0 0 260 120">
+      <defs>
+        <linearGradient id="elsGradientH" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"  stop-color="var(--violet)"/>
+          <stop offset="70%" stop-color="var(--blue)"/>
+          <stop offset="100%" stop-color="var(--blue-light)"/>
+        </linearGradient>
+        <linearGradient id="glossH" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="white" stop-opacity=".85"/>
+          <stop offset="60%" stop-color="white" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <rect x="10" y="10" width="120" height="100" rx="50" fill="url(#elsGradientH)"/>
+      <rect x="130" y="10" width="120" height="100" rx="50" fill="#fff"/>
+      <rect x="10" y="10" width="240" height="100" rx="50" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
+      <rect x="128" y="10" width="4" height="100" fill="rgba(0,0,0,.15)"/>
+      <rect x="20" y="15" width="220" height="40" rx="20" fill="url(#glossH)"/>
+    </symbol>
+  </defs>
+</svg>
 </body>
 </html>

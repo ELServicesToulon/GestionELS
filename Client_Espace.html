@@ -115,17 +115,21 @@
         <? } ?>
         <div id="ca-client" class="carte card slot" tabindex="0"></div>
         <div id="liste-reservations" class="carte card slot">
+  <div class="inner">
         <h3>Vos prochaines courses</h3>
         <div id="contenu-reservations">
           <!-- Les réservations seront injectées ici par le script JS -->
         </div>
       </div>
-        <div id="liste-factures" class="carte card slot">
+  </div>
+  <div id="liste-factures" class="carte card slot">
+  <div class="inner">
         <h3>Vos factures</h3>
         <div id="contenu-factures">
           <!-- Les factures seront injectées ici par le script JS -->
         </div>
       </div>
+  </div>
       <? if (typeof PRO_QA_ENABLED !== 'undefined' && PRO_QA_ENABLED) { ?>
         <div id="bloc-questions" class="carte card">
         <h3>Vos questions</h3>
@@ -184,6 +188,28 @@
   </script>
   <?!= include('Render_JS'); ?>
   <?!= include('Client_JS'); ?>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="icon-capsule-h" viewBox="0 0 260 120">
+      <defs>
+        <linearGradient id="elsGradientH" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"  stop-color="var(--violet)"/>
+          <stop offset="70%" stop-color="var(--blue)"/>
+          <stop offset="100%" stop-color="var(--blue-light)"/>
+        </linearGradient>
+        <linearGradient id="glossH" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="white" stop-opacity=".85"/>
+          <stop offset="60%" stop-color="white" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <rect x="10" y="10" width="120" height="100" rx="50" fill="url(#elsGradientH)"/>
+      <rect x="130" y="10" width="120" height="100" rx="50" fill="#fff"/>
+      <rect x="10" y="10" width="240" height="100" rx="50" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
+      <rect x="128" y="10" width="4" height="100" fill="rgba(0,0,0,.15)"/>
+      <rect x="20" y="15" width="220" height="40" rx="20" fill="url(#glossH)"/>
+    </symbol>
+  </defs>
+</svg>
 </body>
 </html>
 
