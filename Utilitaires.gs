@@ -1,47 +1,9 @@
 // =================================================================
 //                      FONCTIONS UTILITAIRES
 // =================================================================
-// Description: Fonctions d'aide génériques, partagées et
+// Description: Fonctions d'aide génériques, partagées et 
 //              réutilisables dans toute l'application.
 // =================================================================
-
-function getEnv() {
-  const p = PropertiesService.getScriptProperties();
-  function req(k) {
-    const v = p.getProperty(k);
-    if (!v) throw new Error('Missing prop: ' + k);
-    return v;
-  }
-  return {
-    ADMIN_EMAIL: req('ADMIN_EMAIL'),
-    EMAIL_ENTREPRISE: req('EMAIL_ENTREPRISE'),
-    ID_FEUILLE_CALCUL: req('ID_FEUILLE_CALCUL'),
-    ID_CALENDRIER: req('ID_CALENDRIER'),
-    ID_MODELE_FACTURE: req('ID_MODELE_FACTURE'),
-    ID_DOSSIER_ARCHIVES: req('ID_DOSSIER_ARCHIVES'),
-    ID_DOSSIER_TEMPORAIRE: req('ID_DOSSIER_TEMPORAIRE'),
-    DOCS_PUBLIC_FOLDER_ID: req('DOCS_PUBLIC_FOLDER_ID'),
-    ID_DOCUMENT_CGV: req('ID_DOCUMENT_CGV'),
-    ELS_SHARED_SECRET: req('ELS_SHARED_SECRET'),
-    NOM_ENTREPRISE: req('NOM_ENTREPRISE'),
-    ADRESSE_ENTREPRISE: req('ADRESSE_ENTREPRISE'),
-    SIRET: req('SIRET'),
-    RIB_ENTREPRISE: req('RIB_ENTREPRISE'),
-    BIC_ENTREPRISE: req('BIC_ENTREPRISE')
-  };
-}
-
-function formatPrice(n) {
-  return (Math.round(n * 100) / 100).toFixed(2);
-}
-
-function toISODate(d) {
-  return Utilities.formatDate(d, DEFAULT_TZ, 'yyyy-MM-dd');
-}
-
-function toISODatetime(d) {
-  return Utilities.formatDate(d, DEFAULT_TZ, "yyyy-MM-dd'T'HH:mm:ss");
-}
 
 // --- FONCTIONS DE FORMATAGE DE DATE (EXISTANTES) ---
 

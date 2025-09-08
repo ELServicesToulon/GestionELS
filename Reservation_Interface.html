@@ -62,12 +62,12 @@
   }
   </script>
   <title><?= nomService ?> | Réservation de Livraison</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
-  <?!= include('theme.css') ?>
-  <style><?!= include('Styles'); ?></style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <?!= include('ThemeCapsule') ?>
+  <style id="theme-style"></style>
+  <?!= include('Reservation_CSS'); ?>
   <?!= include('charte'); ?>
 </head>
 <body>
@@ -97,19 +97,27 @@
     <div class="spinner"></div>
   </div>
 
-    <div id="app-conteneur-principal">
-
-      <header class="app-header" role="banner">
-        <?!= include('Logo'); ?>
-        <a href="#vue-calendrier" class="btn btn-primaire" role="button" aria-label="Voir les créneaux">Réserver</a>
-      </header>
-      <section class="blister-bg" role="region" aria-label="Présentation du service">
-        <div class="hero card slot">
-          <h1>Livraison pharmacie sur Tamaris et alentours</h1>
-          <p>Réservez vos tournées pour pharmaciens, préparateurs et infirmiers.</p>
-          <a href="#vue-calendrier" class="btn btn-primaire" role="button" aria-label="Voir les créneaux">Voir les créneaux</a>
+  <div id="app-conteneur-principal">
+    
+    <header class="app-en-tete" role="banner" aria-label="En-tête de la page de réservation">
+        <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
+              <button id="btn-theme" class="btn btn-secondaire btn-sm hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
+              <div id="menu-theme" class="hidden" role="menu" style="min-width: 100px;">
+                <button class="option-theme btn btn-secondaire btn-sm" data-theme="clarte" role="menuitem">Clarté</button>
+                <button class="option-theme btn btn-secondaire btn-sm" data-theme="nocturne" role="menuitem">Nocturne</button>
+              </div>
+            </div>
+          <? if (CLIENT_PORTAL_ENABLED) { ?>
+            <a href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm btn-espace-client">Mon Espace Client</a>
+          <? } ?>
         </div>
-      </section>
+
+        <?!= include('Logo'); ?>
+        <div id="banniere-client-reconnu" class="hidden">
+            Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
+            <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
+        </div>
+    </header>
 
     <section id="hero-tarifs" class="hero-tarifs">
       <div class="hero-titre">
@@ -149,7 +157,7 @@
           </div>
           <h3>Course de base</h3>
           <ul>
-            <li><?= TARIFS.normal.base ?> € TTC</li>
+            <li><?= TARIFS.Normal.base ?> € TTC</li>
             <li><?= KM_BASE ?> km inclus</li>
             <li><?= DUREE_BASE ?> min inclus</li>
           </ul>
@@ -163,9 +171,9 @@
           </div>
           <h3>Arrêts supplémentaires</h3>
           <ul>
-            <? for (var i = 0; i < TARIFS.normal.arrets.length; i++) {
-                 var label = (i === TARIFS.normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
-              <li><?= label ?> arrêt : <?= TARIFS.normal.arrets[i] ?> € TTC</li>
+            <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
+                 var label = (i === TARIFS.Normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
+              <li><?= label ?> arrêt : <?= TARIFS.Normal.arrets[i] ?> € TTC</li>
             <? } ?>
           </ul>
         </div>
@@ -177,9 +185,8 @@
           </div>
           <h3>Options</h3>
           <ul>
-            <li>Urgent : +<?= TARIFS.surcharges.URGENT ?> € TTC</li>
-            <li>Samedi : +<?= TARIFS.surcharges.SAMEDI ?> € TTC</li>
-            <li>Pré-collecte veille : +<?= TARIFS.surcharges.PRECOLLECTE ?> € TTC</li>
+            <li>Urgent : +<?= TARIFS.Urgent.base ?> € TTC</li>
+            <li>Samedi : +<?= TARIFS.Samedi.base ?> € TTC</li>
           </ul>
           <p style="font-size:0.9em;color:#555;margin-top:0.5rem;">Le samedi est prioritaire sur l’urgent : une course le samedi applique toujours le tarif samedi, même si elle est urgente.</p>
         </div>
@@ -187,10 +194,9 @@
       <p class="hero-footnote">
         TVA non applicable (Art. 293 B CGI) — Tarifs &amp; forfaits modifiables à tout moment par l'administrateur — Paiement &amp; sécurité garanties — Contact : elservicestoulon@gmail.com
       </p>
-      </section>
-      <? } ?>
+    </section>
 
-      <? if (PROOF_SOCIAL_ENABLED) { ?>
+    <? if (PROOF_SOCIAL_ENABLED) { ?>
     <section class="preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
       <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
       <ul class="avis-list">
@@ -333,18 +339,54 @@
       </div>
   </div>
 
+  <!-- MODALE 5: Coordonnées de facturation -->
+  <div id="modale-billing" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="billing-titre">
+      <div class="modale-contenu">
+          <button id="btn-fermer-billing" class="btn-fermer" aria-label="Fermer">&times;</button>
+          <h3 id="billing-titre">Coordonnées de facturation</h3>
+          <form id="formulaire-billing">
+              <div class="groupe-formulaire">
+                  <label for="billing-nom">Nom / Raison sociale</label>
+                  <input type="text" id="billing-nom" name="billingNom" required>
+              </div>
+              <div class="groupe-formulaire">
+                  <label for="billing-adresse">Adresse</label>
+                  <textarea id="billing-adresse" name="billingAdresse" rows="2"></textarea>
+              </div>
+              <div class="groupe-formulaire">
+                  <label for="billing-email">Email</label>
+                  <input type="email" id="billing-email" name="billingEmail">
+              </div>
+              <div class="groupe-formulaire">
+                  <label for="billing-telephone">Téléphone</label>
+                  <input type="tel" id="billing-telephone" name="billingTelephone">
+              </div>
+              <div class="groupe-formulaire">
+                  <label for="billing-siret">SIRET</label>
+                  <input type="text" id="billing-siret" name="billingSiret">
+              </div>
+              <div class="groupe-formulaire">
+                  <label for="billing-tva">TVA intracom</label>
+                  <input type="text" id="billing-tva" name="billingTva">
+              </div>
+              <div class="modale-pied-de-page">
+                  <button type="button" id="btn-billing-switch" class="btn btn-secondaire btn-sm hidden">Saisir nouvelles coordonnées</button>
+                  <span style="flex:1"></span>
+                  <button type="button" id="btn-billing-annuler" class="btn btn-secondaire">Annuler</button>
+                  <button type="submit" class="btn btn-primaire">Enregistrer</button>
+              </div>
+          </form>
+      </div>
+  </div>
 
   <div id="conteneur-notifications" role="alert" aria-live="assertive"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.theme-selector, #btn-theme, #menu-theme').forEach(el => el && el.remove());
+    });
+  </script>
   
-  <template id="slot-template">
-  <div class="slot" data-state="free">
-    <svg class="capsule-svg" width="72" height="28" viewBox="0 0 260 120" aria-hidden="true"><use href="#icon-capsule-h"/></svg>
-    <div class="slot-meta">
-      <h4>10:00 – 10:15</h4>
-      <small>Standard</small>
-    </div>
-  </div>
-</template>
+  <? if (THEME_V2_ENABLED) { ?>
   <?!= include('Render_JS'); ?>
   <?!= include('Pricing_JS'); ?>
   <?!= include('Reservation_JS_UI_Elements'); ?>
@@ -353,28 +395,7 @@
   <?!= include('Reservation_JS_Panier'); ?>
   <?!= include('Reservation_JS_Client'); ?>
   <?!= include('Reservation_JS_Tournee'); ?>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <symbol id="icon-capsule-h" viewBox="0 0 260 120">
-      <defs>
-        <linearGradient id="elsGradientH" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"  stop-color="var(--violet)"/>
-          <stop offset="70%" stop-color="var(--blue)"/>
-          <stop offset="100%" stop-color="var(--blue-light)"/>
-        </linearGradient>
-        <linearGradient id="glossH" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="white" stop-opacity=".85"/>
-          <stop offset="60%" stop-color="white" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <rect x="10" y="10" width="120" height="100" rx="50" fill="url(#elsGradientH)"/>
-      <rect x="130" y="10" width="120" height="100" rx="50" fill="#fff"/>
-      <rect x="10" y="10" width="240" height="100" rx="50" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
-      <rect x="128" y="10" width="4" height="100" fill="rgba(0,0,0,.15)"/>
-      <rect x="20" y="15" width="220" height="40" rx="20" fill="url(#glossH)"/>
-    </symbol>
-  </defs>
-</svg>
+  <? } ?>
 </body>
 </html>
 

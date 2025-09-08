@@ -179,6 +179,7 @@ function obtenirReservationsClient(emailClient) {
  */
 function calculerCAEnCoursClient(emailClient) {
   try {
+    if (!CA_EN_COURS_ENABLED) return 0;
     if (!emailClient) return 0;
 
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);

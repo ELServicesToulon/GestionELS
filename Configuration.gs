@@ -6,22 +6,6 @@
 //              personnalisables de l'application.
 // =================================================================
 
-// === Feature flags (socle simplifié) ===
-const BLISTER_BG_ENABLED        = true;   // fond blister
-const PRICING_RULES_V2_ENABLED  = true;   // prix par arrêts totaux
-const DEBUG_MENU_ENABLED        = true;   // visible le temps du rollout
-const CALENDAR_RESYNC_ENABLED   = true;   // outils de resync calendrier
-const CALENDAR_PURGE_ENABLED    = false;  // sécurité
-const RESERVATION_CACHE_ENABLED = true;   // cache semaine/jour
-
-const DEFAULT_TZ = 'Europe/Paris';
-
-// Tarifs centralisés : 1er arrêt inclus, suivants par paliers
-const TARIFS = {
-  normal: { base: 15, arrets: [5, 4, 3, 4, 5] },
-  surcharges: { URGENT: 20, SAMEDI: 25, PRECOLLECTE: 5 }
-};
-
 // --- Informations sur l'entreprise ---
 /** @const {string} Nom officiel de l'entreprise utilisé dans l'interface et la facturation. */
 const NOM_ENTREPRISE = getSecret('NOM_ENTREPRISE');
@@ -111,78 +95,101 @@ const CLIENT_SESSION_TTL_HOURS = 24;
 
 // --- Drapeaux de Fonctionnalités Générales ---
 /** @const {boolean} Active l'espace client. */
-const CLIENT_PORTAL_ENABLED = false;
+const CLIENT_PORTAL_ENABLED = true;
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
-const CLIENT_PORTAL_SIGNED_LINKS = false;
+const CLIENT_PORTAL_SIGNED_LINKS = true;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
-const PRIVACY_LINK_ENABLED = false;
+const PRIVACY_LINK_ENABLED = true;
+/** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
+const SLOTS_AMPM_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
-const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
+const CLIENT_SESSION_OPAQUE_ID_ENABLED = true;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
-const BILLING_MULTI_SHEET_ENABLED = false;
+const BILLING_MULTI_SHEET_ENABLED = true;
+/** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
+const CA_EN_COURS_ENABLED = true;
 /** @const {boolean} Resynchronise les événements manquants du calendrier Google. */
-// CALENDAR_RESYNC_ENABLED défini plus haut
+const CALENDAR_RESYNC_ENABLED = true;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
-// CALENDAR_PURGE_ENABLED défini plus haut
+const CALENDAR_PURGE_ENABLED = true;
 
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
-const CALENDAR_BAR_OPACITY_ENABLED = false;
+const CALENDAR_BAR_OPACITY_ENABLED = true;
 
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
-const RESERVATION_VERIFY_ENABLED = false;
+const RESERVATION_VERIFY_ENABLED = true;
 
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
-const RESERVATION_UI_V2_ENABLED = false;
+const RESERVATION_UI_V2_ENABLED = true;
 
+/** @const {boolean} Active la facturation directe au résident. */
+const RESIDENT_BILLING_ENABLED = true;
+
+/** @const {boolean} Active la modale de coordonnées de facturation. */
+const BILLING_MODAL_ENABLED = true;
 /** @const {boolean} Active la réinitialisation du panier côté client. */
-const CART_RESET_ENABLED = false;
+const CART_RESET_ENABLED = true;
 /** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
-const RETURN_IMPACTS_ESTIMATES_ENABLED = false;
+const RETURN_IMPACTS_ESTIMATES_ENABLED = true;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
-// PRICING_RULES_V2_ENABLED défini plus haut
+const PRICING_RULES_V2_ENABLED = true;
 
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
-const PROOF_SOCIAL_ENABLED = false;
+const PROOF_SOCIAL_ENABLED = true;
 /** @const {boolean} Active le module Questions/Réponses pour les professionnels. */
-const PRO_QA_ENABLED = false;
+const PRO_QA_ENABLED = true;
 
 /** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
-const EXTRA_ICONS_ENABLED = false;
+const EXTRA_ICONS_ENABLED = true;
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
-// DEBUG_MENU_ENABLED défini plus haut
+const DEBUG_MENU_ENABLED = false;
 /** @const {boolean} Sert une version de démo de la page de réservation. */
 const DEMO_RESERVATION_ENABLED = false;
 /** @const {boolean} Active l'écriture des logs de facturation. */
-const BILLING_LOG_ENABLED = false;
+const BILLING_LOG_ENABLED = true;
 /** @const {boolean} Active le mode test pour la facturation V2 (aucune écriture). */
 const BILLING_V2_DRYRUN = false;
 /** @const {boolean} Active la journalisation détaillée des requêtes web. */
-const REQUEST_LOGGING_ENABLED = false;
+const REQUEST_LOGGING_ENABLED = true;
 /** @const {boolean} Active le traitement des requêtes POST. */
-const POST_ENDPOINT_ENABLED = false;
+const POST_ENDPOINT_ENABLED = true;
 /** @const {boolean} Limite le nombre de tentatives de connexion au portail client. */
-const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = false;
+const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = true;
 /** @const {number} Nombre maximum de tentatives avant blocage. */
 const CLIENT_PORTAL_MAX_ATTEMPTS = 10;
 /** @const {boolean} Active la mise en cache des paramètres de configuration. */
-const CONFIG_CACHE_ENABLED = false;
+const CONFIG_CACHE_ENABLED = true;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
-// RESERVATION_CACHE_ENABLED défini plus haut
+const RESERVATION_CACHE_ENABLED = true;
+
+// --- Drapeaux de Thème ---
+/** @const {boolean} Active la nouvelle version du thème graphique (V2). */
+const THEME_V2_ENABLED = true;
+/** @const {boolean} Permet aux clients de choisir leur thème visuel. */
+// const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
+/** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
+// const THEME_DEFAULT = 'clarte'; // supprimé
+/** @const {Object<string,string>} Associe les clés de thème aux chemins des fichiers CSS. */
+// const THEMES = {}; // supprimé
 
 // Objet regroupant tous les drapeaux de fonctionnalité exposés au client
 const FLAGS = Object.freeze({
   clientPortalEnabled: CLIENT_PORTAL_ENABLED,
   clientPortalSignedLinks: CLIENT_PORTAL_SIGNED_LINKS,
   privacyLinkEnabled: PRIVACY_LINK_ENABLED,
+  slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
   clientSessionOpaqueIdEnabled: CLIENT_SESSION_OPAQUE_ID_ENABLED,
   billingMultiSheetEnabled: BILLING_MULTI_SHEET_ENABLED,
+  caEnCoursEnabled: CA_EN_COURS_ENABLED,
   calendarResyncEnabled: CALENDAR_RESYNC_ENABLED,
   calendarPurgeEnabled: CALENDAR_PURGE_ENABLED,
   calendarBarOpacityEnabled: CALENDAR_BAR_OPACITY_ENABLED,
   reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
+  residentBillingEnabled: RESIDENT_BILLING_ENABLED,
+  billingModalEnabled: BILLING_MODAL_ENABLED,
   cartResetEnabled: CART_RESET_ENABLED,
   debugMenuEnabled: DEBUG_MENU_ENABLED,
   demoReservationEnabled: DEMO_RESERVATION_ENABLED,
@@ -196,10 +203,56 @@ const FLAGS = Object.freeze({
   proofSocialEnabled: PROOF_SOCIAL_ENABLED,
   proQaEnabled: PRO_QA_ENABLED,
   extraIconsEnabled: EXTRA_ICONS_ENABLED,
-  blisterBgEnabled: BLISTER_BG_ENABLED,
+  themeV2Enabled: THEME_V2_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED
 });
+
+
+// =================================================================
+//              SYSTÈME DE TARIFICATION FLEXIBLE
+// =================================================================
+// Schéma des tarifs:
+// { 'Type': { base: number, arrets: number[] } }
+// - 'Type': 'Normal', 'Samedi', 'Urgent', 'Special'
+// - base: Prix du premier arrêt (prise en charge)
+// - arrets: Tarifs des arrêts suivants; le dernier s'applique au-delà
+// Exemple Grille (Normal): 1=15€, 2=20€ (15+5), 3=24€ (20+4), etc.
+/**
+ * @const {Object<string,{base:number, arrets:number[]}>}
+ * Grille tarifaire unique pilotant tous les calculs de prix.
+ */
+const TARIFS = {
+  'Normal': { // Tarifs standard du lundi au vendredi
+    base: 15,
+    arrets: [5, 4, 3, 4, 5] // Prix pour Arrêt 2, 3, 4, 5, et 6+
+  },
+  'Samedi': { // Livraisons effectuées le samedi
+    base: 25,
+    arrets: [5, 4, 3, 4, 5]
+  },
+  'Urgent': { // Réservations dans le délai URGENT_THRESHOLD_MINUTES
+    base: 20,
+    arrets: [5, 4, 3, 4, 5]
+  },
+  'Special': { // Cas particuliers ou tarifs temporaires
+    base: 30,
+    arrets: [5, 4, 3, 4, 5]
+  }
+};
+
+if (TARIFS.SainteMusse_EHPAD_CLASSIC) {
+  TARIFS.SainteMusse_EHPAD_CLASSIC.PRECOLLECTE_VEILLE = {
+    prixParBande: [5, 5, 5, 5],
+    label: "Pré-collecte veille (ordonnance + carte Vitale, J-1)"
+  };
+}
+if (TARIFS.SainteMusse_EHPAD_URGENCE) {
+  TARIFS.SainteMusse_EHPAD_URGENCE.PRECOLLECTE_VEILLE = {
+    prixParBande: [5, 5, 5, 5],
+    label: "Pré-collecte veille (ordonnance + carte Vitale, J-1)"
+  };
+}
 
 
 // --- Noms des colonnes spécifiques (Feuille Clients) ---
@@ -217,7 +270,6 @@ const COLONNE_NB_TOURNEES_OFFERTES = "Nombre Tournées Offertes";
 
 const CONFIG = Object.freeze({
   TARIFS,
-  DEFAULT_TZ,
   DUREE_BASE,
   DUREE_ARRET_SUP,
   KM_BASE,
@@ -232,6 +284,8 @@ const CONFIG = Object.freeze({
   CLIENT_PORTAL_MAX_ATTEMPTS,
   SHEET_RESERVATIONS,
   BILLING,
+  BILLING_MODAL_ENABLED,
+  RESIDENT_BILLING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN
@@ -248,7 +302,6 @@ function getConfig() {
 function getPublicConfig() {
   return {
     TARIFS: CONFIG.TARIFS,
-    DEFAULT_TZ: CONFIG.DEFAULT_TZ,
     DUREE_BASE: CONFIG.DUREE_BASE,
     DUREE_ARRET_SUP: CONFIG.DUREE_ARRET_SUP,
     KM_BASE: CONFIG.KM_BASE,
@@ -272,12 +325,7 @@ function getConfigCached() {
   const cache = CacheService.getScriptCache();
   const cachedConfig = cache.get('CONFIG_JSON');
   if (cachedConfig) {
-    try {
-      return JSON.parse(cachedConfig);
-    } catch (e) {
-      console.error('Failed to parse cached configuration', e);
-      CacheService.getScriptCache().remove('CONFIG_JSON');
-    }
+    return JSON.parse(cachedConfig);
   }
   const config = getConfig();
   // Met en cache la configuration pour 10 minutes (600 secondes)

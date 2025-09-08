@@ -168,7 +168,7 @@ function menuVerifierStructureFeuilles() {
   try {
     const res = verifierStructureFeuilles();
     const lignes = res.report.map(r => `- ${r.sheet} : ${r.created ? 'créée' : 'ok'}${r.missingHeaders && r.missingHeaders.length ? ' | entêtes ajoutés: ' + r.missingHeaders.join(', ') : ''}`);
-      const html = `<div style="font-family:'Montserrat',system-ui,sans-serif;line-height:1.5">
+    const html = `<div style="font-family:Montserrat,sans-serif;line-height:1.5">
       <h2>Vérification structure des feuilles</h2>
       <p>Résultat: ${res.success ? 'Succès' : 'Erreur'}</p>
       <pre style="white-space:pre-wrap">${lignes.join('\n')}</pre>
@@ -964,35 +964,4 @@ function deduplicateReservations(remove = false) {
     Logger.log(`Erreur lors de la déduplication : ${e.stack}`);
     return [];
   }
-}
-
-function migrateSheetsToMinimal_() {
-  const ss = SpreadsheetApp.openById(getEnv().ID_FEUILLE_CALCUL);
-  const keep = ['Clients', 'Facturation', 'Destinataires', 'Paramètres'];
-
-  ensureSheetWithHeader_(ss, 'Clients', [
-    'ID', 'Nom', 'Type', 'Email', 'Téléphone', 'Adresse', 'Ville', 'Code Postal', 'Notes'
-  ]);
-  ensureSheetWithHeader_(ss, 'Facturation', [
-    'ID Réservation', 'Date', 'Client', 'Type Course', 'Arrêts totaux', 'Urgent', 'Samedi', 'Précollecte',
-    'Montant (€)', 'Statut', 'Event ID', 'Note Interne'
-  ]);
-  ensureSheetWithHeader_(ss, 'Destinataires', [
-    'ID', 'Nom', 'Type', 'Adresse', 'Ville', 'Code Postal', 'Téléphone', 'Email', 'Client lié'
-  ]);
-  ensureSheetWithHeader_(ss, 'Paramètres', [
-    'Clé', 'Valeur', 'Description'
-  ]);
-
-  ss.getSheets().forEach(sh => {
-    if (keep.indexOf(sh.getName()) === -1) {
-      ss.deleteSheet(sh);
-    }
-  });
-}
-
-function ensureSheetWithHeader_(ss, name, header) {
-  const sh = ss.getSheetByName(name) || ss.insertSheet(name);
-  const range = sh.getRange(1, 1, 1, header.length);
-  range.setValues([header]);
 }

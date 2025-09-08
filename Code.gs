@@ -75,7 +75,7 @@ function menuGenererLienClient() {
     const hours = parseInt(hoursResp.getResponseText() || '168', 10);
     const res = genererLienEspaceClient(email, isNaN(hours) ? 168 : hours);
     const html = HtmlService.createHtmlOutput(
-        `<div style="font-family:'Montserrat',system-ui,sans-serif;line-height:1.5">
+      `<div style="font-family:Montserrat,sans-serif;line-height:1.5">
          <h3>Lien Espace Client</h3>
          <p>Ce lien expire à: ${new Date(res.exp*1000).toLocaleString()}</p>
          <input id="l" type="text" value="${res.url.replace(/&/g,'&amp;').replace(/</g,'&lt;')}" style="width:100%" readonly />
@@ -184,7 +184,6 @@ function doGet(e) {
     template.nomService = NOM_ENTREPRISE;
     template.EMAIL_ENTREPRISE = EMAIL_ENTREPRISE;
     template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
-    template.CLIENT_SESSION_OPAQUE_ID_ENABLED = CLIENT_SESSION_OPAQUE_ID_ENABLED;
     template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
     template.TARIFS = conf.TARIFS;
     template.DUREE_BASE = conf.DUREE_BASE;
@@ -199,13 +198,9 @@ function doGet(e) {
     // Variables pour la bannière d'information
     template.heureDebut = conf.HEURE_DEBUT_SERVICE;
     template.heureFin = conf.HEURE_FIN_SERVICE;
-    template.prixBaseNormal = conf.TARIFS && conf.TARIFS.normal ? conf.TARIFS.normal.base : '';
-    template.prixBaseSamedi = conf.TARIFS && conf.TARIFS.normal
-      ? conf.TARIFS.normal.base + (conf.TARIFS.surcharges && conf.TARIFS.surcharges.SAMEDI ? conf.TARIFS.surcharges.SAMEDI : 0)
-      : '';
-    template.prixBaseUrgent = conf.TARIFS && conf.TARIFS.normal
-      ? conf.TARIFS.normal.base + (conf.TARIFS.surcharges && conf.TARIFS.surcharges.URGENT ? conf.TARIFS.surcharges.URGENT : 0)
-      : '';
+    template.prixBaseNormal = (conf.TARIFS && conf.TARIFS['Normal']) ? conf.TARIFS['Normal'].base : '';
+    template.prixBaseSamedi = (conf.TARIFS && conf.TARIFS['Samedi']) ? conf.TARIFS['Samedi'].base : '';
+    template.prixBaseUrgent = (conf.TARIFS && conf.TARIFS['Urgent']) ? conf.TARIFS['Urgent'].base : '';
     template.tvaApplicable = typeof conf.TVA_APPLICABLE !== 'undefined' ? conf.TVA_APPLICABLE : false;
 
     return template.evaluate()

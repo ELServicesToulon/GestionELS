@@ -63,11 +63,11 @@
   </script>
   <title><?= nomService ?> | Mon Espace Client</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
-  <?!= include('theme.css') ?>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <?!= include('ThemeCapsule') ?>
+  <style id="theme-style"></style>
   <?!= include('Client_CSS'); ?>
   <?!= include('charte'); ?>
 </head>
@@ -78,42 +78,38 @@
   </div>
 
   <div id="app-conteneur-principal">
-
-    <header class="app-header" role="banner">
+    <header class="app-en-tete">
       <?!= include('Logo'); ?>
-      <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-primaire" role="button" aria-label="Nouvelle réservation">Réserver</a>
+      <p id="message-bienvenue-client"></p>
     </header>
-    <section class="blister-bg" role="region" aria-label="Espace client">
-      <div class="hero card">
-        <h1>Mon espace client</h1>
-        <p>Consultez vos réservations et factures.</p>
-        <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-primaire" role="button" aria-label="Faire une réservation">Nouvelle réservation</a>
-      </div>
-    </section>
 
     <main id="conteneur-app" class="hidden">
 
-      <div class="carte card barre-outils">
-        
-        <div id="ca-client" class="carte card slot" tabindex="0"></div>
-        <div id="liste-reservations" class="carte card slot">
-  <div class="inner">
+      <div class="carte barre-outils">
+        <? if (typeof THEME_SELECTION_ENABLED !== 'undefined' && THEME_SELECTION_ENABLED) { ?>
+          <div class="theme-selector">
+            <button id="btn-theme" class="btn btn-secondaire btn--client hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
+            <div id="menu-theme" class="hidden" role="menu">
+              <button class="option-theme btn btn-secondaire btn--client" data-theme="clarte" role="menuitem">Clarté</button>
+              <button class="option-theme btn btn-secondaire btn--client" data-theme="nocturne" role="menuitem">Nocturne</button>
+            </div>
+          </div>
+        <? } ?>
+      <div id="ca-client" class="carte" tabindex="0"></div>
+      <div id="liste-reservations" class="carte">
         <h3>Vos prochaines courses</h3>
         <div id="contenu-reservations">
           <!-- Les réservations seront injectées ici par le script JS -->
         </div>
       </div>
-  </div>
-  <div id="liste-factures" class="carte card slot">
-  <div class="inner">
+      <div id="liste-factures" class="carte">
         <h3>Vos factures</h3>
         <div id="contenu-factures">
           <!-- Les factures seront injectées ici par le script JS -->
         </div>
       </div>
-  </div>
       <? if (typeof PRO_QA_ENABLED !== 'undefined' && PRO_QA_ENABLED) { ?>
-        <div id="bloc-questions" class="carte card">
+      <div id="bloc-questions" class="carte">
         <h3>Vos questions</h3>
         <div id="liste-questions" aria-live="polite"></div>
         <form id="form-question" class="groupe-formulaire" autocomplete="off">
@@ -123,14 +119,14 @@
         </form>
       </div>
       <? } ?>
-        <div class="carte card">
+      <div class="carte">
         <p>Pour toute annulation ou pour une modification non disponible ici, veuillez nous contacter directement.</p>
         <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-secondaire btn--client">Faire une nouvelle réservation</a>
         <a href="mailto:<?= ADMIN_EMAIL ?>" class="btn btn-secondaire btn--client" style="margin-left: 10px;">Contacter le support</a>
       </div>
     </main>
 
-    <div id="non-connecte" class="carte card hidden">
+    <div id="non-connecte" class="carte hidden">
         <h3>Accès à l'espace client</h3>
         <p>Pour consulter vos réservations, veuillez utiliser le lien qui vous a été envoyé par e-mail ou saisissez votre adresse ci-dessous.</p>
         
@@ -156,6 +152,11 @@
 
   <div id="conteneur-notifications"></div>
   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.theme-selector, #btn-theme, #menu-theme').forEach(el => el && el.remove());
+    });
+  </script>
+  <script>
     const params = new URLSearchParams(window.location.search);
     window.CLIENT_PARAMS = {
       email: params.get('email') || '',
@@ -165,28 +166,6 @@
   </script>
   <?!= include('Render_JS'); ?>
   <?!= include('Client_JS'); ?>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <symbol id="icon-capsule-h" viewBox="0 0 260 120">
-      <defs>
-        <linearGradient id="elsGradientH" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"  stop-color="var(--violet)"/>
-          <stop offset="70%" stop-color="var(--blue)"/>
-          <stop offset="100%" stop-color="var(--blue-light)"/>
-        </linearGradient>
-        <linearGradient id="glossH" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="white" stop-opacity=".85"/>
-          <stop offset="60%" stop-color="white" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <rect x="10" y="10" width="120" height="100" rx="50" fill="url(#elsGradientH)"/>
-      <rect x="130" y="10" width="120" height="100" rx="50" fill="#fff"/>
-      <rect x="10" y="10" width="240" height="100" rx="50" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/>
-      <rect x="128" y="10" width="4" height="100" fill="rgba(0,0,0,.15)"/>
-      <rect x="20" y="15" width="220" height="40" rx="20" fill="url(#glossH)"/>
-    </symbol>
-  </defs>
-</svg>
 </body>
 </html>
 

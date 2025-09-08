@@ -159,32 +159,6 @@ function enregistrerReservationPourFacturation(dateHeureDebut, nomClient, emailC
 }
 
 /**
- * Ajoute une ligne de brouillon dans l'onglet "Facturation".
- * @param {Object} p Paramètres de la réservation.
- */
-function appendFacturationRow_(p) {
-  if (!p) return;
-  const ss = SpreadsheetApp.openById(getEnv().ID_FEUILLE_CALCUL);
-  const sh = ss.getSheetByName('Facturation');
-  const client = typeof p.client === 'object' ? (p.client.nom || '') : (p.client || '');
-  const row = [
-    p.idReservation || p.reservationId || '',
-    new Date(),
-    client,
-    p.typeCourse || 'normal',
-    p.arretsTotaux || 1,
-    !!p.isUrgent,
-    !!p.isSamedi,
-    !!p.precollecte,
-    formatPrice(p.montant || 0),
-    'Brouillon',
-    p.eventId || '',
-    p.noteInterne || p.note || ''
-  ];
-  sh.appendRow(row);
-}
-
-/**
  * Récupère les plages horaires bloquées pour une date.
  * @param {Date} date La date à vérifier.
  * @returns {Array<Object>} Une liste d'intervalles bloqués.

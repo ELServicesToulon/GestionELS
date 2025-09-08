@@ -25,13 +25,6 @@ function reserverPanier(donneesReservation) {
     const clientPourCalcul = obtenirInfosClientParEmail(client.email);
 
     for (const item of items) {
-      const infos = calculerInfosTourneeBase(item.totalStops, item.returnToPharmacy, item.date, item.startTime);
-      item.totalStops = validateReservationPayload({
-        client: client,
-        date: item.date,
-        typeCourse: infos.typeCourse,
-        arretsTotaux: item.totalStops
-      }).arretsTotaux;
       const success = creerReservationUnique(item, client, clientPourCalcul);
       if (success) {
         successfulReservations.push(success);
@@ -66,20 +59,9 @@ function reserverPanier(donneesReservation) {
  * @returns {Object|null} L'objet de la réservation réussie ou null si échec.
  */
 function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
-    let { date, startTime, totalStops: rawStops, returnToPharmacy } = item;
-    let totalStops = rawStops;
+    const { date, startTime, totalStops, returnToPharmacy } = item;
     const { overrideIdReservation = null, skipFacturation = false } = options;
-    let infosTournee = calculerInfosTourneeBase(totalStops, returnToPharmacy, date, startTime);
-    const v = validateReservationPayload({
-      client: client,
-      date: date,
-      typeCourse: infosTournee.typeCourse,
-      arretsTotaux: totalStops
-    });
-    if (v.arretsTotaux !== totalStops) {
-      totalStops = v.arretsTotaux;
-      infosTournee = calculerInfosTourneeBase(totalStops, returnToPharmacy, date, startTime);
-    }
+    const infosTournee = calculerInfosTourneeBase(totalStops, returnToPharmacy, date, startTime);
     const duree = infosTournee.duree;
     const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(date, duree);
 
@@ -152,7 +134,7 @@ function envoyerDevisParEmail(donneesDevis) {
 
     const sujet = `Votre devis de réservation - ${NOM_ENTREPRISE}`;
     const corpsHtml = `
-        <div style="font-family: 'Montserrat', system-ui, sans-serif; color: #333;">
+      <div style="font-family: Montserrat, sans-serif; color: #333;">
         <h2>Devis pour vos réservations de tournées</h2>
         <p>Bonjour ${client.nom || ''},</p>
         <p>Voici le détail du devis pour les tournées actuellement dans votre panier. Ce devis est valable 24 heures, sous réserve de disponibilité des créneaux.</p>
@@ -405,50 +387,6 @@ function reservationIdExiste(idReservation) {
   } catch (e) {
     Logger.log(`Erreur lors de la vérification de l'unicité ID: ${e.stack}`);
     return false;
-  }
-}
-
-/**
- * Création simplifiée d'une réservation.
- * @param {Object} payload Données de la réservation.
- * @returns {Object} Résultat de l'opération.
- */
-function createBooking(payload) {
-  var lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) {
-    throw new Error('LOCK_TIMEOUT');
-  }
-  try {
-    var p = validateReservationPayload(payload);
-    p.montant = computePrice(p);
-
-    var cal = CalendarApp.getCalendarById(getEnv().ID_CALENDRIER);
-    var start = p.date instanceof Date ? p.date : new Date(p.date);
-    var end = new Date(start.getTime() + 60 * 60 * 1000);
-
-    var title = `Réservation ${NOM_ENTREPRISE} - ${(p.client && p.client.nom) || ''}`;
-    var desc = `Client: ${(p.client && p.client.nom) || ''} (${(p.client && p.client.email) || ''})\nType: ${p.typeCourse}`;
-
-    var event = null;
-    if (p.eventId) {
-      event = cal.getEventById(p.eventId);
-      if (event) {
-        event.setTime(start, end);
-        event.setTitle(title);
-        event.setDescription(desc);
-      } else {
-        event = cal.createEvent(title, start, end, { description: desc });
-      }
-    } else {
-      event = cal.createEvent(title, start, end, { description: desc });
-    }
-    p.eventId = event.getId();
-
-    appendFacturationRow_(p);
-
-    return { ok: true, montant: p.montant, eventId: p.eventId };
-  } finally {
-    lock.releaseLock();
   }
 }
 

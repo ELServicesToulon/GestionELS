@@ -5,16 +5,6 @@
 //              données de Google Calendar et les blocages manuels.
 // =================================================================
 
-function getQuarterHourSlotsForWeek_(mondayDate) {
-  const start = new Date(mondayDate); start.setHours(0, 0, 0, 0);
-  const end = new Date(start); end.setDate(end.getDate() + 7);
-  const slots = [];
-  for (var t = new Date(start); t < end; t = new Date(t.getTime() + 15 * 60000)) {
-    slots.push(new Date(t));
-  }
-  return slots;
-}
-
 /**
  * Récupère les événements du calendrier Google pour une période donnée via l'API avancée.
  * @param {Date} dateDebut La date de début de la période.
