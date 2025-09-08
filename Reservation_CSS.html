@@ -206,6 +206,29 @@ body {
   background-size: 92% auto;
   color: var(--txt);
 }
+.els-ui-theming .jour-calendrier:not(.desactive)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  background: linear-gradient(180deg, #ffffff80, #ffffff20 28%, transparent 60%);
+  mix-blend-mode: screen;
+  opacity: .75;
+  z-index: 0;
+}
+.els-ui-theming .jour-calendrier > span { position: relative; z-index: 1; }
+/* Numéro du jour: top-center, gras, couleur lisible */
+.els-ui-theming .jour-calendrier > span {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 700;
+  color: #0f172a;
+  z-index: 1;
+  pointer-events: none;
+}
 .els-ui-theming .jour-calendrier:not(.desactive):hover {
   transform: translateY(-1px);
   box-shadow: 0 8px 22px rgba(15,23,42,.20);
@@ -228,6 +251,11 @@ body {
 .els-ui-theming .jour-calendrier:not(.desactive):focus {
   outline: 3px solid var(--bleu);
   outline-offset: 2px;
+}
+.els-ui-theming .jour-calendrier:not(.desactive):focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--els-bleu) 70%, white);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(52,152,219,0.25), var(--shadow);
 }
 .els-ui-theming .barre-disponibilite { display: none; }
 
@@ -275,6 +303,27 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* --- Modale de réservation --- */
+.els-ui-theming #modale-selection-creneau .slot-btn {
+  border: 0;
+  border-radius: 40px;
+  background-image: var(--img-capsule);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-shadow: var(--shadow);
+  color: #0f172a;
+}
+.els-ui-theming #modale-selection-creneau .slot-btn:disabled {
+  background-image: var(--img-blister-vide);
+  filter: saturate(.92) brightness(.98);
+  cursor: not-allowed;
+}
+.els-ui-theming #modale-selection-creneau .slot-btn.selected {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(15,23,42,.20);
 }
 
 /* --- PANIER --- */
