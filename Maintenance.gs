@@ -965,3 +965,34 @@ function deduplicateReservations(remove = false) {
     return [];
   }
 }
+
+function migrateSheetsToMinimal_() {
+  const ss = SpreadsheetApp.openById(getEnv().ID_FEUILLE_CALCUL);
+  const keep = ['Clients', 'Facturation', 'Destinataires', 'Paramètres'];
+
+  ensureSheetWithHeader_(ss, 'Clients', [
+    'ID', 'Nom', 'Type', 'Email', 'Téléphone', 'Adresse', 'Ville', 'Code Postal', 'Notes'
+  ]);
+  ensureSheetWithHeader_(ss, 'Facturation', [
+    'ID Réservation', 'Date', 'Client', 'Type Course', 'Arrêts totaux', 'Urgent', 'Samedi', 'Précollecte',
+    'Montant (€)', 'Statut', 'Event ID', 'Note Interne'
+  ]);
+  ensureSheetWithHeader_(ss, 'Destinataires', [
+    'ID', 'Nom', 'Type', 'Adresse', 'Ville', 'Code Postal', 'Téléphone', 'Email', 'Client lié'
+  ]);
+  ensureSheetWithHeader_(ss, 'Paramètres', [
+    'Clé', 'Valeur', 'Description'
+  ]);
+
+  ss.getSheets().forEach(sh => {
+    if (keep.indexOf(sh.getName()) === -1) {
+      ss.deleteSheet(sh);
+    }
+  });
+}
+
+function ensureSheetWithHeader_(ss, name, header) {
+  const sh = ss.getSheetByName(name) || ss.insertSheet(name);
+  const range = sh.getRange(1, 1, 1, header.length);
+  range.setValues([header]);
+}
