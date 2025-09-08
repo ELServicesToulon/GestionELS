@@ -25,6 +25,13 @@ function reserverPanier(donneesReservation) {
     const clientPourCalcul = obtenirInfosClientParEmail(client.email);
 
     for (const item of items) {
+      const infos = calculerInfosTourneeBase(item.totalStops, item.returnToPharmacy, item.date, item.startTime);
+      item.totalStops = validateReservationPayload({
+        client: client,
+        date: item.date,
+        typeCourse: infos.typeCourse,
+        arretsTotaux: item.totalStops
+      }).arretsTotaux;
       const success = creerReservationUnique(item, client, clientPourCalcul);
       if (success) {
         successfulReservations.push(success);
@@ -59,9 +66,20 @@ function reserverPanier(donneesReservation) {
  * @returns {Object|null} L'objet de la réservation réussie ou null si échec.
  */
 function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
-    const { date, startTime, totalStops, returnToPharmacy } = item;
+    let { date, startTime, totalStops: rawStops, returnToPharmacy } = item;
+    let totalStops = rawStops;
     const { overrideIdReservation = null, skipFacturation = false } = options;
-    const infosTournee = calculerInfosTourneeBase(totalStops, returnToPharmacy, date, startTime);
+    let infosTournee = calculerInfosTourneeBase(totalStops, returnToPharmacy, date, startTime);
+    const v = validateReservationPayload({
+      client: client,
+      date: date,
+      typeCourse: infosTournee.typeCourse,
+      arretsTotaux: totalStops
+    });
+    if (v.arretsTotaux !== totalStops) {
+      totalStops = v.arretsTotaux;
+      infosTournee = calculerInfosTourneeBase(totalStops, returnToPharmacy, date, startTime);
+    }
     const duree = infosTournee.duree;
     const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(date, duree);
 

@@ -50,3 +50,12 @@ function validerConfiguration() {
   Logger.log("Configuration validée avec succès.");
   return true; // Retourne true si tout est correct.
 }
+
+function validateReservationPayload(p){
+  if(!p) throw new Error('payload manquant');
+  ['client','date','typeCourse','arretsTotaux'].forEach(k=>{
+    if(p[k]===undefined || p[k]===null || p[k]==='') throw new Error('Champ requis: '+k);
+  });
+  p.arretsTotaux = Math.max(1, parseInt(p.arretsTotaux,10)||1);
+  return p;
+}
