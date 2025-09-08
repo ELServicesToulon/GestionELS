@@ -137,11 +137,6 @@ const RESERVATION_VERIFY_ENABLED = true;
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
 const RESERVATION_UI_V2_ENABLED = true;
 
-/** @const {boolean} Active la facturation directe au résident. */
-const RESIDENT_BILLING_ENABLED = true;
-
-/** @const {boolean} Active la modale de coordonnées de facturation. */
-const BILLING_MODAL_ENABLED = true;
 /** @const {boolean} Active la réinitialisation du panier côté client. */
 const CART_RESET_ENABLED = true;
 /** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
@@ -197,8 +192,6 @@ const FLAGS = Object.freeze({
   calendarPurgeEnabled: CALENDAR_PURGE_ENABLED,
   calendarBarOpacityEnabled: CALENDAR_BAR_OPACITY_ENABLED,
   reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
-  residentBillingEnabled: RESIDENT_BILLING_ENABLED,
-  billingModalEnabled: BILLING_MODAL_ENABLED,
   cartResetEnabled: CART_RESET_ENABLED,
   debugMenuEnabled: DEBUG_MENU_ENABLED,
   demoReservationEnabled: DEMO_RESERVATION_ENABLED,
@@ -249,8 +242,6 @@ const CONFIG = Object.freeze({
   CLIENT_PORTAL_MAX_ATTEMPTS,
   SHEET_RESERVATIONS,
   BILLING,
-  BILLING_MODAL_ENABLED,
-  RESIDENT_BILLING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN
