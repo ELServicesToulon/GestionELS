@@ -1,5 +1,6 @@
 # GestionELS
 
+
 ## Contributing
 See `AGENTS.md` for project structure, coding style, testing steps, and the pull request process.
 
