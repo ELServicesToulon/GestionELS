@@ -18,8 +18,8 @@ const DEFAULT_TZ = 'Europe/Paris';
 
 // Tarifs centralisés : 1er arrêt inclus, suivants par paliers
 const TARIFS = {
-  normal: { base: 20, arrets: [5, 5, 5] },
-  surcharges: { URGENT: 10, SAMEDI: 8, PRECOLLECTE: 5 }
+  normal: { base: 15, arrets: [5, 4, 3, 4, 5] },
+  surcharges: { URGENT: 20, SAMEDI: 25, PRECOLLECTE: 5 }
 };
 
 // --- Informations sur l'entreprise ---
