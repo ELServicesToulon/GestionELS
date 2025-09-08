@@ -111,64 +111,64 @@ const CLIENT_SESSION_TTL_HOURS = 24;
 
 // --- Drapeaux de Fonctionnalités Générales ---
 /** @const {boolean} Active l'espace client. */
-const CLIENT_PORTAL_ENABLED = true;
+const CLIENT_PORTAL_ENABLED = false;
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
-const CLIENT_PORTAL_SIGNED_LINKS = true;
+const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
-const PRIVACY_LINK_ENABLED = true;
+const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
-const CLIENT_SESSION_OPAQUE_ID_ENABLED = true;
+const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
-const BILLING_MULTI_SHEET_ENABLED = true;
+const BILLING_MULTI_SHEET_ENABLED = false;
 /** @const {boolean} Resynchronise les événements manquants du calendrier Google. */
 // CALENDAR_RESYNC_ENABLED défini plus haut
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
 // CALENDAR_PURGE_ENABLED défini plus haut
 
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
-const CALENDAR_BAR_OPACITY_ENABLED = true;
+const CALENDAR_BAR_OPACITY_ENABLED = false;
 
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
-const RESERVATION_VERIFY_ENABLED = true;
+const RESERVATION_VERIFY_ENABLED = false;
 
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
-const RESERVATION_UI_V2_ENABLED = true;
+const RESERVATION_UI_V2_ENABLED = false;
 
 /** @const {boolean} Active la réinitialisation du panier côté client. */
-const CART_RESET_ENABLED = true;
+const CART_RESET_ENABLED = false;
 /** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
-const RETURN_IMPACTS_ESTIMATES_ENABLED = true;
+const RETURN_IMPACTS_ESTIMATES_ENABLED = false;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
 // PRICING_RULES_V2_ENABLED défini plus haut
 
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
-const PROOF_SOCIAL_ENABLED = true;
+const PROOF_SOCIAL_ENABLED = false;
 /** @const {boolean} Active le module Questions/Réponses pour les professionnels. */
-const PRO_QA_ENABLED = true;
+const PRO_QA_ENABLED = false;
 
 /** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
-const EXTRA_ICONS_ENABLED = true;
+const EXTRA_ICONS_ENABLED = false;
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 // DEBUG_MENU_ENABLED défini plus haut
 /** @const {boolean} Sert une version de démo de la page de réservation. */
 const DEMO_RESERVATION_ENABLED = false;
 /** @const {boolean} Active l'écriture des logs de facturation. */
-const BILLING_LOG_ENABLED = true;
+const BILLING_LOG_ENABLED = false;
 /** @const {boolean} Active le mode test pour la facturation V2 (aucune écriture). */
 const BILLING_V2_DRYRUN = false;
 /** @const {boolean} Active la journalisation détaillée des requêtes web. */
-const REQUEST_LOGGING_ENABLED = true;
+const REQUEST_LOGGING_ENABLED = false;
 /** @const {boolean} Active le traitement des requêtes POST. */
-const POST_ENDPOINT_ENABLED = true;
+const POST_ENDPOINT_ENABLED = false;
 /** @const {boolean} Limite le nombre de tentatives de connexion au portail client. */
 const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = false;
 /** @const {number} Nombre maximum de tentatives avant blocage. */
 const CLIENT_PORTAL_MAX_ATTEMPTS = 10;
 /** @const {boolean} Active la mise en cache des paramètres de configuration. */
-const CONFIG_CACHE_ENABLED = true;
+const CONFIG_CACHE_ENABLED = false;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
 // RESERVATION_CACHE_ENABLED défini plus haut
 
