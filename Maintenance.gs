@@ -168,7 +168,7 @@ function menuVerifierStructureFeuilles() {
   try {
     const res = verifierStructureFeuilles();
     const lignes = res.report.map(r => `- ${r.sheet} : ${r.created ? 'créée' : 'ok'}${r.missingHeaders && r.missingHeaders.length ? ' | entêtes ajoutés: ' + r.missingHeaders.join(', ') : ''}`);
-    const html = `<div style="font-family:Montserrat,sans-serif;line-height:1.5">
+      const html = `<div style="font-family:'Montserrat',system-ui,sans-serif;line-height:1.5">
       <h2>Vérification structure des feuilles</h2>
       <p>Résultat: ${res.success ? 'Succès' : 'Erreur'}</p>
       <pre style="white-space:pre-wrap">${lignes.join('\n')}</pre>
