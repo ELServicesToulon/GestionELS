@@ -307,16 +307,25 @@ body {
 
 /* --- Modale de réservation --- */
 .els-ui-theming #modale-selection-creneau .slot-btn {
+  position: relative;
+  height: 72px;
+  padding: 0 18px;
   border: 0;
-  border-radius: 40px;
+  border-radius: 999px;
   background-image: var(--img-capsule);
+  background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  background-size: contain;
-  box-shadow: var(--shadow);
+  font-weight: 700;
   color: #0f172a;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .2s ease;
 }
-.els-ui-theming #modale-selection-creneau .slot-btn:disabled {
+.els-ui-theming #modale-selection-creneau .slot-btn:disabled,
+.els-ui-theming #modale-selection-creneau .slot-btn.indispo,
+.els-ui-theming .modale-creneaux .slot-btn:disabled,
+.els-ui-theming .modale-creneaux .slot-btn.indispo {
   background-image: var(--img-blister-vide);
   filter: saturate(.92) brightness(.98);
   cursor: not-allowed;
@@ -324,6 +333,17 @@ body {
 .els-ui-theming #modale-selection-creneau .slot-btn.selected {
   transform: translateY(-1px);
   box-shadow: 0 8px 22px rgba(15,23,42,.20);
+}
+.els-ui-theming #modale-selection-creneau .slot-btn:hover:not(:disabled),
+.els-ui-theming .modale-creneaux .slot-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(15,23,42,.20);
+}
+.
+.els-ui-theming #modale-selection-creneau .slot-btn:focus-visible,
+.els-ui-theming .modale-creneaux .slot-btn:focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--els-violet) 70%, white);
+  outline-offset: 2px;
 }
 
 /* --- PANIER --- */
