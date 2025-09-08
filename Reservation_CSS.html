@@ -181,13 +181,20 @@ body {
 /* --- THEME ELS: Calendrier gélule/blister (scopé) --- */
 .els-ui-theming .jour-calendrier {
   position: relative;
-  background: var(--bg);
+  isolation: isolate;
+  height: 78px;
+  margin: 6px;
+  cursor: pointer;
   border: 0;
+  border-radius: 40px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: var(--shadow);
+  transition: transform .06s ease, box-shadow .2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 84px;
-  border-radius: var(--radius-pill);
   color: var(--txt);
   text-shadow: none;
 }
