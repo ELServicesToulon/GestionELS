@@ -198,9 +198,13 @@ function doGet(e) {
     // Variables pour la bannière d'information
     template.heureDebut = conf.HEURE_DEBUT_SERVICE;
     template.heureFin = conf.HEURE_FIN_SERVICE;
-    template.prixBaseNormal = (conf.TARIFS && conf.TARIFS['Normal']) ? conf.TARIFS['Normal'].base : '';
-    template.prixBaseSamedi = (conf.TARIFS && conf.TARIFS['Samedi']) ? conf.TARIFS['Samedi'].base : '';
-    template.prixBaseUrgent = (conf.TARIFS && conf.TARIFS['Urgent']) ? conf.TARIFS['Urgent'].base : '';
+    template.prixBaseNormal = conf.TARIFS && conf.TARIFS.normal ? conf.TARIFS.normal.base : '';
+    template.prixBaseSamedi = conf.TARIFS && conf.TARIFS.normal
+      ? conf.TARIFS.normal.base + (conf.TARIFS.surcharges && conf.TARIFS.surcharges.SAMEDI ? conf.TARIFS.surcharges.SAMEDI : 0)
+      : '';
+    template.prixBaseUrgent = conf.TARIFS && conf.TARIFS.normal
+      ? conf.TARIFS.normal.base + (conf.TARIFS.surcharges && conf.TARIFS.surcharges.URGENT ? conf.TARIFS.surcharges.URGENT : 0)
+      : '';
     template.tvaApplicable = typeof conf.TVA_APPLICABLE !== 'undefined' ? conf.TVA_APPLICABLE : false;
 
     return template.evaluate()

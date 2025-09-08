@@ -64,11 +64,11 @@ function testerCacheConfiguration() {
   CacheService.getScriptCache().remove('CONFIG_JSON');
   const conf1 = getConfigCached();
   const conf2 = getConfigCached();
-  Logger.log(`Premier appel TARIFS.Normal.base=${conf1.TARIFS.Normal.base}`);
-  Logger.log(`Deuxième appel (cache) TARIFS.Normal.base=${conf2.TARIFS.Normal.base}`);
+  Logger.log(`Premier appel TARIFS.normal.base=${conf1.TARIFS.normal.base}`);
+  Logger.log(`Deuxième appel (cache) TARIFS.normal.base=${conf2.TARIFS.normal.base}`);
   CacheService.getScriptCache().remove('CONFIG_JSON');
   const conf3 = getConfigCached();
-  Logger.log(`Après invalidation TARIFS.Normal.base=${conf3.TARIFS.Normal.base}`);
+  Logger.log(`Après invalidation TARIFS.normal.base=${conf3.TARIFS.normal.base}`);
 }
 
 function testerFlagsSerialization() {
@@ -93,13 +93,18 @@ function testerFlagsSerialization() {
 function testerCoherenceTarifs() {
   Logger.log("\n--- Test de cohérence des TARIFS dans Configuration.gs ---");
   const conf = getPublicConfig();
-  const types = ['Normal', 'Samedi', 'Urgent'];
-  types.forEach(type => {
-    const tarif = conf.TARIFS && conf.TARIFS[type];
-    if (tarif && typeof tarif.base === 'number') {
-      Logger.log(`SUCCESS: TARIFS.${type}.base = ${tarif.base}`);
+  const normal = conf.TARIFS && conf.TARIFS.normal;
+  if (normal && typeof normal.base === 'number') {
+    Logger.log(`SUCCESS: TARIFS.normal.base = ${normal.base}`);
+  } else {
+    Logger.log('FAILURE: TARIFS.normal.base manquant ou invalide');
+  }
+  const surch = conf.TARIFS && conf.TARIFS.surcharges;
+  ['URGENT', 'SAMEDI', 'PRECOLLECTE'].forEach(key => {
+    if (surch && typeof surch[key] === 'number') {
+      Logger.log(`SUCCESS: TARIFS.surcharges.${key} = ${surch[key]}`);
     } else {
-      Logger.log(`FAILURE: TARIFS.${type}.base manquant ou invalide`);
+      Logger.log(`FAILURE: TARIFS.surcharges.${key} manquant ou invalide`);
     }
   });
 }

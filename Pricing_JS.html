@@ -3,7 +3,7 @@
  * Fonctions utilitaires de tarification pour le client.
  */
 function computeSupplementCost(nSupp) {
-  const arr = configServeur?.TARIFS?.Normal?.arrets || [];
+  const arr = configServeur?.TARIFS?.normal?.arrets || [];
   const fallback = arr.length ? arr[arr.length - 1] : 0;
   let sum = 0;
   for (let i = 0; i < nSupp; i++) sum += (i < arr.length ? arr[i] : fallback);
@@ -16,6 +16,7 @@ function computeCoursePrice(opts = {}) {
     retour = false,
     urgent = false,
     samedi = false,
+    precollecte = false,
     remise = 0
   } = opts;
 
@@ -24,44 +25,28 @@ function computeCoursePrice(opts = {}) {
   const isUrgent = !!urgent && (!applyV2 || !isSamedi);
 
   const nbSupp = Math.max(0, (totalStops | 0) - 1);
-  const base = configServeur?.TARIFS?.Normal?.base || 0;
-  if (!configServeur?.TARIFS?.Normal?.base) {
+  const base = configServeur?.TARIFS?.normal?.base || 0;
+  if (!configServeur?.TARIFS?.normal?.base) {
     return {
       total: 0,
       nbSupp,
-      error: 'Tarif Normal.base manquant',
-      breakdown: { base: 0, supplements: 0, retour: 0, urgent: 0, samedi: 0, remise }
+      error: 'Tarif normal.base manquant',
+      breakdown: { base: 0, supplements: 0, retour: 0, urgent: 0, samedi: 0, precollecte: 0, remise }
     };
   }
   const supplements = computeSupplementCost(nbSupp);
   const retourFee = retour ? (computeSupplementCost(nbSupp + 1) - supplements) : 0;
-  const urgentBase = configServeur?.TARIFS?.Urgent?.base || 0;
-  if (isUrgent && !configServeur?.TARIFS?.Urgent?.base) {
-    return {
-      total: 0,
-      nbSupp,
-      error: 'Tarif Urgent.base manquant',
-      breakdown: { base, supplements, retour: retourFee, urgent: 0, samedi: 0, remise }
-    };
-  }
-  const surcUrg = isUrgent ? (urgentBase - base) : 0;
-  const samediBase = configServeur?.TARIFS?.Samedi?.base || 0;
-  if (isSamedi && !configServeur?.TARIFS?.Samedi?.base) {
-    return {
-      total: 0,
-      nbSupp,
-      error: 'Tarif Samedi.base manquant',
-      breakdown: { base, supplements, retour: retourFee, urgent: surcUrg, samedi: 0, remise }
-    };
-  }
-  const surcSam = isSamedi ? (samediBase - base) : 0;
+  const surcharges = configServeur?.TARIFS?.surcharges || {};
+  const surcUrg = isUrgent ? (surcharges.URGENT || 0) : 0;
+  const surcSam = isSamedi ? (surcharges.SAMEDI || 0) : 0;
+  const surcPre = precollecte ? (surcharges.PRECOLLECTE || 0) : 0;
 
-  let total = base + supplements + retourFee + surcUrg + surcSam - remise;
+  const total = base + supplements + retourFee + surcUrg + surcSam + surcPre - remise;
 
   return {
     total,
     nbSupp,
-    breakdown: { base, supplements, retour: retourFee, urgent: surcUrg, samedi: surcSam, remise }
+    breakdown: { base, supplements, retour: retourFee, urgent: surcUrg, samedi: surcSam, precollecte: surcPre, remise }
   };
 }
 </script>
