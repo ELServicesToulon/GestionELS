@@ -1,4 +1,12 @@
 <style>
+/* --- THEME BLISTER ELS --- */
+:root {
+  --els-font: 'Montserrat', sans-serif;
+  --els-violet: #8e44ad;
+  --els-bleu: #3498db;
+  --els-bleu-clair: #5dade2;
+  --els-gradient: linear-gradient(90deg, #8e44ad 0%, #3498db 100%);
+}
 /* =================================================================
                       FEUILLE DE STYLE - INTERFACE DE RÉSERVATION
    ================================================================= */
@@ -156,6 +164,78 @@ body {
 .jour-calendrier.desactive { color: var(--muted); cursor: not-allowed; background-color: var(--bg); }
 .barre-disponibilite { height: 4px; background-color: var(--muted); border-radius: var(--radius); margin: 5px auto 0; overflow: hidden; max-width: 80%; }
 .barre-disponibilite div { height: 100%; background: linear-gradient(90deg,#8e44ad,#3498db); }
+
+/* --- THEME ELS: Calendrier gélule/blister (scopé) --- */
+.els-ui-theming .jour-calendrier {
+  position: relative;
+  background: var(--bg);
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 84px;
+  border-radius: var(--radius-pill);
+  color: var(--txt);
+  text-shadow: none;
+}
+.els-ui-theming .jour-calendrier:not(.desactive) {
+  background: transparent;
+  background-image: image-set(
+    url('data:image/png;base64,<?!= include("Capsule1x_b64") ?>') 1x,
+    url('data:image/png;base64,<?!= include("Capsule2x_b64") ?>') 2x
+  );
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 92% auto;
+  color: var(--txt);
+}
+.els-ui-theming .jour-calendrier.desactive {
+  background-image: image-set(
+    url('data:image/png;base64,<?!= include("Blister1x_b64") ?>') 1x,
+    url('data:image/png;base64,<?!= include("Blister2x_b64") ?>') 2x
+  );
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 92% auto;
+  border: 0;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.els-ui-theming .jour-calendrier:not(.desactive):hover,
+.els-ui-theming .jour-calendrier:not(.desactive):focus {
+  outline: 3px solid var(--bleu);
+  outline-offset: 2px;
+}
+.els-ui-theming .barre-disponibilite { display: none; }
+
+/* --- THEME ELS: Modale de créneaux (pills) --- */
+.els-ui-theming .slot-btn {
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  border: 1px solid var(--bleu);
+  background: var(--bg);
+}
+.els-ui-theming .slot-btn.standard.selected {
+  background: var(--els-gradient);
+  color: var(--txt);
+  border-color: transparent;
+  box-shadow: var(--shadow);
+}
+.els-ui-theming .slot-btn.standard:not(:disabled):hover {
+  background: linear-gradient(90deg, color-mix(in oklab, var(--els-violet) 85%, #fff 15%), color-mix(in oklab, var(--els-bleu) 85%, #fff 15%));
+  color: var(--txt);
+}
+.els-ui-theming .slot-btn:disabled {
+  background-image: image-set(
+    url('data:image/png;base64,<?!= include("Blister1x_b64") ?>') 1x,
+    url('data:image/png;base64,<?!= include("Blister2x_b64") ?>') 2x
+  );
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  color: var(--muted);
+}
+.els-ui-theming .slot-btn:focus { outline: 3px solid var(--bleu); outline-offset: 2px; }
 
 /* --- PANIER --- */
 #liste-panier { list-style: none; padding: 0; margin: 0; }
