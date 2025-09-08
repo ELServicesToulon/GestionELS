@@ -124,6 +124,19 @@
         <h1>Gagnez du temps au comptoir : la tournée pharmacie pensée pour pharmaciens, préparateurs, infirmiers</h1>
       </div>
       <p class="hero-sous-titre">Fiabilité éprouvée, sacs scellés sécurisés et respect du patient garanti.</p>
+      <? if (EXTRA_ICONS_ENABLED) { ?>
+      <div class="hero-icones">
+        <div class="hero-icone">
+          <?!= include('icone-semainier.svg'); ?>
+        </div>
+        <div class="hero-icone">
+          <?!= include('icone-boite-scellee.svg'); ?>
+        </div>
+        <div class="hero-icone">
+          <?!= include('icone-livraison.svg'); ?>
+        </div>
+      </div>
+      <? } ?>
       <div class="tarifs-cartes">
         <div class="tarif-carte">
           <div class="tarif-icone">

@@ -141,6 +141,8 @@ const PROOF_SOCIAL_ENABLED = true;
 /** @const {boolean} Active le module Questions/Réponses pour les professionnels. */
 const PRO_QA_ENABLED = true;
 
+/** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
+const EXTRA_ICONS_ENABLED = false;
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = true;
@@ -200,6 +202,7 @@ const FLAGS = Object.freeze({
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
   proofSocialEnabled: PROOF_SOCIAL_ENABLED,
   proQaEnabled: PRO_QA_ENABLED,
+  extraIconsEnabled: EXTRA_ICONS_ENABLED,
   themeV2Enabled: THEME_V2_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED
