@@ -87,8 +87,11 @@ a, button { color: inherit; }
 <style>
 /* cells: matte, no inner tile */
 .day-cell, .calendar-cell, .slot-day {
-  background-color: var(--cell-matte);
-  background-image: none;
+  position: relative;
+  background: var(--cell-matte);
   border-radius: var(--cell-radius);
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 1px 1px rgba(0,0,0,.04);
+  background-image: none;
 }
 </style>
