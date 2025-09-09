@@ -56,3 +56,15 @@ a, button { color: inherit; }
 /* defensive reset: no inherited tile inside cells */
 .day-cell, .calendar-cell, .slot-day { background-image: none; }
 </style>
+<style>
+/* container carries the aluminium tile */
+.calendar-shell, .calendar, .monthGrid, #vue-calendrier.carte {
+  position: relative;
+  background-image: var(--alu-tile-1x);
+  background-size: var(--alu-size) var(--alu-size);
+  background-repeat: repeat;
+  background-position: var(--grid-off-x) var(--grid-off-y);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(0,0,0,.06);
+}
+</style>
