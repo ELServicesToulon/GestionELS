@@ -1,4 +1,4 @@
-import { readdir, mkdir, readFile } from "node:fs/promises";
+import { readdir, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
@@ -42,29 +42,23 @@ async function processImage(file) {
     const innerW = w - 2 * marginX;
     const innerH = h - 2 * marginY;
 
-    // Resize trimmed source to fit inner box while preserving aspect ratio
-    const { data, info } = await sharp(trimmed.data)
-      .resize({ width: innerW, height: innerH, fit: 'inside', kernel: 'lanczos3', withoutEnlargement: false })
-      .ensureAlpha()
-      .toBuffer({ resolveWithObject: true });
+    // Resize to inner box using contain (pads with transparent background), then extend margins
+    const pipe = sharp(trimmed.data)
+      .resize({ width: innerW, height: innerH, fit: 'contain', background: { r:0, g:0, b:0, alpha:0 } })
+      .extend({ top: marginY, bottom: marginY, left: marginX, right: marginX, background: { r:0, g:0, b:0, alpha:0 } });
 
-    const left = Math.round((w - info.width) / 2);
-    const top = Math.round((h - info.height) / 2);
+    const png = await pipe.png({ compressionLevel: 9 }).toBuffer();
+    const webp = await sharp(png).webp({ quality: 92, lossless: false }).toBuffer();
 
-    const canvas = sharp({ create: { width: w, height: h, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } });
+    const name = base
+      .replace(/\.(png|webp|jpg|jpeg)$/i, "")
+      .replace(/[\s_]+/g, "-")
+      .replace(/-+$/g, "");
 
-    const pngBuf = await canvas
-      .composite([{ input: data, left, top }])
-      .png()
-      .toBuffer();
-
-    const nameNoExt = base.replace(/\.[^.]+$/, "");
-    const outBase = `${nameNoExt}${suf}`; // e.g., pill-full + 1x
-    const outPNG = path.join(OUT, `${outBase}.png`);
-    const outWEBP = path.join(OUT, `${outBase}.webp`);
-
-    await sharp(pngBuf).png().toFile(outPNG);
-    await sharp(pngBuf).webp({ quality: 92 }).toFile(outWEBP);
+    const outPNG = path.join(OUT, `${name}${suf}.png`);
+    const outWEBP = path.join(OUT, `${name}${suf}.webp`);
+    await writeFile(outPNG, png);
+    await writeFile(outWEBP, webp);
     outputs.push(outPNG, outWEBP);
   }
   return outputs;
