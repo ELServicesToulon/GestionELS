@@ -45,6 +45,19 @@ a, button { color: inherit; }
 .app-pied-de-page { padding: 20px; color: var(--muted); border-top: 1px solid var(--bleu); text-align: center; }
 </style>
 <style>
+/* reflets “vernis” subtils */
+monthGrid td::after, 
+monthGrid .day::after,
+.calendar-grid .day::after, .calendar-grid data-day::after {
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 18% 12%, rgba(255,255,255,.70), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 78% 82%, rgba(255,255,255,.25), transparent 70%);
+  mix-blend-mode: screen;
+  opacity: .7;
+}
+</style>
+<style>
 /* === Dôme type alvéole pour les cases ===================================== */
 monthGrid td, monthGrid td.day, monthGrid .day, 
 monthGrid .day-cell, .calendar-grid .day, .calendar-grid .day-cell, .calendar-grid data-day, .calendar-grid data-date {
