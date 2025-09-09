@@ -466,6 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (window.etat.flags && window.etat.flags.elsUiThemingEnabled) {
         document.body.classList.add('els-ui-theming');
+        document.body.classList.add('els-aluminium'); // QA: fond aluminium activé
       }
     } catch (e) { /* no-op */ }
     mettreAJourBoutonViderPanier();
