@@ -49,6 +49,15 @@ try {
   }
 } catch {}
 
+try {
+  $e1 = Get-ImageInfo (Join-Path $uiDir 'pill-empty1x.png')
+  $e2 = Get-ImageInfo (Join-Path $uiDir 'pill-empty2x.png')
+  if ($e1 -and $e2) {
+    $okPillE = ($e1.Width -eq 320 -and $e1.Height -eq 128 -and $e2.Width -eq 640 -and $e2.Height -eq 256)
+    Write-Host ("pill-empty PNG sizes: {0} & {1} -> {2}" -f ("$($e1.Width)x$($e1.Height)"), ("$($e2.Width)x$($e2.Height)"), ($okPillE ? 'OK' : 'FAIL'))
+  }
+} catch {}
+
 $results = foreach ($p in $pairs) {
   if (-not (Test-Path $p.One) -or -not (Test-Path $p.Two)) {
     [PSCustomObject]@{ Asset=$p.One; OneX='missing'; TwoX='missing'; Ratio=0; OK=$false }

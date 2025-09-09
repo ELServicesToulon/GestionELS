@@ -25,6 +25,10 @@ $map = @{
   'branding/ui/pill-full2x.png'         = 'PillFull2x_png_b64.html'
   'branding/ui/pill-full1x.webp'        = 'PillFull1x_webp_b64.html'
   'branding/ui/pill-full2x.webp'        = 'PillFull2x_webp_b64.html'
+  'branding/ui/pill-empty1x.png'        = 'PillEmpty1x_png_b64.html'
+  'branding/ui/pill-empty2x.png'        = 'PillEmpty2x_png_b64.html'
+  'branding/ui/pill-empty1x.webp'       = 'PillEmpty1x_webp_b64.html'
+  'branding/ui/pill-empty2x.webp'       = 'PillEmpty2x_webp_b64.html'
 }
 
 foreach ($k in $map.Keys) {
