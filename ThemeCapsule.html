@@ -45,6 +45,56 @@ a, button { color: inherit; }
 .app-pied-de-page { padding: 20px; color: var(--muted); border-top: 1px solid var(--bleu); text-align: center; }
 </style>
 <style>
+/* === ELS · Calendrier · orientation des stries + dôme sur les cases ======= */
+:root {
+  --alu-angle: 45deg;                     /* orientation des stries (diagonale) */
+  --dome-gloss: rgba(255,255,255,.35);    /* éclat haut-gauche */
+  --dome-sheen: rgba(255,255,255,.18);    /* voile central */
+  --dome-shade: rgba(0,0,0,.14);          /* ombre bas-droit */
+}
+
+/* 1) La tuile aluminium en diagonale via un pseudo-élément (pas le body) */
+.calendar-shell, calendar, monthGrid { background: none !important; }
+.calendar-shell::after, calendar::after, monthGrid::after {
+  content: "";
+  position: absolute;
+  inset: -6%;                              /* marge pour rotation sans bords */
+  background-image: var(--alu-tile-1x, var(--img-aluminium));
+  background-size: var(--alu-size) var(--alu-size);
+  background-repeat: repeat;
+  background-position: var(--grid-off-x) var(--grid-off-y);
+  transform: rotate(var(--alu-angle));
+  transform-origin: center;
+  z-index: 0;
+}
+@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+  .calendar-shell::after, calendar::after, monthGrid::after {
+    background-image: var(--alu-tile-2x, var(--img-aluminium));
+    background-size: calc(var(--alu-size)*2) calc(var(--alu-size)*2);
+  }
+}
+
+/* S'assurer que le voile mat passe au-dessus de la tuile */
+.calendar-shell::before, calendar::before, monthGrid::before { z-index: 1; }
+
+/* 2) Dôme (relief) sur les cases jour uniquement */
+.day-cell::before, .calendar-cell::before, .jour-calendrier::before,
+.calendar-grid .day::before, .calendar-grid .day-cell::before,
+monthGrid td::before, monthGrid .day::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;                              /* sous le contenu texte */
+  background:
+    radial-gradient(120% 120% at 28% 22%, var(--dome-gloss) 0%, var(--dome-sheen) 35%, transparent 62%),
+    radial-gradient(120% 120% at 74% 78%, var(--dome-shade) 0%, rgba(0,0,0,.06) 38%, transparent 66%),
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.05) 30%, transparent 60%);
+  mix-blend-mode: screen;
+}
+</style>
+<style>
 /* 6) Labels dans les cases (lisibilité) */
 monthGrid td .label, 
 monthGrid td .date,
