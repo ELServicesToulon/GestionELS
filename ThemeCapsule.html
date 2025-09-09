@@ -45,6 +45,13 @@ a, button { color: inherit; }
 .app-pied-de-page { padding: 20px; color: var(--muted); border-top: 1px solid var(--bleu); text-align: center; }
 </style>
 <style>
+/* 2) Tables : espacement propre entre les cellules (si ta grille est un <table>) */
+monthGrid table {
+  border-collapse: separate !important;
+  border-spacing: 12px 10px !important;   /* ajuste le gap X/Y ici */
+}
+</style>
+<style>
 /* === FIX ciblage calendrier : pas de barre par semaine ===================== */
 /* 1) Neutraliser tout wrapper de semaine/ligne qui aurait reçu le style case */
 .calendar-shell .week,
