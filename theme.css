@@ -168,3 +168,19 @@ monthGrid::before,
     background: rgba(255,255,255,.28);
   }
 }
+/* override explicite vers assets normalisés (WEBP) pour .is-empty */
+.calendar-cell.is-empty,
+.day-cell.is-empty,
+.jour-calendrier.is-empty {
+  background-image: url("branding/ui/blister-empty1x.webp");
+}
+@media (min-resolution: 1.25dppx),
+       (min-resolution: 120dpi),
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min--moz-device-pixel-ratio: 1.25) {
+  .calendar-cell.is-empty,
+  .day-cell.is-empty,
+  .jour-calendrier.is-empty {
+    background-image: url("branding/ui/blister-empty2x.webp");
+  }
+}
