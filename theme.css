@@ -39,6 +39,12 @@ monthGrid::before,
   border-radius: inherit;
 }
 
+/* voile légèrement plus fort sur wrappers génériques */
+.calendar-shell::before,
+.calendar-grid::before {
+  background: rgba(255,255,255,.28);
+}
+
 /* densité 2x / écrans retina */
 @media (min-resolution: 1.25dppx),
        (min-resolution: 120dpi),
