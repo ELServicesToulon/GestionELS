@@ -60,7 +60,7 @@ re tout) */
   filter: brightness(var(--alu-bright, 1)) contrast(var(--alu-contrast, 1));
   background-size: calc(var(--alu-size) * var(--alu-zoom, 1)) calc(var(--alu-size) * var(--alu-zoom, 1));
 }
-@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+@media (min-resolution:1.25dppx) {
   .calendar-shell::after, calendar::after, monthGrid::after {
     background-size: calc(var(--alu-size)*2*var(--alu-zoom, 1)) calc(var(--alu-size)*2*var(--alu-zoom, 1));
   }
@@ -94,7 +94,7 @@ re tout) */
   filter: brightness(var(--alu-bright)) contrast(var(--alu-contrast));
   z-index: 0;
 }
-@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+@media (min-resolution:1.25dppx) {
   .calendar-shell::after, calendar::after, monthGrid::after {
     background-image: var(--alu-tile-2x);
     background-size: calc(var(--alu-size)*2) calc(var(--alu-size)*2);
@@ -137,7 +137,7 @@ monthGrid .day.is-empty,
 .calendar-grid .day.is-empty {
   background: var(--cell-matte) url("branding/ui/blister-empty1x.webp") center/92% no-repeat;
 }
-@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+@media (min-resolution:1.25dppx) {
   monthGrid td.is-empty,
   monthGrid .day.is-empty,
   .calendar-grid .day.is-empty { background-image: url("branding/ui/blister-empty2x.webp"); }
@@ -150,7 +150,7 @@ monthGrid .day.is-free,
 .calendar-grid .day.is-free {
   background: var(--cell-matte) url("branding/ui/pill-full1x.webp") center/92% no-repeat;
 }
-@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+@media (min-resolution:1.25dppx) {
   monthGrid td.is-free,
   monthGrid .day.is-free,
   .calendar-grid .day.is-free { background-image: url("branding/ui/pill-full2x.webp"); }
@@ -162,7 +162,7 @@ monthGrid .day.is-locked,
 .calendar-grid .day.is-locked {
   background: var(--cell-matte) url("branding/ui/pill-empty1x.webp") center/92% no-repeat;
 }
-@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+@media (min-resolution:1.25dppx) {
   monthGrid td.is-locked,
   monthGrid .day.is-locked,
   .calendar-grid .day.is-locked { background-image: url("branding/ui/pill-empty2x.webp"); }
@@ -266,7 +266,7 @@ monthGrid .cells-wrapper {
 </style>
 <style>
 /* retina density: prefer 2x tile on high-DPI */
-@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+@media (min-resolution:1.25dppx) {
   .calendar-shell, calendar, monthGrid {
     background-image: var(--alu-tile-2x);
     background-size: calc(var(--alu-size)*2) calc(var(--alu-size)*2);
@@ -298,7 +298,7 @@ monthGrid .cells-wrapper {
 .day-cell.is-empty { background: var(--cell-matte) url("branding/ui/blister-empty1x.webp") center/92% no-repeat; }
 </style>
 <style>
-@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+@media (min-resolution:1.25dppx) {
   .day-cell.is-free   { background-image: url("branding/ui/pill-full2x.webp"); }
   .day-cell.is-locked { background-image: url("branding/ui/pill-empty2x.webp"); }
   .day-cell.is-empty  { background-image: url("branding/ui/blister-empty2x.webp"); }
