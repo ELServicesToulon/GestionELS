@@ -82,6 +82,13 @@ monthGrid,
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25), var(--shadow, 0 6px 18px rgba(15,23,42,.14));
 }
 
+/* créneaux disponibles → capsule pleine */
+.calendar-cell.is-free,
+.day-cell.is-free,
+.jour-calendrier.is-free {
+  background-image: var(--img-capsule);
+}
+
 /* voile pour lisibilité des numéros/labels */
 .calendar-shell::before,
 .calendar-grid::before,
