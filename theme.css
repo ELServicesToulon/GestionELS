@@ -8,3 +8,15 @@ body{ font-family: Montserrat,system-ui,sans-serif; background:#f3f4f6; }
 .btn{ border-radius:999px; padding:.7rem 1.1rem; }
 .btn-primary{ background:linear-gradient(90deg,var(--violet),var(--blue)); color:#fff; }
 .btn:focus-visible{ outline:3px solid var(--blueLight); outline-offset:2px; }
+
+/* === aluminium calendar background (image tile) === */
+.calendar-shell,
+.calendar-grid,
+calendar,
+monthGrid,
+#vue-calendrier.carte {
+  background-image: linear-gradient(rgba(11,14,19,0.85), rgba(11,14,19,0.85)), var(--img-aluminium);
+  background-size: auto, var(--alu-size, 96px) var(--alu-size, 96px);
+  background-repeat: no-repeat, repeat;
+  background-position: center, 0 0;
+}
