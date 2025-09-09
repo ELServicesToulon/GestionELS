@@ -241,17 +241,7 @@ body {
   background-size: 92% auto; /* normalisation visuelle (capsule) */
   color: var(--txt);
 }
-.els-ui-theming .jour-calendrier:not(.desactive)::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  pointer-events: none;
-  background: linear-gradient(180deg, #ffffff80, #ffffff20 28%, transparent 60%);
-  mix-blend-mode: screen;
-  opacity: .75;
-  z-index: 0;
-}
+/* Matte cells: no glossy overlay */
 .els-ui-theming .jour-calendrier > span { position: relative; z-index: 1; }
 /* Numéro du jour: top-center, gras, couleur lisible */
 .els-ui-theming .jour-calendrier > span {
@@ -359,11 +349,7 @@ body {
 }
 
 /* --- Option: fond aluminium (si assets présents) --- */
-body.els-ui-theming.els-aluminium {
-  background-image: var(--img-aluminium);
-  background-size: 64px 64px;
-  background-attachment: fixed;
-}
+/* Calendar-only aluminium theme (no body background) */
 
 /* Subtle clarity on surfaces */
 .els-ui-theming main,
