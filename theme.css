@@ -54,3 +54,14 @@ monthGrid::before,
     background-size: calc(var(--alu-size, 96px) * 2) calc(var(--alu-size, 96px) * 2);
   }
 }
+
+/* accessibilité : contraste renforcé si demandé */
+@media (prefers-contrast: more) {
+  .calendar-shell::before,
+  .calendar-grid::before,
+  calendar::before,
+  monthGrid::before,
+  #vue-calendrier.carte::before {
+    background: rgba(255,255,255,.28);
+  }
+}
