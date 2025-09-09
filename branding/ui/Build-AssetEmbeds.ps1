@@ -15,12 +15,12 @@ $repoRoot = (Split-Path -Parent (Split-Path -Parent $uiDir))
 Write-Host 'Building base64 HTML embeds from branding/ui PNGs...' -ForegroundColor Cyan
 
 $map = @{
-  'branding/ui/capsule1x.png'         = 'Capsule1x_b64.html'
-  'branding/ui/capsule2x.png'         = 'Capsule2x_b64.html'
-  'branding/ui/blister_vide1x.png'    = 'Blister1x_b64.html'
-  'branding/ui/blister_vide2x.png'    = 'Blister2x_b64.html'
-  'branding/ui/alu/aluminium1x.png'   = 'Aluminium1x_b64.html'
-  'branding/ui/alu/aluminium2x.png'   = 'Aluminium2x_b64.html'
+  'branding/ui/capsule1x.png'           = 'Capsule1x_b64.html'
+  'branding/ui/capsule2x.png'           = 'Capsule2x_b64.html'
+  'branding/ui/blister_vide1x.png'      = 'Blister1x_b64.html'
+  'branding/ui/blister_vide2x.png'      = 'Blister2x_b64.html'
+  'branding/ui/alu/alu-tile1x.png'      = 'Aluminium1x_b64.html'
+  'branding/ui/alu/alu-tile2x.png'      = 'Aluminium2x_b64.html'
 }
 
 foreach ($k in $map.Keys) {

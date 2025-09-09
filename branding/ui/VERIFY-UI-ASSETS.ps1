@@ -34,9 +34,9 @@ Write-Host 'Scanning branding/ui for UI assets...' -ForegroundColor Cyan
 $uiDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 $pairs = @(
-  @{One=(Join-Path $uiDir 'capsule1x.png');         Two=(Join-Path $uiDir 'capsule2x.png')},
-  @{One=(Join-Path $uiDir 'blister_vide1x.png');    Two=(Join-Path $uiDir 'blister_vide2x.png')},
-  @{One=(Join-Path $uiDir 'alu/aluminium1x.png');   Two=(Join-Path $uiDir 'alu/aluminium2x.png')}
+  @{One=(Join-Path $uiDir 'capsule1x.png');           Two=(Join-Path $uiDir 'capsule2x.png')},
+  @{One=(Join-Path $uiDir 'blister_vide1x.png');      Two=(Join-Path $uiDir 'blister_vide2x.png')},
+  @{One=(Join-Path $uiDir 'alu/alu-tile1x.png');      Two=(Join-Path $uiDir 'alu/alu-tile2x.png')}
 )
 
 $results = foreach ($p in $pairs) {
