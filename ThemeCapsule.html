@@ -150,7 +150,7 @@ monthGrid td::before, monthGrid .day::before {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  z-index: 0;                              /* sous le contenu texte */
+  z-index: -1;                             /* SOUS le fond des cases pour que l'icône reste au-dessus */
   background:
     radial-gradient(120% 120% at 28% 22%, var(--dome-gloss) 0%, var(--dome-sheen) 35%, transparent 62%),
     radial-gradient(120% 120% at 74% 78%, var(--dome-shade) 0%, rgba(0,0,0,.06) 38%, transparent 66%),
