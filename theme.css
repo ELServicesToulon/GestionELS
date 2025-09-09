@@ -1,4 +1,23 @@
 :root{ --violet:#8e44ad; --blue:#3498db; --blueLight:#5dade2; --radius:16px; }
+/* Variables d'images (local dev): pointent vers assets normalisés WEBP/PNG */
+:root{
+  --img-capsule: image-set(
+    url('branding/ui/pill-full1x.webp') 1x,
+    url('branding/ui/pill-full2x.webp') 2x
+  );
+  --img-blister-vide: image-set(
+    url('branding/ui/blister-empty1x.webp') 1x,
+    url('branding/ui/blister-empty2x.webp') 2x
+  );
+  --img-pill-empty: image-set(
+    url('branding/ui/pill-empty1x.webp') 1x,
+    url('branding/ui/pill-empty2x.webp') 2x
+  );
+  --img-aluminium: image-set(
+    url('branding/ui/alu/alu-tile1x.png') 1x,
+    url('branding/ui/alu/alu-tile2x.png') 2x
+  );
+}
 body{ font-family: Montserrat,system-ui,sans-serif; background:#f3f4f6; }
 .blister-bg{
   background-image:radial-gradient(circle,rgba(0,0,0,.25)10%,transparent 11%);
