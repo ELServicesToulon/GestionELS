@@ -26,6 +26,20 @@ monthGrid,
     inset 0 -1px 0 rgba(0,0,0,.06);
 }
 
+/* voile pour lisibilité des numéros/labels */
+.calendar-shell::before,
+.calendar-grid::before,
+calendar::before,
+monthGrid::before,
+#vue-calendrier.carte::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: rgba(11,14,19,.14);
+}
+
 /* densité 2x / écrans retina */
 @media (min-resolution: 1.25dppx),
        (min-resolution: 120dpi),
