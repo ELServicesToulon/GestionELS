@@ -45,6 +45,24 @@ a, button { color: inherit; }
 .app-pied-de-page { padding: 20px; color: var(--muted); border-top: 1px solid var(--bleu); text-align: center; }
 </style>
 <style>
+/* === Dôme type alvéole pour les cases ===================================== */
+monthGrid td, monthGrid td.day, monthGrid .day, 
+monthGrid .day-cell, .calendar-grid .day, .calendar-grid .day-cell, .calendar-grid data-day, .calendar-grid data-date {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: radial-gradient(ellipse 120% 85% at 30% 30%,
+              rgba(255,255,255,.96) 0 35%,
+              rgba(247,248,251,.88) 35% 60%,
+              rgba(232,235,240,.82) 60% 100%),
+            linear-gradient(145deg, rgba(255,255,255,.45), rgba(0,0,0,.04));
+  box-shadow:
+    0 2px 6px rgba(0,0,0,.14),                /* ombre externe douce */
+    inset 0 1px 0 rgba(255,255,255,.75),      /* arête haute brillante */
+    inset 0 -2px 3px rgba(0,0,0,.06);         /* ombre basse interne */
+}
+</style>
+<style>
 /* micro-réglages visuels */
 :root {
   --alu-rotate: -34deg;   /* orientation des stries (≈ photo de réf.) */
