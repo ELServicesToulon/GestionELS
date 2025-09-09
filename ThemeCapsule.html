@@ -83,20 +83,20 @@ re tout) */
   background: none !important;    /* on retire la tuile posée en direct */
 }
 .calendar-shell::after, calendar::after, monthGrid::after {
-  content: "";
-  position: absolute;
-  inset: -6%;                              /* marge pour rotation sans bords */
-  background-image: var(--alu-tile-1x, var(--img-aluminium));
+  content:"";
+  position:absolute;
+  inset:-3%;                           /* dépasse un peu pour éviter de voir les bords en rotation */
+  background-image: var(--alu-tile-1x);
   background-size: var(--alu-size) var(--alu-size);
   background-repeat: repeat;
-  background-position: var(--grid-off-x) var(--grid-off-y);
-  transform: rotate(var(--alu-angle));
-  transform-origin: center;
+  transform: rotate(var(--alu-rotate)) scale(var(--alu-zoom));
+  transform-origin: 50% 50%;
+  filter: brightness(var(--alu-bright)) contrast(var(--alu-contrast));
   z-index: 0;
 }
 @media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
   .calendar-shell::after, calendar::after, monthGrid::after {
-    background-image: var(--alu-tile-2x, var(--img-aluminium));
+    background-image: var(--alu-tile-2x);
     background-size: calc(var(--alu-size)*2) calc(var(--alu-size)*2);
   }
 }
