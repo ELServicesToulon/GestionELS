@@ -7,19 +7,13 @@
   --els-bleu2: #5dade2;
   --els-grad: linear-gradient(90deg, var(--els-violet) 0%, var(--els-bleu) 100%);
   /* Use data URIs to avoid 404 in Apps Script HTMLService */
-  /* Normalized WEBP assets (fallback PNG fragments remain available if needed) */
   --img-capsule: image-set(
-    url('data:image/webp;base64,<?!= include("PillFull1x_webp_b64") ?>') 1x,
-    url('data:image/webp;base64,<?!= include("PillFull2x_webp_b64") ?>') 2x
+    url('data:image/png;base64,<?!= include("Capsule1x_b64") ?>') 1x,
+    url('data:image/png;base64,<?!= include("Capsule2x_b64") ?>') 2x
   );
   --img-blister-vide: image-set(
-    url('data:image/webp;base64,<?!= include("BlisterEmpty1x_webp_b64") ?>') 1x,
-    url('data:image/webp;base64,<?!= include("BlisterEmpty2x_webp_b64") ?>') 2x
-  );
-  /* Optional: pill empty (locked) */
-  --img-pill-empty: image-set(
-    url('data:image/webp;base64,<?!= include("PillEmpty1x_webp_b64") ?>') 1x,
-    url('data:image/webp;base64,<?!= include("PillEmpty2x_webp_b64") ?>') 2x
+    url('data:image/png;base64,<?!= include("Blister1x_b64") ?>') 1x,
+    url('data:image/png;base64,<?!= include("Blister2x_b64") ?>') 2x
   );
   /* Optional aluminium: define --img-aluminium similarly if assets are added */
   --shadow: 0 6px 18px rgba(15,23,42,.14);
@@ -190,29 +184,6 @@ body {
 .barre-disponibilite { height: 4px; background-color: var(--muted); border-radius: var(--radius); margin: 5px auto 0; overflow: hidden; max-width: 80%; }
 .barre-disponibilite div { height: 100%; background: linear-gradient(90deg,#8e44ad,#3498db); }
 
-/* Fond aluminium en tuile appliqué au conteneur calendrier (lisible, non intrusif) */
-.els-ui-theming.els-aluminium #vue-calendrier.carte {
-  position: relative;
-  background-image: var(--alu-tile-1x, var(--img-aluminium));
-  background-size: var(--alu-size, 96px) var(--alu-size, 96px);
-  background-repeat: repeat;
-  border-radius: var(--radius, 16px);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.5),
-    inset 0 -1px 0 rgba(0,0,0,.06);
-}
-
-/* densité 2x / écrans retina */
-@media (min-resolution: 1.25dppx),
-       (min-resolution: 120dpi),
-       (-webkit-min-device-pixel-ratio: 1.25),
-       (min--moz-device-pixel-ratio: 1.25) {
-  .els-ui-theming.els-aluminium #vue-calendrier.carte {
-    background-image: var(--alu-tile-2x, var(--img-aluminium));
-    background-size: calc(var(--alu-size, 96px) * 2) calc(var(--alu-size, 96px) * 2);
-  }
-}
-
 /* --- THEME ELS: Calendrier gélule/blister (scopé) --- */
 .els-ui-theming .jour-calendrier {
   position: relative;
@@ -238,10 +209,20 @@ body {
   background-image: var(--img-capsule);
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 92% auto; /* normalisation visuelle (capsule) */
+  background-size: 92% auto;
   color: var(--txt);
 }
-/* Matte cells: no glossy overlay */
+.els-ui-theming .jour-calendrier:not(.desactive)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  background: linear-gradient(180deg, #ffffff80, #ffffff20 28%, transparent 60%);
+  mix-blend-mode: screen;
+  opacity: .75;
+  z-index: 0;
+}
 .els-ui-theming .jour-calendrier > span { position: relative; z-index: 1; }
 /* Numéro du jour: top-center, gras, couleur lisible */
 .els-ui-theming .jour-calendrier > span {
@@ -266,7 +247,7 @@ body {
   background-image: var(--img-blister-vide);
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 92% auto; /* normalisation visuelle (blister vide) */
+  background-size: 92% auto;
   border: 0;
   color: var(--muted);
   filter: saturate(.92) brightness(.98);
@@ -305,7 +286,7 @@ body {
   background-image: var(--img-blister-vide);
   background-repeat: no-repeat;
   background-position: center;
-  background-size: contain; /* normalisation visuelle (blister vide) */
+  background-size: 100% 100%;
   color: var(--muted);
 }
 .els-ui-theming .slot-btn:focus { outline: 3px solid var(--bleu); outline-offset: 2px; }
@@ -349,7 +330,11 @@ body {
 }
 
 /* --- Option: fond aluminium (si assets présents) --- */
-/* Calendar-only aluminium theme (no body background) */
+body.els-ui-theming.els-aluminium {
+  background-image: var(--img-aluminium);
+  background-size: 64px 64px;
+  background-attachment: fixed;
+}
 
 /* Subtle clarity on surfaces */
 .els-ui-theming main,
@@ -578,3 +563,4 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   .champ-formulaire { border-color: var(--muted); }
 }
 </style>
+
