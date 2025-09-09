@@ -168,7 +168,7 @@ const RESERVATION_CACHE_ENABLED = true;
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
 const THEME_V2_ENABLED = true;
-const ELS_UI_THEMING_ENABLED = false;
+const ELS_UI_THEMING_ENABLED = true;
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
 // const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
