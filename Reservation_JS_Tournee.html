@@ -141,17 +141,24 @@ function afficherSelectionCreneaux(creneaux) {
   } else {
     ui.grilleSelectionCreneau.textContent = '';
     creneaux.forEach(creneau => {
-      const estimation = calculerInfosTourneeClient(tourneeEnCours.totalStops, tourneeEnCours.returnToPharmacy, tourneeEnCours.date, creneau);
+      const slot = (creneau && typeof creneau === 'object') ? creneau : { time: String(creneau), status: 'open', taken: false, inPast: false };
+      const slotTime = slot.time || String(creneau);
+      const estimation = calculerInfosTourneeClient(tourneeEnCours.totalStops, tourneeEnCours.returnToPharmacy, tourneeEnCours.date, slotTime);
       const estUrgent = estimation.typeCourse === 'Urgent';
       const btn = document.createElement('button');
       btn.className = `slot-btn ${estUrgent ? 'urgent' : 'standard'}`;
-      btn.dataset.creneau = creneau;
+
+      const indispo = (slot.status === 'closed') || Boolean(slot.taken) || Boolean(slot.inPast);
+      if (indispo) btn.setAttribute('disabled', '');
+      btn.classList.toggle('indispo', indispo);
+
+      btn.dataset.creneau = slotTime;
       btn.dataset.prix = estimation.prix;
       btn.dataset.tarif = estimation.typeCourse;
 
       const spanTime = document.createElement('span');
       spanTime.className = 'slot-time';
-      spanTime.textContent = creneau;
+      spanTime.textContent = slotTime;
       const spanRate = document.createElement('span');
       spanRate.className = 'slot-rate-label';
       spanRate.textContent = estimation.typeCourse;
@@ -166,7 +173,7 @@ function afficherSelectionCreneaux(creneaux) {
   ui.modaleSelectionCreneau.classList.remove('hidden');
   ui.grilleSelectionCreneau.onclick = function(e) {
     const target = e.target.closest('.slot-btn');
-    if (target) {
+    if (target && !target.disabled && !target.classList.contains('indispo')) {
       if (ui.grilleSelectionCreneau) {
         ui.grilleSelectionCreneau.querySelectorAll('.slot-btn').forEach(btn => btn.classList.remove('selected'));
       }
@@ -339,6 +346,7 @@ function ajouterTourneeAuPanier(isRecurrentItem = false, recurrenceData = null) 
   }
 }
 </script>
+
 
 
 

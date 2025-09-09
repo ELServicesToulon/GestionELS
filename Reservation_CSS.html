@@ -1,4 +1,29 @@
 <style>
+/* --- THEME BLISTER ELS --- */
+:root {
+  --els-font: 'Montserrat', sans-serif;
+  --els-violet: #8e44ad;
+  --els-bleu: #3498db;
+  --els-bleu2: #5dade2;
+  --els-grad: linear-gradient(90deg, var(--els-violet) 0%, var(--els-bleu) 100%);
+  /* Use data URIs to avoid 404 in Apps Script HTMLService */
+  --img-capsule: image-set(
+    url('data:image/png;base64,<?!= include("Capsule1x_b64") ?>') 1x,
+    url('data:image/png;base64,<?!= include("Capsule2x_b64") ?>') 2x
+  );
+  --img-blister-vide: image-set(
+    url('data:image/png;base64,<?!= include("Blister1x_b64") ?>') 1x,
+    url('data:image/png;base64,<?!= include("Blister2x_b64") ?>') 2x
+  );
+  /* Optional aluminium: define --img-aluminium similarly if assets are added */
+  --shadow: 0 6px 18px rgba(15,23,42,.14);
+  --radius: 20px;
+  --muted: #64748b;
+  --img-aluminium: image-set(
+    url('data:image/png;base64,<?!= include("Aluminium1x_b64") ?>') 1x,
+    url('data:image/png;base64,<?!= include("Aluminium2x_b64") ?>') 2x
+  );
+}
 /* =================================================================
                       FEUILLE DE STYLE - INTERFACE DE RÉSERVATION
    ================================================================= */
@@ -150,12 +175,197 @@ body {
 /* --- CALENDRIER --- */
 #titre-calendrier { margin: 0; font-size: 1.5em; color: var(--violet); }
 .calendrier-jours-semaine, #grille-calendrier { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
-.calendrier-jours-semaine { font-weight: 600; color: var(--muted); padding-bottom: 10px; }
+/* Grille du calendrier: 7 colonnes avec espacement */
+#grille-calendrier { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; }
+.calendrier-jours-semaine { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
 .jour-calendrier { padding: 10px; border-radius: var(--radius); cursor: pointer; transition: background-color 0.2s, border-color 0.2s; border: 1px solid transparent; }
 .jour-calendrier:not(.desactive):hover { background-color: var(--violet); border-color: var(--violet); }
 .jour-calendrier.desactive { color: var(--muted); cursor: not-allowed; background-color: var(--bg); }
 .barre-disponibilite { height: 4px; background-color: var(--muted); border-radius: var(--radius); margin: 5px auto 0; overflow: hidden; max-width: 80%; }
 .barre-disponibilite div { height: 100%; background: linear-gradient(90deg,#8e44ad,#3498db); }
+
+/* --- THEME ELS: Calendrier gélule/blister (scopé) --- */
+.els-ui-theming .jour-calendrier {
+  position: relative;
+  isolation: isolate;
+  height: 78px;
+  margin: 6px;
+  cursor: pointer;
+  border: 0;
+  border-radius: 40px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: var(--shadow);
+  transition: transform .06s ease, box-shadow .2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--txt);
+  text-shadow: none;
+}
+.els-ui-theming .jour-calendrier:not(.desactive) {
+  background: transparent;
+  background-image: var(--img-capsule);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 92% auto;
+  color: var(--txt);
+}
+.els-ui-theming .jour-calendrier:not(.desactive)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  background: linear-gradient(180deg, #ffffff80, #ffffff20 28%, transparent 60%);
+  mix-blend-mode: screen;
+  opacity: .75;
+  z-index: 0;
+}
+.els-ui-theming .jour-calendrier > span { position: relative; z-index: 1; }
+/* Numéro du jour: top-center, gras, couleur lisible */
+.els-ui-theming .jour-calendrier > span {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 700;
+  color: #0f172a;
+  z-index: 1;
+  pointer-events: none;
+}
+.els-ui-theming .jour-calendrier:not(.desactive):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(15,23,42,.20);
+}
+.els-ui-theming .jour-calendrier:not(.desactive):active {
+  transform: translateY(0);
+  box-shadow: var(--shadow);
+}
+.els-ui-theming .jour-calendrier.desactive {
+  background-image: var(--img-blister-vide);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 92% auto;
+  border: 0;
+  color: var(--muted);
+  filter: saturate(.92) brightness(.98);
+  cursor: not-allowed;
+}
+.els-ui-theming .jour-calendrier:not(.desactive):hover,
+.els-ui-theming .jour-calendrier:not(.desactive):focus {
+  outline: 3px solid var(--bleu);
+  outline-offset: 2px;
+}
+.els-ui-theming .jour-calendrier:not(.desactive):focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--els-bleu) 70%, white);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(52,152,219,0.25), var(--shadow);
+}
+.els-ui-theming .barre-disponibilite { display: none; }
+
+/* --- THEME ELS: Modale de créneaux (pills) --- */
+.els-ui-theming .slot-btn {
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  border: 1px solid var(--bleu);
+  background: var(--bg);
+}
+.els-ui-theming .slot-btn.standard.selected {
+  background: var(--els-grad);
+  color: var(--txt);
+  border-color: transparent;
+  box-shadow: var(--shadow);
+}
+.els-ui-theming .slot-btn.standard:not(:disabled):hover {
+  background: linear-gradient(90deg, color-mix(in oklab, var(--els-violet) 85%, #fff 15%), color-mix(in oklab, var(--els-bleu) 85%, #fff 15%));
+  color: var(--txt);
+}
+.els-ui-theming .slot-btn:disabled {
+  background-image: var(--img-blister-vide);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  color: var(--muted);
+}
+.els-ui-theming .slot-btn:focus { outline: 3px solid var(--bleu); outline-offset: 2px; }
+
+/* --- THEME ELS: Titre + en-têtes calendrier (gradient text) --- */
+.els-ui-theming #titre-calendrier {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--els-violet);
+  background: var(--els-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.els-ui-theming .calendrier-jours-semaine {
+  font-weight: 600;
+  color: var(--els-violet);
+  background: var(--els-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* --- Modale de réservation --- */
+.els-ui-theming #modale-selection-creneau .slot-btn {
+  position: relative;
+  height: 72px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background-image: var(--img-capsule);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  font-weight: 700;
+  color: #0f172a;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .2s ease;
+}
+
+/* --- Option: fond aluminium (si assets présents) --- */
+body.els-ui-theming.els-aluminium {
+  background-image: var(--img-aluminium);
+  background-size: 64px 64px;
+  background-attachment: fixed;
+}
+
+/* Subtle clarity on surfaces */
+.els-ui-theming main,
+.els-ui-theming .card,
+.els-ui-theming .dialog {
+  backdrop-filter: saturate(1.05) contrast(1.02);
+  -webkit-backdrop-filter: saturate(1.05) contrast(1.02);
+}
+.els-ui-theming #modale-selection-creneau .slot-btn:disabled,
+.els-ui-theming #modale-selection-creneau .slot-btn.indispo,
+.els-ui-theming .modale-creneaux .slot-btn:disabled,
+.els-ui-theming .modale-creneaux .slot-btn.indispo {
+  background-image: var(--img-blister-vide);
+  filter: saturate(.92) brightness(.98);
+  cursor: not-allowed;
+}
+.els-ui-theming #modale-selection-creneau .slot-btn.selected {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(15,23,42,.20);
+}
+.els-ui-theming #modale-selection-creneau .slot-btn:hover:not(:disabled),
+.els-ui-theming .modale-creneaux .slot-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(15,23,42,.20);
+}
+.
+.els-ui-theming #modale-selection-creneau .slot-btn:focus-visible,
+.els-ui-theming .modale-creneaux .slot-btn:focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--els-violet) 70%, white);
+  outline-offset: 2px;
+}
 
 /* --- PANIER --- */
 #liste-panier { list-style: none; padding: 0; margin: 0; }
