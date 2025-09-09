@@ -108,22 +108,7 @@ monthGrid,
   background-image: var(--img-capsule);
 }
 
-/* override explicite vers assets normalisés (WEBP) */
-.calendar-cell.is-free,
-.day-cell.is-free,
-.jour-calendrier.is-free {
-  background-image: url("branding/ui/pill-full1x.webp");
-}
-@media (min-resolution: 1.25dppx),
-       (min-resolution: 120dpi),
-       (-webkit-min-device-pixel-ratio: 1.25),
-       (min--moz-device-pixel-ratio: 1.25) {
-  .calendar-cell.is-free,
-  .day-cell.is-free,
-  .jour-calendrier.is-free {
-    background-image: url("branding/ui/pill-full2x.webp");
-  }
-}
+/* variables --img-capsule gèrent 1x/2x */
 
 /* jour sans créneau / férié → blister vide */
 .calendar-cell.is-empty,
@@ -139,22 +124,7 @@ monthGrid,
   background-image: var(--img-pill-empty, var(--img-blister-vide));
 }
 
-/* override explicite vers assets normalisés (WEBP) pour .is-locked */
-.calendar-cell.is-locked,
-.day-cell.is-locked,
-.jour-calendrier.is-locked {
-  background-image: url("branding/ui/pill-empty1x.webp");
-}
-@media (min-resolution: 1.25dppx),
-       (min-resolution: 120dpi),
-       (-webkit-min-device-pixel-ratio: 1.25),
-       (min--moz-device-pixel-ratio: 1.25) {
-  .calendar-cell.is-locked,
-  .day-cell.is-locked,
-  .jour-calendrier.is-locked {
-    background-image: url("branding/ui/pill-empty2x.webp");
-  }
-}
+/* variables --img-pill-empty gèrent 1x/2x (fallback prévu) */
 
 /* retina: les image-set() de variables gèrent la densité; aucun changement requis */
 
@@ -204,19 +174,4 @@ monthGrid::before,
     background: rgba(255,255,255,.28);
   }
 }
-/* override explicite vers assets normalisés (WEBP) pour .is-empty */
-.calendar-cell.is-empty,
-.day-cell.is-empty,
-.jour-calendrier.is-empty {
-  background-image: url("branding/ui/blister-empty1x.webp");
-}
-@media (min-resolution: 1.25dppx),
-       (min-resolution: 120dpi),
-       (-webkit-min-device-pixel-ratio: 1.25),
-       (min--moz-device-pixel-ratio: 1.25) {
-  .calendar-cell.is-empty,
-  .day-cell.is-empty,
-  .jour-calendrier.is-empty {
-    background-image: url("branding/ui/blister-empty2x.webp");
-  }
-}
+/* variables --img-blister-vide gèrent 1x/2x */
