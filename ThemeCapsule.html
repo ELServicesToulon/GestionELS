@@ -53,6 +53,8 @@ a, button { color: inherit; }
   --alu-contrast: 1.06;   /* peaufine le contraste */
 }
 /* appliquer les micro‑réglages à la tuile alu (::after) */
+/* Texture alu réelle, ROTÉE et léèrement zoomée (derriè
+re tout) */
 .calendar-shell::after, calendar::after, monthGrid::after {
   transform: rotate(var(--alu-rotate, var(--alu-angle))) scale(var(--alu-zoom, 1));
   filter: brightness(var(--alu-bright, 1)) contrast(var(--alu-contrast, 1));
