@@ -8,3 +8,127 @@ body{ font-family: Montserrat,system-ui,sans-serif; background:#f3f4f6; }
 .btn{ border-radius:999px; padding:.7rem 1.1rem; }
 .btn-primary{ background:linear-gradient(90deg,var(--violet),var(--blue)); color:#fff; }
 .btn:focus-visible{ outline:3px solid var(--blueLight); outline-offset:2px; }
+/* ====== Mobile comfort (global tweaks) ====== */
+:root{
+  /* échelle typographique mobile */
+  --fs-h1: clamp(22px, 5vw, 28px);
+  --fs-h2: clamp(18px, 4.4vw, 24px);
+  --fs-h3: clamp(16px, 4vw, 20px);
+  --fs-body: clamp(14px, 3.6vw, 17px);
+
+  /* espacements compacts */
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 14px;
+  --space-lg: 18px;
+}
+
+/* Titres/paragraphes s’adaptent automatiquement si tu utilises ces classes */
+.h1, h1 { font-size: var(--fs-h1); line-height: 1.2; }
+.h2, h2 { font-size: var(--fs-h2); line-height: 1.25; }
+.h3, h3 { font-size: var(--fs-h3); line-height: 1.3; }
+body     { font-size: var(--fs-body); line-height: 1.5; }
+
+/* Conteneur : marges latérales pour éviter l’effet “mur de texte” */
+.container, .section, main {
+  padding-left: var(--space-lg);
+  padding-right: var(--space-lg);
+}
+
+/* Cartes plus légères sur mobile */
+.card{
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+  padding: var(--space-lg);
+}
+
+/* Boutons : confort tactile et lisibilité */
+button, .btn, .chip, .badge{
+  min-height: 44px;        /* cible tactile */
+  padding: 10px 14px;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+/* Grilles : 1 colonne sur mobile, 2 dès que possible */
+.grid{ display: grid; gap: var(--space-lg); }
+@media (min-width: 560px){
+  .grid.cols-2{ grid-template-columns: 1fr 1fr; }
+}
+
+/* Blocs d’accroche (héros / claims) : réduits et aérés */
+.hero, .claim, .notice, .trust-box{
+  padding: calc(var(--space-lg) + 4px) var(--space-lg);
+  border-radius: 16px;
+}
+.hero p, .claim p, .notice p{ margin: 0; }
+
+/* Listes à puces plus respirantes */
+ul, ol{ padding-left: 1.1rem; }
+li{ margin: 6px 0; }
+
+/* ====== Calendrier ====== */
+#grille-calendrier{
+  padding: var(--space-md);
+  border-radius: 16px;
+}
+#grille-calendrier .month-header{
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+#grille-calendrier .weekday{ font-size: 0.85em; opacity: .75; }
+
+/* Jours : taille adaptée, ombre plus douce */
+#grille-calendrier .jour-calendrier{
+  width: 46px; height: 58px;            /* tu peux ajuster */
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+  margin: 6px auto;
+  padding: 6px 4px;
+}
+
+/* Pictos capsule/blister : un poil plus petits + moins contrastés */
+#grille-calendrier .jour-calendrier .icon{
+  width: 24px; height: 24px;
+  filter: saturate(.9) contrast(.95);
+  opacity: .95;
+}
+
+/* États (dispo, plein, sélectionné) mieux visibles sur petit écran */
+#grille-calendrier .jour-calendrier.desactive   { opacity: .55; }
+#grille-calendrier .jour-calendrier.is-today    { outline: 2px solid rgba(52,152,219,.25); }
+#grille-calendrier .jour-calendrier.is-picked   { outline: 2px solid rgba(142,68,173,.35); }
+
+/* ====== Panier latéral ⇒ bloc sous le calendrier sur mobile ====== */
+@media (max-width: 768px){
+  #app-conteneur{
+    display: grid; gap: var(--space-lg);
+    grid-template-columns: 1fr;          /* pile les colonnes */
+  }
+  #vue-panier, #colonne-droite{
+    position: static; top: auto;         /* annule tout sticky latéral */
+    max-height: none;
+    order: 2;
+  }
+}
+
+/* ====== Micro-optimisations très petit écran ====== */
+@media (max-width: 480px){
+  /* Accroches longues : limite la largeur réelle du texte */
+  .hero, .claim, .trust-box, .notice{ max-width: 680px; margin-inline: auto; }
+
+  /* Réduction fine des grands paragraphes */
+  .hero p, .claim p, .notice p{ font-size: 0.95em; }
+
+  /* Cartes tarifaires : réduire un peu les paddings */
+  .pricing .card{ padding: var(--space-md); }
+
+  /* Icônes calendrier encore un peu plus petites si nécessaire */
+  #grille-calendrier .jour-calendrier{ width: 42px; height: 54px; }
+  #grille-calendrier .jour-calendrier .icon{ width: 22px; height: 22px; }
+}
+
+/* ====== Accessibilité / motion ====== */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation: none !important; transition: none !important; }
+}
