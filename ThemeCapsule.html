@@ -52,3 +52,7 @@ a, button { color: inherit; }
   --cell-radius: 18px;
 }
 </style>
+<style>
+/* defensive reset: no inherited tile inside cells */
+.day-cell, .calendar-cell, .slot-day { background-image: none; }
+</style>
