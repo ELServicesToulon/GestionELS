@@ -39,6 +39,16 @@ $pairs = @(
   @{One=(Join-Path $uiDir 'alu/alu-tile1x.png');      Two=(Join-Path $uiDir 'alu/alu-tile2x.png')}
 )
 
+# Optional explicit checks for normalized pill outputs (PNG sizes)
+try {
+  $pill1 = Get-ImageInfo (Join-Path $uiDir 'pill-full1x.png')
+  $pill2 = Get-ImageInfo (Join-Path $uiDir 'pill-full2x.png')
+  if ($pill1 -and $pill2) {
+    $okPill = ($pill1.Width -eq 320 -and $pill1.Height -eq 128 -and $pill2.Width -eq 640 -and $pill2.Height -eq 256)
+    Write-Host ("pill-full PNG sizes: {0} & {1} -> {2}" -f ("$($pill1.Width)x$($pill1.Height)"), ("$($pill2.Width)x$($pill2.Height)"), ($okPill ? 'OK' : 'FAIL'))
+  }
+} catch {}
+
 $results = foreach ($p in $pairs) {
   if (-not (Test-Path $p.One) -or -not (Test-Path $p.Two)) {
     [PSCustomObject]@{ Asset=$p.One; OneX='missing'; TwoX='missing'; Ratio=0; OK=$false }
