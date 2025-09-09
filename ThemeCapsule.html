@@ -74,7 +74,12 @@ a, button { color: inherit; }
 }
 
 /* 1) La tuile aluminium en diagonale via un pseudo-élément (pas le body) */
-.calendar-shell, calendar, monthGrid { background: none !important; }
+/* On garde le conteneur, mais on déplace la texture sur ::after pour pouvoir la ROTER */
+.calendar-shell, calendar, monthGrid {
+  position: relative;
+  isolation: isolate;        /* garantit les bons plans de z-index */
+  background: none !important;    /* on retire la tuile posée en direct */
+}
 .calendar-shell::after, calendar::after, monthGrid::after {
   content: "";
   position: absolute;
