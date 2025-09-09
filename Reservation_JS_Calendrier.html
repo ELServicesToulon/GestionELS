@@ -33,6 +33,7 @@ function afficherCalendrier(mois, annee) {
         const joursDansLeMois = new Date(annee, mois, 0).getDate();
         const aujourdhui = new Date();
         aujourdhui.setHours(0, 0, 0, 0);
+        const todayISO = `${aujourdhui.getFullYear()}-${String(aujourdhui.getMonth() + 1).padStart(2, '0')}-${String(aujourdhui.getDate()).padStart(2, '0')}`;
 
         // Cases vides d'offset (lundi=1 -> 0 offset, dimanche=0 -> 6)
         for (let i = 0; i < (premierJour === 0 ? 6 : premierJour - 1); i++) {
@@ -56,13 +57,16 @@ function afficherCalendrier(mois, annee) {
           spanJour.textContent = jour;
           cellule.appendChild(spanJour);
 
-          const estPasse = date < aujourdhui;
           const estDimanche = date.getDay() === 0;
           const estComplet = dispo.disponibles === 0;
+          const estPasse = dateISO < todayISO; // compare AAAA-MM-JJ
+          const estReservable = !estPasse && !estDimanche && !estComplet;
 
-          if (estPasse || estDimanche || estComplet) {
-            cellule.classList.add('desactive');
-          } else {
+          cellule.classList.toggle('desactive', !estReservable);
+          cellule.tabIndex = estReservable ? 0 : -1;
+          cellule.setAttribute('aria-disabled', (!estReservable).toString());
+
+          if (estReservable) {
             cellule.dataset.date = dateISO;
             cellule.setAttribute('aria-label', `${dispo.disponibles} créneaux disponibles`);
             const barre = document.createElement('div');

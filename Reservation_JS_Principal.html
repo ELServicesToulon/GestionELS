@@ -35,6 +35,7 @@ function initializeFlags(flags = {}) {
     configCacheEnabled: false,
     reservationCacheEnabled: false,
     themeV2Enabled: false,
+    elsUiThemingEnabled: false,
     cartResetEnabled: false,
     devisEnabled: false
 
@@ -462,6 +463,12 @@ function configurerEcouteursEvenements() {
 document.addEventListener('DOMContentLoaded', () => {
   google.script.run.withSuccessHandler(cfg => {
     window.etat.flags = initializeFlags(cfg);
+    try {
+      if (window.etat.flags && window.etat.flags.elsUiThemingEnabled) {
+        document.body.classList.add('els-ui-theming');
+        document.body.classList.add('els-aluminium'); // QA: fond aluminium activé
+      }
+    } catch (e) { /* no-op */ }
     mettreAJourBoutonViderPanier();
     configurerEcouteursEvenements();
   }).getConfiguration();
