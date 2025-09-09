@@ -89,6 +89,23 @@ monthGrid,
   background-image: var(--img-capsule);
 }
 
+/* override explicite vers assets normalisés (WEBP) */
+.calendar-cell.is-free,
+.day-cell.is-free,
+.jour-calendrier.is-free {
+  background-image: url("branding/ui/pill-full1x.webp");
+}
+@media (min-resolution: 1.25dppx),
+       (min-resolution: 120dpi),
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min--moz-device-pixel-ratio: 1.25) {
+  .calendar-cell.is-free,
+  .day-cell.is-free,
+  .jour-calendrier.is-free {
+    background-image: url("branding/ui/pill-full2x.webp");
+  }
+}
+
 /* jour sans créneau / férié → blister vide */
 .calendar-cell.is-empty,
 .day-cell.is-empty,
