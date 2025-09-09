@@ -6,14 +6,16 @@
   --els-bleu: #3498db;
   --els-bleu2: #5dade2;
   --els-grad: linear-gradient(90deg, var(--els-violet) 0%, var(--els-bleu) 100%);
+  /* Use data URIs to avoid 404 in Apps Script HTMLService */
   --img-capsule: image-set(
-    url('branding/ui/capsule1x.png') 1x,
-    url('branding/ui/capsule2x.png') 2x
+    url('data:image/png;base64,<?!= include("Capsule1x_b64") ?>') 1x,
+    url('data:image/png;base64,<?!= include("Capsule2x_b64") ?>') 2x
   );
   --img-blister-vide: image-set(
-    url('branding/ui/blister_vide1x.png') 1x,
-    url('branding/ui/blister_vide2x.png') 2x
+    url('data:image/png;base64,<?!= include("Blister1x_b64") ?>') 1x,
+    url('data:image/png;base64,<?!= include("Blister2x_b64") ?>') 2x
   );
+  /* Optional aluminium: define --img-aluminium similarly if assets are added */
   --shadow: 0 6px 18px rgba(15,23,42,.14);
   --radius: 20px;
   --muted: #64748b;
@@ -324,11 +326,8 @@ body {
 }
 
 /* --- Option: fond aluminium (si assets présents) --- */
-body.els-ui-theming {
-  background-image: image-set(
-    url('branding/ui/aluminium1x.png') 1x,
-    url('branding/ui/aluminium2x.png') 2x
-  );
+body.els-ui-theming.els-aluminium {
+  background-image: var(--img-aluminium);
   background-size: 64px 64px;
   background-attachment: fixed;
 }
