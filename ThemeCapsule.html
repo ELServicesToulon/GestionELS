@@ -102,7 +102,13 @@ re tout) */
 }
 
 /* S'assurer que le voile mat passe au-dessus de la tuile */
-.calendar-shell::before, calendar::before, monthGrid::before { z-index: 1; }
+.calendar-shell::before, calendar::before, monthGrid::before {
+  content:"";
+  position:absolute; inset:0; border-radius:16px;
+  background: rgba(255,255,255,.16);
+  pointer-events:none;
+  z-index: 1;
+}
 
 /* 2) Dôme (relief) sur les cases jour uniquement */
 .day-cell::before, .calendar-cell::before, .jour-calendrier::before,
