@@ -766,3 +766,22 @@ function archiverFacturesDuMois() {
     SpreadsheetApp.getUi().alert('Erreur', e.message, ui.ButtonSet.OK);
   }
 }
+// ================================================================
+//                         MENU FEUILLE (ELS)
+// ================================================================
+// Ajoute un menu pour vérifier rapidement l'installation et le setup.
+// Les entrées n'apparaissent que si les fonctions existent.
+
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  const menu = ui.createMenu('EL Services');
+
+  if (typeof showSetupSummary_ELS === 'function') {
+    menu.addItem('Vérifier l’installation', 'showSetupSummary_ELS');
+  }
+  if (typeof checkSetup_ELS === 'function') {
+    menu.addItem('Check setup (console)', 'checkSetup_ELS');
+  }
+
+  menu.addToUi();
+}

@@ -1,0 +1,54 @@
+// ================================================================
+//                      VÉRIFICATION DE L'INSTALLATION (ELS)
+// ================================================================
+// Fonction utilitaire non bloquante pour vérifier rapidement la
+// configuration: propriétés requises, flags exposés et infos d'env.
+// Utilisez `clasp run checkSetup_ELS` pour obtenir un résumé JSON.
+
+/**
+ * Vérifie la configuration de base sans effets de bord.
+ * @returns {{ok:boolean, missingProps:string[], flags:Object, info:Object, warnings:string[]}}
+ */
+function checkSetup_ELS() {
+  const warnings = [];
+
+  // 1) Propriétés requises
+  const sp = PropertiesService.getScriptProperties();
+  const missing = (Array.isArray(REQUIRED_PROPS) ? REQUIRED_PROPS : []).filter(k => {
+    const v = sp.getProperty(k);
+    return v === null || v === '';
+  });
+
+  // 2) Flags exposés au client (depuis Configuration.gs)
+  var flags = {};
+  try {
+    flags = getConfiguration ? getConfiguration() : Object.assign({}, FLAGS);
+  } catch (e) {
+    warnings.push('Impossible de lire les flags (getConfiguration/FLAGS).');
+  }
+
+  // 3) Infos d’environnement utiles
+  var scriptUrl = '';
+  try { scriptUrl = ScriptApp.getService().getUrl(); } catch (e) { /* pas de déploiement */ }
+  const info = {
+    timezone: Session.getScriptTimeZone(),
+    scriptUrl: scriptUrl,
+    themeV2: typeof THEME_V2_ENABLED !== 'undefined' ? !!THEME_V2_ENABLED : false,
+    slotsAmpm: typeof SLOTS_AMPM_ENABLED !== 'undefined' ? !!SLOTS_AMPM_ENABLED : false
+  };
+
+  const ok = missing.length === 0;
+
+  const result = {
+    ok: ok,
+    missingProps: missing,
+    flags: flags,
+    info: info,
+    warnings: warnings
+  };
+
+  // Log résumé lisible dans l'IDE Apps Script
+  Logger.log('[ELS setup] ok=%s, missingProps=%s', ok, missing.join(', '));
+  return result;
+}
+
