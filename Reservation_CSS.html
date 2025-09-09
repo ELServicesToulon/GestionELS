@@ -196,6 +196,17 @@ body {
     inset 0 -1px 0 rgba(0,0,0,.06);
 }
 
+/* densité 2x / écrans retina */
+@media (min-resolution: 1.25dppx),
+       (min-resolution: 120dpi),
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min--moz-device-pixel-ratio: 1.25) {
+  .els-ui-theming.els-aluminium #vue-calendrier.carte {
+    background-image: var(--alu-tile-2x, var(--img-aluminium));
+    background-size: var(--alu-size, 96px) var(--alu-size, 96px);
+  }
+}
+
 /* --- THEME ELS: Calendrier gélule/blister (scopé) --- */
 .els-ui-theming .jour-calendrier {
   position: relative;
