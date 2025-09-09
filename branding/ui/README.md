@@ -25,6 +25,22 @@ Maintenance
    - Windows PowerShell: `./Build-AssetEmbeds.ps1`
    - Writes the HTML fragments at repo root (no BOM, single-line base64).
 
+HtmlService workflow (Apps Script)
+- Generate or update normalized assets
+  - `npm run normalize:ui` (generic pass for capsule|pill|blister)
+  - `npm run assets:normalize:pills` (produces pill-full/empty and blister-empty WebP+PNG at 1x/2x)
+- Build base64 fragments consumed by Reservation_CSS.html
+  - `npm run assets:build:b64` → writes `PillFull*_webp_b64.html`, `PillEmpty*_webp_b64.html`, `BlisterEmpty*_webp_b64.html`, `Aluminium*_b64.html` at repo root
+- Update the aluminium tile CSS variables
+  - `npm run embed:alu` → updates `branding/ui/alu/alu-embed.css` with `--alu-tile-1x/2x` and `--alu-size` (default 96px)
+- Push to Apps Script (no JS logic changes required)
+  - `npm run clasp:push`
+
+Notes
+- HtmlService uses inline base64 fragments (data URIs) to avoid network fetches. Ensure `*_webp_b64.html` are regenerated after asset changes.
+- If existing filenames are referenced by CSS/HTML, prefer replacing the binary content while preserving the path; otherwise adjust CSS variables only.
+- Keep colorimetry: gradient #8e44ad → #3498db for colored half; white half in #f4f6f8.
+
 Notes
 - Keep transparent backgrounds and tight cropping (no extra margins).
 - Do not change filenames; CSS expects these asset pairs.
