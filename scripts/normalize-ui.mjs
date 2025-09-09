@@ -13,14 +13,21 @@ const EXTS = /\.(png|webp|svg)$/i;
 
 const ensure = async (p) => { try { await mkdir(p, { recursive: true }); } catch { /* no-op */ } };
 
+const EXCLUDE_DIRS = new Set(["_normalized", "alu", "node_modules", ".git"]);
+
 const walk = async (dir) => {
   const out = [];
   const visit = async (d) => {
     const entries = await readdir(d, { withFileTypes: true });
     for (const e of entries) {
       const p = path.join(d, e.name);
-      if (e.isDirectory()) await visit(p);
-      else out.push(p);
+      if (e.isDirectory()) {
+        if (EXCLUDE_DIRS.has(e.name)) continue;
+        await visit(p);
+      } else {
+        if (!EXTS.test(e.name)) continue;
+        out.push(p);
+      }
     }
   };
   await visit(dir);
