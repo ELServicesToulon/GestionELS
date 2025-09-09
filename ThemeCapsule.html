@@ -58,7 +58,7 @@ a, button { color: inherit; }
 </style>
 <style>
 /* container carries the aluminium tile */
-.calendar-shell, .calendar, .monthGrid, #vue-calendrier.carte {
+.calendar-shell, calendar, monthGrid {
   position: relative;
   background-image: var(--alu-tile-1x);
   background-size: var(--alu-size) var(--alu-size);
@@ -71,7 +71,7 @@ a, button { color: inherit; }
 <style>
 /* retina density: prefer 2x tile on high-DPI */
 @media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
-  .calendar-shell, .calendar, .monthGrid, #vue-calendrier.carte {
+  .calendar-shell, calendar, monthGrid {
     background-image: var(--alu-tile-2x);
     background-size: calc(var(--alu-size) * 2) calc(var(--alu-size) * 2);
   }
