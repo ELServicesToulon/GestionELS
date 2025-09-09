@@ -13,14 +13,19 @@ const EXTS = /\.(png|webp|svg)$/i;
 
 const ensure = async (p) => { try { await mkdir(p, { recursive: true }); } catch { /* no-op */ } };
 
-async function* walk(dir) {
-  const entries = await readdir(dir, { withFileTypes: true });
-  for (const e of entries) {
-    const p = path.join(dir, e.name);
-    if (e.isDirectory()) { yield* walk(p); }
-    else { yield p; }
-  }
-}
+const walk = async (dir) => {
+  const out = [];
+  const visit = async (d) => {
+    const entries = await readdir(d, { withFileTypes: true });
+    for (const e of entries) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) await visit(p);
+      else out.push(p);
+    }
+  };
+  await visit(dir);
+  return out;
+};
 
 async function processImage(file) {
   const base = path.basename(file).toLowerCase();
@@ -61,13 +66,17 @@ async function processImage(file) {
     await writeFile(outWEBP, webp);
     outputs.push(outPNG, outWEBP);
   }
+  if (outputs.length) {
+    console.log("✓ normalized", base);
+  }
   return outputs;
 }
 
 async function main() {
   await ensure(OUT);
+  const paths = await walk(SRC);
   const created = [];
-  for await (const p of walk(SRC)) {
+  for (const p of paths) {
     const outs = await processImage(p);
     created.push(...outs);
   }
