@@ -26,6 +26,61 @@ monthGrid,
     inset 0 -1px 0 rgba(0,0,0,.06);
 }
 
+/* === cellules calendrier → image d'arrière-plan locale à la cellule === */
+.calendar-cell,
+.day-cell,
+.jour-calendrier {
+  position: relative;
+  border: 0;
+  border-radius: 40px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 92% auto;
+  box-shadow: var(--shadow, 0 6px 18px rgba(15,23,42,.14));
+  transition: transform .06s ease, box-shadow .2s ease;
+}
+
+/* état normal (réservable) */
+.calendar-cell:not(.disabled):not(.desactive),
+.day-cell:not(.disabled),
+.jour-calendrier:not(.desactive) {
+  background-image: var(--img-capsule);
+  color: #0f172a;
+}
+
+/* état désactivé / indisponible */
+.calendar-cell.disabled, .calendar-cell.desactive,
+.day-cell.disabled, .day-cell.desactive,
+.jour-calendrier.desactive {
+  background-image: var(--img-blister-vide);
+  filter: saturate(.92) brightness(.98);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* hover/active (réservable) */
+.calendar-cell:not(.disabled):not(.desactive):hover,
+.day-cell:not(.disabled):hover,
+.jour-calendrier:not(.desactive):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(15,23,42,.20);
+}
+.calendar-cell:not(.disabled):not(.desactive):active,
+.day-cell:not(.disabled):active,
+.jour-calendrier:not(.desactive):active {
+  transform: translateY(0);
+  box-shadow: var(--shadow, 0 6px 18px rgba(15,23,42,.14));
+}
+
+/* focus clavier accessible */
+.calendar-cell:focus-visible,
+.day-cell:focus-visible,
+.jour-calendrier:focus-visible {
+  outline: 3px solid var(--blueLight);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25), var(--shadow, 0 6px 18px rgba(15,23,42,.14));
+}
+
 /* voile pour lisibilité des numéros/labels */
 .calendar-shell::before,
 .calendar-grid::before,
