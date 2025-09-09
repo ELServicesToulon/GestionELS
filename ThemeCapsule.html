@@ -68,3 +68,12 @@ a, button { color: inherit; }
   box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(0,0,0,.06);
 }
 </style>
+<style>
+/* retina density: prefer 2x tile on high-DPI */
+@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+  .calendar-shell, .calendar, .monthGrid, #vue-calendrier.carte {
+    background-image: var(--alu-tile-2x);
+    background-size: calc(var(--alu-size) * 2) calc(var(--alu-size) * 2);
+  }
+}
+</style>
