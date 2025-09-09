@@ -45,6 +45,25 @@ a, button { color: inherit; }
 .app-pied-de-page { padding: 20px; color: var(--muted); border-top: 1px solid var(--bleu); text-align: center; }
 </style>
 <style>
+/* a11y */
+@media (prefers-contrast: more) {
+  /* stronger cell edges and higher label contrast */
+  .day-cell, .calendar-cell, .slot-day {
+    box-shadow: inset 0 0 0 2px rgba(15,23,42,.85), 0 1px 1px rgba(0,0,0,.06);
+  }
+  .day-cell .label, .day-cell .date,
+  .calendar-cell .label, .calendar-cell .date {
+    color:#0f172a; text-shadow:none; font-weight:700;
+  }
+  /* slightly stronger matte veil */
+  .calendar-shell::before, calendar::before, monthGrid::before {
+    background: rgba(255,255,255,.22);
+  }
+  /* visible focus ring */
+  :focus-visible { outline: 3px solid var(--bleu); outline-offset: 3px; }
+}
+</style>
+<style>
 /* labels inside cells */
 .day-cell .label, .day-cell .date,
 .calendar-cell .label, .calendar-cell .date {
