@@ -34,11 +34,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const contenuModale = document.getElementById('contenu-modale-wrapper');
     const btnFermerModale = document.getElementById('btn-fermer-modale');
     const caEnCours = document.getElementById('ca-en-cours');
+    const missingPropsBanner = document.getElementById('missing-props-banner');
 
     // --- Variables d'état ---
     let toutesLesReservationsAffichees = [];
     let tousLesClients = [];
     let vueActuelle = 'date'; // NOUVEAU: pour savoir quelle vue rafraîchir ('date' ou 'toutes')
+
+    google.script.run.withSuccessHandler(res => {
+        if (res && Array.isArray(res.missingProps) && res.missingProps.length > 0 && missingPropsBanner) {
+            const items = res.missingProps.map(p => `<li>${escapeHTML(p)}</li>`).join('');
+            renderHTML(missingPropsBanner, `<strong>Configuration manquante :</strong><ul>${items}</ul>`);
+            missingPropsBanner.classList.remove('hidden');
+        }
+    }).withFailureHandler(logError).checkSetup_ELS();
 
     /**
      * Initialise le tableau de bord.
