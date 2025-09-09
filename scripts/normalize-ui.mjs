@@ -16,7 +16,6 @@ const ensure = async (p) => { try { await mkdir(p, { recursive: true }); } catch
 const EXCLUDE_DIRS = new Set(["_normalized", "alu", "node_modules", ".git"]);
 
 const walk = async (dir) => {
-  const out = [];
   const visit = async (d) => {
     const entries = await readdir(d, { withFileTypes: true });
     for (const e of entries) {
@@ -24,14 +23,13 @@ const walk = async (dir) => {
       if (e.isDirectory()) {
         if (EXCLUDE_DIRS.has(e.name)) continue;
         await visit(p);
-      } else {
-        if (!EXTS.test(e.name)) continue;
-        out.push(p);
+        continue;
       }
+      if (!EXTS.test(e.name)) continue;
+      await processImage(p);
     }
   };
   await visit(dir);
-  return out;
 };
 
 async function processImage(file) {
@@ -81,13 +79,8 @@ async function processImage(file) {
 
 async function main() {
   await ensure(OUT);
-  const paths = await walk(SRC);
-  const created = [];
-  for (const p of paths) {
-    const outs = await processImage(p);
-    created.push(...outs);
-  }
-  console.log(`✓ Normalized ${created.length/2} images into ${OUT}`);
+  await walk(SRC);
+  console.log(`✓ normalization done → ${OUT}`);
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });
