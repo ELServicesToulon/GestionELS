@@ -9,7 +9,7 @@ Assets
 - blister_vide1x.png / blister_vide2x.png
   - 1x: 183×99 px
   - 2x: 366×198 px (exactly 2×)
-- aluminium1x.png / aluminium2x.png
+- alu/aluminium1x.png / alu/aluminium2x.png
   - 1x: 64×64 px (tile)
   - 2x: 128×128 px (exactly 2×)
 
@@ -29,4 +29,3 @@ Notes
 - Keep transparent backgrounds and tight cropping (no extra margins).
 - Do not change filenames; CSS expects these asset pairs.
 - No external dependencies are required for the above scripts.
-
