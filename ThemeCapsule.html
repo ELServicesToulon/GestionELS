@@ -45,6 +45,21 @@ a, button { color: inherit; }
 .app-pied-de-page { padding: 20px; color: var(--muted); border-top: 1px solid var(--bleu); text-align: center; }
 </style>
 <style>
+/* === FIX ciblage calendrier : pas de barre par semaine ===================== */
+/* 1) Neutraliser tout wrapper de semaine/ligne qui aurait reçu le style case */
+.calendar-shell .week,
+.calendar-shell .week-row,
+monthGrid .week,
+monthGrid .row,
+monthGrid .calendar-row,
+monthGrid .wrapper,
+monthGrid .cells-wrapper {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+</style>
+<style>
 .day-cell, .calendar-cell, .slot-day { box-shadow: inset 0 0 0 1px rgba(0,0,0,.05); }
 </style>
 <style>
