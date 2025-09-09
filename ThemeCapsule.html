@@ -77,3 +77,14 @@ a, button { color: inherit; }
   }
 }
 </style>
+<style>
+/* matte veil for readability */
+.calendar-shell::before, calendar::before, monthGrid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--calendar-matte);
+}
+</style>
