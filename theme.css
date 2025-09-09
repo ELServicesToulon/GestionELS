@@ -31,11 +31,12 @@ monthGrid,
 .day-cell,
 .jour-calendrier {
   position: relative;
+  z-index: 1; /* au-dessus du voile/alu global */
   border: 0;
   border-radius: 40px;
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 92% auto;
+  background-size: contain; /* sur l'alu global, on place la gélule/blister par-dessus */
   box-shadow: var(--shadow, 0 6px 18px rgba(15,23,42,.14));
   transition: transform .06s ease, box-shadow .2s ease;
 }
@@ -92,6 +93,7 @@ monthGrid::before,
   background: rgba(255,255,255,.18);
   pointer-events: none;
   border-radius: inherit;
+  z-index: 0; /* sous les cellules */
 }
 
 /* voile légèrement plus fort sur wrappers génériques */
