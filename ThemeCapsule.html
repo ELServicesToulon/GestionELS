@@ -84,3 +84,11 @@ a, button { color: inherit; }
   background: var(--calendar-matte); pointer-events:none;
 }
 </style>
+<style>
+/* cells: matte, no inner tile */
+.day-cell, .calendar-cell, .slot-day {
+  background-color: var(--cell-matte);
+  background-image: none;
+  border-radius: var(--cell-radius);
+}
+</style>
