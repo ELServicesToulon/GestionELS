@@ -45,6 +45,19 @@ a, button { color: inherit; }
 .app-pied-de-page { padding: 20px; color: var(--muted); border-top: 1px solid var(--bleu); text-align: center; }
 </style>
 <style>
+/* 5) États visuels (si tu les utilises) */
+monthGrid td.is-free,
+monthGrid .day.is-free,
+.calendar-grid .day.is-free {
+  background: var(--cell-matte) url("branding/ui/pill-full1x.webp") center/92% no-repeat;
+}
+@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+  monthGrid td.is-free,
+  monthGrid .day.is-free,
+  .calendar-grid .day.is-free { background-image: url("branding/ui/pill-full2x.webp"); }
+}
+</style>
+<style>
 /* 4) Les VRAIES cases jour uniquement (td ou div jour) */
 monthGrid td,
 monthGrid td.day,
