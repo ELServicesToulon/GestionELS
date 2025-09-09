@@ -37,7 +37,7 @@ monthGrid,
   monthGrid,
   #vue-calendrier.carte {
     background-image: var(--alu-tile-2x, var(--img-aluminium));
-    /* garder l’échelle visuelle identique */
-    background-size: var(--alu-size, 96px) var(--alu-size, 96px);
+    /* taille de trame doublée pour 2x */
+    background-size: calc(var(--alu-size, 96px) * 2) calc(var(--alu-size, 96px) * 2);
   }
 }
