@@ -58,6 +58,15 @@ try {
   }
 } catch {}
 
+try {
+  $b1 = Get-ImageInfo (Join-Path $uiDir 'blister-empty1x.png')
+  $b2 = Get-ImageInfo (Join-Path $uiDir 'blister-empty2x.png')
+  if ($b1 -and $b2) {
+    $okB = ($b1.Width -eq 320 -and $b1.Height -eq 128 -and $b2.Width -eq 640 -and $b2.Height -eq 256)
+    Write-Host ("blister-empty PNG sizes: {0} & {1} -> {2}" -f ("$($b1.Width)x$($b1.Height)"), ("$($b2.Width)x$($b2.Height)"), ($okB ? 'OK' : 'FAIL'))
+  }
+} catch {}
+
 $results = foreach ($p in $pairs) {
   if (-not (Test-Path $p.One) -or -not (Test-Path $p.Two)) {
     [PSCustomObject]@{ Asset=$p.One; OneX='missing'; TwoX='missing'; Ratio=0; OK=$false }

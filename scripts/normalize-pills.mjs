@@ -122,6 +122,52 @@ async function renderEmpty({ w, h, marginX, marginY, scale }) {
   return composed;
 }
 
+// Blister empty variant: stronger rim and inner plastic shading
+function blisterEmptySVG(w, h, marginX, marginY) {
+  const innerW = w - 2 * marginX;
+  const innerH = h - 2 * marginY;
+  const r = Math.min(innerH / 2, innerW / 2);
+  const stroke = Math.max(3 * (w / CANVAS_2X.w), 2);
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+  <defs>
+    <linearGradient id="rim" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity=".9"/>
+      <stop offset="60%" stop-color="#E6ECF1" stop-opacity=".95"/>
+      <stop offset="100%" stop-color="#C8D3DC" stop-opacity=".95"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(${marginX},${marginY})">
+    <rect x="${stroke/2}" y="${stroke/2}" width="${innerW-stroke}" height="${innerH-stroke}" rx="${r-stroke/2}" ry="${r-stroke/2}" fill="none" stroke="url(#rim)" stroke-width="${stroke}"/>
+    <!-- inner subtle shading to hint cavity -->
+    <rect x="${stroke}" y="${stroke}" width="${innerW-2*stroke}" height="${innerH-2*stroke}" rx="${Math.max(0,r-stroke)}" ry="${Math.max(0,r-stroke)}" fill="rgba(255,255,255,0.12)"/>
+  </g>
+</svg>`;
+}
+
+async function renderBlisterEmpty({ w, h, marginX, marginY, scale }) {
+  const svg = blisterEmptySVG(w, h, marginX, marginY);
+  const rim = sharp(Buffer.from(svg)).png();
+  const shadow = await sharp(Buffer.from(svg))
+    .removeAlpha()
+    .flatten({ background: { r: 0, g: 0, b: 0 } })
+    .png()
+    .blur((SHADOW.blur) * scale)
+    .modulate({ brightness: 1, saturation: 0 })
+    .ensureAlpha(SHADOW.opacity * 0.6)
+    .toBuffer();
+
+  const composed = await sharp({ create: { width: w, height: h, channels: 4, background: { r:0, g:0, b:0, alpha:0 } } })
+    .composite([
+      { input: shadow, top: Math.round(SHADOW.y * scale), left: 0 },
+      { input: await rim.toBuffer(), top: 0, left: 0 }
+    ])
+    .png()
+    .toBuffer();
+
+  return composed;
+}
+
 async function main() {
   // 1x
   const png1x = await renderPill({ w: CANVAS_1X.w, h: CANVAS_1X.h, marginX: MARGIN_1X.x, marginY: MARGIN_1X.y, scale: 1 });
@@ -146,6 +192,17 @@ async function main() {
   await sharp(empty2x).webp({ quality: 92, lossless: false }).toFile('branding/ui/pill-empty2x.webp');
 
   console.log('✓ pill-empty1x/2x PNG+WEBP generated (normalized)');
+
+  // Blister empty variant
+  const blister1x = await renderBlisterEmpty({ w: CANVAS_1X.w, h: CANVAS_1X.h, marginX: MARGIN_1X.x, marginY: MARGIN_1X.y, scale: 1 });
+  await sharp(blister1x).png().toFile('branding/ui/blister-empty1x.png');
+  await sharp(blister1x).webp({ quality: 92, lossless: false }).toFile('branding/ui/blister-empty1x.webp');
+
+  const blister2x = await renderBlisterEmpty({ w: CANVAS_2X.w, h: CANVAS_2X.h, marginX: MARGIN_1X.x * 2, marginY: MARGIN_1X.y * 2, scale: 2 });
+  await sharp(blister2x).png().toFile('branding/ui/blister-empty2x.png');
+  await sharp(blister2x).webp({ quality: 92, lossless: false }).toFile('branding/ui/blister-empty2x.webp');
+
+  console.log('✓ blister-empty1x/2x PNG+WEBP generated (normalized)');
 }
 
 main().catch(err => { console.error(err); process.exit(1); });
