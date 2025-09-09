@@ -172,7 +172,10 @@ monthGrid .day .date {
 monthGrid td.is-empty,
 monthGrid .day.is-empty,
 .calendar-grid .day.is-empty {
-  background: var(--cell-matte) url("branding/ui/blister-empty1x.webp") center/92% no-repeat;
+  background-image: url("branding/ui/blister-empty1x.webp");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 92%;
 }
 @media (min-resolution:1.25dppx) {
   monthGrid td.is-empty,
