@@ -58,6 +58,18 @@ monthGrid .day.is-free,
 }
 </style>
 <style>
+monthGrid td.is-locked,
+monthGrid .day.is-locked,
+.calendar-grid .day.is-locked {
+  background: var(--cell-matte) url("branding/ui/pill-empty1x.webp") center/92% no-repeat;
+}
+@media (min-resolution:1.25dppx), (min--moz-device-pixel-ratio:1.25) {
+  monthGrid td.is-locked,
+  monthGrid .day.is-locked,
+  .calendar-grid .day.is-locked { background-image: url("branding/ui/pill-empty2x.webp"); }
+}
+</style>
+<style>
 /* 4) Les VRAIES cases jour uniquement (td ou div jour) */
 monthGrid td,
 monthGrid td.day,
