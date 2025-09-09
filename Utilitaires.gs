@@ -173,7 +173,15 @@ function include(nomFichier) {
  * @throws {Error} Si la propriété est absente.
  */
 function getSecret(name) {
-  const value = PropertiesService.getScriptProperties().getProperty(name);
+  const sp = PropertiesService.getScriptProperties();
+  let value = sp.getProperty(name);
+  if (value === null || value === '') {
+    if (name === 'DOSSIER_PUBLIC_FOLDER_ID') {
+      value = sp.getProperty('DOCS_PUBLIC_FOLDER_ID');
+    } else if (name === 'DOCS_PUBLIC_FOLDER_ID') {
+      value = sp.getProperty('DOSSIER_PUBLIC_FOLDER_ID');
+    }
+  }
   if (value === null || value === '') {
     throw new Error(`Propriété manquante: ${name}`);
   }

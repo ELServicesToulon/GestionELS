@@ -106,6 +106,7 @@ Set the following keys in the Apps Script editor (File → Project properties �
 - `ID_MODELE_FACTURE` – modèle Google Docs pour générer les factures
 - `ID_DOSSIER_ARCHIVES` – dossier Drive d'archivage des factures
 - `ID_DOSSIER_TEMPORAIRE` – dossier Drive temporaire pour génération des PDF
+- `DOSSIER_PUBLIC_FOLDER_ID` – dossier Drive public (alias : `DOCS_PUBLIC_FOLDER_ID`)
 - `ID_FEUILLE_CALCUL` – feuille de calcul principale
 - `ID_CALENDRIER` – calendrier Google utilisé pour les créneaux
 - `ELS_SHARED_SECRET` – clé secrète pour signer les liens d'accès à l'espace client

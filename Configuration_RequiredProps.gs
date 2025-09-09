@@ -15,6 +15,7 @@ const REQUIRED_PROPS = Object.freeze([
   'ID_MODELE_FACTURE',
   'ID_DOSSIER_ARCHIVES',
   'ID_DOSSIER_TEMPORAIRE',
+  // Dossier Drive exposé publiquement (alias accepté: DOCS_PUBLIC_FOLDER_ID)
   'DOSSIER_PUBLIC_FOLDER_ID',
   'ID_DOCUMENT_CGV',
   'ELS_SHARED_SECRET'
@@ -27,6 +28,11 @@ const REQUIRED_PROPS = Object.freeze([
 function test_requiredProps() {
   const sp = PropertiesService.getScriptProperties();
   const missing = REQUIRED_PROPS.filter(k => {
+    if (k === 'DOSSIER_PUBLIC_FOLDER_ID') {
+      const v1 = sp.getProperty('DOSSIER_PUBLIC_FOLDER_ID');
+      const v2 = sp.getProperty('DOCS_PUBLIC_FOLDER_ID');
+      return (v1 === null || v1 === '') && (v2 === null || v2 === '');
+    }
     const v = sp.getProperty(k);
     return v === null || v === '';
   });
