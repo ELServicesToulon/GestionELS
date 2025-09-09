@@ -17,6 +17,9 @@
     "snapshot": "pwsh tools/snapshot.ps1",
     "helper": "clasp-helper.cmd",
     "helper:ps": "pwsh ./clasp-helper.ps1",
+    "assets:verify": "pwsh ./branding/ui/VERIFY-UI-ASSETS.ps1",
+    "assets:build:b64": "pwsh ./branding/ui/Build-AssetEmbeds.ps1",
+    "assets:embed:alu": "node ./scripts/embed-alu.mjs",
     "test": "node -e \"console.log('No automated tests configured. Use the Debug menu in Sheets or run: npm run test:clasp')\"",
     "test:clasp": "clasp run lancerTousLesTestsEtRetournerLogs --noninteractive"
   }
