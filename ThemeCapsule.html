@@ -45,6 +45,14 @@ a, button { color: inherit; }
 .app-pied-de-page { padding: 20px; color: var(--muted); border-top: 1px solid var(--bleu); text-align: center; }
 </style>
 <style>
+/* labels inside cells */
+.day-cell .label, .day-cell .date,
+.calendar-cell .label, .calendar-cell .date {
+  color:#2c3e50; font-weight:600;
+  text-shadow: 0 1px 0 rgba(255,255,255,.75);
+}
+</style>
+<style>
 :root {
   --grid-off-x: 0px; --grid-off-y: 0px;      /* fine alignment of the tile */
   --calendar-matte: rgba(255,255,255,.16);
