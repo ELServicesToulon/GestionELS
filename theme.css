@@ -120,6 +120,23 @@ monthGrid,
   background-image: var(--img-pill-empty, var(--img-blister-vide));
 }
 
+/* override explicite vers assets normalisés (WEBP) pour .is-locked */
+.calendar-cell.is-locked,
+.day-cell.is-locked,
+.jour-calendrier.is-locked {
+  background-image: url("branding/ui/pill-empty1x.webp");
+}
+@media (min-resolution: 1.25dppx),
+       (min-resolution: 120dpi),
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min--moz-device-pixel-ratio: 1.25) {
+  .calendar-cell.is-locked,
+  .day-cell.is-locked,
+  .jour-calendrier.is-locked {
+    background-image: url("branding/ui/pill-empty2x.webp");
+  }
+}
+
 /* retina: les image-set() de variables gèrent la densité; aucun changement requis */
 
 /* voile pour lisibilité des numéros/labels */
