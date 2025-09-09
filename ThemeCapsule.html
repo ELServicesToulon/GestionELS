@@ -185,7 +185,10 @@ monthGrid .day.is-empty,
 monthGrid td.is-free,
 monthGrid .day.is-free,
 .calendar-grid .day.is-free {
-  background: var(--cell-matte) url("branding/ui/pill-full1x.webp") center/92% no-repeat;
+  background-image: url("branding/ui/pill-full1x.webp");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 92%;
 }
 @media (min-resolution:1.25dppx) {
   monthGrid td.is-free,
@@ -330,7 +333,12 @@ monthGrid .cells-wrapper {
 </style>
 <style>
 /* visual states (icons already in branding/ui/) */
-.day-cell.is-free { background: var(--cell-matte) url("branding/ui/pill-full1x.webp") center/92% no-repeat; }
+.day-cell.is-free {
+  background-image: url("branding/ui/pill-full1x.webp");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 92%;
+}
 .day-cell.is-locked { background: var(--cell-matte) url("branding/ui/pill-empty1x.webp") center/92% no-repeat; }
 .day-cell.is-empty { background: var(--cell-matte) url("branding/ui/blister-empty1x.webp") center/92% no-repeat; }
 </style>
