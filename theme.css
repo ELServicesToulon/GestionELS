@@ -33,11 +33,10 @@ calendar::before,
 monthGrid::before,
 #vue-calendrier.carte::before {
   content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,.18);
   pointer-events: none;
-  background: rgba(11,14,19,.14);
+  border-radius: inherit;
 }
 
 /* densité 2x / écrans retina */
