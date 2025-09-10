@@ -13,9 +13,9 @@ function calculerInfosTourneeClient(totalStops, returnToPharmacy, dateString, st
   const DUREE_ARRET_SUP_NUM = parseInt(configServeur.DUREE_ARRET_SUP, 10);
   const KM_BASE_NUM = parseInt(configServeur.KM_BASE, 10);
   const KM_ARRET_SUP_NUM = parseInt(configServeur.KM_ARRET_SUP, 10);
-  const arretsSupplementaires = Math.max(0, totalStops - 1);
-  let duree = DUREE_BASE_NUM + (arretsSupplementaires * DUREE_ARRET_SUP_NUM);
-  let km = KM_BASE_NUM + (arretsSupplementaires * KM_ARRET_SUP_NUM);
+  const extra = Math.max(0, totalStops - 1);
+  let duree = DUREE_BASE_NUM + (extra * DUREE_ARRET_SUP_NUM);
+  let km = KM_BASE_NUM + (extra * KM_ARRET_SUP_NUM);
   // Si activé, le retour à la pharmacie impacte les estimations (UI uniquement)
   if (returnToPharmacy && configServeur.RETURN_IMPACTS_ESTIMATES_ENABLED) {
     duree += DUREE_ARRET_SUP_NUM;
@@ -33,8 +33,7 @@ function calculerInfosTourneeClient(totalStops, returnToPharmacy, dateString, st
   }
   const tarif = computeCoursePrice({ totalStops, retour: returnToPharmacy, urgent, samedi });
   const typeCourse = samedi ? 'Samedi' : urgent ? 'Urgent' : 'Normal';
-  const labelStops = `${totalStops} arrêt(s) total(s)${tarif.nbSupp > 0 ? ` (dont ${tarif.nbSupp} supp.)` : ''}`;
-  const details = `Tournée de ${duree}min (${labelStops}, retour: ${returnToPharmacy ? 'oui' : 'non'})`;
+  const details = formatCourseLabel(duree, totalStops, returnToPharmacy);
   return { prix: tarif.total, duree: duree, km: km, details: details, typeCourse: typeCourse };
 }
 
@@ -320,8 +319,6 @@ function ajouterTourneeAuPanier(isRecurrentItem = false, recurrenceData = null) 
     startTime = creneauSelectionneBtn.dataset.creneau;
     prix = parseFloat(creneauSelectionneBtn.dataset.prix);
   }
-  const nbSupp = Math.max(0, tourneeEnCours.totalStops - 1);
-  const labelStops = `${tourneeEnCours.totalStops} arrêt(s) total(s)${nbSupp > 0 ? ` (dont ${nbSupp} supp.)` : ''}`;
   const nouvelleTournee = {
     id: 'tournee-' + Date.now() + Math.random(),
     date: date,
@@ -330,7 +327,7 @@ function ajouterTourneeAuPanier(isRecurrentItem = false, recurrenceData = null) 
     returnToPharmacy: tourneeEnCours.returnToPharmacy,
     prix: prix,
     duree: tourneeEnCours.duree,
-    details: `Tournée de ${tourneeEnCours.duree}min (${labelStops}, retour: ${tourneeEnCours.returnToPharmacy ? 'oui' : 'non'})`,
+    details: formatCourseLabel(tourneeEnCours.duree, tourneeEnCours.totalStops, tourneeEnCours.returnToPharmacy),
     isRecurrent: isRecurrentItem
   };
   window.etat.panier.push(nouvelleTournee);

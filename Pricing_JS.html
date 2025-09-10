@@ -64,4 +64,9 @@ function computeCoursePrice(opts = {}) {
     breakdown: { base, supplements, retour: retourFee, urgent: surcUrg, samedi: surcSam, remise }
   };
 }
+
+function formatCourseLabel(dureeMin, totalStops, isReturn) {
+  const extra = Math.max((Number(totalStops) || 0) - 1, 0);
+  return `Tournée de ${dureeMin}min (${totalStops} arrêt(s) total(s) (dont ${extra} supp.), retour: ${isReturn ? 'oui' : 'non'})`;
+}
 </script>
