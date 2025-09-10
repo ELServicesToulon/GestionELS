@@ -196,10 +196,12 @@
           <div class="form-col" id="contenu-modale-wrapper">
             <!-- … ton formulaire … -->
           </div>
+          <? if (ADMIN_SLOTS_PNG_ENABLED) { ?>
           <aside class="slots-sidebar" aria-label="Créneaux disponibles">
             <h4>Créneaux disponibles</h4>
             <div class="slots-row" id="slotsRow"></div>
           </aside>
+          <? } ?>
         </div>
       </div>
 
