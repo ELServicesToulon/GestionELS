@@ -192,33 +192,14 @@
       </div>
 
       <div class="modal__body">
-        <div id="contenu-modale-wrapper">
-          <!-- … ton formulaire … -->
-
-          <!-- Grille de créneaux -->
-          <div class="slots-grid" role="group" aria-label="Créneaux disponibles">
-            <!-- Slot normal -->
-            <button type="button" class="slot-btn" aria-pressed="false" data-time="09:00">
-              <svg class="blister" width="132" height="96" viewBox="0 0 166 122" aria-hidden="true">
-                <use href="#els-blister"></use>
-              </svg>
-              <svg class="capsule" viewBox="0 0 156 56" aria-hidden="true">
-                <use href="#els-capsule"></use>
-              </svg>
-              <span class="time">09h00</span>
-            </button>
-
-            <!-- Slot urgent (moitié droite = rouge) -->
-            <button type="button" class="slot-btn is-urgent" aria-pressed="false" data-time="09:15">
-              <svg class="blister" width="132" height="96" viewBox="0 0 166 122" aria-hidden="true">
-                <use href="#els-blister"></use>
-              </svg>
-              <svg class="capsule" viewBox="0 0 156 56" aria-hidden="true">
-                <use href="#els-capsule"></use>
-              </svg>
-              <span class="time">09h15</span>
-            </button>
+        <div class="modal__grid">
+          <div class="form-col" id="contenu-modale-wrapper">
+            <!-- … ton formulaire … -->
           </div>
+          <aside class="slots-sidebar" aria-label="Créneaux disponibles">
+            <h4>Créneaux disponibles</h4>
+            <div class="slots-row" id="slotsRow"></div>
+          </aside>
         </div>
       </div>
 
