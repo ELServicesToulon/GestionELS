@@ -377,10 +377,33 @@ function creerReservationAdmin(data) {
           price: prix
         }]);
       }
+
+      var infoRemise = '';
+      if (tourneeOfferteAppliquee) {
+        infoRemise = '(Offerte)';
+      } else if (clientPourCalcul && clientPourCalcul.typeRemise === 'Pourcentage' && clientPourCalcul.valeurRemise > 0) {
+        infoRemise = '(-' + clientPourCalcul.valeurRemise + '%)';
+      } else if (clientPourCalcul && clientPourCalcul.typeRemise === 'Montant Fixe' && clientPourCalcul.valeurRemise > 0) {
+        infoRemise = '(-' + clientPourCalcul.valeurRemise + '€)';
+      }
+
+      var reservation = {
+        id: idReservation,
+        eventId: evenement.getId(),
+        start: dateDebut.toISOString(),
+        end: dateFin.toISOString(),
+        details: detailsFacturation,
+        clientName: data.client.nom,
+        clientEmail: data.client.email,
+        amount: prix,
+        km: KM_BASE + ((tarif.nbSupp + (data.returnToPharmacy ? 1 : 0)) * KM_ARRET_SUP),
+        statut: '',
+        infoRemise: infoRemise
+      };
     } else {
       throw new Error("La création de l'événement dans le calendrier a échoué.");
     }
-    return { success: true };
+    return { success: true, reservation: reservation };
 
   } catch (e) {
     Logger.log(`Erreur dans creerReservationAdmin: ${e.stack}`);

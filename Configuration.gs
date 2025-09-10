@@ -118,6 +118,9 @@ const CALENDAR_PURGE_ENABLED = true;
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
 const CALENDAR_BAR_OPACITY_ENABLED = true;
 
+/** @const {boolean} Active la création optimiste des courses admin. */
+const ADMIN_OPTIMISTIC_CREATION_ENABLED = false;
+
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = true;
 
@@ -207,7 +210,8 @@ const FLAGS = Object.freeze({
   themeV2Enabled: THEME_V2_ENABLED,
   elsUiThemingEnabled: ELS_UI_THEMING_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
-  returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED
+  returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED,
+  adminOptimisticCreationEnabled: ADMIN_OPTIMISTIC_CREATION_ENABLED
 });
 
 
