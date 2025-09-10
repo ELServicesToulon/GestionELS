@@ -160,50 +160,6 @@ body {
   font-size: 0.9em;
 }
 
-/* --- MODALE --- */
-.modale-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modale-contenu {
-  background: var(--bg);
-  padding: 30px;
-  border-radius: var(--radius);
-  width: 90%;
-  max-width: 500px;
-  position: relative;
-}
-
-.btn-fermer {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  background: none;
-  border: none;
-  font-size: 2em;
-  cursor: pointer;
-  color: var(--muted);
-}
-
-.modale-pied-de-page {
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid var(--muted);
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-}
-
 .groupe-formulaire {
   margin-bottom: 15px;
 }
@@ -237,37 +193,137 @@ body {
   font-weight: 600;
 }
 
-/* --- GRILLE DES CRÉNEAUX DANS LA MODALE --- */
-#grille-creneaux-ajout,
-#grille-creneaux-replanif {
+/* ---------- Modale fixe + grille de créneaux ---------- */
+:root {
+  --blue: #3498db;
+  --urgent: #e53935;
+  --capsule-right: #ffffff;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(8px, 2vh, 24px);
+  background: rgba(10,16,28,.45);
+  z-index: 9999;
+}
+
+.modal__dialog {
+  width: min(720px, 96vw);
+  max-height: min(92vh, 100svh - 24px);
+  overflow: auto;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgba(0,0,0,.25);
+}
+
+.modal__header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.modal__footer {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  z-index: 1;
+  padding: 12px 16px;
+  border-top: 1px solid #eef2f7;
+}
+
+.modal__body {
+  padding: 12px 16px;
+}
+
+@media (max-width: 640px) {
+  .modal {
+    align-items: flex-end;
+  }
+  .modal__dialog {
+    width: 100%;
+    border-bottom-left-radius: max(16px, env(safe-area-inset-bottom));
+    border-bottom-right-radius: max(16px, env(safe-area-inset-bottom));
+    max-height: calc(100svh - env(safe-area-inset-top) - 8px);
+    margin: 0;
+  }
+}
+
+body.is-modal-open {
+  overflow: hidden;
+}
+
+.slots-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 10px;
-  margin-top: 10px;
-  max-height: 150px;
-  overflow-y: auto;
-  padding: 10px;
-  background-color: var(--bg);
-  border-radius: var(--radius);
+  grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+  gap: 12px;
 }
 
-.btn-creneau-replanif {
-  padding: 10px;
-  border: 1px solid var(--bleu);
-  background-color: var(--bg);
-  color: var(--bleu);
-  border-radius: var(--radius);
+.slot-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 10px 10px;
+  border: 0;
+  border-radius: 14px;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
-  font-family: var(--font);
-  font-size: 0.9em;
+  background: linear-gradient(#f7f9fb, #eef2f7);
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  transition: transform .08s ease;
 }
 
-.btn-creneau-replanif:hover,
-.btn-creneau-replanif.selected {
-  background-color: var(--bleu);
-  color: var(--txt);
+.slot-btn:active {
+  transform: translateY(1px);
 }
+
+.slot-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(52,152,219,.35);
+}
+
+.slot-btn svg {
+  display: block;
+}
+
+.slot-btn .capsule {
+  --capsule-right: #ffffff;
+  width: 92px;
+  height: 38px;
+  margin-bottom: 6px;
+}
+
+.slot-btn.is-urgent .capsule {
+  --capsule-right: var(--urgent);
+}
+
+.slot-btn .time {
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: .2px;
+  color: #243042;
+}
+
+.slot-btn[aria-pressed="true"] {
+  outline: 2px solid color-mix(in oklab, var(--blue) 70%, var(--violet) 30%);
+  outline-offset: 2px;
+}
+
+.modale-pied-de-page {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eef2f7;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 
 /* --- CHARGEMENT & NOTIFICATIONS --- */
 .indicateur-chargement-overlay {

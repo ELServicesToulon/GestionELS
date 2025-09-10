@@ -22,6 +22,42 @@ function logError(...args) {
 }
 const ADMIN_OPTIMISTIC_CREATION_ENABLED = <?!= ADMIN_OPTIMISTIC_CREATION_ENABLED ?>;
 
+function openModal() {
+  document.body.classList.add('is-modal-open');
+  const modal = document.getElementById('modale-action');
+  if (modal) modal.hidden = false;
+  const firstInput = modal?.querySelector('input, select, textarea, button');
+  if (firstInput) firstInput.focus({ preventScroll: true });
+}
+
+function closeModal() {
+  document.body.classList.remove('is-modal-open');
+  const modal = document.getElementById('modale-action');
+  if (modal) modal.hidden = true;
+}
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.slot-btn');
+  if (!btn) return;
+  const pressed = btn.getAttribute('aria-pressed') === 'true';
+  document.querySelectorAll('.slot-btn[aria-pressed="true"]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+  btn.setAttribute('aria-pressed', String(!pressed));
+});
+
+function markUrgentSlots(delayMin = 60) {
+  const now = new Date();
+  document.querySelectorAll('.slot-btn').forEach(btn => {
+    const [h, m] = (btn.dataset.time || '').split(':').map(Number);
+    if (Number.isFinite(h) && Number.isFinite(m)) {
+      const t = new Date(now); t.setHours(h, m, 0, 0);
+      const diff = (t - now) / 60000;
+      btn.classList.toggle('is-urgent', diff >= 0 && diff <= delayMin);
+    }
+  });
+}
+// Exemple : urgents dans l'heure
+// markUrgentSlots(60);
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Références aux éléments du DOM ---
     const indicateurChargement = document.getElementById('indicateur-chargement');
@@ -33,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnGenererLienClient = document.getElementById('btn-generer-lien-client');
     const modale = document.getElementById('modale-action');
     const contenuModale = document.getElementById('contenu-modale-wrapper');
-    const btnFermerModale = document.getElementById('btn-fermer-modale');
     const caEnCours = document.getElementById('ca-en-cours');
     const missingPropsBanner = document.getElementById('missing-props-banner');
 
@@ -70,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnToutVoir?.addEventListener('click', chargerToutesReservationsAdmin);
         btnAjouterReservation?.addEventListener('click', ouvrirModaleAjout);
         btnGenererLienClient?.addEventListener('click', ouvrirModaleLienClient);
-        btnFermerModale?.addEventListener('click', () => modale?.classList.add('hidden'));
 
         chargerClients(() => {
             chargerReservationsParDate(aujourdhui);
@@ -96,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button type="button" id="btn-copier-lien" class="btn btn-secondaire">Copier</button>
             </div>
         `);
-        if (modale) modale.classList.remove('hidden');
+        openModal();
         attacherEcouteursModaleLienClient();
     }
 
@@ -338,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <label><input type="checkbox" id="check-notifier"> Avertir le client</label>
               <button type="button" id="btn-confirmer-ajout" class="btn btn-primaire" disabled>Ajouter la course</button>
             </div>`);
-        if (modale) modale.classList.remove('hidden');
+        openModal();
         attacherEcouteursModaleAjout();
     }
     function ouvrirModaleAjoutArret(idReservation) {
@@ -352,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 id="modale-titre">Modifier les arrêts</h3><p><strong>Client :</strong> ${escapeHTML(reservation.clientName)}</p>
             <div class="groupe-formulaire"><label>Nombre d'arrêt(s) total(s) :</label><div class="champ-compteur"><button type="button" class="btn-compteur btn-retirer">-</button><span class="valeur-compteur">${escapeHTML(String(arretsActuels))}</span><button type="button" class="btn-compteur btn-ajouter">+</button></div></div>
             <div class="modale-pied-de-page"><button type="button" id="btn-confirmer-maj" class="btn btn-primaire">Valider la modification</button></div>`);
-        if (modale) modale.classList.remove('hidden');
+        openModal();
         const valeurCompteur = contenuModale.querySelector('.valeur-compteur');
         if (valeurCompteur) {
             contenuModale.querySelector('.btn-ajouter')?.addEventListener('click', () => { valeurCompteur.textContent = parseInt(valeurCompteur.textContent, 10) + 1; });
@@ -370,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="groupe-formulaire"><label for="champ-nouvelle-date">Nouvelle date :</label><input type="date" id="champ-nouvelle-date" class="champ-formulaire" value="${escapeHTML(new Date(reservation.start).toISOString().split('T')[0])}"></div>
             <div id="conteneur-creneaux-replanif" class="hidden"><label>Nouveau créneau :</label><div id="grille-creneaux-replanif"></div></div>
             <div class="modale-pied-de-page"><button type="button" id="btn-confirmer-replanif" class="btn btn-primaire" disabled>Confirmer le déplacement</button></div>`);
-        if (modale) modale.classList.remove('hidden');
+        openModal();
         const champDateModale = document.getElementById('champ-nouvelle-date');
         const grilleCreneaux = document.getElementById('grille-creneaux-replanif');
         const btnConfirmer = document.getElementById('btn-confirmer-replanif');
@@ -416,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="groupe-formulaire hidden" id="conteneur-valeur-remise-tournee"><label for="valeur-remise-tournee">Valeur Remise</label><input type="number" id="valeur-remise-tournee" class="champ-formulaire" step="0.01" min="0" value="0"></div>
             <div class="groupe-formulaire hidden" id="conteneur-nb-tournees-offertes-tournee"><label>Tournées Offertes restantes pour le client</label><input type="number" class="champ-formulaire" value="${escapeHTML(String(nbTourneesOffertesActuelClient))}" readonly></div>
             <div class="modale-pied-de-page"><button type="button" id="btn-confirmer-remise" class="btn btn-primaire">Appliquer la remise</button></div>`);
-        if (modale) modale.classList.remove('hidden');
+        openModal();
         const typeRemiseSelect = document.getElementById('type-remise-tournee');
         const conteneurValeurRemise = document.getElementById('conteneur-valeur-remise-tournee');
         const conteneurNbTourneesOffertes = document.getElementById('conteneur-nb-tournees-offertes-tournee');
@@ -441,15 +475,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3 id="modale-titre">Confirmer la suppression</h3><p>Êtes-vous sûr de vouloir supprimer la course suivante ? Cette action est irréversible.</p>
             <p><strong>Client :</strong> ${escapeHTML(reservation.clientName)}</p><p><strong>Détails :</strong> ${escapeHTML(reservation.details)}</p><p><strong>Date :</strong> ${escapeHTML(new Date(reservation.start).toLocaleString('fr-FR', {dateStyle: 'full', timeStyle: 'short'}))}</p>
             <div class="modale-pied-de-page"><button type="button" id="btn-annuler-suppression" class="btn btn-secondaire">Annuler</button><button type="button" id="btn-confirmer-suppression" class="btn btn-erreur">Supprimer définitivement</button></div>`);
-        if (modale) modale.classList.remove('hidden');
-        document.getElementById('btn-annuler-suppression')?.addEventListener('click', () => modale?.classList.add('hidden'));
+        openModal();
+        document.getElementById('btn-annuler-suppression')?.addEventListener('click', () => closeModal());
         document.getElementById('btn-confirmer-suppression')?.addEventListener('click', () => gererSoumissionSuppression(idReservation));
     }
 
     // --- SOUMISSIONS (utilisent maintenant rafraichirVueActuelle) ---
     function gererSoumissionMiseAJour(idReservation, totalStops) {
         basculerIndicateurChargement(true);
-        modale?.classList.add('hidden');
+        closeModal();
         google.script.run.withSuccessHandler(reponse => {
             basculerIndicateurChargement(false);
             if (reponse.success) {
@@ -460,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function gererSoumissionReplanifier(idReservation, nouvelleDate, nouvelleHeure) {
         basculerIndicateurChargement(true);
-        modale?.classList.add('hidden');
+        closeModal();
         google.script.run.withSuccessHandler(reponse => {
             basculerIndicateurChargement(false);
             if (reponse.success) {
@@ -471,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function gererSoumissionAppliquerRemise(idReservation, typeRemise, valeurRemise, nbTourneesOffertes) {
         basculerIndicateurChargement(true);
-        modale?.classList.add('hidden');
+        closeModal();
         google.script.run.withSuccessHandler(reponse => {
             basculerIndicateurChargement(false);
             if (reponse.success) {
@@ -482,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function gererSoumissionSuppression(idReservation) {
         basculerIndicateurChargement(true);
-        modale?.classList.add('hidden');
+        closeModal();
         google.script.run.withSuccessHandler(reponse => {
             basculerIndicateurChargement(false);
             if (reponse.success) {
@@ -494,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function gererSoumissionCreation(data) {
         if (!ADMIN_OPTIMISTIC_CREATION_ENABLED) {
             basculerIndicateurChargement(true);
-            modale?.classList.add('hidden');
+            closeModal();
             google.script.run.withSuccessHandler(reponse => {
                 basculerIndicateurChargement(false);
                 if (reponse.success) {
@@ -508,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isSubmitting) return;
         isSubmitting = true;
         basculerIndicateurChargement(true);
-        modale?.classList.add('hidden');
+        closeModal();
 
         const tempId = `tmp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
         const nbSupp = Math.max(0, (data.totalStops || 1) - 1);

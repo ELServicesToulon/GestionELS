@@ -74,6 +74,74 @@
 </head>
 <body>
 
+<!-- Sprite SVG caché (defs + symbols) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <defs>
+    <!-- Métal brossé -->
+    <linearGradient id="els-metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0"  style="stop-color:#f2f4f7"/>
+      <stop offset=".5" style="stop-color:#dde3ea"/>
+      <stop offset="1"  style="stop-color:#f8fafc"/>
+    </linearGradient>
+    <!-- Filtre emboss (relief blister) -->
+    <filter id="els-emboss" x="-15%" y="-30%" width="130%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+      <feOffset in="blur" dx="0" dy="2" result="off1"/>
+      <feComposite in="off1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="innerShadow"/>
+      <feMerge>
+        <feMergeNode in="innerShadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Gradient gélule, partie gauche violet->bleu -->
+    <linearGradient id="capsule-left" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"   style="stop-color: var(--violet)"/>
+      <stop offset="1.0" style="stop-color: var(--blue)"/>
+    </linearGradient>
+    <!-- Couleur partie droite (var CSS) -->
+    <linearGradient id="capsule-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   style="stop-color: var(--capsule-right)"/>
+      <stop offset="1.0" style="stop-color: var(--capsule-right)"/>
+    </linearGradient>
+
+    <!-- Symbol: blister (fond + cuvette) -->
+    <symbol id="els-blister" viewBox="0 0 166 122">
+      <defs>
+        <!-- motif diagonales douces -->
+        <pattern id="alu-tex" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
+          <rect width="12" height="12" fill="url(#els-metal)"/>
+          <rect x="0" y="0" width="12" height="2" fill="#cfd6de" opacity=".45"/>
+        </pattern>
+      </defs>
+      <!-- plaque -->
+      <rect x="0.5" y="0.5" width="165" height="121" rx="12" ry="12" fill="url(#alu-tex)" stroke="#d9e1ea" />
+      <!-- cuvette embossée -->
+      <g filter="url(#els-emboss)">
+        <rect x="18" y="26" width="130" height="70" rx="35" ry="35"
+              fill="rgba(255,255,255,0.7)" stroke="#cbd5e1" stroke-width="1"/>
+      </g>
+      <!-- halo -->
+      <rect x="16" y="24" width="134" height="74" rx="37" ry="37" fill="none" stroke="#ffffff" opacity=".55"/>
+    </symbol>
+
+    <!-- Symbol: capsule (moitié gauche dégradée, moitié droite variable) -->
+    <symbol id="els-capsule" viewBox="0 0 156 56">
+      <!-- body -->
+      <g>
+        <!-- droite -->
+        <path d="M78,4 h50 a24,24 0 0 1 24,24 a24,24 0 0 1 -24,24 h-50 z" fill="url(#capsule-right)"/>
+        <!-- gauche -->
+        <path d="M78,4 h-50 a24,24 0 0 0 -24,24 a24,24 0 0 0 24,24 h50 z" fill="url(#capsule-left)"/>
+        <!-- reflet doux -->
+        <ellipse cx="52" cy="18" rx="36" ry="10" fill="#fff" opacity=".35"/>
+        <ellipse cx="108" cy="38" rx="34" ry="8" fill="#000" opacity=".08"/>
+        <rect x="2.5" y="2.5" width="151" height="51" rx="26" ry="26" fill="none" stroke="#cbd5e1" opacity=".9"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
   <div id="indicateur-chargement" class="indicateur-chargement-overlay hidden">
     <div class="spinner"></div>
   </div>
@@ -117,11 +185,46 @@
 
   </div>
 
-  <div id="modale-action" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-titre">
-    <div class="modale-contenu">
-      <button id="btn-fermer-modale" class="btn-fermer" aria-label="Fermer">&times;</button>
-      <div id="contenu-modale-wrapper">
-        <!-- Le contenu de la modale sera injecté ici par JavaScript -->
+  <div id="modale-action" class="modal" hidden>
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+      <div class="modal__header">
+        <h3 id="dlg-title">Ajouter une course</h3>
+      </div>
+
+      <div class="modal__body">
+        <div id="contenu-modale-wrapper">
+          <!-- … ton formulaire … -->
+
+          <!-- Grille de créneaux -->
+          <div class="slots-grid" role="group" aria-label="Créneaux disponibles">
+            <!-- Slot normal -->
+            <button type="button" class="slot-btn" aria-pressed="false" data-time="09:00">
+              <svg class="blister" width="132" height="96" viewBox="0 0 166 122" aria-hidden="true">
+                <use href="#els-blister"></use>
+              </svg>
+              <svg class="capsule" viewBox="0 0 156 56" aria-hidden="true">
+                <use href="#els-capsule"></use>
+              </svg>
+              <span class="time">09h00</span>
+            </button>
+
+            <!-- Slot urgent (moitié droite = rouge) -->
+            <button type="button" class="slot-btn is-urgent" aria-pressed="false" data-time="09:15">
+              <svg class="blister" width="132" height="96" viewBox="0 0 166 122" aria-hidden="true">
+                <use href="#els-blister"></use>
+              </svg>
+              <svg class="capsule" viewBox="0 0 156 56" aria-hidden="true">
+                <use href="#els-capsule"></use>
+              </svg>
+              <span class="time">09h15</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" onclick="closeModal()">Annuler</button>
+        <button type="submit" form="form-course">Créer</button>
       </div>
     </div>
   </div>
