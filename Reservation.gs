@@ -234,8 +234,7 @@ function calculerInfosTourneeBase(totalStops, returnToPharmacy, dateString, star
 
   const tarif = computeCoursePrice({ totalStops, retour: returnToPharmacy, urgent, samedi });
   const typeCourse = samedi ? 'Samedi' : urgent ? 'Urgent' : 'Normal';
-  const labelStops = `${totalStops} arrêt(s) total(s)${tarif.nbSupp > 0 ? ` (dont ${tarif.nbSupp} supp.)` : ''}`;
-  const details = `Tournée de ${duree}min (${labelStops}, retour: ${returnToPharmacy ? 'oui' : 'non'})`;
+  const details = formatCourseLabel_(duree, totalStops, returnToPharmacy);
   return { prix: tarif.total, duree: duree, km: km, details: details, typeCourse: typeCourse };
 }
 

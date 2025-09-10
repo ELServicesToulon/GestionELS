@@ -71,3 +71,8 @@ function computeCoursePrice(opts) {
     }
   };
 }
+
+function formatCourseLabel_(dureeMin, totalStops, isReturn) {
+  var nbSupp = Math.max((Number(totalStops) || 0) - 1, 0);
+  return 'Tournée de ' + dureeMin + 'min (' + totalStops + ' arrêt(s) total(s) (dont ' + nbSupp + ' supp.), retour: ' + (isReturn ? 'oui' : 'non') + ')';
+}

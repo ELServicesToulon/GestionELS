@@ -362,8 +362,7 @@ function creerReservationAdmin(data) {
     const evenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
 
     if (evenement) {
-      const labelStops = `${totalStops} arrêt(s) total(s)${tarif.nbSupp > 0 ? ` (dont ${tarif.nbSupp} supp.)` : ''}`;
-      const detailsFacturation = `Tournée de ${duree}min (${labelStops}, retour: ${data.returnToPharmacy ? 'oui' : 'non'})`;
+      const detailsFacturation = formatCourseLabel_(duree, totalStops, data.returnToPharmacy);
       enregistrerReservationPourFacturation(dateDebut, data.client.nom, data.client.email, typeCourse, detailsFacturation, prix, evenement.getId(), idReservation, "Ajouté par admin", tourneeOfferteAppliquee, clientPourCalcul.typeRemise, clientPourCalcul.valeurRemise);
       logActivity(idReservation, data.client.email, `Réservation manuelle par admin`, prix, "Succès");
 
