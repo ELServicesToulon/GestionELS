@@ -20,6 +20,7 @@ function logWarn(...args) {
 function logError(...args) {
   console.error('[ELS]', ...args);
 }
+const ADMIN_OPTIMISTIC_CREATION_ENABLED = <?!= ADMIN_OPTIMISTIC_CREATION_ENABLED ?>;
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Références aux éléments du DOM ---
@@ -40,6 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let toutesLesReservationsAffichees = [];
     let tousLesClients = [];
     let vueActuelle = 'date'; // NOUVEAU: pour savoir quelle vue rafraîchir ('date' ou 'toutes')
+    let isSubmitting = false;
+
+    function formatCourseLabel(dureeMin, totalStops, isReturn){
+      const extra = Math.max((Number(totalStops)||0)-1, 0);
+      return `Tournée de ${dureeMin}min (${totalStops} arrêt(s) total(s) (dont ${extra} supp.), retour: ${isReturn ? "oui" : "non"})`;
+    }
 
     google.script.run.withSuccessHandler(res => {
         if (res && Array.isArray(res.missingProps) && res.missingProps.length > 0 && missingPropsBanner) {
@@ -272,8 +279,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dateHtml = montrerDate ? `<strong>${dateAffichee}</strong> &agrave; ` : '';
                 const statutHtml = resa.statut ? `<span class="statut-badge" style="background-color: #7f8c8d; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 8px;">${escapeHTML(resa.statut)}</span>` : '';
 
+                const classes = ['carte-reservation'];
+                if (resa.isDraft) classes.push('isDraft');
+                if (resa.justCreated) classes.push('justCreated');
                 html += `
-                    <div class="carte-reservation">
+                    <div class="${classes.join(' ')}">
                         <div class="carte-heure">${dateHtml}${heureDebut}</div>
                         <div class="carte-details">
                             <strong>${escapeHTML(resa.details)}</strong>
@@ -482,15 +492,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }).withFailureHandler(afficherErreur).supprimerReservation(idReservation);
     }
     function gererSoumissionCreation(data) {
+        if (!ADMIN_OPTIMISTIC_CREATION_ENABLED) {
+            basculerIndicateurChargement(true);
+            modale?.classList.add('hidden');
+            google.script.run.withSuccessHandler(reponse => {
+                basculerIndicateurChargement(false);
+                if (reponse.success) {
+                    afficherNotification("Course ajoutée avec succès !", "succes");
+                    rafraichirVueActuelle();
+                } else { afficherErreur(reponse.error); }
+            }).withFailureHandler(afficherErreur).creerReservationAdmin(data);
+            return;
+        }
+
+        if (isSubmitting) return;
+        isSubmitting = true;
         basculerIndicateurChargement(true);
         modale?.classList.add('hidden');
+
+        const tempId = `tmp_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+        const nbSupp = Math.max(0, (data.totalStops || 1) - 1);
+        const duree = 30 + (nbSupp + (data.returnToPharmacy ? 1 : 0)) * 15;
+        const draft = {
+            id: tempId,
+            start: new Date(`${data.date}T${data.startTime.replace('h', ':')}`).toISOString(),
+            end: new Date(`${data.date}T${data.startTime.replace('h', ':')}`).toISOString(),
+            details: formatCourseLabel(duree, data.totalStops, data.returnToPharmacy),
+            clientName: data.client.nom,
+            clientEmail: data.client.email,
+            amount: 0,
+            km: 0,
+            statut: 'Calcul en cours…',
+            infoRemise: '',
+            isDraft: true,
+            justCreated: false
+        };
+        toutesLesReservationsAffichees.push(draft);
+        toutesLesReservationsAffichees.sort((a, b) => new Date(a.start) - new Date(b.start));
+        afficherReservations(toutesLesReservationsAffichees, vueActuelle === 'toutes');
+
         google.script.run.withSuccessHandler(reponse => {
             basculerIndicateurChargement(false);
-            if (reponse.success) {
+            if (reponse.success && reponse.reservation) {
+                const idx = toutesLesReservationsAffichees.findIndex(r => r.id === tempId);
+                if (idx >= 0) {
+                    toutesLesReservationsAffichees[idx] = Object.assign({}, reponse.reservation, { isDraft: false, justCreated: true });
+                }
                 afficherNotification("Course ajoutée avec succès !", "succes");
-                rafraichirVueActuelle();
-            } else { afficherErreur(reponse.error); }
-        }).withFailureHandler(afficherErreur).creerReservationAdmin(data);
+                toutesLesReservationsAffichees.sort((a, b) => new Date(a.start) - new Date(b.start));
+                afficherReservations(toutesLesReservationsAffichees, vueActuelle === 'toutes');
+            } else {
+                toutesLesReservationsAffichees = toutesLesReservationsAffichees.filter(r => r.id !== tempId);
+                afficherReservations(toutesLesReservationsAffichees, vueActuelle === 'toutes');
+                afficherErreur(reponse.error);
+            }
+            isSubmitting = false;
+        }).withFailureHandler(err => {
+            basculerIndicateurChargement(false);
+            toutesLesReservationsAffichees = toutesLesReservationsAffichees.filter(r => r.id !== tempId);
+            afficherReservations(toutesLesReservationsAffichees, vueActuelle === 'toutes');
+            afficherErreur(err);
+            isSubmitting = false;
+        }).creerReservationAdmin(data);
     }
     function attacherEcouteursModaleAjout() {
         const selectClient = document.getElementById('select-client');
@@ -574,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 forceUrgent: document.getElementById('check-urgent')?.checked || false
             };
             gererSoumissionCreation(data);
-        });
+        }, { once: true });
         remplirChampsClient(null);
         mettreAJourCreneauxDisponibles();
     }
