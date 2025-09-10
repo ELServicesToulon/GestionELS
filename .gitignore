@@ -147,3 +147,6 @@ temp_*.txt
 cache/
 .cache/
 /tools
+Nouveau dossier/my-node-script/package.json
+Nouveau dossier/my-node-script/README.md
+Nouveau dossier/my-node-script/src/index.js
