@@ -28,12 +28,50 @@ function openModal() {
   if (modal) modal.hidden = false;
   const firstInput = modal?.querySelector('input, select, textarea, button');
   if (firstInput) firstInput.focus({ preventScroll: true });
+  google.script.run.withSuccessHandler(renderSlots).withFailureHandler(logError).obtenirStatutCreneaux();
 }
 
 function closeModal() {
   document.body.classList.remove('is-modal-open');
   const modal = document.getElementById('modale-action');
   if (modal) modal.hidden = true;
+}
+function renderSlots(slots){
+  const row = document.getElementById('slotsRow');
+  if(!row) return;
+  row.innerHTML = "";
+
+  const urgentImg = new Image();
+  urgentImg.src = '/branding/ui/capsule1x_urgent.png';
+  urgentImg.onload = () => row.dataset.urgentReady = "1";
+  urgentImg.onerror = () => row.dataset.urgentReady = "0";
+
+  slots.forEach(s=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `slot-btn ${s.status === 'taken' ? 'is-taken' : s.status === 'urgent' ? 'is-urgent' : 'is-free'}`;
+    btn.setAttribute('aria-pressed','false');
+    btn.dataset.time = s.time;
+
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    if (s.status === 'urgent' && row.dataset.urgentReady === "0") thumb.classList.add('fallback');
+
+    const time = document.createElement('span');
+    time.className = 'time';
+    time.textContent = s.label || s.time.replace(':','h');
+
+    btn.appendChild(thumb);
+    btn.appendChild(time);
+
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.slot-btn[aria-pressed="true"]').forEach(b=>b.setAttribute('aria-pressed','false'));
+      btn.setAttribute('aria-pressed','true');
+      // TODO: propager la valeur vers le champ horaire si nécessaire
+    });
+
+    row.appendChild(btn);
+  });
 }
 
 document.addEventListener('click', (e) => {
