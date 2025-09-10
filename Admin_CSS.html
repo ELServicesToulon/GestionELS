@@ -324,6 +324,110 @@ body.is-modal-open {
   gap: 10px;
 }
 
+.modal__grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+}
+
+@media (max-width: 960px) {
+  .modal__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.slots-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(92vh - 160px);
+  overflow: auto;
+  padding: 4px;
+  border-left: 1px dashed #e3e8ef;
+}
+
+.slots-sidebar h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.slots-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.slot-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 100px;
+  padding: 8px 6px 6px;
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  background: #f7f9fb;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  transition: transform .08s ease;
+}
+
+.slot-btn:active {
+  transform: translateY(1px);
+}
+
+.slot-btn:focus-visible {
+  outline: 3px solid rgba(52,152,219,.35);
+  outline-offset: 2px;
+}
+
+.slot-btn[aria-pressed="true"] {
+  outline: 2px solid #5dade2;
+  outline-offset: 2px;
+}
+
+.slot-btn .thumb {
+  width: 132px;
+  height: 96px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 12px;
+}
+
+.slot-btn.is-free .thumb {
+  background-image: url('/branding/ui/capsule1x.png');
+}
+
+.slot-btn.is-taken .thumb {
+  background-image: url('/branding/ui/blister_vide1x.png');
+}
+
+.slot-btn.is-urgent .thumb {
+  background-image: url('/branding/ui/capsule1x_urgent.png');
+}
+
+.slot-btn .time {
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: .2px;
+  color: #243042;
+}
+
+.slot-btn.is-urgent .thumb.fallback::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 50%, rgba(229,57,53,.95) 50%);
+  mix-blend-mode: multiply;
+}
+
 
 /* --- CHARGEMENT & NOTIFICATIONS --- */
 .indicateur-chargement-overlay {
