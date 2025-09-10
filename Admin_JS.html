@@ -28,7 +28,9 @@ function openModal() {
   if (modal) modal.hidden = false;
   const firstInput = modal?.querySelector('input, select, textarea, button');
   if (firstInput) firstInput.focus({ preventScroll: true });
+  <? if (ADMIN_SLOTS_PNG_ENABLED) { ?>
   google.script.run.withSuccessHandler(renderSlots).withFailureHandler(logError).obtenirStatutCreneaux();
+  <? } ?>
 }
 
 function closeModal() {
@@ -36,6 +38,7 @@ function closeModal() {
   const modal = document.getElementById('modale-action');
   if (modal) modal.hidden = true;
 }
+<? if (ADMIN_SLOTS_PNG_ENABLED) { ?>
 function renderSlots(slots){
   const row = document.getElementById('slotsRow');
   if(!row) return;
@@ -95,6 +98,7 @@ function markUrgentSlots(delayMin = 60) {
 }
 // Exemple : urgents dans l'heure
 // markUrgentSlots(60);
+<? } ?>
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Références aux éléments du DOM ---

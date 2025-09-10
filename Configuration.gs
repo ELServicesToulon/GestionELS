@@ -121,6 +121,9 @@ const CALENDAR_BAR_OPACITY_ENABLED = true;
 /** @const {boolean} Active la création optimiste des courses admin. */
 const ADMIN_OPTIMISTIC_CREATION_ENABLED = false;
 
+/** @const {boolean} Active la colonne de créneaux PNG dans la modale admin. */
+const ADMIN_SLOTS_PNG_ENABLED = false;
+
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = true;
 
@@ -211,7 +214,8 @@ const FLAGS = Object.freeze({
   elsUiThemingEnabled: ELS_UI_THEMING_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED,
-  adminOptimisticCreationEnabled: ADMIN_OPTIMISTIC_CREATION_ENABLED
+  adminOptimisticCreationEnabled: ADMIN_OPTIMISTIC_CREATION_ENABLED,
+  adminSlotsPngEnabled: ADMIN_SLOTS_PNG_ENABLED
 });
 
 
