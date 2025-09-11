@@ -166,12 +166,13 @@ const PROOF_SOCIAL_ENABLED = false;
 const PRO_QA_ENABLED = false;
 
 /** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
-  const EXTRA_ICONS_ENABLED = false;
-  /** @const {boolean} Active les correctifs CSS (rgba, sélecteurs). */
-  const CSS_FIXES_ENABLED = false;
-  /** @const {boolean} Active la politique de messages UI unifiée. */
-  const UI_MSG_POLICY_ENABLED = false;
-  // --- Drapeaux de Débogage et de Test ---
+const EXTRA_ICONS_ENABLED = false;
+/** @const {boolean} Active les correctifs CSS (rgba, sélecteurs). */
+const CSS_FIXES_ENABLED = false;
+/** @const {boolean} Active la politique de messages UI unifiée. */
+const UI_MSG_POLICY_ENABLED = false;
+
+// --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = false;
 /** @const {boolean} Sert une version de démo de la page de réservation. */
@@ -198,13 +199,13 @@ const RESERVATION_CACHE_ENABLED = false;
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
 const THEME_V2_ENABLED = true;
+/** @const {boolean} Active l'application du thème UI générique ELS. */
 const ELS_UI_THEMING_ENABLED = true;
-/** @const {boolean} Permet aux clients de choisir leur thème visuel. */
-// const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
-/** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
-// const THEME_DEFAULT = 'clarte'; // supprimé
-/** @const {Object<string,string>} Associe les clés de thème aux chemins des fichiers CSS. */
-// const THEMES = {}; // supprimé
+
+/*
+ * Migration note: THEME_SELECTION_ENABLED, THEME_DEFAULT and THEMES
+ * constants were removed; theme selection is no longer available.
+ */
 
 // Objet regroupant tous les drapeaux de fonctionnalité exposés au client
 const FLAGS = Object.freeze({
