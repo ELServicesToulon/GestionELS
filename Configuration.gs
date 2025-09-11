@@ -6,6 +6,14 @@
 //              personnalisables de l'application.
 // =================================================================
 
+/**
+ * Required Script Properties:
+ * NOM_ENTREPRISE, ADRESSE_ENTREPRISE, EMAIL_ENTREPRISE, ADMIN_EMAIL,
+ * ID_FEUILLE_CALCUL, ID_CALENDRIER, ID_DOCUMENT_CGV, ID_MODELE_FACTURE,
+ * ID_DOSSIER_ARCHIVES, ID_DOSSIER_TEMPORAIRE, SIRET, ELS_SHARED_SECRET,
+ * (optionally ID_DOSSIER_FACTURES)
+ */
+
 // --- Informations sur l'entreprise ---
 /** @const {string} Nom officiel de l'entreprise utilisé dans l'interface et la facturation. */
 const NOM_ENTREPRISE = getSecret('NOM_ENTREPRISE');
@@ -24,17 +32,23 @@ const TAUX_TVA = 0.20;
 /** @const {number} Délai de paiement accordé au client en jours. */
 const DELAI_PAIEMENT_JOURS = 5;
 
+/** @const {string} ID du dossier Drive contenant les factures (retombe sur archives). */
+const FACTURES_FOLDER_ID = (function() {
+  try { return getSecret('ID_DOSSIER_FACTURES'); }
+  catch (e) { return getSecret('ID_DOSSIER_ARCHIVES'); }
+})();
+
 // --- Bloc de facturation générique ---
 /** @const {Object} Paramètres de facturation centralisés. */
 const BILLING = {
-  TVA_APPLICABLE: false,
-  TVA_RATE: 0,
-  TVA_MENTION: "TVA non applicable, art. 293B du CGI",
+  TVA_APPLICABLE: TVA_APPLICABLE,
+  TVA_RATE: TVA_APPLICABLE ? TAUX_TVA : 0,
+  TVA_MENTION: TVA_APPLICABLE ? "" : "TVA non applicable, art. 293B du CGI",
   DEVISE: "EUR",
   PAIEMENT_DELAI_JOURS: { RESIDENT: 0, PRO: 30 },
   INVOICE_PREFIX: "ELS",
-  FACTURES_FOLDER_ID: "REPLACE_ME_DRIVE_FOLDER_ID",
-  DOC_TEMPLATE_FACTURE_ID: "REPLACE_ME_DOC_TEMPLATE_ID"
+  FACTURES_FOLDER_ID: FACTURES_FOLDER_ID,
+  DOC_TEMPLATE_FACTURE_ID: getSecret('ID_MODELE_FACTURE')
 };
 
 // --- Paramètres de rétention des données ---
