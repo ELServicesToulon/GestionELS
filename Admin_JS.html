@@ -67,11 +67,14 @@ function renderSlots(slots){
     btn.appendChild(thumb);
     btn.appendChild(time);
 
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.slot-btn[aria-pressed="true"]').forEach(b=>b.setAttribute('aria-pressed','false'));
-      btn.setAttribute('aria-pressed','true');
-      // TODO: propager la valeur vers le champ horaire si nécessaire
-    });
+      btn.addEventListener('click', () => {
+        const timeInput = document.querySelector('#champ-horaire, #champ-heure-ajout, input[type="time"]');
+        if (timeInput) {
+          timeInput.value = btn.dataset.time || '';
+          timeInput.dispatchEvent(new Event('input', { bubbles: true }));
+          timeInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
 
     row.appendChild(btn);
   });
