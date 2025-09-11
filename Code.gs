@@ -130,23 +130,24 @@ function creerReponseHtml(titre, message) {
  * @returns {HtmlOutput} Le contenu HTML à afficher.
  */
 function doGet(e) {
+  try {
+    const setup = checkSetup_ELS();
+    if (setup.missingProps && setup.missingProps.length > 0) {
+      return HtmlService.createHtmlOutput(
+        `<h1>Configuration manquante</h1><p>Propriétés manquantes: ${setup.missingProps.join(', ')}</p>`
+      ).setTitle('Configuration manquante');
+    }
+  } catch (err) {
+    Logger.log('checkSetup_ELS erreur: ' + err.message);
+  }
+
   const action = e && e.parameter && e.parameter.action;
   if (action === 'publicAssets') {
     const map = getPublicAssetsMap();
     return ContentService.createTextOutput(JSON.stringify(map)).setMimeType(ContentService.MimeType.JSON);
   }
-  try {
-    try {
-      const setup = checkSetup_ELS();
-      if (setup.missingProps && setup.missingProps.length > 0) {
-        return HtmlService.createHtmlOutput(
-          `<h1>Configuration manquante</h1><p>Propriétés manquantes: ${setup.missingProps.join(', ')}</p>`
-        ).setTitle('Configuration manquante');
-      }
-    } catch (err) {
-      Logger.log('checkSetup_ELS erreur: ' + err.message);
-    }
 
+  try {
     const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : '';
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e); // Assurez-vous que la fonction logRequest existe
@@ -270,16 +271,16 @@ function doGet(e) {
  */
 function doPost(e) {
   try {
-    try {
-      validerConfiguration();
-    } catch (err) {
-      return ContentService.createTextOutput(JSON.stringify({
-        status: 'error',
-        message: 'Configuration invalide',
-        details: err.message
-      })).setMimeType(ContentService.MimeType.JSON);
-    }
+    validerConfiguration();
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'Configuration invalide',
+      details: err.message
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 
+  try {
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e);
     }
