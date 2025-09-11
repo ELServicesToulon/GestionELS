@@ -2,24 +2,6 @@
  * Propriétés Script requises (Script Properties)
  * Utilisées par getSecret(name) dans Utilitaires.gs et Configuration.gs.
  */
-const REQUIRED_PROPS = Object.freeze([
-  'NOM_ENTREPRISE',
-  'SIRET',
-  'ADRESSE_ENTREPRISE',
-  'EMAIL_ENTREPRISE',
-  'ADMIN_EMAIL',
-  'RIB_ENTREPRISE',
-  'BIC_ENTREPRISE',
-  'ID_FEUILLE_CALCUL',
-  'ID_CALENDRIER',
-  'ID_MODELE_FACTURE',
-  'ID_DOSSIER_ARCHIVES',
-  'ID_DOSSIER_TEMPORAIRE',
-  // Dossier Drive exposé publiquement (alias accepté: DOCS_PUBLIC_FOLDER_ID)
-  'DOSSIER_PUBLIC_FOLDER_ID',
-  'ID_DOCUMENT_CGV',
-  'ELS_SHARED_SECRET'
-]);
 
 /**
  * Test simple exécutable via `clasp run test_requiredProps`.
