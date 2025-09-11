@@ -595,14 +595,25 @@ function reparerEntetesFacturation() {
 
     const newHeaders = headers.slice();
     const fixes = [];
-    if (idxDate !== -1) { newHeaders[idxDate] = FACTURATION_HEADERS[0]; fixes.push(`${FACTURATION_HEADERS[0]} -> Col ${idxDate+1}`); }
-    if (idxEmail !== -1) { newHeaders[idxEmail] = FACTURATION_HEADERS[2]; fixes.push(`${FACTURATION_HEADERS[2]} -> Col ${idxEmail+1}`); }
-    if (idxResa !== -1) { newHeaders[idxResa] = FACTURATION_HEADERS[10]; fixes.push(`${FACTURATION_HEADERS[10]} -> Col ${idxResa+1}`); }
+    const applyFix = (idx, header) => {
+      if (idx !== -1 && !newHeaders.includes(header)) {
+        newHeaders[idx] = header;
+        fixes.push(`${header} -> Col ${idx + 1}`);
+      }
+    };
+    applyFix(idxDate, FACTURATION_HEADERS[0]);
+    applyFix(idxEmail, FACTURATION_HEADERS[2]);
+    applyFix(idxResa, FACTURATION_HEADERS[10]);
 
     const missing = FACTURATION_HEADERS.filter(h => !newHeaders.includes(h));
-    if (missing.length > 0) {
-      newHeaders.push(...missing);
-      fixes.push('Ajout colonnes: ' + missing.join(', '));
+    if (missing.length) {
+      ui.alert('Colonnes manquantes: ' + missing.join(', ') + '. Corrigez manuellement.', ui.ButtonSet.OK);
+      return;
+    }
+    const duplicates = FACTURATION_HEADERS.filter(h => newHeaders.filter(x => x === h).length > 1);
+    if (duplicates.length) {
+      ui.alert('Colonnes dupliquées: ' + duplicates.join(', ') + '. Corrigez manuellement.', ui.ButtonSet.OK);
+      return;
     }
 
     if (fixes.length === 0) {
