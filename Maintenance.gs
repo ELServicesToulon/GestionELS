@@ -113,11 +113,11 @@ function notifyAdminWithThrottle(typeErreur, sujet, corps) {
 function verifierStructureFeuilles() {
   const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
   const expectations = [
-    { name: 'Clients', headers: ['Email', 'Raison Sociale', 'Adresse', 'SIRET', COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES], required: true },
-    { name: 'Facturation', headers: FACTURATION_HEADERS, required: true },
-    { name: 'Plages_Bloquees', headers: ['Date', 'Heure_Debut', 'Heure_Fin'], required: false },
-    { name: 'Logs', headers: ['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut'], required: false },
-    { name: 'Admin_Logs', headers: ['Timestamp', 'Utilisateur', 'Action', 'Statut'], required: false }
+    { name: SHEET_CLIENTS, headers: ['Email', 'Raison Sociale', 'Adresse', 'SIRET', COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES], required: true },
+    { name: SHEET_FACTURATION, headers: FACTURATION_HEADERS, required: true },
+    { name: SHEET_PLAGES_BLOQUEES, headers: ['Date', 'Heure_Debut', 'Heure_Fin'], required: false },
+    { name: SHEET_LOGS, headers: ['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut'], required: false },
+    { name: SHEET_ADMIN_LOGS, headers: ['Timestamp', 'Utilisateur', 'Action', 'Statut'], required: false }
   ];
 
   const report = [];
