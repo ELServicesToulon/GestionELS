@@ -120,6 +120,8 @@ const PRIVACY_LINK_ENABLED = true;
 const SLOTS_AMPM_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
 const CLIENT_SESSION_OPAQUE_ID_ENABLED = true;
+/** @const {boolean} Vérifie la présence du scope script.send_mail lors du setup. */
+const SEND_MAIL_SCOPE_CHECK_ENABLED = false;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
 const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
