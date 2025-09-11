@@ -335,4 +335,8 @@ function doPost(e) {
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }
+function _forceReAuth() {
+  // Déclenche le consentement sans envoyer d’email
+  MailApp.getRemainingDailyQuota();
+}
 
