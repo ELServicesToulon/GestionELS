@@ -127,9 +127,9 @@ const BILLING_MULTI_SHEET_ENABLED = false;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
 const CA_EN_COURS_ENABLED = false;
 /** @const {boolean} Resynchronise les événements manquants du calendrier Google. */
-const CALENDAR_RESYNC_ENABLED = true;
+const CALENDAR_RESYNC_ENABLED = false;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
-const CALENDAR_PURGE_ENABLED = true;
+const CALENDAR_PURGE_ENABLED = false;
 
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
 const CALENDAR_BAR_OPACITY_ENABLED = false;
