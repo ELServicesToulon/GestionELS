@@ -6,6 +6,7 @@
   --els-bleu: #3498db;
   --els-bleu2: #5dade2;
   --els-grad: linear-gradient(90deg, var(--els-violet) 0%, var(--els-bleu) 100%);
+<? if (!PUBLIC_ASSETS_ENABLED) { ?>
   /* Use data URIs to avoid 404 in Apps Script HTMLService */
   --img-capsule: image-set(
     url('data:image/png;base64,<?!= include("Capsule1x_b64") ?>') 1x,
@@ -15,14 +16,14 @@
     url('data:image/png;base64,<?!= include("Blister1x_b64") ?>') 1x,
     url('data:image/png;base64,<?!= include("Blister2x_b64") ?>') 2x
   );
-  /* Optional aluminium: define --img-aluminium similarly if assets are added */
-  --shadow: 0 6px 18px rgba(15,23,42,.14);
-  --radius: 20px;
-  --muted: #64748b;
   --img-aluminium: image-set(
     url('data:image/png;base64,<?!= include("Aluminium1x_b64") ?>') 1x,
     url('data:image/png;base64,<?!= include("Aluminium2x_b64") ?>') 2x
   );
+<? } ?>
+  --shadow: 0 6px 18px rgba(15,23,42,.14);
+  --radius: 20px;
+  --muted: #64748b;
 }
 /* =================================================================
                       FEUILLE DE STYLE - INTERFACE DE RÉSERVATION

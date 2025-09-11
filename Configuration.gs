@@ -140,6 +140,9 @@ const ADMIN_OPTIMISTIC_CREATION_ENABLED = false;
 /** @const {boolean} Active la colonne de créneaux PNG dans la modale admin. */
 const ADMIN_SLOTS_PNG_ENABLED = false;
 
+/** @const {boolean} Charge les images depuis le dossier Drive public au lieu des Data URI. */
+const PUBLIC_ASSETS_ENABLED = false;
+
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = false;
 
@@ -234,7 +237,8 @@ const FLAGS = Object.freeze({
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED,
   adminOptimisticCreationEnabled: ADMIN_OPTIMISTIC_CREATION_ENABLED,
-  adminSlotsPngEnabled: ADMIN_SLOTS_PNG_ENABLED
+  adminSlotsPngEnabled: ADMIN_SLOTS_PNG_ENABLED,
+  publicAssetsEnabled: PUBLIC_ASSETS_ENABLED
 });
 
 
