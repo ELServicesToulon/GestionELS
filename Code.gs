@@ -153,8 +153,12 @@ function doGet(e) {
 
         case 'admin':
           const adminEmail = Session.getActiveUser().getEmail();
-          // CORRECTION: L'opérateur de comparaison '===' était manquant.
-          if (adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+          if (!adminEmail) {
+            return ContentService.createTextOutput('Forbidden')
+              .setMimeType(ContentService.MimeType.TEXT)
+              .setResponseCode(403);
+          }
+          if (adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
             const templateAdmin = HtmlService.createTemplateFromFile('Admin_Interface');
             return templateAdmin.evaluate().setTitle("Tableau de Bord Administrateur").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
           }

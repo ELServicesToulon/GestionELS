@@ -198,6 +198,21 @@ function setSecret(name, value) {
 }
 
 /**
+ * Compare deux chaînes en temps constant approximatif.
+ * @param {string} a
+ * @param {string} b
+ * @returns {boolean}
+ */
+function safeCompare(a, b) {
+  const aBytes = Utilities.newBlob(a).getBytes();
+  const bBytes = Utilities.newBlob(b).getBytes();
+  if (aBytes.length !== bBytes.length) return false;
+  let diff = 0;
+  for (let i = 0; i < aBytes.length; i++) diff |= aBytes[i] ^ bBytes[i];
+  return diff === 0;
+}
+
+/**
  * Vérifie un lien signé pour l'espace client.
  * Le lien doit contenir email, exp (timestamp secondes) et sig (Base64 HMAC-SHA256 de "email|exp").
  * @param {string} email
@@ -219,7 +234,7 @@ function verifySignedLink(email, expSeconds, sigBase64) {
     const rawSig = Utilities.computeHmacSha256Signature(data, secret);
     const expected = Utilities.base64Encode(rawSig);
     const expectedWeb = Utilities.base64EncodeWebSafe(rawSig);
-    return sigBase64 === expected || sigBase64 === expectedWeb;
+    return safeCompare(sigBase64, expected) || safeCompare(sigBase64, expectedWeb);
   } catch (e) {
     return false;
   }

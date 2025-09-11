@@ -10,8 +10,11 @@
  * @param {string} emailClient L'e-mail à vérifier.
  * @returns {Object} Un objet indiquant le succès et les informations du client si trouvé.
  */
-function validerClientParEmail(emailClient) {
+function validerClientParEmail(emailClient, exp, sig) {
   try {
+    if (exp && sig && !verifySignedLink(emailClient, exp, sig)) {
+      return { success: false, error: 'Lien invalide ou expiré.' };
+    }
     if (!emailClient || typeof emailClient !== 'string') {
       return { success: false, error: "Email non fourni ou invalide." };
     }
@@ -99,8 +102,11 @@ function rechercherClientParIdentifiant(identifiant) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {Object} Un objet contenant les réservations futures du client.
  */
-function obtenirReservationsClient(emailClient) {
+function obtenirReservationsClient(emailClient, exp, sig) {
   try {
+    if (exp && sig && !verifySignedLink(emailClient, exp, sig)) {
+      return { success: false, error: 'Lien invalide ou expiré.' };
+    }
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const indices = obtenirIndicesEnTetes(feuille, ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant"]);
     
@@ -177,8 +183,13 @@ function obtenirReservationsClient(emailClient) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {number} Le total des montants à venir.
  */
-function calculerCAEnCoursClient(emailClient) {
+function calculerCAEnCoursClient(emailClient, exp, sig) {
   try {
+    if (exp && sig && !verifySignedLink(emailClient, exp, sig)) {
+      const err = new Error('Lien invalide ou expiré');
+      err.code = 403;
+      throw err;
+    }
     if (!CA_EN_COURS_ENABLED) return 0;
     if (!emailClient) return 0;
 
@@ -210,8 +221,11 @@ function calculerCAEnCoursClient(emailClient) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {Object} success + liste des factures { numero, dateISO, montant, url, idPdf }.
  */
-function obtenirFacturesPourClient(emailClient) {
+function obtenirFacturesPourClient(emailClient, exp, sig) {
   try {
+    if (exp && sig && !verifySignedLink(emailClient, exp, sig)) {
+      return { success: false, error: 'Lien invalide ou expiré.' };
+    }
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuilles = BILLING_MULTI_SHEET_ENABLED
       ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
@@ -258,8 +272,11 @@ function obtenirFacturesPourClient(emailClient) {
  * @param {string} emailClient L'e-mail de destination.
  * @param {string} numeroFacture Le numéro de facture à envoyer.
  */
-function envoyerFactureClient(emailClient, numeroFacture) {
+function envoyerFactureClient(emailClient, numeroFacture, exp, sig) {
   try {
+    if (exp && sig && !verifySignedLink(emailClient, exp, sig)) {
+      return { success: false, error: 'Lien invalide ou expiré.' };
+    }
     if (!emailClient || !numeroFacture) throw new Error('Paramètres manquants.');
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuilles = BILLING_MULTI_SHEET_ENABLED
@@ -306,11 +323,14 @@ function envoyerFactureClient(emailClient, numeroFacture) {
  * @param {number} totalStops Le nouveau nombre d'arrêt(s) total(s).
  * @returns {Object} Un résumé de l'opération.
  */
-function mettreAJourDetailsReservation(idReservation, totalStops) {
+function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, exp, sig) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé, veuillez réessayer." };
 
   try {
+    if (emailClient && exp && sig && !verifySignedLink(emailClient, exp, sig)) {
+      return { success: false, error: 'Lien invalide ou expiré.' };
+    }
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
@@ -327,7 +347,7 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
     const ligneDonnees = donnees[indexLigne];
     const idEvenement = String(ligneDonnees[indices.idEvent]).trim();
     const detailsAnciens = String(ligneDonnees[indices.details]);
-    const emailClient = ligneDonnees[indices.email];
+    const emailClientSheet = ligneDonnees[indices.email];
     
     let ressourceEvenement = null;
     let dateDebutOriginale = new Date(ligneDonnees[indices.date]); // Fallback sur la date du Sheet
@@ -365,7 +385,7 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
     feuille.getRange(indexLigne + 1, indices.details + 1).setValue(nouveauxDetails);
     feuille.getRange(indexLigne + 1, indices.montant + 1).setValue(nouveauPrix);
 
-    logActivity(idReservation, emailClient, `Modification: ${totalStops} arrêts totaux.`, nouveauPrix, "Modification");
+    logActivity(idReservation, emailClientSheet, `Modification: ${totalStops} arrêts totaux.`, nouveauPrix, "Modification");
     return { success: true };
 
   } catch (e) {
@@ -383,11 +403,14 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
  * @param {string} nouvelleHeure La nouvelle heure.
  * @returns {Object} Un résumé de l'opération.
  */
-function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
+function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emailClient, exp, sig) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé." };
 
   try {
+    if (emailClient && exp && sig && !verifySignedLink(emailClient, exp, sig)) {
+      return { success: false, error: 'Lien invalide ou expiré.' };
+    }
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
@@ -403,7 +426,7 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
 
     const ligneDonnees = donnees[indexLigne];
     const idEvenementAncien = String(ligneDonnees[indices.idEvent]).trim();
-    const emailClient = ligneDonnees[indices.email];
+    const emailClientSheet = ligneDonnees[indices.email];
     const details = String(ligneDonnees[indices.details]);
 
     // Calcul de la durée depuis les détails du Sheet (source de vérité)
@@ -435,9 +458,9 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     }
 
     // Créer un nouvel événement
-    const clientInfos = obtenirInfosClientParEmail(emailClient);
+    const clientInfos = obtenirInfosClientParEmail(emailClientSheet);
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${clientInfos.nom}`;
-    const descriptionEvenement = `Client: ${clientInfos.nom} (${emailClient})\nID Réservation: ${idReservation}\nDétails: ${details}\nTotal: ${ligneDonnees[indices.montant].toFixed(2)} €\nNote: Déplacé par admin.`;
+    const descriptionEvenement = `Client: ${clientInfos.nom} (${emailClientSheet})\nID Réservation: ${idReservation}\nDétails: ${details}\nTotal: ${ligneDonnees[indices.montant].toFixed(2)} €\nNote: Déplacé par admin.`;
     const nouvelEvenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, nouvelleDateDebut, nouvelleDateFin, { description: descriptionEvenement });
 
     if (!nouvelEvenement) {
@@ -448,7 +471,7 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     feuille.getRange(indexLigne + 1, indices.date + 1).setValue(nouvelleDateDebut);
     feuille.getRange(indexLigne + 1, indices.idEvent + 1).setValue(nouvelEvenement.getId());
 
-    logActivity(idReservation, emailClient, `Déplacement au ${nouvelleDate} à ${nouvelleHeure}.`, ligneDonnees[indices.montant], "Modification");
+    logActivity(idReservation, emailClientSheet, `Déplacement au ${nouvelleDate} à ${nouvelleHeure}.`, ligneDonnees[indices.montant], "Modification");
     return { success: true };
 
   } catch (e) {
