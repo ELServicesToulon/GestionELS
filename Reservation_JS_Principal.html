@@ -33,12 +33,14 @@ function initializeFlags(flags = {}) {
     requestLoggingEnabled: false,
     postEndpointEnabled: false,
     configCacheEnabled: false,
-    reservationCacheEnabled: false,
-    themeV2Enabled: false,
-    elsUiThemingEnabled: false,
-    cartResetEnabled: false,
-    devisEnabled: false,
-    publicAssetsEnabled: false
+      reservationCacheEnabled: false,
+      themeV2Enabled: false,
+      elsUiThemingEnabled: false,
+      cartResetEnabled: false,
+      devisEnabled: false,
+      publicAssetsEnabled: false,
+      cssFixesEnabled: false,
+      uiMsgPolicyEnabled: false
 
   };
   return Object.assign({}, defaults, flags);
@@ -101,12 +103,19 @@ function chargerAssetsPublics() {
  * Gestion d'erreur standardisée.
  * @param {any} erreur
  */
-function afficherErreur(erreur) {
-  basculerIndicateurChargement(false);
-  const message = (erreur && erreur.message) ? erreur.message : String(erreur || 'Erreur inconnue');
-  console.error('[ELS]', erreur);
-  afficherNotification(`Erreur : ${message}`, 'erreur');
-}
+  function afficherErreur(erreur) {
+    basculerIndicateurChargement(false);
+    const flags = window.etat?.flags || {};
+    if (flags.uiMsgPolicyEnabled) {
+      const isNetwork = /network/i.test(String(erreur && erreur.message ? erreur.message : erreur));
+      const msg = isNetwork ? 'Réseau indisponible. Réessayez.' : 'Une erreur est survenue. L’équipe a été prévenue.';
+      afficherNotification(msg, 'erreur');
+    } else {
+      const message = (erreur && erreur.message) ? erreur.message : String(erreur || 'Erreur inconnue');
+      afficherNotification(`Erreur : ${message}`, 'erreur');
+    }
+    console.error('[ELS]', erreur);
+  }
 
 /**
  * Affiche le conteneur de finalisation et pré-remplit les champs client.
