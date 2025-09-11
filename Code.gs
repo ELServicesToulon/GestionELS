@@ -26,6 +26,7 @@ function onOpen() {
     .addItem("Sauvegarder le code du projet", "sauvegarderCodeProjet")
     .addItem("Sauvegarder les données", "sauvegarderDonnees")
     .addItem("Vérifier structure des feuilles", "menuVerifierStructureFeuilles")
+    .addItem("Vérifier l’installation", "menuVerifierInstallation")
     .addItem("Purger les anciennes données (RGPD)", "purgerAnciennesDonnees")
     .addSeparator()
     .addItem("Nettoyer l'onglet Facturation", "nettoyerOngletFacturation")
@@ -54,6 +55,12 @@ function onOpen() {
   }
 
   menuPrincipal.addToUi();
+
+  try {
+    validerConfiguration();
+  } catch (err) {
+    ui.alert('Configuration invalide', err.message, ui.ButtonSet.OK);
+  }
 }
 
 /**
@@ -93,6 +100,23 @@ function menuGenererLienClient() {
 
 
 /**
+ * Menu: Vérifie l'installation via checkSetup_ELS.
+ */
+function menuVerifierInstallation() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    const res = checkSetup_ELS();
+    if (res.missingProps && res.missingProps.length > 0) {
+      ui.alert('Installation incomplète', 'Propriétés manquantes: ' + res.missingProps.join(', '), ui.ButtonSet.OK);
+    } else {
+      ui.alert('Installation valide', 'Toutes les propriétés requises sont présentes.', ui.ButtonSet.OK);
+    }
+  } catch (err) {
+    ui.alert('Erreur', err.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
  * Crée une réponse HTML standard pour les messages d'erreur ou d'information.
  * @param {string} titre Le titre de la page HTML.
  * @param {string} message Le message à afficher dans le corps de la page.
@@ -111,6 +135,17 @@ function creerReponseHtml(titre, message) {
  */
 function doGet(e) {
   try {
+    try {
+      const setup = checkSetup_ELS();
+      if (setup.missingProps && setup.missingProps.length > 0) {
+        return HtmlService.createHtmlOutput(
+          `<h1>Configuration manquante</h1><p>Propriétés manquantes: ${setup.missingProps.join(', ')}</p>`
+        ).setTitle('Configuration manquante');
+      }
+    } catch (err) {
+      Logger.log('checkSetup_ELS erreur: ' + err.message);
+    }
+
     const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : '';
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e); // Assurez-vous que la fonction logRequest existe
@@ -229,6 +264,16 @@ function doGet(e) {
  */
 function doPost(e) {
   try {
+    try {
+      validerConfiguration();
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Configuration invalide',
+        details: err.message
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e);
     }
