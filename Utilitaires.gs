@@ -152,7 +152,7 @@ function logFailedLogin(email, ip) {
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     let feuilleLog = ss.getSheetByName(SHEET_LOGS);
     if (!feuilleLog) {
-      feuilleLog = ss.insertSheet('Logs');
+      feuilleLog = ss.insertSheet(SHEET_LOGS);
       feuilleLog.appendRow(['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut']);
     }
     feuilleLog.appendRow([new Date(), '', email, `Connexion échouée (IP: ${ip || 'N/A'})`, '', 'Échec']);
