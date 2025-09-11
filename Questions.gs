@@ -17,7 +17,8 @@ function getQuestionsSheet_() {
  * Récupère toutes les questions et leurs réponses.
  * @returns {Array<Object>} Liste des questions.
  */
-function getQuestions() {
+function getQuestions(email, exp, sig) {
+  assertClient(email, exp, sig);
   const sheet = getQuestionsSheet_();
   const data = sheet.getDataRange().getValues();
   const questions = [];
@@ -38,10 +39,11 @@ function getQuestions() {
  * @param {string} auteur Auteur de la question.
  * @returns {{success:boolean,id:number}} Résultat de l'opération.
  */
-function addQuestion(question, auteur) {
+function addQuestion(question, auteur, email, exp, sig) {
+  const emailNorm = assertClient(email, exp, sig);
   const sheet = getQuestionsSheet_();
   const id = Date.now();
-  sheet.appendRow([id, question, auteur, JSON.stringify([])]);
+  sheet.appendRow([id, question, emailNorm, JSON.stringify([])]);
   return { success: true, id: id };
 }
 
@@ -52,7 +54,8 @@ function addQuestion(question, auteur) {
  * @param {string} auteur Auteur de la réponse.
  * @returns {{success:boolean}|{success:boolean,error:string}} Résultat.
  */
-function addAnswer(questionId, reponse, auteur) {
+function addAnswer(questionId, reponse, auteur, email, exp, sig) {
+  assertClient(email, exp, sig);
   const sheet = getQuestionsSheet_();
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {

@@ -10,12 +10,9 @@
  * @param {string} emailClient L'e-mail à vérifier.
  * @returns {Object} Un objet indiquant le succès et les informations du client si trouvé.
  */
-function validerClientParEmail(emailClient) {
+function validerClientParEmail(emailClient, exp, sig) {
   try {
-    if (!emailClient || typeof emailClient !== 'string') {
-      return { success: false, error: "Email non fourni ou invalide." };
-    }
-    const email = emailClient.trim().toLowerCase();
+    const email = assertClient(emailClient, exp, sig);
     const cacheKey = `login_fail_${email}`;
     if (CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED) {
       const cache = CacheService.getScriptCache();
@@ -46,7 +43,7 @@ function validerClientParEmail(emailClient) {
     }
   } catch (e) {
     Logger.log(`Erreur dans validerClientParEmail pour ${emailClient}: ${e.stack}`);
-    return { success: false, error: "Une erreur serveur est survenue." };
+    return { success: false, error: e.message || "Une erreur serveur est survenue." };
   }
 }
 
@@ -99,8 +96,9 @@ function rechercherClientParIdentifiant(identifiant) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {Object} Un objet contenant les réservations futures du client.
  */
-function obtenirReservationsClient(emailClient) {
+function obtenirReservationsClient(emailClient, exp, sig) {
   try {
+    const emailNorm = assertClient(emailClient, exp, sig);
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const indices = obtenirIndicesEnTetes(feuille, ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant"]);
     
@@ -109,7 +107,7 @@ function obtenirReservationsClient(emailClient) {
 
     const reservations = donnees.slice(1).map(ligne => {
       try {
-        if (String(ligne[indices["Client (Email)"]]).trim().toLowerCase() !== emailClient.trim().toLowerCase()) {
+        if (String(ligne[indices["Client (Email)"]]).trim().toLowerCase() !== emailNorm) {
           return null;
         }
         
@@ -177,10 +175,10 @@ function obtenirReservationsClient(emailClient) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {number} Le total des montants à venir.
  */
-function calculerCAEnCoursClient(emailClient) {
+function calculerCAEnCoursClient(emailClient, exp, sig) {
   try {
     if (!CA_EN_COURS_ENABLED) return 0;
-    if (!emailClient) return 0;
+    const email = assertClient(emailClient, exp, sig);
 
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     if (!feuille) return 0;
@@ -191,7 +189,7 @@ function calculerCAEnCoursClient(emailClient) {
 
     lignes.slice(1).forEach(ligne => {
       const emailLigne = String(ligne[indices['Client (Email)']]).trim().toLowerCase();
-      if (emailLigne !== emailClient.trim().toLowerCase()) return;
+      if (emailLigne !== email) return;
       const dateResa = new Date(ligne[indices['Date']]);
       if (isNaN(dateResa.getTime()) || dateResa < aujourdHui) return;
       total += parseFloat(ligne[indices['Montant']]) || 0;
@@ -210,8 +208,9 @@ function calculerCAEnCoursClient(emailClient) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {Object} success + liste des factures { numero, dateISO, montant, url, idPdf }.
  */
-function obtenirFacturesPourClient(emailClient) {
+function obtenirFacturesPourClient(emailClient, exp, sig) {
   try {
+    const emailNorm = assertClient(emailClient, exp, sig);
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuilles = BILLING_MULTI_SHEET_ENABLED
       ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
@@ -232,7 +231,7 @@ function obtenirFacturesPourClient(emailClient) {
       data.forEach(row => {
         try {
           const email = String(row[idx.email] || '').trim().toLowerCase();
-          if (email !== String(emailClient || '').trim().toLowerCase()) return;
+          if (email !== emailNorm) return;
           const numero = String(row[idx.numero] || '').trim();
           const idPdf = String(row[idx.idPdf] || '').trim();
           if (!numero || !idPdf) return;
@@ -258,9 +257,10 @@ function obtenirFacturesPourClient(emailClient) {
  * @param {string} emailClient L'e-mail de destination.
  * @param {string} numeroFacture Le numéro de facture à envoyer.
  */
-function envoyerFactureClient(emailClient, numeroFacture) {
+function envoyerFactureClient(emailClient, numeroFacture, exp, sig) {
   try {
-    if (!emailClient || !numeroFacture) throw new Error('Paramètres manquants.');
+    const emailNorm = assertClient(emailClient, exp, sig);
+    if (!numeroFacture) throw new Error('Paramètres manquants.');
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuilles = BILLING_MULTI_SHEET_ENABLED
       ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
@@ -278,7 +278,7 @@ function envoyerFactureClient(emailClient, numeroFacture) {
       };
       if (Object.values(idx).some(i => i === -1)) throw new Error("Colonnes requises absentes (Client (Email), N° Facture, ID PDF, Montant).");
       const rows = feuille.getDataRange().getValues().slice(1);
-      row = rows.find(r => String(r[idx.numero]).trim() === String(numeroFacture).trim() && String(r[idx.email]).trim().toLowerCase() === String(emailClient).trim().toLowerCase());
+      row = rows.find(r => String(r[idx.numero]).trim() === String(numeroFacture).trim() && String(r[idx.email]).trim().toLowerCase() === emailNorm);
       if (row) break;
     }
     if (!row) throw new Error('Facture introuvable pour ce client.');
@@ -292,8 +292,8 @@ function envoyerFactureClient(emailClient, numeroFacture) {
       `<p>Veuillez trouver ci-joint votre facture <strong>${String(row[idx.numero]).trim()}</strong>${montant !== null ? ` d'un montant de <strong>${montant.toFixed(2)} €</strong>` : ''}.</p>`,
       `<p>Cordiales salutations,<br>${NOM_ENTREPRISE}</p>`
     ].join('');
-    MailApp.sendEmail({ to: emailClient, subject: sujet, htmlBody: corps, attachments: [pdfBlob], replyTo: EMAIL_ENTREPRISE });
-    return { success: true };
+    MailApp.sendEmail({ to: emailNorm, subject: sujet, htmlBody: corps, attachments: [pdfBlob], replyTo: EMAIL_ENTREPRISE });
+  return { success: true };
   } catch (e) {
     Logger.log('Erreur dans envoyerFactureClient: ' + e.stack);
     return { success: false, error: e.message };
@@ -306,11 +306,13 @@ function envoyerFactureClient(emailClient, numeroFacture) {
  * @param {number} totalStops Le nouveau nombre d'arrêt(s) total(s).
  * @returns {Object} Un résumé de l'opération.
  */
-function mettreAJourDetailsReservation(idReservation, totalStops) {
+function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, exp, sig) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé, veuillez réessayer." };
 
   try {
+    const emailNorm = assertClient(emailClient, exp, sig);
+    const idNorm = assertReservationId(idReservation);
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
@@ -321,14 +323,15 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
     if (Object.values(indices).some(i => i === -1)) throw new Error("Colonnes requises introuvables.");
 
     const donnees = feuille.getDataRange().getValues();
-    const indexLigne = donnees.findIndex(row => String(row[indices.idResa]).trim() === String(idReservation).trim());
+    const indexLigne = donnees.findIndex(row => String(row[indices.idResa]).trim() === idNorm);
     if (indexLigne === -1) return { success: false, error: "Réservation introuvable." };
 
     const ligneDonnees = donnees[indexLigne];
     const idEvenement = String(ligneDonnees[indices.idEvent]).trim();
     const detailsAnciens = String(ligneDonnees[indices.details]);
-    const emailClient = ligneDonnees[indices.email];
-    
+    const emailFeuille = String(ligneDonnees[indices.email]).trim().toLowerCase();
+    if (emailFeuille !== emailNorm) return { success: false, error: "Accès non autorisé." };
+
     let ressourceEvenement = null;
     let dateDebutOriginale = new Date(ligneDonnees[indices.date]); // Fallback sur la date du Sheet
 
@@ -365,7 +368,7 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
     feuille.getRange(indexLigne + 1, indices.details + 1).setValue(nouveauxDetails);
     feuille.getRange(indexLigne + 1, indices.montant + 1).setValue(nouveauPrix);
 
-    logActivity(idReservation, emailClient, `Modification: ${totalStops} arrêts totaux.`, nouveauPrix, "Modification");
+    logActivity(idNorm, emailNorm, `Modification: ${totalStops} arrêts totaux.`, nouveauPrix, "Modification");
     return { success: true };
 
   } catch (e) {
@@ -383,11 +386,13 @@ function mettreAJourDetailsReservation(idReservation, totalStops) {
  * @param {string} nouvelleHeure La nouvelle heure.
  * @returns {Object} Un résumé de l'opération.
  */
-function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
+function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emailClient, exp, sig) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé." };
 
   try {
+    const emailNorm = assertClient(emailClient, exp, sig);
+    const idNorm = assertReservationId(idReservation);
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
@@ -398,12 +403,13 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     if (Object.values(indices).some(i => i === -1)) throw new Error("Colonnes requises introuvables.");
 
     const donnees = feuille.getDataRange().getValues();
-    const indexLigne = donnees.findIndex(row => String(row[indices.idResa]).trim() === String(idReservation).trim());
+    const indexLigne = donnees.findIndex(row => String(row[indices.idResa]).trim() === idNorm);
     if (indexLigne === -1) return { success: false, error: "Réservation introuvable." };
 
     const ligneDonnees = donnees[indexLigne];
     const idEvenementAncien = String(ligneDonnees[indices.idEvent]).trim();
-    const emailClient = ligneDonnees[indices.email];
+    const emailFeuille = String(ligneDonnees[indices.email]).trim().toLowerCase();
+    if (emailFeuille !== emailNorm) return { success: false, error: "Accès non autorisé." };
     const details = String(ligneDonnees[indices.details]);
 
     // Calcul de la durée depuis les détails du Sheet (source de vérité)
@@ -435,9 +441,9 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     }
 
     // Créer un nouvel événement
-    const clientInfos = obtenirInfosClientParEmail(emailClient);
+    const clientInfos = obtenirInfosClientParEmail(emailNorm);
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${clientInfos.nom}`;
-    const descriptionEvenement = `Client: ${clientInfos.nom} (${emailClient})\nID Réservation: ${idReservation}\nDétails: ${details}\nTotal: ${ligneDonnees[indices.montant].toFixed(2)} €\nNote: Déplacé par admin.`;
+    const descriptionEvenement = `Client: ${clientInfos.nom} (${emailNorm})\nID Réservation: ${idNorm}\nDétails: ${details}\nTotal: ${ligneDonnees[indices.montant].toFixed(2)} €\nNote: Déplacé par admin.`;
     const nouvelEvenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, nouvelleDateDebut, nouvelleDateFin, { description: descriptionEvenement });
 
     if (!nouvelEvenement) {
@@ -448,7 +454,7 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
     feuille.getRange(indexLigne + 1, indices.date + 1).setValue(nouvelleDateDebut);
     feuille.getRange(indexLigne + 1, indices.idEvent + 1).setValue(nouvelEvenement.getId());
 
-    logActivity(idReservation, emailClient, `Déplacement au ${nouvelleDate} à ${nouvelleHeure}.`, ligneDonnees[indices.montant], "Modification");
+    logActivity(idNorm, emailNorm, `Déplacement au ${nouvelleDate} à ${nouvelleHeure}.`, ligneDonnees[indices.montant], "Modification");
     return { success: true };
 
   } catch (e) {

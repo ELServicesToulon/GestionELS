@@ -35,8 +35,9 @@ function obtenirEvenementsCalendrierPourPeriode(dateDebut, dateFin) {
  * @param {Array} autresCoursesPanier Les autres courses dans le panier de l'utilisateur.
  * @returns {Array<string>} Une liste de créneaux disponibles au format "HHhMM".
  */
-function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnorer = null, evenementsPrecharges = null, autresCoursesPanier = []) {
+function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnorer = null, evenementsPrecharges = null, autresCoursesPanier = [], email, exp, sig) {
   try {
+    if (email && exp && sig) assertClient(email, exp, sig);
     const [annee, mois, jour] = dateString.split('-').map(Number);
     
     const [heureDebut, minuteDebut] = HEURE_DEBUT_SERVICE.split(':').map(Number);

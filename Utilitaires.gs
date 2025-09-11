@@ -251,3 +251,33 @@ function generateSignedClientLink(email, ttlSeconds) {
 function getConfiguration() {
   return Object.assign({}, FLAGS);
 }
+
+/**
+ * Vérifie le lien signé et normalise l'email.
+ * @param {string} email
+ * @param {string|number} exp
+ * @param {string} sig
+ * @returns {string} Email normalisé.
+ * @throws {Error} Si le lien ou l'email est invalide.
+ */
+function assertClient(email, exp, sig) {
+  const emailNorm = String(email || '').trim().toLowerCase();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailNorm)) throw new Error('Email invalide.');
+  if (typeof CLIENT_PORTAL_SIGNED_LINKS !== 'undefined' && CLIENT_PORTAL_SIGNED_LINKS) {
+    if (!verifySignedLink(emailNorm, exp, sig)) throw new Error('Lien invalide.');
+  }
+  return emailNorm;
+}
+
+/**
+ * Valide et normalise un identifiant de réservation.
+ * @param {string|number} id
+ * @returns {string} Identifiant normalisé.
+ * @throws {Error} Si l'identifiant est vide.
+ */
+function assertReservationId(id) {
+  const norm = String(id || '').trim();
+  if (!norm) throw new Error('ID réservation invalide.');
+  return norm;
+}
