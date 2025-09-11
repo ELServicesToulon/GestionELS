@@ -8,13 +8,7 @@
 // --- Constantes de Rétention (RGPD) ---
 // Définies dans Configuration.gs : ANNEES_RETENTION_FACTURES, MOIS_RETENTION_LOGS
 
-const FACTURATION_HEADERS = (function() {
-  const headers = ['Date','Client (Raison S. Client)','Client (Email)','Type','Détails','Montant','Statut','Valider','N° Facture','Event ID','ID Réservation','Note Interne','Tournée Offerte Appliquée','Type Remise Appliquée','Valeur Remise Appliquée','Lien Note'];
-  if (BILLING_ID_PDF_CHECK_ENABLED) {
-    headers.splice(9, 0, 'ID PDF');
-  }
-  return headers;
-})();
+const FACTURATION_HEADERS = ['Date', 'Client (Raison S. Client)', 'Client (Email)', 'Type', 'Détails', 'Montant', 'Statut', 'Valider', 'N° Facture', 'Event ID', 'ID Réservation', 'Note Interne', 'Tournée Offerte Appliquée', 'Type Remise Appliquée', 'Valeur Remise Appliquée', 'Lien Note'];
 
 // =================================================================
 //                      1. JOURNALISATION (LOGGING)
