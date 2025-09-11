@@ -5,7 +5,20 @@
 // configuration: propriétés requises, flags exposés et infos d'env.
 // Utilisez `clasp run checkSetup_ELS` pour obtenir un résumé JSON.
 
-const REQUIRED_PROPS = ['NOM_ENTREPRISE','ADRESSE_ENTREPRISE','EMAIL_ENTREPRISE','ADMIN_EMAIL','ID_FEUILLE_CALCUL','ID_CALENDRIER','ID_DOCUMENT_CGV','ID_MODELE_FACTURE','ID_DOSSIER_ARCHIVES','ID_DOSSIER_TEMPORAIRE','SIRET','ELS_SHARED_SECRET','DOCS_PUBLIC_FOLDER_ID'];
+const REQUIRED_PROPS = [
+  'NOM_ENTREPRISE',
+  'ADRESSE_ENTREPRISE',
+  'EMAIL_ENTREPRISE',
+  'ADMIN_EMAIL',
+  'ID_FEUILLE_CALCUL',
+  'ID_CALENDRIER',
+  'ID_DOCUMENT_CGV',
+  'ID_MODELE_FACTURE',
+  'ID_DOSSIER_ARCHIVES',
+  'ID_DOSSIER_TEMPORAIRE',
+  'SIRET',
+  'ELS_SHARED_SECRET'
+];
 
 /**
  * Vérifie la configuration de base sans effets de bord.

@@ -106,9 +106,7 @@ function menuVerifierInstallation() {
   const ui = SpreadsheetApp.getUi();
   const result = checkSetup_ELS();
   Logger.log(JSON.stringify(result));
-  const message = result.ok
-    ? 'OK'
-    : 'Propriétés manquantes: ' + result.missingProps.join(', ');
+  const message = 'ok=' + result.ok + '\nmissingProps=' + (result.missingProps || []).join(', ');
   ui.alert('Vérification installation', message, ui.ButtonSet.OK);
 }
 
