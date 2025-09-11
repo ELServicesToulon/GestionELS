@@ -193,6 +193,19 @@ const RESERVATION_CACHE_ENABLED = false;
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
 const THEME_V2_ENABLED = true;
 const ELS_UI_THEMING_ENABLED = true;
+
+/** @const {boolean} Utilise les icônes hébergées sur Drive au lieu des Data URI. */
+const DRIVE_ASSETS_ENABLED = false;
+
+/** @const {{CAPSULE_1X:string,CAPSULE_2X:string,BLISTER_1X:string,BLISTER_2X:string,ALUMINIUM_1X:string,ALUMINIUM_2X:string}} Identifiants Drive des icônes. */
+const DRIVE_ASSET_IDS = Object.freeze({
+  CAPSULE_1X: '',
+  CAPSULE_2X: '',
+  BLISTER_1X: '',
+  BLISTER_2X: '',
+  ALUMINIUM_1X: '',
+  ALUMINIUM_2X: ''
+});
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
 // const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
@@ -213,6 +226,7 @@ const FLAGS = Object.freeze({
   calendarPurgeEnabled: CALENDAR_PURGE_ENABLED,
   calendarBarOpacityEnabled: CALENDAR_BAR_OPACITY_ENABLED,
   reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
+  driveAssetsEnabled: DRIVE_ASSETS_ENABLED,
   residentBillingEnabled: RESIDENT_BILLING_ENABLED,
   billingModalEnabled: BILLING_MODAL_ENABLED,
   cartResetEnabled: CART_RESET_ENABLED,
