@@ -166,8 +166,12 @@ const PROOF_SOCIAL_ENABLED = false;
 const PRO_QA_ENABLED = false;
 
 /** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
-const EXTRA_ICONS_ENABLED = false;
-// --- Drapeaux de Débogage et de Test ---
+  const EXTRA_ICONS_ENABLED = false;
+  /** @const {boolean} Active les correctifs CSS (rgba, sélecteurs). */
+  const CSS_FIXES_ENABLED = false;
+  /** @const {boolean} Active la politique de messages UI unifiée. */
+  const UI_MSG_POLICY_ENABLED = false;
+  // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = false;
 /** @const {boolean} Sert une version de démo de la page de réservation. */
@@ -237,8 +241,10 @@ const FLAGS = Object.freeze({
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED,
   adminOptimisticCreationEnabled: ADMIN_OPTIMISTIC_CREATION_ENABLED,
   adminSlotsPngEnabled: ADMIN_SLOTS_PNG_ENABLED,
-  publicAssetsEnabled: PUBLIC_ASSETS_ENABLED
-});
+  publicAssetsEnabled: PUBLIC_ASSETS_ENABLED,
+  cssFixesEnabled: CSS_FIXES_ENABLED,
+  uiMsgPolicyEnabled: UI_MSG_POLICY_ENABLED
+  });
 
 
 // =================================================================

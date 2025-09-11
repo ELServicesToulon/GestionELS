@@ -66,13 +66,14 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <?!= include('ThemeCapsule') ?>
-  <style id="theme-style"></style>
-  <?!= include('Admin_CSS'); ?>
-  <?!= include('charte'); ?>
-</head>
-<body>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <?!= include('ThemeCapsule') ?>
+    <style id="theme-style"></style>
+    <?!= include('Admin_CSS'); ?>
+    <?!= include('charte'); ?>
+    <script>const UI_MSG_POLICY_ENABLED = <?= UI_MSG_POLICY_ENABLED ? 'true' : 'false' ?>;</script>
+  </head>
+  <body>
 
 <!-- Sprite SVG caché (defs + symbols) -->
 <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">

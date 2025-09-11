@@ -464,12 +464,18 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => notif.remove(), 5000);
     }
     
-    function afficherErreur(erreur) {
-        basculerIndicateurChargement(false);
-        const message = typeof erreur === 'object' && erreur.message ? erreur.message : String(erreur);
-        afficherNotification(`Erreur : ${message}`, "erreur");
-        logError(erreur);
-    }
+      function afficherErreur(erreur) {
+          basculerIndicateurChargement(false);
+          if (typeof UI_MSG_POLICY_ENABLED !== 'undefined' && UI_MSG_POLICY_ENABLED) {
+              const isNetwork = /network/i.test(String(erreur && erreur.message ? erreur.message : erreur));
+              const msg = isNetwork ? 'Réseau indisponible. Réessayez.' : 'Une erreur est survenue. L’équipe a été prévenue.';
+              afficherNotification(msg, "erreur");
+          } else {
+              const message = typeof erreur === 'object' && erreur.message ? erreur.message : String(erreur);
+              afficherNotification(`Erreur : ${message}`, "erreur");
+          }
+          logError(erreur);
+      }
 
     initialiser();
 });
