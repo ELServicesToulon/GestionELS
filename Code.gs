@@ -44,8 +44,7 @@ function onOpen() {
   menuPrincipal.addSubMenu(sousMenuMaintenance);
 
   // --- Ajout du sous-menu Debug (s'il est activé) ---
-  // CORRECTION: La création du menu Debug est maintenant entièrement contenue
-  // dans cette condition pour éviter la redondance et la confusion.
+  // Crée le sous-menu Debug uniquement quand `DEBUG_MENU_ENABLED` est vrai.
   if (typeof DEBUG_MENU_ENABLED !== 'undefined' && DEBUG_MENU_ENABLED) {
     const sousMenuDebug = ui.createMenu('Debug')
       .addItem("Lancer tous les tests", "lancerTousLesTests")
@@ -194,7 +193,7 @@ function doGet(e) {
             }
             return creerReponseHtml('Accès Refusé', 'Vous n\'avez pas les permissions nécessaires.');
           }
-          // CORRECTION: Message clair si le debug est désactivé au niveau global.
+          // Affiche un message clair si le mode debug est désactivé.
           return creerReponseHtml('Accès Refusé', 'Le mode de débogage est désactivé.');
 
         case 'infos':
@@ -202,8 +201,7 @@ function doGet(e) {
             return HtmlService.createHtmlOutputFromFile('Infos_confidentialite')
               .setTitle("Infos & confidentialité");
           }
-          // CORRECTION: Ajout d'un 'break' pour éviter de tomber sur la page par défaut
-          // si cette page est désactivée.
+          // Ajoute un `break` pour éviter l’affichage par défaut quand la page infos est désactivée.
           break;
       }
     }
