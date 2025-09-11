@@ -104,16 +104,12 @@ function menuGenererLienClient() {
  */
 function menuVerifierInstallation() {
   const ui = SpreadsheetApp.getUi();
-  try {
-    const res = checkSetup_ELS();
-    if (res.missingProps && res.missingProps.length > 0) {
-      ui.alert('Installation incomplète', 'Propriétés manquantes: ' + res.missingProps.join(', '), ui.ButtonSet.OK);
-    } else {
-      ui.alert('Installation valide', 'Toutes les propriétés requises sont présentes.', ui.ButtonSet.OK);
-    }
-  } catch (err) {
-    ui.alert('Erreur', err.message, ui.ButtonSet.OK);
-  }
+  const result = checkSetup_ELS();
+  Logger.log(JSON.stringify(result));
+  const message = result.ok
+    ? 'OK'
+    : 'Propriétés manquantes: ' + result.missingProps.join(', ');
+  ui.alert('Vérification installation', message, ui.ButtonSet.OK);
 }
 
 /**
