@@ -24,6 +24,8 @@
     "snapshot": "pwsh tools/snapshot.ps1",
     "helper": "clasp-helper.cmd",
     "helper:ps": "pwsh ./clasp-helper.ps1",
+    "lint": "eslint .",
+    "fmt": "prettier .github/workflows/*.yml eslint.config.mjs package.json",
     "test": "node -e \"console.log('No automated tests configured. Use the Debug menu in Sheets or run: npm run test:clasp')\"",
     "test:clasp": "clasp run lancerTousLesTestsEtRetournerLogs --noninteractive"
   }
