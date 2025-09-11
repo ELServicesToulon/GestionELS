@@ -1,0 +1,26 @@
+{
+  "root": true,
+  "extends": ["eslint:recommended", "plugin:import/recommended", "prettier"],
+  "plugins": ["html", "googleappsscript"],
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "overrides": [
+    {
+      "files": ["*.gs"],
+      "env": {
+        "googleappsscript/googleappsscript": true
+      }
+    }
+  ],
+  "rules": {
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "no-console": "off"
+  }
+}

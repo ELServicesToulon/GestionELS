@@ -1,0 +1,4 @@
+*
+!.eslintrc.json
+!prettier.config.json
+!package.json
