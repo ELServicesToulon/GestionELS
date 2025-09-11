@@ -24,7 +24,7 @@ const EMAIL_ENTREPRISE = getSecret('EMAIL_ENTREPRISE');
 const ADMIN_EMAIL = getSecret('ADMIN_EMAIL');
 
 // --- Paramètres de facturation ---
-/** @const {boolean} Indique si la TVA est appliquée ; désactivé par défaut. */
+/** @const {boolean} Indique si la TVA est appliquée; désactivé par défaut. */
 const TVA_APPLICABLE = false;
 /** @const {number} Taux de TVA appliqué lorsque TVA_APPLICABLE est true (0.20 pour 20%). */
 const TAUX_TVA = 0.20;
@@ -107,99 +107,99 @@ const CLIENT_SESSION_TTL_HOURS = 24;
 // =================================================================
 
 // --- Drapeaux de Fonctionnalités Générales ---
-/** @const {boolean} Active l'espace client. */
+/** @const {boolean} Active l'espace client; activé par défaut. */
 const CLIENT_PORTAL_ENABLED = true;
-/** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
+/** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client; désactivé par défaut. */
 const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
-/** @const {boolean} Affiche le lien vers les informations de confidentialité. */
+/** @const {boolean} Affiche le lien vers les informations de confidentialité; désactivé par défaut. */
 const PRIVACY_LINK_ENABLED = false;
-/** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
+/** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi; désactivé par défaut. */
 const SLOTS_AMPM_ENABLED = false;
-/** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
+/** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque; désactivé par défaut. */
 const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
-/** @const {boolean} Vérifie la présence du scope script.send_mail lors du setup. */
+/** @const {boolean} Vérifie la présence du scope script.send_mail lors du setup; désactivé par défaut. */
 const SEND_MAIL_SCOPE_CHECK_ENABLED = false;
-/** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
+/** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures; désactivé par défaut. */
 const BILLING_MULTI_SHEET_ENABLED = false;
-/** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
+/** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin; désactivé par défaut. */
 const CA_EN_COURS_ENABLED = false;
-/** @const {boolean} Resynchronise les événements manquants du calendrier Google. */
+/** @const {boolean} Resynchronise les événements manquants du calendrier Google; désactivé par défaut. */
 const CALENDAR_RESYNC_ENABLED = false;
-/** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
+/** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre; désactivé par défaut. */
 const CALENDAR_PURGE_ENABLED = false;
 
-/** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
+/** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge; désactivé par défaut. */
 const CALENDAR_BAR_OPACITY_ENABLED = false;
 
-/** @const {boolean} Active la création optimiste des courses admin. */
+/** @const {boolean} Active la création optimiste des courses admin; désactivé par défaut. */
 const ADMIN_OPTIMISTIC_CREATION_ENABLED = false;
 
-/** @const {boolean} Active la colonne de créneaux PNG dans la modale admin. */
+/** @const {boolean} Active la colonne de créneaux PNG dans la modale admin; désactivé par défaut. */
 const ADMIN_SLOTS_PNG_ENABLED = false;
 
-/** @const {boolean} Charge les images depuis le dossier Drive public au lieu des Data URI. */
+/** @const {boolean} Charge les images depuis le dossier Drive public au lieu des Data URI; désactivé par défaut. */
 const PUBLIC_ASSETS_ENABLED = false;
 
-/** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
+/** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation; désactivé par défaut. */
 const RESERVATION_VERIFY_ENABLED = false;
 
-/** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
+/** @const {boolean} Active la nouvelle interface de réservation JavaScript; activé par défaut. */
 const RESERVATION_UI_V2_ENABLED = true;
 
-/** @const {boolean} Active la facturation directe au résident. */
+/** @const {boolean} Active la facturation directe au résident; désactivé par défaut. */
 const RESIDENT_BILLING_ENABLED = false;
 
-/** @const {boolean} Active la modale de coordonnées de facturation. */
+/** @const {boolean} Active la modale de coordonnées de facturation; désactivé par défaut. */
 const BILLING_MODAL_ENABLED = false;
-/** @const {boolean} Active la réinitialisation du panier côté client. */
+/** @const {boolean} Active la réinitialisation du panier côté client; désactivé par défaut. */
 const CART_RESET_ENABLED = false;
-/** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
+/** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement); désactivé par défaut. */
 const RETURN_IMPACTS_ESTIMATES_ENABLED = false;
-/** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
+/** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking); désactivé par défaut. */
 const PRICING_RULES_V2_ENABLED = false;
 
-/** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
+/** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires); désactivé par défaut. */
 const PROOF_SOCIAL_ENABLED = false;
-/** @const {boolean} Active le module Questions/Réponses pour les professionnels. */
+/** @const {boolean} Active le module Questions/Réponses pour les professionnels; désactivé par défaut. */
 const PRO_QA_ENABLED = false;
 
-/** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
+/** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison); désactivé par défaut. */
 const EXTRA_ICONS_ENABLED = false;
-/** @const {boolean} Active les correctifs CSS (rgba, sélecteurs). */
+/** @const {boolean} Active les correctifs CSS (rgba, sélecteurs); désactivé par défaut. */
 const CSS_FIXES_ENABLED = false;
-/** @const {boolean} Active la politique de messages UI unifiée. */
+/** @const {boolean} Active la politique de messages UI unifiée; désactivé par défaut. */
 const UI_MSG_POLICY_ENABLED = false;
 
 // --- Drapeaux de Débogage et de Test ---
-/** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
+/** @const {boolean} Affiche le sous-menu Debug et l'interface associée; désactivé par défaut. */
 const DEBUG_MENU_ENABLED = false;
-/** @const {boolean} Sert une version de démo de la page de réservation. */
+/** @const {boolean} Sert une version de démo de la page de réservation; désactivé par défaut. */
 const DEMO_RESERVATION_ENABLED = false;
-/** @const {boolean} Active l'écriture des logs de facturation. */
+/** @const {boolean} Active l'écriture des logs de facturation; désactivé par défaut. */
 const BILLING_LOG_ENABLED = false;
-/** @const {boolean} Active le mode test pour la facturation V2 (aucune écriture). */
+/** @const {boolean} Active le mode test pour la facturation V2 (aucune écriture); désactivé par défaut. */
 const BILLING_V2_DRYRUN = false;
-/** @const {boolean} Vérifie la présence de la colonne ID PDF dans l'onglet Facturation. */
+/** @const {boolean} Vérifie la présence de la colonne ID PDF dans l'onglet Facturation; désactivé par défaut. */
 const BILLING_ID_PDF_CHECK_ENABLED = false;
-/** @const {boolean} Active la journalisation détaillée des requêtes web. */
+/** @const {boolean} Active la journalisation détaillée des requêtes web; désactivé par défaut. */
 const REQUEST_LOGGING_ENABLED = false;
-/** @const {boolean} Active le traitement des requêtes POST. */
+/** @const {boolean} Active le traitement des requêtes POST; désactivé par défaut. */
 const POST_ENDPOINT_ENABLED = false;
-/** @const {boolean} Limite le nombre de tentatives de connexion au portail client. */
+/** @const {boolean} Limite le nombre de tentatives de connexion au portail client; désactivé par défaut. */
 const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = false;
 /** @const {number} Nombre maximum de tentatives avant blocage. */
 const CLIENT_PORTAL_MAX_ATTEMPTS = 10;
-/** @const {boolean} Active la mise en cache des paramètres de configuration. */
+/** @const {boolean} Active la mise en cache des paramètres de configuration; désactivé par défaut. */
 const CONFIG_CACHE_ENABLED = false;
-/** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
+/** @const {boolean} Active la mise en cache des réservations; désactivé par défaut. */
 const RESERVATION_CACHE_ENABLED = false;
 
 // --- Drapeaux de Thème ---
-/** @const {boolean} Active la nouvelle version du thème graphique (V2). */
+/** @const {boolean} Active la nouvelle version du thème graphique (V2); activé par défaut. */
 const THEME_V2_ENABLED = true;
-/** @const {boolean} Active l'application du thème UI générique ELS. */
+/** @const {boolean} Active l'application du thème UI générique ELS; activé par défaut. */
 const ELS_UI_THEMING_ENABLED = true;
 
 /*
