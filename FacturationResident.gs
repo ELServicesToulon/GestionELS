@@ -159,12 +159,12 @@ function buildInvoiceLinesSainteMusseEHPAD(opts) {
 
 function sumHT(lines) {
   return lines.reduce(function (s, l) {
-    return s + Number(l.total || 0);
+    return s + toCents(l.total || 0);
   }, 0);
 }
 
-function computeTVA(ht) {
-  return BILLING.TVA_APPLICABLE ? Math.round(ht * BILLING.TVA_RATE * 100) / 100 : 0;
+function computeTVA(htCents) {
+  return BILLING.TVA_APPLICABLE ? Math.round(htCents * BILLING.TVA_RATE) : 0;
 }
 
 function creerEtEnvoyerFactureResident(res) {
@@ -186,13 +186,22 @@ function creerEtEnvoyerFactureResident(res) {
   };
 
   var lines = buildInvoiceLinesSainteMusseEHPAD(opts);
-  var ht = sumHT(lines);
-  var tva = computeTVA(ht);
-  var ttc = ht + tva;
+  var htCents = sumHT(lines);
+  var tvaCents = computeTVA(htCents);
+  var ttcCents = Math.max(0, htCents + tvaCents);
 
-  var num = BILLING.INVOICE_PREFIX + '-' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd-HHmmss');
+  var num = BILLING_ATOMIC_NUMBERING_ENABLED
+    ? BILLING.INVOICE_PREFIX + '-' + nextInvoiceNumber()
+    : BILLING.INVOICE_PREFIX + '-' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd-HHmmss');
 
-  var tmpl = DriveApp.getFileById(BILLING.DOC_TEMPLATE_FACTURE_ID).makeCopy(num + ' - ' + res.RESIDENT_NOM, DriveApp.getFolderById(BILLING.FACTURES_FOLDER_ID));
+  var parentFolder = DriveApp.getFolderById(BILLING.FACTURES_FOLDER_ID);
+  if (BILLING_ATOMIC_NUMBERING_ENABLED) {
+    var now = new Date();
+    var yearFolder = obtenirOuCreerDossier(parentFolder, String(now.getFullYear()));
+    var monthFolder = obtenirOuCreerDossier(yearFolder, Utilities.formatDate(now, Session.getScriptTimeZone(), 'MM'));
+    parentFolder = monthFolder;
+  }
+  var tmpl = DriveApp.getFileById(BILLING.DOC_TEMPLATE_FACTURE_ID).makeCopy(num + ' - ' + res.RESIDENT_NOM, parentFolder);
   var doc = DocumentApp.openById(tmpl.getId());
   var body = doc.getBody();
 
@@ -203,9 +212,9 @@ function creerEtEnvoyerFactureResident(res) {
     '{{CLIENT_CONTACT}}': res.RESIDENT_EMAIL || '',
     '{{ADRESSE_CLIENT}}': res.RESIDENT_CHAMBRE ? 'Chambre: ' + res.RESIDENT_CHAMBRE : '',
     '{{MENTION_TVA}}': BILLING.TVA_APPLICABLE ? '' : BILLING.TVA_MENTION,
-    '{{TOTAL_HT}}': ht.toFixed(2) + ' €',
-    '{{TVA}}': tva.toFixed(2) + ' €',
-    '{{TOTAL_TTC}}': ttc.toFixed(2) + ' €',
+    '{{TOTAL_HT}}': fromCents(htCents) + ' €',
+    '{{TVA}}': fromCents(tvaCents) + ' €',
+    '{{TOTAL_TTC}}': fromCents(ttcCents) + ' €',
     '{{DELAI_PAIEMENT}}': BILLING.PAIEMENT_DELAI_JOURS.RESIDENT === 0 ? 'Paiement à réception' : BILLING.PAIEMENT_DELAI_JOURS.RESIDENT + ' jours'
   };
   Object.keys(repl).forEach(function (k) {
@@ -219,13 +228,13 @@ function creerEtEnvoyerFactureResident(res) {
 
   doc.saveAndClose();
   var pdf = DriveApp.getFileById(tmpl.getId()).getAs('application/pdf');
-  var pdfFile = DriveApp.getFolderById(BILLING.FACTURES_FOLDER_ID).createFile(pdf).setName(num + '.pdf');
+  var pdfFile = parentFolder.createFile(pdf).setName(num + '.pdf');
   DriveApp.getFileById(tmpl.getId()).setTrashed(true);
 
   var status;
   if (res.RESIDENT_EMAIL) {
     GmailApp.sendEmail(res.RESIDENT_EMAIL, '[' + BILLING.INVOICE_PREFIX + '] Votre facture ' + num,
-      'Bonjour,\n\nVeuillez trouver votre facture en pièce jointe.\nMontant TTC: ' + ttc.toFixed(2) + ' €.\n' + (BILLING.TVA_APPLICABLE ? '' : BILLING.TVA_MENTION) + '\n\nMerci,',
+      'Bonjour,\n\nVeuillez trouver votre facture en pièce jointe.\nMontant TTC: ' + fromCents(ttcCents) + ' €.\n' + (BILLING.TVA_APPLICABLE ? '' : BILLING.TVA_MENTION) + '\n\nMerci,',
       { attachments: [pdfFile.getBlob()] }
     );
     status = 'ENVOYEE';

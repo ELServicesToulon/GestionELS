@@ -57,6 +57,44 @@ function formaterDatePersonnalise(date, format, fuseauHoraire = "Europe/Paris") 
 // --- NOUVELLES FONCTIONS UTILITAIRES AJOUTÉES ---
 
 /**
+ * Convertit un montant en euros vers des centimes (entier).
+ * @param {number|string} n Montant en euros.
+ * @returns {number} Montant en centimes.
+ */
+function toCents(n) {
+  return Math.round(Number(n) * 100);
+}
+
+/**
+ * Convertit un montant en centimes vers une chaîne en euros.
+ * @param {number} c Montant en centimes.
+ * @returns {string} Montant formaté en euros avec 2 décimales.
+ */
+function fromCents(c) {
+  return (c / 100).toFixed(2);
+}
+
+/**
+ * Génère un numéro de facture séquentiel unique par année.
+ * Format: AAAA-0001.
+ * @returns {string} Numéro de facture.
+ */
+function nextInvoiceNumber() {
+  const lock = LockService.getScriptLock();
+  lock.tryLock(5000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const year = new Date().getFullYear();
+    const key = `INV_SEQ_${year}`;
+    const cur = Number(props.getProperty(key) || '0') + 1;
+    props.setProperty(key, String(cur));
+    return `${year}-${String(cur).padStart(4, '0')}`;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * Valide les en-têtes d'une feuille et retourne leurs indices de colonne.
  * @param {GoogleAppsScript.Spreadsheet.Sheet} feuille La feuille à vérifier.
  * @param {Array<string>} enTetesRequis La liste des en-têtes requis.
