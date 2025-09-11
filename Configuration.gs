@@ -188,6 +188,8 @@ const CLIENT_PORTAL_MAX_ATTEMPTS = 10;
 const CONFIG_CACHE_ENABLED = false;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
 const RESERVATION_CACHE_ENABLED = false;
+/** @const {boolean} Active le contexte de requête et les métriques simples. */
+const OBSERVABILITY_ENABLED = false;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
@@ -223,6 +225,7 @@ const FLAGS = Object.freeze({
   billingIdPdfCheckEnabled: BILLING_ID_PDF_CHECK_ENABLED,
   requestLoggingEnabled: REQUEST_LOGGING_ENABLED,
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
+  observabilityEnabled: OBSERVABILITY_ENABLED,
   clientPortalAttemptLimitEnabled: CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED,
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
@@ -355,8 +358,10 @@ function getConfigCached() {
   const cache = CacheService.getScriptCache();
   const cachedConfig = cache.get('CONFIG_JSON');
   if (cachedConfig) {
+    incrementMetric('CACHE_HIT');
     return JSON.parse(cachedConfig);
   }
+  incrementMetric('CACHE_MISS');
   const config = getConfig();
   // Met en cache la configuration pour 10 minutes (600 secondes)
   cache.put('CONFIG_JSON', JSON.stringify(config), 600);

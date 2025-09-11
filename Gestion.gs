@@ -292,7 +292,7 @@ function envoyerFactureClient(emailClient, numeroFacture) {
       `<p>Veuillez trouver ci-joint votre facture <strong>${String(row[idx.numero]).trim()}</strong>${montant !== null ? ` d'un montant de <strong>${montant.toFixed(2)} €</strong>` : ''}.</p>`,
       `<p>Cordiales salutations,<br>${NOM_ENTREPRISE}</p>`
     ].join('');
-    MailApp.sendEmail({ to: emailClient, subject: sujet, htmlBody: corps, attachments: [pdfBlob], replyTo: EMAIL_ENTREPRISE });
+    sendEmail({ to: emailClient, subject: sujet, htmlBody: corps, attachments: [pdfBlob], replyTo: EMAIL_ENTREPRISE });
     return { success: true };
   } catch (e) {
     Logger.log('Erreur dans envoyerFactureClient: ' + e.stack);

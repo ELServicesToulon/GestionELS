@@ -130,6 +130,7 @@ function creerReponseHtml(titre, message) {
  * @returns {HtmlOutput} Le contenu HTML à afficher.
  */
 function doGet(e) {
+  const ctx = OBSERVABILITY_ENABLED ? startRequestContext() : null;
   try {
     try {
       const setup = checkSetup_ELS();
@@ -139,12 +140,12 @@ function doGet(e) {
         ).setTitle('Configuration manquante');
       }
     } catch (err) {
-      Logger.log('checkSetup_ELS erreur: ' + err.message);
+      logInfo(ctx ? { rid: ctx.id } : {}, 'checkSetup_ELS erreur', { message: err.message });
     }
 
     const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : '';
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
-      logRequest(e); // Assurez-vous que la fonction logRequest existe
+      logRequest(e, ctx); // Assurez-vous que la fonction logRequest existe
     }
 
     // --- Routeur de page ---
@@ -243,11 +244,13 @@ function doGet(e) {
       return ContentService.createTextOutput(JSON.stringify({ error: 'Forbidden' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
-    Logger.log(`Erreur critique dans doGet: ${error.stack}`);
+    logInfo(ctx ? { rid: ctx.id } : {}, 'Erreur critique dans doGet', { stack: error.stack });
     return creerReponseHtml(
       'Erreur de configuration',
       `L'application ne peut pas démarrer. L'administrateur a été notifié.<br><pre style="color:red;">${error.message}</pre>`
     );
+  } finally {
+    if (ctx) endRequestContext(ctx);
   }
 }
 
@@ -259,6 +262,7 @@ function doGet(e) {
  * @returns {ContentService.TextOutput} Réponse au format JSON.
  */
 function doPost(e) {
+  const ctx = OBSERVABILITY_ENABLED ? startRequestContext() : null;
   try {
     try {
       validerConfiguration();
@@ -271,7 +275,7 @@ function doPost(e) {
     }
 
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
-      logRequest(e);
+      logRequest(e, ctx);
     }
 
     if (typeof POST_ENDPOINT_ENABLED === 'undefined' || !POST_ENDPOINT_ENABLED) {
@@ -328,11 +332,13 @@ function doPost(e) {
       return ContentService.createTextOutput(JSON.stringify({ error: 'Forbidden' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
-    Logger.log(`Erreur critique dans doPost: ${error.stack}`);
+    logInfo(ctx ? { rid: ctx.id } : {}, 'Erreur critique dans doPost', { stack: error.stack });
     return ContentService.createTextOutput(JSON.stringify({
       status: 'error',
       message: error.message
     })).setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    if (ctx) endRequestContext(ctx);
   }
 }
 function _forceReAuth() {

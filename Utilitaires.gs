@@ -140,14 +140,81 @@ function logFailedLogin(email, ip) {
 // --- FONCTIONS PARTAGÉES DÉPLACÉES DE Code.gs ---
 
 /**
+ * Démarre un contexte de requête avec identifiant unique.
+ * @returns {{id:string,t0:number}}
+ */
+function startRequestContext() {
+  const id = Utilities.getUuid();
+  return { id: id, t0: Date.now() };
+}
+
+/**
+ * Termine un contexte de requête et journalise la durée écoulée.
+ * @param {{id:string,t0:number}} ctx Contexte de requête.
+ */
+function endRequestContext(ctx) {
+  if (!ctx || !ctx.id) return;
+  logInfo({ rid: ctx.id }, 'done', { ms: Date.now() - ctx.t0 });
+}
+
+/**
+ * Journalise une information structurée.
+ * @param {Object} meta Métadonnées (ex: {rid:"..."}).
+ * @param {string} message Message principal.
+ * @param {Object} [data] Données additionnelles.
+ */
+function logInfo(meta, message, data) {
+  const payload = Object.assign({ level: 'INFO', message: message }, meta || {});
+  if (data) payload.data = data;
+  Logger.log(JSON.stringify(payload));
+}
+
+/**
+ * Incrémente une métrique stockée dans les Script Properties.
+ * @param {string} name Nom de la métrique.
+ * @param {number} [delta=1] Valeur d'incrément.
+ * @returns {number|undefined} Nouvelle valeur ou undefined si désactivé.
+ */
+function incrementMetric(name, delta) {
+  if (typeof OBSERVABILITY_ENABLED === 'undefined' || !OBSERVABILITY_ENABLED) return;
+  const sp = PropertiesService.getScriptProperties();
+  const key = String(name);
+  const current = parseInt(sp.getProperty(key) || '0', 10);
+  const next = current + (typeof delta === 'number' ? delta : 1);
+  sp.setProperty(key, String(next));
+  return next;
+}
+
+/**
+ * Récupère la valeur d'une métrique.
+ * @param {string} name Nom de la métrique.
+ * @returns {number} Valeur de la métrique.
+ */
+function getMetric(name) {
+  const sp = PropertiesService.getScriptProperties();
+  return parseInt(sp.getProperty(String(name)) || '0', 10);
+}
+
+/**
+ * Enveloppe MailApp.sendEmail et incrémente la métrique MAIL_SENT_COUNT.
+ * @param {...any} args Arguments acceptés par MailApp.sendEmail.
+ */
+function sendEmail() {
+  MailApp.sendEmail.apply(MailApp, arguments);
+  incrementMetric('MAIL_SENT_COUNT');
+}
+
+/**
  * Journalise la requête entrante.
  * @param {Object} e L'objet d'événement de la requête.
+ * @param {{id:string}} [ctx] Contexte de requête.
  */
-function logRequest(e) {
+function logRequest(e, ctx) {
   const dateIso = new Date().toISOString();
   const route = e && e.parameter && e.parameter.page ? e.parameter.page : '';
   const ua = e && e.headers ? e.headers['User-Agent'] : '';
-  Logger.log(`[Request] ${dateIso} route=${route} ua=${ua}`);
+  const meta = ctx && ctx.id ? { rid: ctx.id } : {};
+  logInfo(meta, '[Request]', { route: route, ua: ua, date: dateIso });
 }
 
 /**

@@ -161,7 +161,7 @@ function envoyerDevisParEmail(donneesDevis) {
       </div>
     `;
 
-    MailApp.sendEmail({
+    sendEmail({
       to: emailClient,
       subject: sujet,
       htmlBody: corpsHtml,
@@ -192,7 +192,7 @@ function notifierClientConfirmation(email, nom, reservations) {
             <p>Merci de votre confiance.</p>
             <p>L'équipe ${NOM_ENTREPRISE}</p>
         `;
-        MailApp.sendEmail({
+        sendEmail({
             to: email,
             subject: `Confirmation de votre réservation - ${NOM_ENTREPRISE}`,
             htmlBody: corpsHtml,
