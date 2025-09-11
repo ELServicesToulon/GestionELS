@@ -3,6 +3,14 @@
  * Calcule le prix d'une course à partir du nombre total d'arrêts.
  */
 
+function toCents(euro) {
+  return Math.round(Number(euro) * 100);
+}
+
+function fromCents(cents) {
+  return (Number(cents) / 100).toFixed(2);
+}
+
 function computeSupplementCost(nSupp) {
   const arr = TARIFS?.Normal?.arrets || [];
   const fallback = arr.length ? arr[arr.length - 1] : 0;

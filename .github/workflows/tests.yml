@@ -1,0 +1,25 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Authenticate
+        env:
+          GCP_OAUTH_CREDS: ${{ secrets.GCP_OAUTH_CREDS }}
+        run: |
+          printf '%s' "$GCP_OAUTH_CREDS" > "$RUNNER_TEMP/creds.json"
+          npx clasp login --creds "$RUNNER_TEMP/creds.json"
+          rm -f "$RUNNER_TEMP/creds.json"
+      - run: npm test
+

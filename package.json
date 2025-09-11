@@ -24,7 +24,7 @@
     "snapshot": "pwsh tools/snapshot.ps1",
     "helper": "clasp-helper.cmd",
     "helper:ps": "pwsh ./clasp-helper.ps1",
-    "test": "node -e \"console.log('No automated tests configured. Use the Debug menu in Sheets or run: npm run test:clasp')\"",
-    "test:clasp": "clasp run lancerTousLesTestsEtRetournerLogs --noninteractive"
+    "test": "npm run test:clasp",
+    "test:clasp": "clasp run runAllTests"
   }
 }
