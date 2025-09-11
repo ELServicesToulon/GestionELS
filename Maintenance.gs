@@ -831,6 +831,77 @@ function purgerEventIdInexistant(idReservation) {
 }
 
 /**
+ * Resynchronise l'ensemble du calendrier Google et reconstruit l'index local.
+ * @returns {{count:number}} Nombre d'événements analysés.
+ */
+function resyncCalendrier() {
+  if (!CALENDAR_RESYNC_ENABLED) {
+    throw new Error('Resync désactivé');
+  }
+  const calendarId = getSecret('ID_CALENDRIER');
+  logAdminAction('Resync calendrier', 'Début');
+  let events = [];
+  let pageToken;
+  do {
+    const resp = executeWithBackoff(() => Calendar.Events.list(calendarId, {
+      maxResults: 2500,
+      singleEvents: true,
+      pageToken: pageToken
+    }));
+    events = events.concat(resp.items || []);
+    pageToken = resp.nextPageToken;
+  } while (pageToken);
+  const index = {};
+  events.forEach(ev => {
+    index[ev.id] = ev.start && (ev.start.dateTime || ev.start.date) || null;
+  });
+  PropertiesService.getScriptProperties().setProperty('CALENDAR_EVENT_INDEX', JSON.stringify(index));
+  logAdminAction('Resync calendrier', `Fin: ${events.length} événements`);
+  return { count: events.length };
+}
+
+/**
+ * Purge les événements obsolètes du calendrier Google par lots.
+ * @returns {{deleted:number,total:number}} Nombre supprimé et total.
+ */
+function purgeCalendrier() {
+  if (!CALENDAR_PURGE_ENABLED) {
+    throw new Error('Purge désactivée');
+  }
+  const calendarId = getSecret('ID_CALENDRIER');
+  const limite = new Date();
+  limite.setMonth(limite.getMonth() - 1);
+  logAdminAction('Purge calendrier', 'Début');
+  let pageToken;
+  const aSupprimer = [];
+  do {
+    const resp = executeWithBackoff(() => Calendar.Events.list(calendarId, {
+      timeMax: limite.toISOString(),
+      maxResults: 2500,
+      singleEvents: true,
+      showDeleted: false,
+      pageToken: pageToken
+    }));
+    aSupprimer.push(...(resp.items || []));
+    pageToken = resp.nextPageToken;
+  } while (pageToken);
+  let deleted = 0;
+  for (const ev of aSupprimer) {
+    try {
+      executeWithBackoff(() => {
+        Calendar.Events.remove(calendarId, ev.id);
+      });
+      deleted++;
+      Utilities.sleep(100);
+    } catch (e) {
+      Logger.log(`Erreur suppression ${ev.id}: ${e.message}`);
+    }
+  }
+  logAdminAction('Purge calendrier', `Fin: ${deleted}/${aSupprimer.length} supprimés`);
+  return { deleted: deleted, total: aSupprimer.length };
+}
+
+/**
  * Vérifie la cohérence entre les réservations dans le Google Sheet et les événements dans le Google Calendar.
  * Affiche un rapport des incohérences trouvées.
  */

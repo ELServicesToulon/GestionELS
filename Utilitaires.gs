@@ -96,6 +96,30 @@ function obtenirOuCreerDossier(dossierParent, nomDossier) {
 }
 
 /**
+ * Exécute une fonction avec backoff exponentiel en cas d'erreur.
+ * @param {Function} fn Fonction à exécuter.
+ * @param {number} [maxAttempts=5] Nombre maximal de tentatives.
+ * @returns {*} Résultat de la fonction.
+ * @throws {Error} Dernière erreur si toutes les tentatives échouent.
+ */
+function executeWithBackoff(fn, maxAttempts = 5) {
+  let attempt = 0;
+  let delay = 500;
+  while (true) {
+    try {
+      return fn();
+    } catch (e) {
+      attempt++;
+      if (attempt >= maxAttempts) {
+        throw e;
+      }
+      Utilities.sleep(delay);
+      delay *= 2;
+    }
+  }
+}
+
+/**
  * Trouve le tableau du bordereau dans un document Google Docs.
  * @param {GoogleAppsScript.Document.Body} corps Le corps du document Google Docs.
  * @returns {GoogleAppsScript.Document.Table|null} Le tableau trouvé ou null.
