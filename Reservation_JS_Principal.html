@@ -37,7 +37,8 @@ function initializeFlags(flags = {}) {
     themeV2Enabled: false,
     elsUiThemingEnabled: false,
     cartResetEnabled: false,
-    devisEnabled: false
+    devisEnabled: false,
+    publicAssetsEnabled: false
 
   };
   return Object.assign({}, defaults, flags);
@@ -75,6 +76,25 @@ function basculerIndicateurChargement(afficher) {
   const indicateur = document.getElementById('indicateur-chargement');
   if (!indicateur) return;
   indicateur.classList.toggle('hidden', !afficher);
+}
+
+/**
+ * Charge le mapping des assets publics et met à jour les variables CSS.
+ */
+function chargerAssetsPublics() {
+  return fetch('?action=publicAssets')
+    .then(r => r.json())
+    .then(map => {
+      const root = document.documentElement;
+      const ts = Date.now();
+      if (map['capsule1x.png']) {
+        root.style.setProperty('--img-capsule', `url(${map['capsule1x.png']}?v=${ts})`);
+      }
+      if (map['blister_vide1x.png']) {
+        root.style.setProperty('--img-blister-vide', `url(${map['blister_vide1x.png']}?v=${ts})`);
+      }
+    })
+    .catch(() => {});
 }
 
 /**
@@ -469,6 +489,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('els-aluminium'); // QA: fond aluminium activé
       }
     } catch (e) { /* no-op */ }
+    if (window.etat.flags && window.etat.flags.publicAssetsEnabled) {
+      chargerAssetsPublics();
+    }
     mettreAJourBoutonViderPanier();
     configurerEcouteursEvenements();
   }).getConfiguration();

@@ -130,6 +130,11 @@ function creerReponseHtml(titre, message) {
  * @returns {HtmlOutput} Le contenu HTML à afficher.
  */
 function doGet(e) {
+  const action = e && e.parameter && e.parameter.action;
+  if (action === 'publicAssets') {
+    const map = getPublicAssetsMap();
+    return ContentService.createTextOutput(JSON.stringify(map)).setMimeType(ContentService.MimeType.JSON);
+  }
   try {
     try {
       const setup = checkSetup_ELS();
@@ -229,6 +234,7 @@ function doGet(e) {
     template.dateDuJour = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
     template.PRICING_RULES_V2_ENABLED = (typeof PRICING_RULES_V2_ENABLED !== 'undefined') ? PRICING_RULES_V2_ENABLED : false;
     template.RETURN_IMPACTS_ESTIMATES_ENABLED = (typeof RETURN_IMPACTS_ESTIMATES_ENABLED !== 'undefined') ? RETURN_IMPACTS_ESTIMATES_ENABLED : false;
+    template.PUBLIC_ASSETS_ENABLED = typeof PUBLIC_ASSETS_ENABLED !== 'undefined' ? PUBLIC_ASSETS_ENABLED : false;
 
     // Variables pour la bannière d'information
     template.heureDebut = conf.HEURE_DEBUT_SERVICE;
