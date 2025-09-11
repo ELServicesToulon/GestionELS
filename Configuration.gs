@@ -1,11 +1,3 @@
-
-// =================================================================
-//                 CONFIGURATION DE L'APPLICATION
-// =================================================================
-// Description: Centralise toutes les variables et paramètres
-//              personnalisables de l'application.
-// =================================================================
-
 /**
  * Required Script Properties:
  * NOM_ENTREPRISE, ADRESSE_ENTREPRISE, EMAIL_ENTREPRISE, ADMIN_EMAIL,
@@ -13,6 +5,13 @@
  * ID_DOSSIER_ARCHIVES, ID_DOSSIER_TEMPORAIRE, SIRET, ELS_SHARED_SECRET,
  * (optionally ID_DOSSIER_FACTURES)
  */
+
+// =================================================================
+//                 CONFIGURATION DE L'APPLICATION
+// =================================================================
+// Description: Centralise toutes les variables et paramètres
+//              personnalisables de l'application.
+// =================================================================
 
 // --- Informations sur l'entreprise ---
 /** @const {string} Nom officiel de l'entreprise utilisé dans l'interface et la facturation. */
