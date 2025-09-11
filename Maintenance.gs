@@ -8,7 +8,13 @@
 // --- Constantes de Rétention (RGPD) ---
 // Définies dans Configuration.gs : ANNEES_RETENTION_FACTURES, MOIS_RETENTION_LOGS
 
-const FACTURATION_HEADERS = ['Date','Client (Raison S. Client)','Client (Email)','Type','Détails','Montant','Statut','Valider','N° Facture','Event ID','ID Réservation','Note Interne','Tournée Offerte Appliquée','Type Remise Appliquée','Valeur Remise Appliquée','Lien Note'];
+const FACTURATION_HEADERS = (function() {
+  const headers = ['Date','Client (Raison S. Client)','Client (Email)','Type','Détails','Montant','Statut','Valider','N° Facture','Event ID','ID Réservation','Note Interne','Tournée Offerte Appliquée','Type Remise Appliquée','Valeur Remise Appliquée','Lien Note'];
+  if (BILLING_ID_PDF_CHECK_ENABLED) {
+    headers.splice(9, 0, 'ID PDF');
+  }
+  return headers;
+})();
 
 // =================================================================
 //                      1. JOURNALISATION (LOGGING)
@@ -128,6 +134,7 @@ function verifierStructureFeuilles() {
       sh = ss.insertSheet(exp.name);
       created = true;
       sh.getRange(1, 1, 1, exp.headers.length).setValues([exp.headers]);
+      Logger.log(`[Setup] Feuille "${exp.name}" créée avec en-têtes : ${exp.headers.join(', ')}`);
     } else {
       try {
         obtenirIndicesEnTetes(sh, exp.headers);
@@ -137,11 +144,13 @@ function verifierStructureFeuilles() {
         const nonEmpty = row1.some(v => v.length > 0);
         if (!nonEmpty) {
           sh.getRange(1, 1, 1, exp.headers.length).setValues([exp.headers]);
+          Logger.log(`[Setup] En-têtes définis pour la feuille "${exp.name}" : ${exp.headers.join(', ')}`);
         } else {
           const existing = new Set(row1);
           const missing = exp.headers.filter(h => !existing.has(h));
           if (missing.length > 0) {
             sh.getRange(1, row1.length + 1, 1, missing.length).setValues([missing]);
+            Logger.log(`[Setup] Ajout des en-têtes manquants dans "${exp.name}" : ${missing.join(', ')}`);
           }
         }
       }

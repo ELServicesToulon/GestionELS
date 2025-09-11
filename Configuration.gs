@@ -172,6 +172,8 @@ const DEMO_RESERVATION_ENABLED = false;
 const BILLING_LOG_ENABLED = true;
 /** @const {boolean} Active le mode test pour la facturation V2 (aucune écriture). */
 const BILLING_V2_DRYRUN = false;
+/** @const {boolean} Vérifie la présence de la colonne ID PDF dans l'onglet Facturation. */
+const BILLING_ID_PDF_CHECK_ENABLED = false;
 /** @const {boolean} Active la journalisation détaillée des requêtes web. */
 const REQUEST_LOGGING_ENABLED = true;
 /** @const {boolean} Active le traitement des requêtes POST. */
@@ -216,6 +218,7 @@ const FLAGS = Object.freeze({
   demoReservationEnabled: DEMO_RESERVATION_ENABLED,
   billingV2Dryrun: BILLING_V2_DRYRUN,
   billingLogEnabled: BILLING_LOG_ENABLED,
+  billingIdPdfCheckEnabled: BILLING_ID_PDF_CHECK_ENABLED,
   requestLoggingEnabled: REQUEST_LOGGING_ENABLED,
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
   clientPortalAttemptLimitEnabled: CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED,
@@ -312,7 +315,8 @@ const CONFIG = Object.freeze({
   RESIDENT_BILLING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
   BILLING_LOG_ENABLED,
-  BILLING_V2_DRYRUN
+  BILLING_V2_DRYRUN,
+  BILLING_ID_PDF_CHECK_ENABLED
 });
 
 /**
