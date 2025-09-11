@@ -52,7 +52,7 @@ function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnor
     const maintenant = new Date();
     const estAdmin = (Session.getActiveUser().getEmail().toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
-    // CORRECTION : Pour les non-admins, on bloque les jours passés. Pour les admins, on ne bloque JAMAIS.
+    // Les non‑admins ne peuvent réserver les jours passés.
     if (!estAdmin && new Date(dateString + "T23:59:59") < maintenant) {
         return [];
     }
@@ -82,8 +82,7 @@ function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnor
     let heureActuelle = new Date(debutJournee);
     const idPropreAIgnorer = idEvenementAIgnorer ? idEvenementAIgnorer.split('@')[0] : null;
 
-    // CORRECTION : Pour les non-admins, si on est aujourd'hui, on ne propose pas de créneaux déjà passés.
-    // Pour les admins, on commence toujours au début du service.
+    // Le jour même, un non‑admin ne voit pas les créneaux déjà écoulés; l’admin voit toute la journée.
     if (!estAdmin && formaterDateEnYYYYMMDD(debutJournee) === formaterDateEnYYYYMMDD(maintenant) && heureActuelle < maintenant) {
       heureActuelle = maintenant;
       const minutes = heureActuelle.getMinutes();
