@@ -8,6 +8,8 @@
 // --- Constantes de Rétention (RGPD) ---
 // Définies dans Configuration.gs : ANNEES_RETENTION_FACTURES, MOIS_RETENTION_LOGS
 
+const FACTURATION_HEADERS = ['Date','Client (Raison S. Client)','Client (Email)','Type','Détails','Montant','Statut','Valider','N° Facture','Event ID','ID Réservation','Note Interne','Tournée Offerte Appliquée','Type Remise Appliquée','Valeur Remise Appliquée','Lien Note'];
+
 // =================================================================
 //                      1. JOURNALISATION (LOGGING)
 // =================================================================
@@ -112,7 +114,7 @@ function verifierStructureFeuilles() {
   const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
   const expectations = [
     { name: 'Clients', headers: ['Email', 'Raison Sociale', 'Adresse', 'SIRET', COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES], required: true },
-    { name: 'Facturation', headers: ['Date', 'Client (Raison S. Client)', 'Client (Email)', 'Type', 'Détails', 'Montant', 'Statut', 'Valider', 'N° Facture', 'Event ID', 'ID Réservation', 'Note Interne', 'Tournée Offerte Appliquée', 'Type Remise Appliquée', 'Valeur Remise Appliquée', 'Lien Note'], required: true },
+    { name: 'Facturation', headers: FACTURATION_HEADERS, required: true },
     { name: 'Plages_Bloquees', headers: ['Date', 'Heure_Debut', 'Heure_Fin'], required: false },
     { name: 'Logs', headers: ['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut'], required: false },
     { name: 'Admin_Logs', headers: ['Timestamp', 'Utilisateur', 'Action', 'Statut'], required: false }
@@ -526,7 +528,7 @@ function reparerEntetesFacturation() {
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const sh = ss.getSheetByName(SHEET_FACTURATION);
     if (!sh) throw new Error("Feuille 'Facturation' introuvable.");
-    const lastCol = sh.getLastColumn();
+    const lastCol = Math.max(sh.getLastColumn(), FACTURATION_HEADERS.length);
     const headers = sh.getRange(1, 1, 1, lastCol).getValues()[0];
     const data = sh.getDataRange().getValues();
 
@@ -593,15 +595,21 @@ function reparerEntetesFacturation() {
 
     const newHeaders = headers.slice();
     const fixes = [];
-    if (idxDate !== -1) { newHeaders[idxDate] = 'Date'; fixes.push(`Date -> Col ${idxDate+1}`); }
-    if (idxEmail !== -1) { newHeaders[idxEmail] = 'Client (Email)'; fixes.push(`Client (Email) -> Col ${idxEmail+1}`); }
-    if (idxResa !== -1) { newHeaders[idxResa] = 'ID Réservation'; fixes.push(`ID Réservation -> Col ${idxResa+1}`); }
+    if (idxDate !== -1) { newHeaders[idxDate] = FACTURATION_HEADERS[0]; fixes.push(`${FACTURATION_HEADERS[0]} -> Col ${idxDate+1}`); }
+    if (idxEmail !== -1) { newHeaders[idxEmail] = FACTURATION_HEADERS[2]; fixes.push(`${FACTURATION_HEADERS[2]} -> Col ${idxEmail+1}`); }
+    if (idxResa !== -1) { newHeaders[idxResa] = FACTURATION_HEADERS[10]; fixes.push(`${FACTURATION_HEADERS[10]} -> Col ${idxResa+1}`); }
+
+    const missing = FACTURATION_HEADERS.filter(h => !newHeaders.includes(h));
+    if (missing.length > 0) {
+      newHeaders.push(...missing);
+      fixes.push('Ajout colonnes: ' + missing.join(', '));
+    }
 
     if (fixes.length === 0) {
       ui.alert('Reparer entetes', 'Aucune colonne candidate trouvée. Vérifiez la première ligne de Facturation.', ui.ButtonSet.OK);
       return;
     }
-    sh.getRange(1, 1, 1, lastCol).setValues([newHeaders]);
+    sh.getRange(1, 1, 1, newHeaders.length).setValues([newHeaders]);
     ui.alert('Reparer entetes', 'Entetes mis à jour:\n' + fixes.join('\n'), ui.ButtonSet.OK);
   } catch (e) {
     ui.alert('Erreur', e.message, ui.ButtonSet.OK);
