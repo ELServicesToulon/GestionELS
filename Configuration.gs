@@ -121,18 +121,18 @@ const SLOTS_AMPM_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
 const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
 /** @const {boolean} Vérifie la présence du scope script.send_mail lors du setup. */
-const SEND_MAIL_SCOPE_CHECK_ENABLED = false;
+const SEND_MAIL_SCOPE_CHECK_ENABLED = true;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
 const BILLING_MULTI_SHEET_ENABLED = false;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
-const CA_EN_COURS_ENABLED = false;
+const CA_EN_COURS_ENABLED = true;
 /** @const {boolean} Resynchronise les événements manquants du calendrier Google. */
 const CALENDAR_RESYNC_ENABLED = true;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
 const CALENDAR_PURGE_ENABLED = true;
 
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
-const CALENDAR_BAR_OPACITY_ENABLED = false;
+const CALENDAR_BAR_OPACITY_ENABLED = true;
 
 /** @const {boolean} Active la création optimiste des courses admin. */
 const ADMIN_OPTIMISTIC_CREATION_ENABLED = false;
@@ -141,7 +141,7 @@ const ADMIN_OPTIMISTIC_CREATION_ENABLED = false;
 const ADMIN_SLOTS_PNG_ENABLED = false;
 
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
-const RESERVATION_VERIFY_ENABLED = false;
+const RESERVATION_VERIFY_ENABLED = true;
 
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
 const RESERVATION_UI_V2_ENABLED = true;
@@ -164,10 +164,10 @@ const PRICING_RULES_V2_ENABLED = false;
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
 const PROOF_SOCIAL_ENABLED = false;
 /** @const {boolean} Active le module Questions/Réponses pour les professionnels. */
-const PRO_QA_ENABLED = false;
+const PRO_QA_ENABLED = true;
 
 /** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
-const EXTRA_ICONS_ENABLED = false;
+const EXTRA_ICONS_ENABLED = true;
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = false;
@@ -188,11 +188,11 @@ const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = false;
 /** @const {number} Nombre maximum de tentatives avant blocage. */
 const CLIENT_PORTAL_MAX_ATTEMPTS = 10;
 /** @const {boolean} Active la mise en cache des paramètres de configuration. */
-const CONFIG_CACHE_ENABLED = false;
+const CONFIG_CACHE_ENABLED = true;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
-const RESERVATION_CACHE_ENABLED = false;
+const RESERVATION_CACHE_ENABLED = true;
 /** @const {boolean} Affiche les créneaux déjà réservés dans la sélection de créneau. */
-const RESERVATION_SHOW_TAKEN_SLOTS_ENABLED = false;
+const RESERVATION_SHOW_TAKEN_SLOTS_ENABLED = true;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
