@@ -100,18 +100,6 @@ li{ margin: 6px 0; }
 #grille-calendrier .jour-calendrier.is-today    { outline: 2px solid rgba(52,152,219,.25); }
 #grille-calendrier .jour-calendrier.is-picked   { outline: 2px solid rgba(142,68,173,.35); }
 
-/* ====== Panier latéral ⇒ bloc sous le calendrier sur mobile ====== */
-@media (max-width: 768px){
-  #app-conteneur{
-    display: grid; gap: var(--space-lg);
-    grid-template-columns: 1fr;          /* pile les colonnes */
-  }
-  #vue-panier, #colonne-droite{
-    position: static; top: auto;         /* annule tout sticky latéral */
-    max-height: none;
-    order: 2;
-  }
-}
 
 /* ====== Micro-optimisations très petit écran ====== */
 @media (max-width: 480px){
@@ -132,4 +120,27 @@ li{ margin: 6px 0; }
 /* ====== Accessibilité / motion ====== */
 @media (prefers-reduced-motion: reduce){
   *, *::before, *::after{ animation: none !important; transition: none !important; }
+}
+
+/* ===== ELS Layout v2 ===== */
+:root{
+  --shell-max: min(90vw, 1600px);
+  --pad-x: clamp(12px, 1.8vw, 24px);
+  --gap: clamp(16px, 2vw, 28px);
+  --left-w: clamp(320px, 34vw, 420px);
+}
+
+.els-banner{ background: var(--bg); color: var(--txt); }
+.els-banner-top{ height: 4px; background: var(--violet); }
+.els-banner-row{ display: flex; justify-content: space-between; align-items: center; max-width: var(--shell-max); margin: 0 auto; padding: 8px var(--pad-x); }
+.els-banner-left{ display: flex; align-items: center; gap: var(--gap); position: relative; }
+.els-banner-right{ display: flex; align-items: center; }
+
+.els-layout{ display: grid; grid-template-columns: var(--left-w) 1fr; gap: var(--gap); align-items: start; max-width: var(--shell-max); margin: clamp(12px, 2vh, 24px) auto 0; padding: 0 var(--pad-x); min-height: calc(100dvh - 120px); }
+.els-basket-wrap{ grid-column: 1 / -1; width: 100%; max-width: var(--shell-max); margin: clamp(12px, 2vh, 24px) auto 32px; padding: 0 var(--pad-x); }
+.els-footer{ grid-column: 1 / -1; text-align: center; padding: 24px 0; }
+
+@media (max-width: 767px){
+  .els-layout{ display: block; max-width: 700px; }
+  .els-basket-wrap{ max-width: 700px; margin: 12px auto 24px; padding: 0 12px; }
 }

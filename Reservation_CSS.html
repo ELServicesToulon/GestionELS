@@ -180,30 +180,6 @@ body {
   }
 }
 #tarifs-panel { position: sticky; top: 16px; }
-#calendar-panel { display: contents; }
-#app-conteneur { display: contents; }
-#colonne-droite { display: contents; }
-#vue-calendrier { grid-column: 2; }
-#vue-panier { grid-column: 1 / -1; }
-#app-conteneur {
-  display: flex;
-  gap: 30px;
-  align-items: flex-start;
-}
-/* Colonnes internes (calendrier + panier) */
-#vue-calendrier { min-width: 0; }
-
-@media (max-width: 900px) {
-  .els-layout { display: grid; grid-template-columns: clamp(320px, 32vw, 360px) 1fr; gap: 20px; }
-}
-
-@media (max-width: 767px) {
-  .els-layout { display: block; max-width: 700px; }
-  .els-col-left { position: static; top: auto; margin-bottom: 16px; }
-  #tarifs-panel { position: static; top: auto; }
-  #vue-calendrier, #vue-panier { grid-column: auto; }
-  .els-basket-wrap { max-width: 700px; margin: 12px auto 24px; padding: 0 12px; }
-}
 
 /* Améliore la densité perçue sur grands écrans sans zoom usine à gaz */
 .els-shell { font-size: var(--text); line-height: 1.6; }
@@ -732,10 +708,6 @@ input:checked + .glissiere:before { transform: translateX(22px); }
 .app-en-tete { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 30px; }
 
 /* --- RESPONSIVE DESIGN --- */
-@media (max-width: 900px) {
-  #app-conteneur { flex-direction: column; }
-  #colonne-droite { position: static; top: auto; width: 100%; box-sizing: border-box; }
-}
 @media (max-width: 600px) {
   #app-conteneur-principal { padding: 0 10px; margin: 15px auto; }
   .carte-en-tete { flex-direction: column; gap: 10px; }
@@ -751,9 +723,8 @@ input:checked + .glissiere:before { transform: translateX(22px); }
 /* --- STYLES D'IMPRESSION --- */
 @media print {
   body { background-color: var(--txt); color: var(--bg); }
-  .app-en-tete, .carte-en-tete button, #btn-valider-panier, .modale-overlay, #conteneur-notifications, .actions-formulaire button, .item-panier-supprimer, .app-pied-de-page { display: none; }
-  #app-conteneur-principal, #app-conteneur, #vue-calendrier, #vue-panier, .carte { box-shadow: none; border: 1px solid var(--muted); margin: 10px 0; padding: 15px; page-break-inside: avoid; }
-  #app-conteneur { flex-direction: column; }
+  .els-banner, .carte-en-tete button, #btn-valider-panier, .modale-overlay, #conteneur-notifications, .actions-formulaire button, .item-panier-supprimer, .app-pied-de-page { display: none; }
+  #app-conteneur-principal, #vue-calendrier, #vue-panier, .carte { box-shadow: none; border: 1px solid var(--muted); margin: 10px 0; padding: 15px; page-break-inside: avoid; }
   .jour-calendrier.desactive { color: var(--muted); }
   .champ-formulaire { border-color: var(--muted); }
 }
