@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <base target="_top">
@@ -119,7 +119,8 @@
         </div>
     </header>
 
-    <section class="els-layout">
+    <section class="els-shell">
+      <div class="els-layout">
       <aside id="tarifs-panel" class="els-col-left" aria-label="Tarifs et options">
         <section id="hero-tarifs" class="hero-tarifs">
       <div class="hero-titre">
@@ -199,7 +200,7 @@
         </section>
       </aside>
 
-      <div id="calendar-panel" class="els-col-right" aria-label="Calendrier de r�servation" role="main">
+      <main id="calendar-panel" class="els-col-right" aria-label="Calendrier de r�servation" role="main">
 
     <? if (PROOF_SOCIAL_ENABLED) { ?>
     <section class="preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
@@ -247,7 +248,29 @@
       </div>
     </main>
       </div><!-- /calendar-panel -->
-    </section><!-- /els-layout -->
+      </div><!-- /els-layout -->
+
+      <section id="basket-section" class="els-basket-wrap" aria-label="Panier de réservation">
+        <!-- moved to els-basket-wrap
+        <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
+          <h3 id="panier-titre">Panier de réservation</h3>
+          <ul id="liste-panier">
+            <p class="panier-vide">Votre panier est vide.</p>
+          </ul>
+          <div id="panier-pied-de-page" class="hidden">
+            <div class="panier-total">
+              <span>Total estimé</span>
+              <strong id="panier-total-valeur">0 €</strong>
+            </div>
+            <div class="panier-actions-groupe">
+                <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
+                <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
+                <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
+            </div>
+          </div>
+        </aside> -->
+      </section>
+    </section><!-- /els-shell -->
 
     <div id="conteneur-finalisation" class="carte hidden" style="margin-top: 2rem;">
         <h3>Finaliser la réservation</h3>

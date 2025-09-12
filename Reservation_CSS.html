@@ -38,6 +38,38 @@
   --radius: 20px;
   --muted: #64748b;
 }
+
+/* ===== Tokens responsive pour mieux “occuper” le FullHD sans casser mobile ===== */
+:root {
+  /* Layout */
+  --layout-max: 1280px;
+  --shell-padding-x: 16px;
+  --gap: 18px;           /* gap par défaut desktop */
+  --gap-tablet: 20px;    /* 768–1023px */
+  --gap-mobile: 12px;    /* <768px */
+
+  /* Colonne gauche */
+  --left-col-min: 300px;
+  --left-col-ideal: 36vw;
+  --left-col-max: 360px;
+  --sticky-top: 16px;
+
+  /* Panier */
+  --basket-max: 1280px;
+}
+
+@media (max-width: 1023px) and (min-width: 768px) {
+  :root {
+    --gap: var(--gap-tablet);
+    --left-col-min: 320px;
+    --left-col-ideal: 32vw;
+    --left-col-max: 360px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root { --gap: var(--gap-mobile); }
+}
 /* =================================================================
                       FEUILLE DE STYLE - INTERFACE DE RÃ‰SERVATION
    ================================================================= */
