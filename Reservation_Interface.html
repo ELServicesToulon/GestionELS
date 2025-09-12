@@ -119,7 +119,9 @@
         </div>
     </header>
 
-    <section id="hero-tarifs" class="hero-tarifs">
+    <section class="els-layout">
+      <aside id="tarifs-panel" class="els-col-left" aria-label="Tarifs et options">
+        <section id="hero-tarifs" class="hero-tarifs">
       <div class="hero-titre">
         <div class="hero-icone">
           <svg width="48" height="48" role="img" aria-label="Gélule de pharmacie" focusable="false">
@@ -194,7 +196,10 @@
       <p class="hero-footnote">
         TVA non applicable (Art. 293 B CGI) — Tarifs &amp; forfaits modifiables à tout moment par l'administrateur — Paiement &amp; sécurité garanties — Contact : elservicestoulon@gmail.com
       </p>
-    </section>
+        </section>
+      </aside>
+
+      <div id="calendar-panel" class="els-col-right" aria-label="Calendrier de r�servation" role="main">
 
     <? if (PROOF_SOCIAL_ENABLED) { ?>
     <section class="preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
@@ -241,6 +246,8 @@
         </aside>
       </div>
     </main>
+      </div><!-- /calendar-panel -->
+    </section><!-- /els-layout -->
 
     <div id="conteneur-finalisation" class="carte hidden" style="margin-top: 2rem;">
         <h3>Finaliser la réservation</h3>

@@ -1,4 +1,4 @@
-<style>
+﻿<style>
 /* --- THEME BLISTER ELS --- */
 :root {
   --els-font: 'Montserrat', sans-serif;
@@ -39,7 +39,7 @@
   --muted: #64748b;
 }
 /* =================================================================
-                      FEUILLE DE STYLE - INTERFACE DE RÉSERVATION
+                      FEUILLE DE STYLE - INTERFACE DE RÃ‰SERVATION
    ================================================================= */
 
 body {
@@ -51,7 +51,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- ACCESSIBILITÉ : Style pour le focus clavier --- */
+/* --- ACCESSIBILITÃ‰ : Style pour le focus clavier --- */
 .btn:focus, .champ-formulaire:focus, .btn-fermer:focus, .btn-compteur:focus, .interrupteur input:focus + .glissiere, .slot-btn:focus {
   outline: 3px solid var(--bleu);
   outline-offset: 2px;
@@ -63,22 +63,61 @@ body {
   max-width: 1400px;
   margin: 30px auto;
   padding: 0 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
 }
+.els-layout {
+  display: grid;
+  grid-template-columns: clamp(320px, 26vw, 420px) 1fr;
+  gap: 24px;
+  align-items: start;
+  max-width: 1280px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+/* Responsif tablette (<= 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .els-layout {
+    grid-template-columns: clamp(320px, 32vw, 360px) 1fr;
+    gap: 20px;
+  }
+}
+/* Colonne gauche (banniÃ¨re + tarifs) */
+.els-col-left { display: flex; flex-direction: column; gap: 16px; }
+/* Colonne droite (calendrier) */
+.els-col-right {
+  min-width: 0; /* évite débordement */
+  display: grid;
+  gap: 16px;
+}
+#tarifs-panel { position: sticky; top: 24px; }
+#calendar-panel { display: contents; }
+#app-conteneur { display: contents; }
+#colonne-droite { display: contents; }
+#vue-calendrier { grid-column: 2; }
+#vue-panier { grid-column: 1 / -1; }
 #app-conteneur {
   display: flex;
   gap: 30px;
   align-items: flex-start;
 }
-#colonne-gauche { flex: 2; min-width: 0; display: flex; flex-direction: column; gap: 30px; }
+/* Colonnes internes (calendrier + panier) */
 #vue-calendrier { min-width: 0; }
-#colonne-droite { flex: 3; position: sticky; top: 30px; display: flex; flex-direction: column; gap: 30px;}
 
 @media (max-width: 900px) {
-  #app-conteneur { flex-direction: column; }
-  #colonne-droite { position: static; }
+  .els-layout { display: grid; grid-template-columns: clamp(320px, 32vw, 360px) 1fr; gap: 20px; }
+}
+
+@media (max-width: 767px) {
+  .els-layout { display: block; }
+}
+
+/* Panier sous la grille */
+.els-basket-wrap {
+  grid-column: 1 / -1;
+  max-width: 1280px;
+  margin: 12px auto 32px;
+  padding: 0 16px;
+  display: block;
 }
 
 
@@ -91,6 +130,20 @@ body {
   text-align: center;
   box-shadow: var(--shadow);
 }
+
+/* Harmonise les cartes tarifs déjà présentes */
+.els-col-left .tarif-carte,
+.els-col-left .card,
+.els-col-left .banner,
+.els-col-left [data-tarif],
+.els-col-left [data-options] {
+  background: var(--bg);
+  color: var(--txt);
+  border-radius: var(--radius, 16px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  padding: 16px;
+}
+.els-col-left .tarifs-cartes { display: grid; grid-template-columns: 1fr; gap: 12px; }
 .hero-tarifs h1 {
   margin-top: 0;
   font-size: 1.8em;
@@ -204,7 +257,7 @@ body {
 .barre-disponibilite { height: 4px; background-color: var(--muted); border-radius: var(--radius); margin: 5px auto 0; overflow: hidden; max-width: 80%; }
 .barre-disponibilite div { height: 100%; background: linear-gradient(90deg,#8e44ad,#3498db); }
 
-/* --- THEME ELS: Calendrier gélule/blister (scopé) --- */
+/* --- THEME ELS: Calendrier gÃ©lule/blister (scopÃ©) --- */
 .els-ui-theming .jour-calendrier {
   position: relative;
   isolation: isolate;
@@ -244,7 +297,7 @@ body {
   z-index: 0;
 }
 .els-ui-theming .jour-calendrier > span { position: relative; z-index: 1; }
-/* Numéro du jour: top-center, gras, couleur lisible */
+/* NumÃ©ro du jour: top-center, gras, couleur lisible */
 .els-ui-theming .jour-calendrier > span {
   position: absolute;
   top: 6px;
@@ -285,7 +338,7 @@ body {
 }
 .els-ui-theming .barre-disponibilite { display: none; }
 
-/* --- THEME ELS: Modale de créneaux (pills) --- */
+/* --- THEME ELS: Modale de crÃ©neaux (pills) --- */
 .els-ui-theming .slot-btn {
   border-radius: var(--radius-pill);
   padding: 8px 14px;
@@ -311,7 +364,7 @@ body {
 }
 .els-ui-theming .slot-btn:focus { outline: 3px solid var(--bleu); outline-offset: 2px; }
 
-/* --- THEME ELS: Titre + en-têtes calendrier (gradient text) --- */
+/* --- THEME ELS: Titre + en-tÃªtes calendrier (gradient text) --- */
 .els-ui-theming #titre-calendrier {
   margin: 0;
   font-weight: 700;
@@ -331,7 +384,7 @@ body {
   color: transparent;
 }
 
-/* --- Modale de réservation --- */
+/* --- Modale de rÃ©servation --- */
 .els-ui-theming #modale-selection-creneau .slot-btn {
   position: relative;
   height: 72px;
@@ -349,7 +402,7 @@ body {
   transition: transform .06s ease, box-shadow .2s ease;
 }
 
-/* --- Option: fond aluminium (si assets présents) --- */
+/* --- Option: fond aluminium (si assets prÃ©sents) --- */
 body.els-ui-theming.els-aluminium {
   background-image: var(--img-aluminium);
   background-size: 64px 64px;
@@ -425,14 +478,14 @@ body.els-ui-theming.els-aluminium {
 .modale-resume strong { color: var(--violet); display: block; margin-top: 4px; }
 .modale-pied-de-page { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--muted); display: flex; justify-content: flex-end; }
 
-/* --- STYLES DES CRÉNEAUX (NOUVELLE VERSION) --- */
+/* --- STYLES DES CRÃ‰NEAUX (NOUVELLE VERSION) --- */
 .grille-creneaux { 
   display: grid; 
   grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); 
   gap: 10px; 
 }
 
-/* Style de base pour un créneau */
+/* Style de base pour un crÃ©neau */
 .slot-btn {
   padding: 10px 5px;
   border-radius: var(--radius);
@@ -442,7 +495,7 @@ body.els-ui-theming.els-aluminium {
   background-color: transparent;
   text-align: center;
   font-family: var(--font);
-  color: var(--txt); /* Couleur de texte par défaut */
+  color: var(--txt); /* Couleur de texte par dÃ©faut */
 }
 .slot-btn:disabled {
   opacity: 0.4;
@@ -464,7 +517,7 @@ body.els-ui-theming.els-aluminium {
   display: block;
 }
 
-/* Créneau standard */
+/* CrÃ©neau standard */
 .slot-btn.standard {
   color: var(--violet);
 }
@@ -482,7 +535,7 @@ body.els-ui-theming.els-aluminium {
 }
 
 
-/* Créneau urgent - Utilise la couleur d'erreur (rouge) */
+/* CrÃ©neau urgent - Utilise la couleur d'erreur (rouge) */
 .slot-btn.urgent {
   color: var(--danger);
 }
@@ -502,7 +555,7 @@ body.els-ui-theming.els-aluminium {
     color: var(--bg);
 }
 
-/* --- STYLES POUR LE RÉCAPITULATIF DANS LA MODALE --- */
+/* --- STYLES POUR LE RÃ‰CAPITULATIF DANS LA MODALE --- */
 .recap-selection-conteneur {
   background-color: var(--bg);
   border-radius: var(--radius);
@@ -576,7 +629,7 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   .jour-calendrier { padding: 5px; font-size: 0.9em; }
   .grille-creneaux { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
   .modale-contenu { width: 95%; padding: 20px; }
-  .champ-formulaire, .btn { font-size: 16px; /* Pour éviter le zoom sur iOS */ }
+  .champ-formulaire, .btn { font-size: 16px; /* Pour Ã©viter le zoom sur iOS */ }
   .item-panier { flex-direction: column; align-items: flex-start; gap: 5px; }
   .item-panier-prix { align-self: flex-end; font-weight: bold; }
 }
