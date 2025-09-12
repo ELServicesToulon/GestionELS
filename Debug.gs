@@ -31,10 +31,13 @@ function lancerTousLesTests() {
   testerFlagsSerialization();
   testerCoherenceTarifs();
   testerComputeCoursePriceTarifVide();
+  testerPricingScenario();
   testerUtilitaires();
   testerFeuilleCalcul();
   testerCalendrier();
   testerReservation();
+  testerReservationCreationMock();
+  testerFacturePdfMock();
   testerGestionClient();
   testerAdministration();
   testerMaintenance();
@@ -201,6 +204,80 @@ function testerReservation() {
     Logger.log("FAILURE: calculerPrixEtDureeServeur()");
   }
 
+}
+
+function testerPricingScenario() {
+  Logger.log("\n--- Test de computeCoursePrice() ---");
+  try {
+    const expected = TARIFS.Normal.base + (TARIFS.Normal.arrets[0] || 0);
+    const res = computeCoursePrice({ totalStops: 2 });
+    if (res && Math.abs(res.total - expected) < 0.001) {
+      Logger.log("SUCCESS: computeCoursePrice() retourne le total attendu pour 2 arrêts.");
+    } else {
+      Logger.log("FAILURE: computeCoursePrice() a retourné " + (res && res.total));
+    }
+  } catch (e) {
+    Logger.log("FAILURE: computeCoursePrice() a levé une exception: " + e.message);
+  }
+}
+
+function testerReservationCreationMock() {
+  Logger.log("\n--- Test de création de réservation (mock) ---");
+  const item = { date: '2025-01-01', startTime: '10h00', totalStops: 1, returnToPharmacy: false };
+  const originalCalendar = CalendarApp;
+  const originalCreneaux = obtenirCreneauxDisponiblesPourDate;
+  CalendarApp = { getCalendarById: () => ({ createEvent: () => ({ getId: () => 'mock', deleteEvent: () => {} }) }) };
+  obtenirCreneauxDisponiblesPourDate = () => ['10h00'];
+  try {
+    const res = creerReservationUnique(item, TEST_CLIENT, TEST_CLIENT, { skipFacturation: true });
+    if (res && res.eventId === 'mock') {
+      Logger.log("SUCCESS: creerReservationUnique() a fonctionné avec des mocks.");
+    } else {
+      Logger.log("FAILURE: creerReservationUnique() n'a pas renvoyé l'événement mock.");
+    }
+  } catch (e) {
+    Logger.log("FAILURE: creerReservationUnique() a levé une exception: " + e.message);
+  } finally {
+    CalendarApp = originalCalendar;
+    obtenirCreneauxDisponiblesPourDate = originalCreneaux;
+  }
+}
+
+function testerFacturePdfMock() {
+  Logger.log("\n--- Test de génération PDF (mock) ---");
+  const originalDrive = DriveApp;
+  const originalDoc = DocumentApp;
+  const originalProps = PropertiesService.getScriptProperties;
+  const mockFile = {
+    makeCopy: () => ({ getId: () => 'doc-id' }),
+    getAs: () => ({}),
+    setName: function() { return this; },
+    getUrl: () => 'mock-url'
+  };
+  const mockParent = { createFile: () => mockFile };
+  DriveApp = {
+    getFileById: () => mockFile,
+    getRootFolder: () => mockParent,
+    getFolderById: () => mockParent
+  };
+  DocumentApp = {
+    openById: () => ({ getId: () => 'doc-id', getBody: () => ({ replaceText: () => {}, findText: () => null }), saveAndClose: () => {} })
+  };
+  PropertiesService.getScriptProperties = () => ({ getProperty: () => 'dummy' });
+  try {
+    const url = INV2_generateInvoicePdf_(INV2__exampleData());
+    if (typeof url === 'string') {
+      Logger.log("SUCCESS: INV2_generateInvoicePdf_ a retourné une URL mock.");
+    } else {
+      Logger.log("FAILURE: INV2_generateInvoicePdf_ n'a pas retourné d'URL.");
+    }
+  } catch (e) {
+    Logger.log("FAILURE: INV2_generateInvoicePdf_ a levé une exception: " + e.message);
+  } finally {
+    DriveApp = originalDrive;
+    DocumentApp = originalDoc;
+    PropertiesService.getScriptProperties = originalProps;
+  }
 }
 
 function testerGestionClient() {
