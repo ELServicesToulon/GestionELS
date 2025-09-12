@@ -35,7 +35,7 @@
   );
   <? } ?>
   --shadow: 0 6px 18px rgba(15,23,42,.14);
-  --radius: 20px;
+  --radius: 20px; /* default, overridden by responsive tokens below */
   --muted: #64748b;
 }
 
@@ -44,7 +44,7 @@
   /* Layout */
   --layout-max: 1280px;
   --shell-padding-x: 16px;
-  --gap: 18px;           /* gap par défaut desktop */
+  --gap:        clamp(16px, 2vw, 28px);
   --gap-tablet: 20px;    /* 768–1023px */
   --gap-mobile: 12px;    /* <768px */
 
@@ -56,6 +56,16 @@
 
   /* Panier */
   --basket-max: 1280px;
+
+  /* ===== Tokens responsive FullHD ===== */
+  --radius: 16px;
+  --shell-max:  min(90vw, 1600px);  /* 1728px max en 1920x1080, sinon 1600px */
+  --left-w:     clamp(320px, 34vw, 420px); /* colonne tarifs confortable */
+  --pad-x:      clamp(12px, 1.8vw, 24px);
+  --pad-y:      clamp(10px, 1.5vw, 20px);
+  --card-h:     clamp(170px, 22vh, 230px); /* cartes plus hautes en desktop */
+  --text:       clamp(14px, 0.9vw, 16px);  /* légère montée en FullHD */
+  --lead:       clamp(16px, 1.05vw, 19px);
 }
 
 @media (max-width: 1023px) and (min-width: 768px) {
@@ -96,31 +106,78 @@ body {
   margin: 30px auto;
   padding: 0 20px;
 }
+ 
+/* ===== Grille principale 2 colonnes ===== */
 .els-layout {
   display: grid;
-  grid-template-columns: clamp(300px, 36vw, 360px) 1fr;
-  gap: 18px;
+  grid-template-columns: var(--left-w) 1fr;
+  gap: var(--gap);
   align-items: start;
-  max-width: 1280px;
-  margin: 24px auto;
-  margin-top: 16px;
-  padding: 0 16px;
+  max-width: var(--shell-max);
+  margin: clamp(12px, 2vh, 24px) auto 0;
+  padding: 0 var(--pad-x);
+  min-height: calc(100dvh - 120px);
 }
 
 /* Responsif tablette (<= 1023px) */
 @media (max-width: 1023px) and (min-width: 768px) {
   .els-layout {
-    grid-template-columns: clamp(320px, 32vw, 360px) 1fr;
-    gap: 20px;
+    grid-template-columns: clamp(300px, 38vw, 360px) 1fr;
+    gap: var(--gap);
   }
 }
 /* Colonne gauche (banniÃ¨re + tarifs) */
-.els-col-left { position: sticky; top: 16px; height: fit-content; display: grid; gap: 12px; }
-/* Colonne droite (calendrier) */
+/* Colonne gauche (bannière + tarifs) — sticky pour rester visible au scroll */
+.els-col-left {
+  position: sticky;
+  top: clamp(12px, 2vh, 24px);
+  height: fit-content;
+  display: grid;
+  gap: clamp(10px, 1.2vw, 16px);
+}
+/* Colonne droite — le calendrier doit prendre la largeur */
 .els-col-right {
   min-width: 0; /* évite débordement */
   display: grid;
-  gap: 16px;
+  gap: var(--gap);
+}
+.els-col-right #vue-calendrier { width: 100%; justify-self: stretch; }
+
+/* IMPORTANT : assure que le wrapper calendrier occupe la largeur colonne */
+.els-col-right > * {
+  width: 100%;
+  min-width: 0;
+  justify-self: stretch;
+}
+
+/* ===== Tweaks de lisibilité Desktop ===== */
+@media (min-width: 1024px) {
+  .els-col-left h1,
+  .els-col-left h2,
+  .els-col-left .lead {
+    font-size: var(--lead);
+    line-height: 1.35;
+    margin-block: 0 8px;
+  }
+}
+
+/* ===== Optionnel : adoucir les cartes calendrier si présent ===== */
+.calendar .card,
+.calendar-card {
+  background: var(--bg);
+  color: var(--txt);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 22px rgba(0,0,0,.06);
+  padding: var(--pad-y) var(--pad-x);
+}
+
+/* ===== Breakpoints ===== */
+@media (max-width: 1200px) {
+  :root {
+    /* Affine l'équilibre dès 1200px de large */
+    --left-w: clamp(340px, 32vw, 480px);
+    --gap: clamp(14px, 1.8vw, 24px);
+  }
 }
 #tarifs-panel { position: sticky; top: 16px; }
 #calendar-panel { display: contents; }
@@ -141,19 +198,29 @@ body {
 }
 
 @media (max-width: 767px) {
-  .els-layout { display: block; max-width: 680px; }
+  .els-layout { display: block; max-width: 700px; }
   .els-col-left { position: static; top: auto; margin-bottom: 16px; }
   #tarifs-panel { position: static; top: auto; }
   #vue-calendrier, #vue-panier { grid-column: auto; }
-  .els-basket-wrap { max-width: 1280px; margin: 12px auto 24px; padding: 0 12px; }
+  .els-basket-wrap { max-width: 700px; margin: 12px auto 24px; padding: 0 12px; }
 }
 
-/* Panier sous la grille */
+/* Améliore la densité perçue sur grands écrans sans zoom usine à gaz */
+.els-shell { font-size: var(--text); line-height: 1.6; }
+.els-shell .hero-sous-titre { font-size: var(--lead, 18px); }
+.els-shell .tarif-carte { min-height: var(--card-h, 200px); padding: var(--pad-y, 12px) var(--pad-x, 16px); }
+
+/* Évite qu’un parent coupe le sticky */
+.els-layout,
+.els-col-left { overflow: visible; }
+
+/* Panier en dessous, pleine largeur, même centrage que la grille */
 .els-basket-wrap {
   grid-column: 1 / -1;
-  max-width: 1280px;
-  margin: 12px auto 32px;
-  padding: 0 16px;
+  width: 100%;
+  max-width: var(--shell-max);
+  margin: clamp(12px, 2vh, 24px) auto 32px;
+  padding: 0 var(--pad-x);
   display: block;
 }
 
@@ -168,7 +235,7 @@ body {
   box-shadow: var(--shadow);
 }
 
-/* Harmonise les cartes tarifs déjà présentes */
+/* Uniformiser visuel des blocs de gauche */
 .els-col-left .tarif-carte,
 .els-col-left .card,
 .els-col-left .banner,
@@ -176,11 +243,21 @@ body {
 .els-col-left [data-options] {
   background: var(--bg);
   color: var(--txt);
-  border-radius: var(--radius, 16px);
-  box-shadow: 0 8px 24px rgba(0,0,0,.08);
-  padding: 16px;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 28px rgba(0,0,0,.08);
+  padding: var(--pad-y) var(--pad-x);
 }
 .els-col-left .tarifs-cartes { display: grid; grid-template-columns: 1fr; gap: 12px; }
+
+/* Donne de la hauteur aux 3 cartes tarifs pour un équilibre visuel */
+.els-col-left .tarif-carte,
+.els-col-left .card[data-tarif],
+.els-col-left [data-tarif].card {
+  min-height: var(--card-h);
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
 .hero-tarifs h1 {
   margin-top: 0;
   font-size: 1.8em;
