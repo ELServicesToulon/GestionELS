@@ -181,6 +181,12 @@ body {
   .layout-els .els-right-col { grid-column: 2; }
 }
 
+/* Responsive 1 colonne à ≤ 992px (ordre: gauche → centre → droite) */
+@media (max-width: 992px) {
+  .layout-els { grid-template-columns: 1fr; }
+  .layout-els .els-right-col { grid-column: 1; }
+}
+
 /* ===== Tweaks de lisibilité Desktop ===== */
 @media (min-width: 1024px) {
   .els-col-left h1,
@@ -220,6 +226,16 @@ body {
 /* Évite qu’un parent coupe le sticky */
 .els-layout,
 .els-col-left { overflow: visible; }
+
+/* Laisse scroller le conteneur calendrier sur grands écrans (FHD) */
+.els-center [data-component="calendar"] {
+  overflow: auto;
+  /* réserve de place approximative pour l’en-tête/bannières */
+  max-height: calc(100dvh - 220px);
+}
+@media (max-height: 800px) {
+  .els-center [data-component="calendar"] { max-height: calc(100dvh - 160px); }
+}
 
 /* Panier en dessous, pleine largeur, même centrage que la grille */
 /* Ancien positionnement panier en pied de page — désactivé au profit du duo */
@@ -298,6 +314,7 @@ body {
   gap: 1.5rem;
   justify-content: center;
 }
+.tarif-carte > p { font-size: 0.9em; color: var(--muted); margin-top: 0.5rem; }
 .tarif-carte {
   background: var(--bg);
   color: var(--txt);
@@ -598,6 +615,16 @@ body.els-ui-theming.els-aluminium {
 .modale-contenu { background-color: var(--bg); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); width: 100%; max-width: 500px; position: relative; }
 .btn-fermer { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.8em; cursor: pointer; color: var(--muted); }
 .modale-resume { background-color: var(--bg); border-radius: var(--radius); padding: 15px; margin-top: 20px; display: flex; justify-content: space-around; text-align: center; }
+
+/* Pied de page (évite inline styles) */
+.els-footer { margin-top: 24px; padding: 16px; text-align: center; }
+
+/* Finalisation container spacing (inline -> CSS) */
+#conteneur-finalisation { margin-top: 2rem; }
+
+/* Theme menu/actions (inline -> CSS) */
+.banner-actions { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center; }
+.menu-theme { min-width: 100px; }
 .modale-resume strong { color: var(--violet); display: block; margin-top: 4px; }
 .modale-pied-de-page { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--muted); display: flex; justify-content: flex-end; }
 
