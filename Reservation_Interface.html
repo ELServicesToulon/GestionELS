@@ -97,26 +97,28 @@
     <div class="spinner"></div>
   </div>
 
+  <? if (THEME_V2_ENABLED) { ?>
   <div id="app-conteneur-principal">
-    
-    <header class="app-en-tete" role="banner" aria-label="En-tête de la page de réservation">
-        <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
-              <button id="btn-theme" class="btn btn-secondaire btn-sm hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
-              <div id="menu-theme" class="hidden" role="menu" style="min-width: 100px;">
-                <button class="option-theme btn btn-secondaire btn-sm" data-theme="clarte" role="menuitem">Clarté</button>
-                <button class="option-theme btn btn-secondaire btn-sm" data-theme="nocturne" role="menuitem">Nocturne</button>
-              </div>
-            </div>
-          <? if (CLIENT_PORTAL_ENABLED) { ?>
-            <a href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm btn-espace-client">Mon Espace Client</a>
-          <? } ?>
-        </div>
 
-        <?!= include('Logo'); ?>
-        <div id="banniere-client-reconnu" class="hidden">
+    <header class="els-banner" aria-label="En-tête ELS">
+      <div class="els-banner-top" aria-hidden="true"></div>
+      <div class="els-banner-row">
+        <div class="els-banner-left">
+          <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
+            <button id="btn-theme" class="btn btn-secondaire btn-sm hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
+            <div id="menu-theme" class="hidden" role="menu" style="min-width: 100px;">
+              <button class="option-theme btn btn-secondaire btn-sm" data-theme="clarte" role="menuitem">Clarté</button>
+              <button class="option-theme btn btn-secondaire btn-sm" data-theme="nocturne" role="menuitem">Nocturne</button>
+            </div>
+          </div>
+          <?!= include('Logo'); ?>
+          <div id="banniere-client-reconnu" class="hidden">
             Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
             <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
+          </div>
         </div>
+        <div class="els-banner-right"></div>
+      </div>
     </header>
 
     <section class="els-shell">
@@ -200,76 +202,56 @@
         </section>
       </aside>
 
-      <main id="calendar-panel" class="els-col-right" aria-label="Calendrier de r�servation" role="main">
+      <main id="calendar-panel" class="els-col-right" aria-label="Calendrier de réservation" role="main">
 
-    <? if (PROOF_SOCIAL_ENABLED) { ?>
-    <section class="preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
-      <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
-      <ul class="avis-list">
-        <li><strong>Pharmacie de Tamaris</strong> : « Service rapide et sécurisé »</li>
-        <li><strong>EHPAD Les Amandiers</strong> : « Livraisons fiables pour nos résidents »</li>
-      </ul>
-    </section>
-    <? } ?>
-
-    <!-- Script supprimé : les cartes tarifs sont désormais générées côté serveur -->
-
-    <main id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
-      <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
-        <div class="carte-en-tete">
-          <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>
-          <h2 id="titre-calendrier" aria-live="polite"></h2>
-          <button id="btn-mois-suivant" class="btn-icone" aria-label="Mois suivant">&#9654;</button>
-        </div>
-        <div class="calendrier-jours-semaine" aria-hidden="true">
-          <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
-        </div>
-        <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
-      </div>
-
-      <div id="colonne-droite">
-        <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
-          <h3 id="panier-titre">Panier de réservation</h3>
-          <ul id="liste-panier">
-            <p class="panier-vide">Votre panier est vide.</p>
+        <? if (PROOF_SOCIAL_ENABLED) { ?>
+        <section class="preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
+          <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
+          <ul class="avis-list">
+            <li><strong>Pharmacie de Tamaris</strong> : « Service rapide et sécurisé »</li>
+            <li><strong>EHPAD Les Amandiers</strong> : « Livraisons fiables pour nos résidents »</li>
           </ul>
-          <div id="panier-pied-de-page" class="hidden">
-            <div class="panier-total">
-              <span>Total estimé</span>
-              <strong id="panier-total-valeur">0 €</strong>
-            </div>
-            <div class="panier-actions-groupe">
+        </section>
+        <? } ?>
+
+        <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
+          <div class="carte-en-tete">
+            <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>
+            <h2 id="titre-calendrier" aria-live="polite"></h2>
+            <button id="btn-mois-suivant" class="btn-icone" aria-label="Mois suivant">&#9654;</button>
+          </div>
+          <div class="calendrier-jours-semaine" aria-hidden="true">
+            <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+          </div>
+          <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
+        </div>
+
+        <section id="basket-section" class="els-basket-wrap" aria-label="Panier de réservation">
+          <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
+            <h3 id="panier-titre">Panier de réservation</h3>
+            <ul id="liste-panier">
+              <p class="panier-vide">Votre panier est vide.</p>
+            </ul>
+            <div id="panier-pied-de-page" class="hidden">
+              <div class="panier-total">
+                <span>Total estimé</span>
+                <strong id="panier-total-valeur">0 €</strong>
+              </div>
+              <div class="panier-actions-groupe">
                 <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
                 <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
                 <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
+              </div>
             </div>
-          </div>
-        </aside>
-      </div>
-    </main>
-      </div><!-- /calendar-panel -->
+          </aside>
+        </section>
+      </main>
       </div><!-- /els-layout -->
-
-      <section id="basket-section" class="els-basket-wrap" aria-label="Panier de réservation">
-        <!-- moved to els-basket-wrap
-        <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
-          <h3 id="panier-titre">Panier de réservation</h3>
-          <ul id="liste-panier">
-            <p class="panier-vide">Votre panier est vide.</p>
-          </ul>
-          <div id="panier-pied-de-page" class="hidden">
-            <div class="panier-total">
-              <span>Total estimé</span>
-              <strong id="panier-total-valeur">0 €</strong>
-            </div>
-            <div class="panier-actions-groupe">
-                <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
-                <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
-                <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
-            </div>
-          </div>
-        </aside> -->
-      </section>
+      <footer class="els-footer">
+        <? if (CLIENT_PORTAL_ENABLED) { ?>
+          <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm">Mon Espace Client</a>
+        <? } ?>
+      </footer>
     </section><!-- /els-shell -->
 
     <div id="conteneur-finalisation" class="carte hidden" style="margin-top: 2rem;">
@@ -415,8 +397,7 @@
       document.querySelectorAll('.theme-selector, #btn-theme, #menu-theme').forEach(el => el && el.remove());
     });
   </script>
-  
-  <? if (THEME_V2_ENABLED) { ?>
+
   <?!= include('Render_JS'); ?>
   <?!= include('Pricing_JS'); ?>
   <?!= include('Reservation_JS_UI_Elements'); ?>
