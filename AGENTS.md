@@ -34,3 +34,8 @@
 - Never commit secrets. Store keys in Script Properties via the Apps Script editor.
 - Web App runs as OWNER; deployments are versioned. Treat `Configuration.gs` as authoritative configuration and review changes carefully.
 
+## UI & Layout Conventions
+- Preserve widget IDs (e.g., `#calendar-panel`, `#basket-section`, `#btn-espace-client`). Do not rename IDs used by JS.
+- Use the 3‑column shell `.layout-els`: left hero (unchanged), center calendar, right asides (stops/options). Center uses `.els-center-grid` with calendar on top, basket + client below.
+- Sticky: `.els-client-col` is sticky on desktop; avoid `overflow: hidden` on its ancestors. Be responsive: ≤1280px collapse to 2 columns; ≤992px to 1 column (hero → calendar → basket+client → stops → options → footer).
+- FHD: let the calendar container scroll if tall (e.g., `[data-component="calendar"] { overflow:auto }`). Ensure wrappers keep `width:100%` for `#vue-calendrier`.
