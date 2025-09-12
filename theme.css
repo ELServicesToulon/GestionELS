@@ -138,7 +138,100 @@ li{ margin: 6px 0; }
 .els-banner-left{ display: flex; align-items: center; gap: var(--gap); position: relative; }
 .els-banner-right{ display: flex; align-items: center; }
 
-.els-layout{ display: grid; grid-template-columns: var(--left-w) 1fr; gap: var(--gap); align-items: start; max-width: var(--shell-max); margin: clamp(12px, 2vh, 24px) auto 0; padding: 0 var(--pad-x); min-height: calc(100dvh - 120px); }
+.els-layout{ display: grid; grid-template-columns: var(--left-w) 1fr var(--client-w); gap: var(--gap); align-items: start; max-width: var(--shell-max); margin: clamp(12px, 2vh, 24px) auto 0; padding: 0 var(--pad-x); min-height: calc(100dvh - 120px); }
+.layout-els{
+  /* Grille 3 colonnes: côtés fixes, centre flexible */
+  --gap: 24px;
+  --col-w-side: 360px;             /* largeur colonnes latérales */
+  --col-w-center-min: 640px;       /* largeur mini colonne centre */
+  display: grid;
+  grid-template-columns: var(--col-w-side) minmax(var(--col-w-center-min), 1fr) var(--col-w-side);
+  gap: var(--gap);
+  align-items: start;
+}
+
+/* Colonnes internes (facultatif) */
+.layout-els .col { display: grid; gap: var(--gap); }
+/* Ordre des colonnes (optionnel) */
+.layout-els .col-left { order: 1; }
+.layout-els .col-center { order: 2; }
+.layout-els .col-right { order: 3; }
+/* Applique aussi à la colonne gauche existante */
+.layout-els .els-col-left { order: 1; }
+/* Colonne droite: options visibles au scroll */
+.layout-els .col-right,
+.layout-els .els-right-col { position: sticky; top: 24px; }
+
+/* Cartes par défaut dans la grille */
+.layout-els .card { border-radius: var(--radius,16px); box-shadow: 0 8px 24px rgba(0,0,0,.08); background: #fff; }
+
+/* Ordre + annulation du sticky pour .col-right explicitement */
+.layout-els .col-right { order: 3; position: static; }
+
+/* Groupement panier + espace client sous le calendrier */
+.cart-group { display: grid; gap: 16px; }
+.cart-group .row { display: grid; grid-template-columns: 1fr; gap: 12px; align-items: center; }
+
+/* Responsive */
+@media (max-width: 1280px){
+  .layout-els{
+    --col-w-side: 320px;
+    --col-w-center-min: 600px;
+    --gap: 20px;
+    grid-template-columns: 1fr 1.2fr;
+  }
+  .layout-els .els-right-col { grid-column: 2; }
+}
+
+@media (max-width: 992px){
+  .layout-els{
+    grid-template-columns: 1fr;         /* pile les colonnes */
+    --gap: clamp(14px, 2.8vw, 24px);
+  }
+  .layout-els .els-right-col{ position: static; top: auto; grid-column: auto; }
+  .els-center-grid,
+  .els-grid-basket-client-over-calendar{
+    max-width: min(96vw, 900px);
+  }
+}
+
+/* Desktop polish: harmoniser la hauteur des cartes latérales */
+@media (min-width: 1281px){
+  .layout-els .els-col-left .tarif-carte,
+  .layout-els .els-right-col .card,
+  .layout-els .els-right-col .tarif-carte{
+    min-height: 240px;
+    display: grid;
+    align-content: start;
+  }
+}
+
+@media (min-width: 1281px){
+  .layout-els .col-left .card,
+  .layout-els .col-right .card {
+    min-height: 440px;
+  }
+}
+
+/* Surcouche légère pour lisibilité sur fond aluminium */
+.main-underlay {
+  backdrop-filter: saturate(1.05) brightness(1.02);
+  -webkit-backdrop-filter: saturate(1.05) brightness(1.02);
+}
+
+/* FHD: header + grille first-screen; calendar scrolls if taller */
+@media (min-height: 900px){
+  .els-center .grid-calendar,
+  .grid-calendar{
+    max-height: calc(100vh - 240px);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  [data-component="calendar"]{
+    max-height: calc(100vh - 220px);
+    overflow: auto;
+  }
+}
 .els-basket-wrap{ grid-column: 1 / -1; width: 100%; max-width: var(--shell-max); margin: clamp(12px, 2vh, 24px) auto 32px; padding: 0 var(--pad-x); }
 .els-footer{ grid-column: 1 / -1; text-align: center; padding: 24px 0; }
 
@@ -147,14 +240,14 @@ li{ margin: 6px 0; }
   .els-basket-wrap{ max-width: 700px; margin: 12px auto 24px; padding: 0 12px; }
 }
 
-/* ===== ELS Center Grid (Panier + Espace client au-dessus du calendrier) ===== */
+/* ===== ELS Center Grid (Calendrier au-dessus, puis Panier + Client) ===== */
 .els-center { display: grid; gap: var(--gap); min-width: 0; }
 .els-center-grid{
   display: grid;
   grid-template-columns: 1fr var(--client-w);
   grid-template-areas:
-    "basket client"
-    "calendar calendar";
+    "calendar calendar"
+    "basket client";
   gap: var(--gap);
   align-items: start;
   max-width: min(92vw, 1400px);
@@ -162,13 +255,13 @@ li{ margin: 6px 0; }
   padding: 0 var(--pad-x);
 }
 
-/* Alias: mise en page "Panier + Client" au-dessus du calendrier */
+/* Alias: mise en page "Calendrier puis Panier + Client" */
 .els-grid-basket-client-over-calendar{
   display: grid;
   grid-template-columns: 1fr var(--client-w);
   grid-template-areas:
-    "basket client"
-    "calendar calendar";
+    "calendar calendar"
+    "basket client";
   gap: var(--gap);
   align-items: start;
   max-width: min(92vw, 1400px);
@@ -180,9 +273,9 @@ li{ margin: 6px 0; }
   .els-grid-basket-client-over-calendar{
     grid-template-columns: 1fr;
     grid-template-areas:
+      "calendar"
       "basket"
-      "client"
-      "calendar";
+      "client";
   }
 }
 .grid-basket{ grid-area: basket; }
@@ -246,9 +339,9 @@ li{ margin: 6px 0; }
   .els-grid-basket-client-over-calendar{
     grid-template-columns: 1fr;
     grid-template-areas:
+      "calendar"
       "basket"
-      "client"
-      "calendar";
+      "client";
     max-width: min(96vw, 1000px);
   }
   .els-client-col{ position: static; top: auto; }
@@ -263,9 +356,9 @@ li{ margin: 6px 0; }
   .els-grid-basket-client-over-calendar{
     grid-template-columns: 1fr;
     grid-template-areas:
+      "calendar"
       "basket"
-      "client"
-      "calendar";
+      "client";
     max-width: 700px;
     margin: 8px auto;
     padding: 0 var(--pad-x);

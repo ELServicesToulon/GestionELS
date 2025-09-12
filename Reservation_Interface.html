@@ -122,8 +122,8 @@
     </header>
 
     <section class="els-shell">
-      <div class="els-layout">
-      <aside id="tarifs-panel" class="els-col-left" aria-label="Tarifs et options">
+      <div class="els-layout layout-els">
+      <aside id="tarifs-panel" class="els-col-left col col-left" data-component="left-hero" aria-label="Tarifs et options">
         <section id="hero-tarifs" class="hero-tarifs">
       <div class="hero-titre">
         <div class="hero-icone">
@@ -196,46 +196,14 @@
           <p style="font-size:0.9em;color:#555;margin-top:0.5rem;">Le samedi est prioritaire sur l’urgent : une course le samedi applique toujours le tarif samedi, même si elle est urgente.</p>
         </div>
       </div>
-      <p class="hero-footnote">
-        TVA non applicable (Art. 293 B CGI) — Tarifs &amp; forfaits modifiables à tout moment par l'administrateur — Paiement &amp; sécurité garanties — Contact : elservicestoulon@gmail.com
-      </p>
+      
         </section>
       </aside>
 
-      <main class="els-center" aria-label="Contenu de réservation" role="main">
+      <main class="els-center col col-center" aria-label="Contenu de réservation" role="main">
         <div class="els-center-grid els-grid-basket-client-over-calendar">
-          <!-- LIGNE 1 : Panier (gauche) -->
-          <section id="basket-section" class="els-basket-wrap grid-basket" aria-label="Panier de réservation">
-            <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
-              <h3 id="panier-titre">Panier de réservation</h3>
-              <ul id="liste-panier">
-                <p class="panier-vide">Votre panier est vide.</p>
-              </ul>
-              <div id="panier-pied-de-page" class="hidden">
-                <div class="panier-total">
-                  <span>Total estimé</span>
-                  <strong id="panier-total-valeur">0 €</strong>
-                </div>
-                <div class="panier-actions-groupe">
-                  <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
-                  <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
-                  <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
-                </div>
-              </div>
-            </aside>
-          </section>
-
-          <!-- LIGNE 1 : Espace client (droite, sticky) -->
-          <? if (CLIENT_PORTAL_ENABLED) { ?>
-          <aside class="els-client-col grid-client carte" aria-label="Espace client">
-            <h3 id="espace-client-titre">Espace client</h3>
-            <p class="client-card-text">Retrouvez vos réservations, factures et informations.</p>
-            <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire">Mon Espace Client</a>
-          </aside>
-          <? } ?>
-
-          <!-- LIGNE 2 : Calendrier (plein largeur) -->
-          <section id="calendar-panel" class="grid-calendar" aria-label="Calendrier de réservation">
+          <!-- LIGNE 1 : Calendrier (plein largeur) -->
+          <section id="calendar-panel" class="grid-calendar card" data-component="calendar" aria-label="Calendrier de réservation">
             <? if (PROOF_SOCIAL_ENABLED) { ?>
             <section class="preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
               <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
@@ -257,10 +225,49 @@
               <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
             </div>
           </section>
+
+          <!-- LIGNE 2 : Panier + Espace client groupés sous le calendrier -->
+          <section class="cart-group" data-component="cart-and-client">
+            <div class="card row">
+              <div class="cart-slot">
+                <section id="basket-section" class="els-basket-wrap grid-basket" aria-label="Panier de réservation">
+                  <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
+                    <h3 id="panier-titre">Panier de réservation</h3>
+                    <ul id="liste-panier">
+                      <p class="panier-vide">Votre panier est vide.</p>
+                    </ul>
+                    <div id="panier-pied-de-page" class="hidden">
+                      <div class="panier-total">
+                        <span>Total estimé</span>
+                        <strong id="panier-total-valeur">0 €</strong>
+                      </div>
+                      <div class="panier-actions-groupe">
+                        <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
+                        <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
+                        <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
+                      </div>
+                    </div>
+                  </aside>
+                </section>
+              </div>
+              <div class="client-slot">
+                <? if (CLIENT_PORTAL_ENABLED) { ?>
+                <aside class="els-client-col grid-client carte" aria-label="Espace client">
+                  <h3 id="espace-client-titre">Espace client</h3>
+                  <p class="client-card-text">Retrouvez vos réservations, factures et informations.</p>
+                  <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire" aria-label="Accéder à l’espace client">Mon Espace Client</a>
+                </aside>
+                <? } ?>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
+      <aside class="els-right-col col col-right" data-component="right-asides" aria-label="Options supplémentaires"></aside>
       </div><!-- /els-layout -->
-      <footer class="els-footer"></footer>
+      <footer class="els-footer card" data-component="legal-footer" style="margin-top:24px;padding:16px;text-align:center;">
+        TVA non applicable (Art. 293 B CGI) — Tarifs &amp; forfaits modifiables à tout moment par l’administrateur — Paiement &amp; sécurité garanties — Contact : elservicestoulongmail.com
+      </footer>
     </section><!-- /els-shell -->
 
     <div id="conteneur-finalisation" class="carte hidden" style="margin-top: 2rem;">
@@ -327,6 +334,82 @@
           </div>
       </div>
   </div>
+
+  <script>
+    (function(){
+      const q = (s) => document.querySelector(s);
+      const qa = (s) => Array.prototype.slice.call(document.querySelectorAll(s));
+      const byText = (sel, txt) => qa(sel).filter(el => ((el.textContent || '').toLowerCase().includes(String(txt || '').toLowerCase())));
+
+      function moveRightCards(){
+        var rightCol = q('.els-right-col');
+        var cartesWrap = q('#tarifs-panel .tarifs-cartes');
+        if (!rightCol || !cartesWrap) return;
+        var cards = qa('#tarifs-panel .tarifs-cartes .tarif-carte');
+        var targets = cards.filter(function(card){
+          var h3 = card.querySelector('h3');
+          if (!h3) return false;
+          var t = (h3.textContent || '').trim().toLowerCase();
+          return t.indexOf('arrêts supplémentaires') !== -1 || t.indexOf('options') !== -1;
+        });
+        targets.sort(function(a,b){
+          var ta = (a.querySelector('h3')?.textContent||'').toLowerCase();
+          var tb = (b.querySelector('h3')?.textContent||'').toLowerCase();
+          if (ta.indexOf('arrêts supplémentaires') !== -1) return -1;
+          if (tb.indexOf('arrêts supplémentaires') !== -1) return 1;
+          return 0;
+        });
+        targets.forEach(function(card){ card.classList.add('card'); rightCol.appendChild(card); });
+      }
+
+      function moveCenterGroup(){
+        var cartSlot = q('.cart-group .cart-slot');
+        var clientSlot = q('.cart-group .client-slot');
+        var basket = document.getElementById('basket-section');
+        if (basket && cartSlot && basket.parentElement !== cartSlot) cartSlot.appendChild(basket);
+        var clientAside = q('.els-client-col');
+        var clientBtn = document.getElementById('btn-espace-client');
+        if (clientSlot) {
+          if (clientAside && clientAside.parentElement !== clientSlot) clientSlot.appendChild(clientAside);
+          else if (clientBtn && clientBtn.parentElement !== clientSlot) clientSlot.appendChild(clientBtn);
+        }
+        var calendarPanel = document.getElementById('calendar-panel');
+        var calendarTarget = q('.els-center-grid .grid-calendar') || q('[data-component="calendar"]');
+        if (calendarPanel && calendarTarget && calendarPanel.parentElement !== calendarTarget) calendarTarget.appendChild(calendarPanel);
+      }
+
+      function init(){ moveRightCards(); moveCenterGroup(); }
+      // Generic relocation hooks (defensive, do nothing if already well placed)
+      function genericRelocate(){
+        // Hooks (adjust selectors to real repo if needed)
+        var hero = byText('.card, section, .bloc, .panel, #hero-tarifs', 'Gagnez du temps')[0];
+        var cal = q('#calendar-panel, [data-calendar], .calendar, #vue-calendrier');
+        var cart = q('#basket-section, [data-cart], .panier, .cart');
+        var clientBtn = document.getElementById('btn-espace-client') || byText('a, button, [role="button"]', 'Espace client')[0] || q('[data-client]');
+        var stopsH = byText('.tarif-carte h3, .card h3, section h3, .panel h3', 'Arrêts supplémentaires')[0];
+        var optionsH = byText('.tarif-carte h3, .card h3, section h3, .panel h3', 'Options')[0];
+        var stops = stopsH ? stopsH.closest('.tarif-carte, section, .panel, .card') : null;
+        var options = optionsH ? optionsH.closest('.tarif-carte, section, .panel, .card') : null;
+
+        // Targets
+        var left = q('[data-component="left-hero"]');
+        var center = q('[data-component="calendar"]');
+        var cartWrap = q('[data-component="cart-and-client"] .row');
+        var right = q('[data-component="right-asides"]');
+
+        if (hero && left && !left.contains(hero)) left.appendChild(hero);
+        // Avoid nesting calendar panel into itself
+        if (cal && center && cal !== center && !center.contains(cal)) center.appendChild(cal);
+        if (cart && cartWrap && !cartWrap.contains(cart)) { var cs = cartWrap.querySelector('.cart-slot'); if (cs) cs.appendChild(cart); }
+        if (clientBtn && cartWrap && !cartWrap.contains(clientBtn)) { var cl = cartWrap.querySelector('.client-slot'); if (cl) cl.appendChild(clientBtn); }
+        if (stops && right && !right.contains(stops)) right.insertBefore(stops, right.firstChild);
+        if (options && right && !right.contains(options)) right.appendChild(options);
+      }
+
+      function boot(){ init(); genericRelocate(); }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+    })();
+  </script>
 
   <!-- MODALE 3: Confirmation de la récurrence (VERSION COMPLÈTE) -->
   <div id="modale-confirmation-recurrence" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-recurrence-titre">

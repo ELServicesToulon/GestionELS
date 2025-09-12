@@ -107,10 +107,10 @@ body {
   padding: 0 20px;
 }
  
-/* ===== Grille principale 2 colonnes ===== */
+/* ===== Grille principale 3 colonnes ===== */
 .els-layout {
   display: grid;
-  grid-template-columns: var(--left-w) 1fr;
+  grid-template-columns: var(--left-w) 1fr var(--client-w);
   gap: var(--gap);
   align-items: start;
   max-width: var(--shell-max);
@@ -135,17 +135,12 @@ body {
   display: grid;
   gap: clamp(10px, 1.2vw, 16px);
 }
-/* Colonne droite — le calendrier doit prendre la largeur */
-.els-col-right {
-  min-width: 0; /* évite débordement */
-  display: grid;
-  gap: var(--gap);
-}
+/* Colonne centrale — le calendrier doit prendre la largeur */
 .els-center { min-width: 0; display: block; }
-.els-col-right #vue-calendrier, .els-center #vue-calendrier { width: 100%; justify-self: stretch; }
+.els-center #vue-calendrier { width: 100%; justify-self: stretch; }
 
 /* IMPORTANT : assure que le wrapper calendrier occupe la largeur colonne */
-.els-col-right > *, .els-center > * {
+.els-center > * {
   width: 100%;
   min-width: 0;
   justify-self: stretch;
@@ -154,16 +149,36 @@ body {
 /* Centre: Panier + Espace client au-dessus du calendrier */
 .els-center-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr var(--client-w);
+  grid-template-areas:
+    "calendar calendar"
+    "basket client";
   gap: var(--gap);
   align-items: start;
 }
-.grid-calendar { grid-column: 1 / -1; }
+.grid-basket { grid-area: basket; }
+.grid-client { grid-area: client; }
+.grid-calendar { grid-area: calendar; }
 .els-client-col { position: sticky; top: var(--sticky-top); height: fit-content; }
 .client-card-text { margin: 0; color: var(--muted); }
 .els-center-grid .els-basket-wrap { grid-column: auto; width: 100%; max-width: none; margin: 0; padding: 0; }
 @media (max-width: 900px) {
-  .els-center-grid { grid-template-columns: 1fr; }
+  .els-center-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "calendar"
+      "basket"
+      "client";
+  }
+}
+
+/* Colonne droite (cartes déplacées par JS) */
+.els-right-col { display: grid; gap: var(--gap); align-content: start; }
+
+/* Responsive 2 colonnes autour de 1280px */
+@media (max-width: 1280px) {
+  .layout-els { grid-template-columns: 1fr 1.2fr; }
+  .layout-els .els-right-col { grid-column: 2; }
 }
 
 /* ===== Tweaks de lisibilité Desktop ===== */
