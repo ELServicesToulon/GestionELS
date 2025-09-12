@@ -35,8 +35,9 @@ function obtenirEvenementsCalendrierPourPeriode(dateDebut, dateFin) {
  * @param {Array} autresCoursesPanier Les autres courses dans le panier de l'utilisateur.
  * @returns {Array<string>} Une liste de créneaux disponibles au format "HHhMM".
  */
-function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnorer = null, evenementsPrecharges = null, autresCoursesPanier = []) {
+function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnorer = null, evenementsPrecharges = null, autresCoursesPanier = [], email, exp, sig) {
   try {
+    if (email && exp && sig) assertClient(email, exp, sig);
     const [annee, mois, jour] = dateString.split('-').map(Number);
     
     const [heureDebut, minuteDebut] = HEURE_DEBUT_SERVICE.split(':').map(Number);
@@ -117,6 +118,75 @@ function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnor
     
   } catch (e) {
     Logger.log(`Erreur dans obtenirCreneauxDisponiblesPourDate pour ${dateString}: ${e.stack}`);
+    return [];
+  }
+}
+
+/**
+ * Génère l'état complet des créneaux pour une date donnée.
+ * @param {string} dateString Date au format "YYYY-MM-DD".
+ * @param {number} duree Durée de la course en minutes.
+ * @param {string|null} idEvenementAIgnorer ID d'un événement à ignorer.
+ * @param {Array|null} evenementsPrecharges Liste d'événements préchargés.
+ * @param {Array} autresCoursesPanier Autres courses à prendre en compte.
+ * @returns {Array<Object>} Liste de créneaux avec état.
+ */
+function obtenirEtatCreneauxPourDate(dateString, duree, idEvenementAIgnorer = null, evenementsPrecharges = null, autresCoursesPanier = []) {
+  try {
+    const [annee, mois, jour] = dateString.split('-').map(Number);
+    const [heureDebut, minuteDebut] = HEURE_DEBUT_SERVICE.split(':').map(Number);
+    const [heureFin, minuteFin] = HEURE_FIN_SERVICE.split(':').map(Number);
+    const debutJournee = new Date(annee, mois - 1, jour, heureDebut, minuteDebut);
+    const finJournee = new Date(annee, mois - 1, jour, heureFin, minuteFin);
+
+    const maintenant = new Date();
+    const estAujourdHui = formaterDateEnYYYYMMDD(maintenant) === dateString;
+
+    const evenementsCalendrier = evenementsPrecharges
+      ? evenementsPrecharges.filter(e => formaterDateEnYYYYMMDD(new Date(e.start.dateTime || e.start.date)) === dateString)
+      : obtenirEvenementsCalendrierPourPeriode(debutJournee, finJournee);
+
+    const plagesManuellementBloquees = obtenirPlagesBloqueesPourDate(debutJournee);
+
+    const reservationsPanier = autresCoursesPanier.map(item => {
+      const [itemHeureDebut, itemMinuteDebut] = item.startTime.split('h').map(Number);
+      const dureeNumerique = parseFloat(item.duree);
+      const debut = new Date(annee, mois - 1, jour, itemHeureDebut, itemMinuteDebut);
+      if (isNaN(debut.getTime()) || isNaN(dureeNumerique)) { return null; }
+      const fin = new Date(debut.getTime() + dureeNumerique * 60000);
+      return { start: { dateTime: debut.toISOString() }, end: { dateTime: fin.toISOString() }, id: `panier-${item.id}` };
+    }).filter(Boolean);
+
+    const indisponibilitesNormalisees = [
+      ...evenementsCalendrier.map(e => ({ id: e.id, start: new Date(e.start.dateTime || e.start.date), end: new Date(e.end.dateTime || e.end.date) })),
+      ...reservationsPanier.map(e => ({ id: e.id, start: new Date(e.start.dateTime), end: new Date(e.end.dateTime) })),
+      ...plagesManuellementBloquees.map((e, i) => ({ id: `manuel-${i}`, start: e.start, end: e.end }))
+    ].filter(indispo => !isNaN(indispo.start.getTime()) && !isNaN(indispo.end.getTime()));
+
+    const creneaux = [];
+    let heureActuelle = new Date(debutJournee);
+    const idPropreAIgnorer = idEvenementAIgnorer ? idEvenementAIgnorer.split('@')[0] : null;
+
+    while (heureActuelle < finJournee) {
+      const debutCreneau = new Date(heureActuelle);
+      const finCreneau = new Date(debutCreneau.getTime() + duree * 60000);
+      if (finCreneau > finJournee) break;
+
+      const taken = indisponibilitesNormalisees.some(indispo => {
+        if (indispo.id === idPropreAIgnorer) return false;
+        const finAvecTampon = new Date(indispo.end.getTime() + DUREE_TAMPON_MINUTES * 60000);
+        return debutCreneau < finAvecTampon && finCreneau > indispo.start;
+      });
+      const inPast = estAujourdHui && debutCreneau < maintenant;
+
+      creneaux.push({ time: formaterDateEnHHMM(debutCreneau), status: taken ? 'closed' : 'open', taken, inPast });
+
+      heureActuelle.setMinutes(heureActuelle.getMinutes() + INTERVALLE_CRENEAUX_MINUTES);
+    }
+
+    return creneaux;
+  } catch (e) {
+    Logger.log(`Erreur dans obtenirEtatCreneauxPourDate pour ${dateString}: ${e.stack}`);
     return [];
   }
 }

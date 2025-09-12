@@ -149,6 +149,9 @@ const RESERVATION_UI_V2_ENABLED = true;
 /** @const {boolean} Active la facturation directe au résident. */
 const RESIDENT_BILLING_ENABLED = false;
 
+/** @const {boolean} Active la numérotation atomique des factures (AAAA-0001). */
+const BILLING_ATOMIC_NUMBERING_ENABLED = false;
+
 /** @const {boolean} Active la modale de coordonnées de facturation. */
 const BILLING_MODAL_ENABLED = false;
 /** @const {boolean} Active la réinitialisation du panier côté client. */
@@ -188,6 +191,8 @@ const CLIENT_PORTAL_MAX_ATTEMPTS = 10;
 const CONFIG_CACHE_ENABLED = false;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
 const RESERVATION_CACHE_ENABLED = false;
+/** @const {boolean} Affiche les créneaux déjà réservés dans la sélection de créneau. */
+const RESERVATION_SHOW_TAKEN_SLOTS_ENABLED = false;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
@@ -221,11 +226,13 @@ const FLAGS = Object.freeze({
   billingV2Dryrun: BILLING_V2_DRYRUN,
   billingLogEnabled: BILLING_LOG_ENABLED,
   billingIdPdfCheckEnabled: BILLING_ID_PDF_CHECK_ENABLED,
+  billingAtomicNumberingEnabled: BILLING_ATOMIC_NUMBERING_ENABLED,
   requestLoggingEnabled: REQUEST_LOGGING_ENABLED,
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
   clientPortalAttemptLimitEnabled: CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED,
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
+  reservationShowTakenSlotsEnabled: RESERVATION_SHOW_TAKEN_SLOTS_ENABLED,
   proofSocialEnabled: PROOF_SOCIAL_ENABLED,
   proQaEnabled: PRO_QA_ENABLED,
   extraIconsEnabled: EXTRA_ICONS_ENABLED,
@@ -315,6 +322,7 @@ const CONFIG = Object.freeze({
   BILLING,
   BILLING_MODAL_ENABLED,
   RESIDENT_BILLING_ENABLED,
+  BILLING_ATOMIC_NUMBERING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN,

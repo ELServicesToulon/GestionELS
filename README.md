@@ -57,11 +57,6 @@ Le projet utilise `@google/clasp` version `2.5.0` en local comme en CI.
 2. Lancer `npx @google/clasp push -f`.
 3. En cas de conflit, exécuter `npx @google/clasp pull` avant de retenter.
 
-## Sélecteur de thème
-1. Activer `THEME_SELECTION_ENABLED` dans `Configuration.gs` (désactivé par défaut).
-2. `clasp push -f` puis créer une nouvelle version pour déploiement.
-3. Pour rollback, remettre le flag à `false` et redéployer la version précédente.
-
 ## Menu Debug
 1. Activer `DEBUG_MENU_ENABLED` dans `Configuration.gs`.
 2. `clasp push -f` puis créer une nouvelle version pour déploiement.
@@ -74,6 +69,7 @@ Le projet utilise `@google/clasp` version `2.5.0` en local comme en CI.
 
 ## Tests Manuels
 - Déplacer une facture vers `Facturation_Aout_2025` puis vérifier qu'elle reste visible et envoyable depuis l'espace client.
+- Choisir un créneau puis vérifier que le champ horaire est pré-rempli avant la validation.
 
 ## Resynchronisation du calendrier
 Lorsqu'un événement est supprimé manuellement dans Google Calendar, la ligne correspondante de "Facturation" conserve l'ID Réservation mais l'`Event ID` devient invalide.
@@ -112,6 +108,80 @@ Set the following keys in the Apps Script editor (File → Project properties �
 - `ELS_SHARED_SECRET` – clé secrète pour signer les liens d'accès à l'espace client
 
 Open the Apps Script editor, go to **File → Project properties → Script properties**, and add each key with its value.
+
+## Sécurité & accès
+- Web App exécutée en tant que propriétaire et accessible à toute personne disposant du lien.
+- Les liens client peuvent être signés via `ELS_SHARED_SECRET` et expirent après `CLIENT_PORTAL_LINK_TTL_HOURS` heures.
+- Les sessions client expirent après `CLIENT_SESSION_TTL_HOURS` heures.
+
+## Scopes OAuth minimaux
+Les scopes nécessaires sont définis dans `appsscript.json` :
+
+- `https://www.googleapis.com/auth/drive`
+- `https://www.googleapis.com/auth/script.external_request`
+- `https://www.googleapis.com/auth/script.scriptapp`
+- `https://www.googleapis.com/auth/spreadsheets`
+- `https://www.googleapis.com/auth/documents`
+- `https://www.googleapis.com/auth/calendar`
+- `https://www.googleapis.com/auth/userinfo.email`
+- `https://www.googleapis.com/auth/script.send_mail`
+- `https://www.googleapis.com/auth/gmail.send`
+- `https://www.googleapis.com/auth/script.container.ui`
+
+Pour ajouter ou retirer un scope : éditer `appsscript.json`, puis exécuter `clasp push -f` et redéployer.
+
+## Flags
+| Flag | Description | Défaut |
+| ---- | ----------- | ------ |
+| CLIENT_PORTAL_ENABLED | Active l'espace client | true |
+| CLIENT_PORTAL_SIGNED_LINKS | Exige un lien signé pour l'espace client | false |
+| PRIVACY_LINK_ENABLED | Affiche le lien vers les informations de confidentialité | false |
+| SLOTS_AMPM_ENABLED | Sépare les créneaux matin/après-midi | false |
+| CLIENT_SESSION_OPAQUE_ID_ENABLED | Stocke un identifiant client opaque | false |
+| SEND_MAIL_SCOPE_CHECK_ENABLED | Vérifie la présence du scope d'envoi d'email | false |
+| BILLING_MULTI_SHEET_ENABLED | Agrège les feuilles « Facturation* » | false |
+| CA_EN_COURS_ENABLED | Affiche le CA en cours dans l'admin | false |
+| CALENDAR_RESYNC_ENABLED | Resynchronise les événements manquants | true |
+| CALENDAR_PURGE_ENABLED | Purge les Event ID inexistants | true |
+| CALENDAR_BAR_OPACITY_ENABLED | Module l'opacité de la barre de disponibilité | false |
+| ADMIN_OPTIMISTIC_CREATION_ENABLED | Création optimiste des courses admin | false |
+| ADMIN_SLOTS_PNG_ENABLED | Colonne des créneaux PNG dans la modale admin | false |
+| RESERVATION_VERIFY_ENABLED | Vérifie création d'événement et unicité des ID | false |
+| RESERVATION_UI_V2_ENABLED | Nouvelle interface de réservation | true |
+| RESIDENT_BILLING_ENABLED | Facturation directe au résident | false |
+| BILLING_MODAL_ENABLED | Modale de coordonnées de facturation | false |
+| CART_RESET_ENABLED | Réinitialisation du panier côté client | false |
+| RETURN_IMPACTS_ESTIMATES_ENABLED | Inclut le retour dans les estimations | false |
+| PRICING_RULES_V2_ENABLED | Règles de tarification V2 | false |
+| PROOF_SOCIAL_ENABLED | Affiche les preuves sociales | false |
+| PRO_QA_ENABLED | Module Q/R pour professionnels | false |
+| EXTRA_ICONS_ENABLED | Pictogrammes supplémentaires | false |
+| DEBUG_MENU_ENABLED | Sous-menu Debug | false |
+| DEMO_RESERVATION_ENABLED | Mode démo de réservation | false |
+| BILLING_V2_DRYRUN | Mode facturation V2 sans effet | false |
+| BILLING_LOG_ENABLED | Journalisation de facturation | false |
+| BILLING_ID_PDF_CHECK_ENABLED | Vérifie l'ID PDF de facturation | false |
+| REQUEST_LOGGING_ENABLED | Journalisation des requêtes | false |
+| POST_ENDPOINT_ENABLED | Active l'endpoint POST | false |
+| CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED | Limite les tentatives d'accès au portail | false |
+| CONFIG_CACHE_ENABLED | Cache la configuration | false |
+| RESERVATION_CACHE_ENABLED | Cache les réservations | false |
+| THEME_V2_ENABLED | Thème v2 activé | true |
+| ELS_UI_THEMING_ENABLED | Théming UI ELS | true |
+
+Pour surcharger un flag sans modifier le code : ajouter une Script Property `FLAG_<NOM>` (`true` ou `false`). Supprimer la propriété après usage.
+
+## Déploiements
+1. `clasp push -f` pour pousser les sources locales.
+2. Dans l'éditeur Apps Script : **Deploy → Manage deployments → New deployment**.
+3. Choisir « Web app », exécuter en tant que propriétaire et partager via l'URL générée.
+4. Rollback : éditer le déploiement et sélectionner une version antérieure ou désactiver le flag impliqué.
+
+## Playbooks
+- [Incident calendrier](playbooks/incident-calendrier.md)
+- [Purge des Event ID](playbooks/purge-calendrier.md)
+- [Facture en double](playbooks/facture-en-double.md)
+- [Quota mails](playbooks/quota-mails.md)
 
 ## Obligations lors de la livraison de médicaments
 

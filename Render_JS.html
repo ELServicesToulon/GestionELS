@@ -61,4 +61,40 @@ function renderMessage(el, text, tag = 'p') {
   node.textContent = text;
   el.replaceChildren(node);
 }
+
+// Gestion du focus dans les modales
+function trapFocus(modal) {
+  const FOCUSABLE = modal.querySelectorAll('a,button,input,select,textarea,[tabindex]:not([tabindex="-1"])');
+  if (!FOCUSABLE.length) return () => {};
+  const first = FOCUSABLE[0], last = FOCUSABLE[FOCUSABLE.length - 1];
+  function onKey(e) {
+    if (e.key === 'Escape') {
+      modal.close?.();
+      if (!modal.close) modal.classList.add('hidden');
+    }
+    if (e.key !== 'Tab') return;
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+  modal.addEventListener('keydown', onKey);
+  return () => modal.removeEventListener('keydown', onKey);
+}
+
+// Anti double-clic sur les boutons
+function lockButton(btn) {
+  if (!btn) return () => {};
+  btn.disabled = true;
+  const spinner = document.createElement('span');
+  spinner.className = 'spinner-inline';
+  btn.appendChild(spinner);
+  return () => {
+    btn.disabled = false;
+    spinner.remove();
+  };
+}
 </script>

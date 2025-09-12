@@ -334,9 +334,10 @@ function doPost(e) {
       message: error.message
     })).setMimeType(ContentService.MimeType.JSON);
   }
+
 }
 function _forceReAuth() {
-  // Déclenche le consentement sans envoyer d’email
-  MailApp.getRemainingDailyQuota();
+  // Déclenche le consentement pour MailApp
+  Logger.log(MailApp.getRemainingDailyQuota());
 }
 

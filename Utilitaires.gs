@@ -57,6 +57,44 @@ function formaterDatePersonnalise(date, format, fuseauHoraire = "Europe/Paris") 
 // --- NOUVELLES FONCTIONS UTILITAIRES AJOUTÉES ---
 
 /**
+ * Convertit un montant en euros vers des centimes (entier).
+ * @param {number|string} n Montant en euros.
+ * @returns {number} Montant en centimes.
+ */
+function toCents(n) {
+  return Math.round(Number(n) * 100);
+}
+
+/**
+ * Convertit un montant en centimes vers une chaîne en euros.
+ * @param {number} c Montant en centimes.
+ * @returns {string} Montant formaté en euros avec 2 décimales.
+ */
+function fromCents(c) {
+  return (c / 100).toFixed(2);
+}
+
+/**
+ * Génère un numéro de facture séquentiel unique par année.
+ * Format: AAAA-0001.
+ * @returns {string} Numéro de facture.
+ */
+function nextInvoiceNumber() {
+  const lock = LockService.getScriptLock();
+  lock.tryLock(5000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const year = new Date().getFullYear();
+    const key = `INV_SEQ_${year}`;
+    const cur = Number(props.getProperty(key) || '0') + 1;
+    props.setProperty(key, String(cur));
+    return `${year}-${String(cur).padStart(4, '0')}`;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * Valide les en-têtes d'une feuille et retourne leurs indices de colonne.
  * @param {GoogleAppsScript.Spreadsheet.Sheet} feuille La feuille à vérifier.
  * @param {Array<string>} enTetesRequis La liste des en-têtes requis.
@@ -250,4 +288,34 @@ function generateSignedClientLink(email, ttlSeconds) {
  */
 function getConfiguration() {
   return Object.assign({}, FLAGS);
+}
+
+/**
+ * Vérifie le lien signé et normalise l'email.
+ * @param {string} email
+ * @param {string|number} exp
+ * @param {string} sig
+ * @returns {string} Email normalisé.
+ * @throws {Error} Si le lien ou l'email est invalide.
+ */
+function assertClient(email, exp, sig) {
+  const emailNorm = String(email || '').trim().toLowerCase();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailNorm)) throw new Error('Email invalide.');
+  if (typeof CLIENT_PORTAL_SIGNED_LINKS !== 'undefined' && CLIENT_PORTAL_SIGNED_LINKS) {
+    if (!verifySignedLink(emailNorm, exp, sig)) throw new Error('Lien invalide.');
+  }
+  return emailNorm;
+}
+
+/**
+ * Valide et normalise un identifiant de réservation.
+ * @param {string|number} id
+ * @returns {string} Identifiant normalisé.
+ * @throws {Error} Si l'identifiant est vide.
+ */
+function assertReservationId(id) {
+  const norm = String(id || '').trim();
+  if (!norm) throw new Error('ID réservation invalide.');
+  return norm;
 }
