@@ -205,7 +205,7 @@ function testerReservation() {
 
 function testerGestionClient() {
   Logger.log("\n--- Test de Gestion.gs ---");
-  const validation = validerClientParEmail(TEST_CLIENT.email);
+  const validation = validerClientParEmail(TEST_CLIENT.email, '', '');
   if (validation && validation.success) {
     Logger.log("SUCCESS: validerClientParEmail()");
   } else {

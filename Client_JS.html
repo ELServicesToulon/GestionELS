@@ -45,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let toutesLesReservationsClient = [];
     let toutesLesFacturesClient = [];
     let emailClientCourant = linkEmail || '';
+    let removeFocusTrap = () => {};
 
     /**
      * Initialise l'espace client.
@@ -53,7 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
         gererAffichageInitial();
 
         if (btnFermerModale) {
-            btnFermerModale.addEventListener('click', () => modale?.classList.add('hidden'));
+            btnFermerModale.addEventListener('click', () => {
+                removeFocusTrap();
+                modale?.classList.add('hidden');
+            });
         }
 
         if (formulaireConnexionClient) {
@@ -61,7 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 const email = emailConnexionInput.value.trim();
                 if (email) {
-                    validerEtChargerClient(email);
+                    const unlock = lockButton(formulaireConnexionClient.querySelector('button[type="submit"]'));
+                    validerEtChargerClient(email, unlock);
                 }
             });
         }
@@ -69,7 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (formQuestion) {
             formQuestion.addEventListener('submit', (e) => {
                 e.preventDefault();
-                posterQuestion();
+                const unlock = lockButton(formQuestion.querySelector('button[type="submit"]'));
+                posterQuestion(unlock);
             });
         }
     }
@@ -91,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Valide l'email du client auprès du serveur, puis charge ses réservations.
      * @param {string} email L'email à valider.
      */
-    function validerEtChargerClient(email) {
+    function validerEtChargerClient(email, unlock) {
         if (!linkEmail || !linkExp || !linkSig) {
             document.getElementById('conteneur-app')?.classList.add('hidden');
             document.getElementById('non-connecte')?.classList.remove('hidden');
@@ -115,10 +121,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     afficherErreurConnexion(reponse.error);
                     basculerIndicateurChargement(false);
                 }
+                unlock && unlock();
             })
             .withFailureHandler(err => {
                 afficherErreurConnexion("Une erreur de communication est survenue.");
                 basculerIndicateurChargement(false);
+                unlock && unlock();
             })
             .validerClientParEmail(email, linkExp, linkSig);
     }
@@ -201,13 +209,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         cont.appendChild(ul);
         cont.querySelectorAll('.btn-mail-facture').forEach(btn => {
-            btn.addEventListener('click', () => envoyerFactureParEmail(btn.dataset.numero));
+            btn.addEventListener('click', (e) => envoyerFactureParEmail(btn.dataset.numero, e.currentTarget));
         });
     }
 
-    function envoyerFactureParEmail(numero) {
+    function envoyerFactureParEmail(numero, btn) {
         const email = linkEmail;
         if (!email) return;
+        const unlock = lockButton(btn);
         basculerIndicateurChargement(true);
         google.script.run
             .withSuccessHandler(reponse => {
@@ -217,8 +226,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     afficherErreur(reponse.error || 'Envoi impossible.');
                 }
+                unlock();
             })
-            .withFailureHandler(afficherErreur)
+            .withFailureHandler(err => {
+                afficherErreur(err);
+                unlock();
+            })
             .envoyerFactureClient(email, numero, linkExp, linkSig);
     }
 
@@ -246,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .getQuestions(linkEmail, linkExp, linkSig);
     }
 
-    function posterQuestion() {
+    function posterQuestion(unlock) {
         if (!questionTexte) return;
         const texte = questionTexte.value.trim();
         if (!texte || !emailClientCourant) return;
@@ -256,21 +269,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 questionTexte.value = '';
                 chargerQuestions();
                 basculerIndicateurChargement(false);
+                unlock && unlock();
             })
-            .withFailureHandler(afficherErreur)
-            .addQuestion(texte, emailClientCourant, linkExp, linkSig);
+            .withFailureHandler(err => {
+                afficherErreur(err);
+                unlock && unlock();
+            })
+            .addQuestion(texte, emailClientCourant, emailClientCourant, linkExp, linkSig);
     }
 
     function posterReponse(questionId, reponse) {
         if (!questionId || !reponse || !emailClientCourant) return;
         basculerIndicateurChargement(true);
+        const unlock = lockButton(document.querySelector(`#question-${questionId} button`));
         google.script.run
             .withSuccessHandler(() => {
                 chargerQuestions();
                 basculerIndicateurChargement(false);
+                unlock();
             })
-            .withFailureHandler(afficherErreur)
-            .addAnswer(questionId, reponse, emailClientCourant, linkExp, linkSig);
+            .withFailureHandler(err => {
+                afficherErreur(err);
+                unlock();
+            })
+            .addAnswer(questionId, reponse, emailClientCourant, emailClientCourant, linkExp, linkSig);
     }
 
     /**
@@ -336,10 +358,12 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `);
         modale?.classList.remove('hidden');
+        removeFocusTrap = trapFocus(modale);
 
-        document.getElementById('btn-valider-modif-arrets').addEventListener('click', () => {
+        document.getElementById('btn-valider-modif-arrets').addEventListener('click', (e) => {
             const nouveauxArrets = document.getElementById('nouveaux-arrets').value;
-            validerModificationArrets(idReservation, parseInt(nouveauxArrets, 10));
+            const unlock = lockButton(e.currentTarget);
+            validerModificationArrets(idReservation, parseInt(nouveauxArrets, 10), unlock);
         });
     }
     
@@ -364,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `);
         modale?.classList.remove('hidden');
+        removeFocusTrap = trapFocus(modale);
 
         const inputDate = document.getElementById('nouvelle-date');
         inputDate.addEventListener('change', () => chargerCreneauxDeplacement(idReservation, inputDate.value));
@@ -389,14 +414,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const html = creneaux.map(heure => `<button class="slot-btn">${escapeHTML(heure)}</button>`).join('');
                     renderHTML(grille, html);
                     grille.querySelectorAll('.slot-btn').forEach(btn => {
-                        btn.addEventListener('click', () => validerDeplacement(idReservation, dateString, btn.textContent));
+                        btn.addEventListener('click', (e) => {
+                            const unlock = lockButton(e.currentTarget);
+                            validerDeplacement(idReservation, dateString, btn.textContent, unlock);
+                        });
                     });
                 } else {
                     renderMessage(grille, 'Aucun créneau disponible.');
                 }
             })
             .withFailureHandler(afficherErreur)
-            .obtenirCreneauxDisponiblesPourDate(dateString, duree, resa.eventId, linkEmail, linkExp, linkSig);
+            .obtenirCreneauxDisponiblesPourDate(dateString, duree, resa.eventId, null, [], linkEmail, linkExp, linkSig);
     }
 
     /**
@@ -404,9 +432,10 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} idReservation L'ID de la réservation.
      * @param {number} totalStops Le nouveau nombre d'arrêts totaux.
      */
-    function validerModificationArrets(idReservation, totalStops) {
+    function validerModificationArrets(idReservation, totalStops, unlock) {
         basculerIndicateurChargement(true);
         modale?.classList.add('hidden');
+        removeFocusTrap();
         google.script.run
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
@@ -415,8 +444,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     afficherErreur(reponse.error);
                 }
+                unlock && unlock();
             })
-            .withFailureHandler(afficherErreur)
+            .withFailureHandler(err => {
+                afficherErreur(err);
+                unlock && unlock();
+            })
             .mettreAJourDetailsReservation(idReservation, totalStops, linkEmail, linkExp, linkSig);
     }
 
@@ -426,9 +459,10 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} nouvelleDate La nouvelle date.
      * @param {string} nouvelleHeure Le nouveau créneau.
      */
-    function validerDeplacement(idReservation, nouvelleDate, nouvelleHeure) {
+    function validerDeplacement(idReservation, nouvelleDate, nouvelleHeure, unlock) {
         basculerIndicateurChargement(true);
         modale?.classList.add('hidden');
+        removeFocusTrap();
         google.script.run
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
@@ -437,8 +471,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     afficherErreur(reponse.error);
                 }
+                unlock && unlock();
             })
-            .withFailureHandler(afficherErreur)
+            .withFailureHandler(err => {
+                afficherErreur(err);
+                unlock && unlock();
+            })
             .replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, linkEmail, linkExp, linkSig);
     }
 
