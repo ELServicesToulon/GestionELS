@@ -66,11 +66,12 @@ body {
 }
 .els-layout {
   display: grid;
-  grid-template-columns: clamp(320px, 26vw, 420px) 1fr;
-  gap: 24px;
+  grid-template-columns: clamp(300px, 36vw, 360px) 1fr;
+  gap: 18px;
   align-items: start;
   max-width: 1280px;
   margin: 24px auto;
+  margin-top: 16px;
   padding: 0 16px;
 }
 
@@ -82,14 +83,14 @@ body {
   }
 }
 /* Colonne gauche (banniÃ¨re + tarifs) */
-.els-col-left { display: flex; flex-direction: column; gap: 16px; }
+.els-col-left { position: sticky; top: 16px; height: fit-content; display: grid; gap: 12px; }
 /* Colonne droite (calendrier) */
 .els-col-right {
   min-width: 0; /* évite débordement */
   display: grid;
   gap: 16px;
 }
-#tarifs-panel { position: sticky; top: 24px; }
+#tarifs-panel { position: sticky; top: 16px; }
 #calendar-panel { display: contents; }
 #app-conteneur { display: contents; }
 #colonne-droite { display: contents; }
@@ -108,7 +109,11 @@ body {
 }
 
 @media (max-width: 767px) {
-  .els-layout { display: block; }
+  .els-layout { display: block; max-width: 680px; }
+  .els-col-left { position: static; top: auto; margin-bottom: 16px; }
+  #tarifs-panel { position: static; top: auto; }
+  #vue-calendrier, #vue-panier { grid-column: auto; }
+  .els-basket-wrap { max-width: 1280px; margin: 12px auto 24px; padding: 0 12px; }
 }
 
 /* Panier sous la grille */
