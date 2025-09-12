@@ -149,6 +149,9 @@ const RESERVATION_UI_V2_ENABLED = true;
 /** @const {boolean} Active la facturation directe au résident. */
 const RESIDENT_BILLING_ENABLED = false;
 
+/** @const {boolean} Active la numérotation atomique des factures (AAAA-0001). */
+const BILLING_ATOMIC_NUMBERING_ENABLED = false;
+
 /** @const {boolean} Active la modale de coordonnées de facturation. */
 const BILLING_MODAL_ENABLED = false;
 /** @const {boolean} Active la réinitialisation du panier côté client. */
@@ -223,6 +226,7 @@ const FLAGS = Object.freeze({
   billingV2Dryrun: BILLING_V2_DRYRUN,
   billingLogEnabled: BILLING_LOG_ENABLED,
   billingIdPdfCheckEnabled: BILLING_ID_PDF_CHECK_ENABLED,
+  billingAtomicNumberingEnabled: BILLING_ATOMIC_NUMBERING_ENABLED,
   requestLoggingEnabled: REQUEST_LOGGING_ENABLED,
   postEndpointEnabled: POST_ENDPOINT_ENABLED,
   clientPortalAttemptLimitEnabled: CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED,
@@ -318,6 +322,7 @@ const CONFIG = Object.freeze({
   BILLING,
   BILLING_MODAL_ENABLED,
   RESIDENT_BILLING_ENABLED,
+  BILLING_ATOMIC_NUMBERING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN,
