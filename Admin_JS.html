@@ -70,7 +70,7 @@ function renderSlots(slots){
     btn.addEventListener('click', ()=>{
       document.querySelectorAll('.slot-btn[aria-pressed="true"]').forEach(b=>b.setAttribute('aria-pressed','false'));
       btn.setAttribute('aria-pressed','true');
-      // TODO: propager la valeur vers le champ horaire si nécessaire
+      document.getElementById('champ-horaire')?.value = btn.dataset.time;
     });
 
     row.appendChild(btn);
