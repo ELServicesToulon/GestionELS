@@ -114,13 +114,17 @@ function gererDemandeCreneaux(e) {
   const autresCoursesPanier = window.etat.panier
     .filter(item => item.date === tourneeEnCours.date)
     .map(item => ({ startTime: item.startTime, duree: item.duree }));
-  google.script.run
+  const run = google.script.run
     .withSuccessHandler(creneaux => {
       basculerIndicateurChargement(false);
       afficherSelectionCreneaux(creneaux);
     })
-    .withFailureHandler(afficherErreur)
-    .obtenirCreneauxDisponiblesPourDate(tourneeEnCours.date, tourneeEnCours.duree, null, null, autresCoursesPanier);
+    .withFailureHandler(afficherErreur);
+  if (window.etat.flags && window.etat.flags.reservationShowTakenSlotsEnabled) {
+    run.obtenirEtatCreneauxPourDate(tourneeEnCours.date, tourneeEnCours.duree, null, null, autresCoursesPanier);
+  } else {
+    run.obtenirCreneauxDisponiblesPourDate(tourneeEnCours.date, tourneeEnCours.duree, null, null, autresCoursesPanier);
+  }
 }
 
 /**
@@ -141,15 +145,21 @@ function afficherSelectionCreneaux(creneaux) {
     ui.grilleSelectionCreneau.textContent = '';
     creneaux.forEach(creneau => {
       const slot = (creneau && typeof creneau === 'object') ? creneau : { time: String(creneau), status: 'open', taken: false, inPast: false };
+      if (slot.inPast) return;
       const slotTime = slot.time || String(creneau);
       const estimation = calculerInfosTourneeClient(tourneeEnCours.totalStops, tourneeEnCours.returnToPharmacy, tourneeEnCours.date, slotTime);
       const estUrgent = estimation.typeCourse === 'Urgent';
       const btn = document.createElement('button');
       btn.className = `slot-btn ${estUrgent ? 'urgent' : 'standard'}`;
 
-      const indispo = (slot.status === 'closed') || Boolean(slot.taken) || Boolean(slot.inPast);
-      if (indispo) btn.setAttribute('disabled', '');
-      btn.classList.toggle('indispo', indispo);
+      if (slot.taken) {
+        btn.classList.add('taken', 'disabled');
+        btn.setAttribute('disabled', '');
+        btn.setAttribute('aria-label', 'Créneau réservé');
+      } else if (slot.status === 'closed') {
+        btn.classList.add('indispo', 'disabled');
+        btn.setAttribute('disabled', '');
+      }
 
       btn.dataset.creneau = slotTime;
       btn.dataset.prix = estimation.prix;

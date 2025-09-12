@@ -188,6 +188,8 @@ const CLIENT_PORTAL_MAX_ATTEMPTS = 10;
 const CONFIG_CACHE_ENABLED = false;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
 const RESERVATION_CACHE_ENABLED = false;
+/** @const {boolean} Affiche les créneaux déjà réservés dans la sélection de créneau. */
+const RESERVATION_SHOW_TAKEN_SLOTS_ENABLED = false;
 
 // --- Drapeaux de Thème ---
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
@@ -226,6 +228,7 @@ const FLAGS = Object.freeze({
   clientPortalAttemptLimitEnabled: CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED,
   configCacheEnabled: CONFIG_CACHE_ENABLED,
   reservationCacheEnabled: RESERVATION_CACHE_ENABLED,
+  reservationShowTakenSlotsEnabled: RESERVATION_SHOW_TAKEN_SLOTS_ENABLED,
   proofSocialEnabled: PROOF_SOCIAL_ENABLED,
   proQaEnabled: PRO_QA_ENABLED,
   extraIconsEnabled: EXTRA_ICONS_ENABLED,
