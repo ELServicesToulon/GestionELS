@@ -65,6 +65,33 @@ document.addEventListener('DOMContentLoaded', () => {
     nomClientReconnu: document.getElementById('nom-client-reconnu'),
     btnChangerClient: document.getElementById('btn-changer-client')
   };
+
+  try {
+    const app = document.getElementById('app-conteneur');
+    const banner = document.getElementById('banniere-client-reconnu');
+    const rightCol = document.getElementById('colonne-droite');
+    const calendar = document.getElementById('vue-calendrier');
+
+    // Create left column container and move banner into it
+    if (app && banner) {
+      let leftCol = document.getElementById('colonne-gauche');
+      if (!leftCol) {
+        leftCol = document.createElement('div');
+        leftCol.id = 'colonne-gauche';
+        app.insertBefore(leftCol, app.firstElementChild || null);
+      }
+      banner.classList.add('carte');
+      leftCol.appendChild(banner);
+    }
+
+    // Ensure calendar is displayed on the right with the cart
+    if (rightCol && calendar && calendar.parentElement !== rightCol) {
+      rightCol.insertBefore(calendar, rightCol.firstChild || null);
+    }
+  } catch (e) {
+    // Non-bloquant si la structure diffère
+    if (console && console.warn) console.warn('Layout adaptation skipped:', e);
+  }
 });
 </script>
 

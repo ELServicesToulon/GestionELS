@@ -72,8 +72,14 @@ body {
   gap: 30px;
   align-items: flex-start;
 }
-#vue-calendrier { flex: 3; min-width: 0; }
-#colonne-droite { flex: 2; position: sticky; top: 30px; display: flex; flex-direction: column; gap: 30px;}
+#colonne-gauche { flex: 2; min-width: 0; display: flex; flex-direction: column; gap: 30px; }
+#vue-calendrier { min-width: 0; }
+#colonne-droite { flex: 3; position: sticky; top: 30px; display: flex; flex-direction: column; gap: 30px;}
+
+@media (max-width: 900px) {
+  #app-conteneur { flex-direction: column; }
+  #colonne-droite { position: static; }
+}
 
 
 /* --- HERO TARIFS --- */
