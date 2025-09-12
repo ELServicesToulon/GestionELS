@@ -96,30 +96,6 @@ function obtenirOuCreerDossier(dossierParent, nomDossier) {
 }
 
 /**
- * Exécute une fonction avec backoff exponentiel en cas d'erreur.
- * @param {Function} fn Fonction à exécuter.
- * @param {number} [maxAttempts=5] Nombre maximal de tentatives.
- * @returns {*} Résultat de la fonction.
- * @throws {Error} Dernière erreur si toutes les tentatives échouent.
- */
-function executeWithBackoff(fn, maxAttempts = 5) {
-  let attempt = 0;
-  let delay = 500;
-  while (true) {
-    try {
-      return fn();
-    } catch (e) {
-      attempt++;
-      if (attempt >= maxAttempts) {
-        throw e;
-      }
-      Utilities.sleep(delay);
-      delay *= 2;
-    }
-  }
-}
-
-/**
  * Trouve le tableau du bordereau dans un document Google Docs.
  * @param {GoogleAppsScript.Document.Body} corps Le corps du document Google Docs.
  * @returns {GoogleAppsScript.Document.Table|null} Le tableau trouvé ou null.
@@ -152,7 +128,7 @@ function logFailedLogin(email, ip) {
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     let feuilleLog = ss.getSheetByName(SHEET_LOGS);
     if (!feuilleLog) {
-      feuilleLog = ss.insertSheet(SHEET_LOGS);
+      feuilleLog = ss.insertSheet('Logs');
       feuilleLog.appendRow(['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut']);
     }
     feuilleLog.appendRow([new Date(), '', email, `Connexion échouée (IP: ${ip || 'N/A'})`, '', 'Échec']);
@@ -222,21 +198,6 @@ function setSecret(name, value) {
 }
 
 /**
- * Compare deux chaînes en temps constant approximatif.
- * @param {string} a
- * @param {string} b
- * @returns {boolean}
- */
-function safeCompare(a, b) {
-  const aBytes = Utilities.newBlob(a).getBytes();
-  const bBytes = Utilities.newBlob(b).getBytes();
-  if (aBytes.length !== bBytes.length) return false;
-  let diff = 0;
-  for (let i = 0; i < aBytes.length; i++) diff |= aBytes[i] ^ bBytes[i];
-  return diff === 0;
-}
-
-/**
  * Vérifie un lien signé pour l'espace client.
  * Le lien doit contenir email, exp (timestamp secondes) et sig (Base64 HMAC-SHA256 de "email|exp").
  * @param {string} email
@@ -258,7 +219,7 @@ function verifySignedLink(email, expSeconds, sigBase64) {
     const rawSig = Utilities.computeHmacSha256Signature(data, secret);
     const expected = Utilities.base64Encode(rawSig);
     const expectedWeb = Utilities.base64EncodeWebSafe(rawSig);
-    return safeCompare(sigBase64, expected) || safeCompare(sigBase64, expectedWeb);
+    return sigBase64 === expected || sigBase64 === expectedWeb;
   } catch (e) {
     return false;
   }

@@ -17,12 +17,7 @@ function getQuestionsSheet_() {
  * Récupère toutes les questions et leurs réponses.
  * @returns {Array<Object>} Liste des questions.
  */
-function getQuestions(email, exp, sig) {
-  if (email && exp && sig && !verifySignedLink(email, exp, sig)) {
-    const err = new Error('Lien invalide ou expiré');
-    err.code = 403;
-    throw err;
-  }
+function getQuestions() {
   const sheet = getQuestionsSheet_();
   const data = sheet.getDataRange().getValues();
   const questions = [];
@@ -43,10 +38,7 @@ function getQuestions(email, exp, sig) {
  * @param {string} auteur Auteur de la question.
  * @returns {{success:boolean,id:number}} Résultat de l'opération.
  */
-function addQuestion(question, auteur, email, exp, sig) {
-  if (email && exp && sig && !verifySignedLink(email, exp, sig)) {
-    return { success: false, error: 'Lien invalide ou expiré.' };
-  }
+function addQuestion(question, auteur) {
   const sheet = getQuestionsSheet_();
   const id = Date.now();
   sheet.appendRow([id, question, auteur, JSON.stringify([])]);
@@ -60,10 +52,7 @@ function addQuestion(question, auteur, email, exp, sig) {
  * @param {string} auteur Auteur de la réponse.
  * @returns {{success:boolean}|{success:boolean,error:string}} Résultat.
  */
-function addAnswer(questionId, reponse, auteur, email, exp, sig) {
-  if (email && exp && sig && !verifySignedLink(email, exp, sig)) {
-    return { success: false, error: 'Lien invalide ou expiré.' };
-  }
+function addAnswer(questionId, reponse, auteur) {
   const sheet = getQuestionsSheet_();
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {

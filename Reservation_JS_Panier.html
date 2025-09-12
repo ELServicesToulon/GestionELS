@@ -30,7 +30,7 @@ function ajouterTourneeAuPanier() {
     prix: parseFloat(creneauSelectionneBtn.dataset.prix),
     duree: tourneeEnCours.duree,
     details: formatCourseLabel(tourneeEnCours.duree, tourneeEnCours.totalStops, tourneeEnCours.returnToPharmacy),
-    isRecurrent: estRecurrent // Indique si la tournée est récurrente.
+    isRecurrent: estRecurrent // Nouvelle propriété
   };
 
   window.etat.panier.push(nouvelleTournee);

@@ -44,7 +44,8 @@ function onOpen() {
   menuPrincipal.addSubMenu(sousMenuMaintenance);
 
   // --- Ajout du sous-menu Debug (s'il est activé) ---
-  // Crée le sous-menu Debug uniquement quand `DEBUG_MENU_ENABLED` est vrai.
+  // CORRECTION: La création du menu Debug est maintenant entièrement contenue
+  // dans cette condition pour éviter la redondance et la confusion.
   if (typeof DEBUG_MENU_ENABLED !== 'undefined' && DEBUG_MENU_ENABLED) {
     const sousMenuDebug = ui.createMenu('Debug')
       .addItem("Lancer tous les tests", "lancerTousLesTests")
@@ -105,7 +106,9 @@ function menuVerifierInstallation() {
   const ui = SpreadsheetApp.getUi();
   const result = checkSetup_ELS();
   Logger.log(JSON.stringify(result));
-  const message = 'ok=' + result.ok + '\nmissingProps=' + (result.missingProps || []).join(', ');
+  const message = result.ok
+    ? 'OK'
+    : 'Propriétés manquantes: ' + result.missingProps.join(', ');
   ui.alert('Vérification installation', message, ui.ButtonSet.OK);
 }
 
@@ -128,23 +131,17 @@ function creerReponseHtml(titre, message) {
  */
 function doGet(e) {
   try {
-    const setup = checkSetup_ELS();
-    if (setup.missingProps && setup.missingProps.length > 0) {
-      return HtmlService.createHtmlOutput(
-        `<h1>Configuration manquante</h1><p>Propriétés manquantes: ${setup.missingProps.join(', ')}</p>`
-      ).setTitle('Configuration manquante');
+    try {
+      const setup = checkSetup_ELS();
+      if (setup.missingProps && setup.missingProps.length > 0) {
+        return HtmlService.createHtmlOutput(
+          `<h1>Configuration manquante</h1><p>Propriétés manquantes: ${setup.missingProps.join(', ')}</p>`
+        ).setTitle('Configuration manquante');
+      }
+    } catch (err) {
+      Logger.log('checkSetup_ELS erreur: ' + err.message);
     }
-  } catch (err) {
-    Logger.log('checkSetup_ELS erreur: ' + err.message);
-  }
 
-  const action = e && e.parameter && e.parameter.action;
-  if (action === 'publicAssets') {
-    const map = getPublicAssetsMap();
-    return ContentService.createTextOutput(JSON.stringify(map)).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  try {
     const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : '';
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e); // Assurez-vous que la fonction logRequest existe
@@ -156,12 +153,8 @@ function doGet(e) {
 
         case 'admin':
           const adminEmail = Session.getActiveUser().getEmail();
-          if (!adminEmail) {
-            return ContentService.createTextOutput('Forbidden')
-              .setMimeType(ContentService.MimeType.TEXT)
-              .setResponseCode(403);
-          }
-          if (adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+          // CORRECTION: L'opérateur de comparaison '===' était manquant.
+          if (adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
             const templateAdmin = HtmlService.createTemplateFromFile('Admin_Interface');
             return templateAdmin.evaluate().setTitle("Tableau de Bord Administrateur").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
           }
@@ -193,7 +186,7 @@ function doGet(e) {
             }
             return creerReponseHtml('Accès Refusé', 'Vous n\'avez pas les permissions nécessaires.');
           }
-          // Affiche un message clair si le mode debug est désactivé.
+          // CORRECTION: Message clair si le debug est désactivé au niveau global.
           return creerReponseHtml('Accès Refusé', 'Le mode de débogage est désactivé.');
 
         case 'infos':
@@ -201,7 +194,8 @@ function doGet(e) {
             return HtmlService.createHtmlOutputFromFile('Infos_confidentialite')
               .setTitle("Infos & confidentialité");
           }
-          // Ajoute un `break` pour éviter l’affichage par défaut quand la page infos est désactivée.
+          // CORRECTION: Ajout d'un 'break' pour éviter de tomber sur la page par défaut
+          // si cette page est désactivée.
           break;
       }
     }
@@ -231,7 +225,6 @@ function doGet(e) {
     template.dateDuJour = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
     template.PRICING_RULES_V2_ENABLED = (typeof PRICING_RULES_V2_ENABLED !== 'undefined') ? PRICING_RULES_V2_ENABLED : false;
     template.RETURN_IMPACTS_ESTIMATES_ENABLED = (typeof RETURN_IMPACTS_ESTIMATES_ENABLED !== 'undefined') ? RETURN_IMPACTS_ESTIMATES_ENABLED : false;
-    template.PUBLIC_ASSETS_ENABLED = typeof PUBLIC_ASSETS_ENABLED !== 'undefined' ? PUBLIC_ASSETS_ENABLED : false;
 
     // Variables pour la bannière d'information
     template.heureDebut = conf.HEURE_DEBUT_SERVICE;
@@ -267,16 +260,16 @@ function doGet(e) {
  */
 function doPost(e) {
   try {
-    validerConfiguration();
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: 'error',
-      message: 'Configuration invalide',
-      details: err.message
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
+    try {
+      validerConfiguration();
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Configuration invalide',
+        details: err.message
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
 
-  try {
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
       logRequest(e);
     }
@@ -341,9 +334,10 @@ function doPost(e) {
       message: error.message
     })).setMimeType(ContentService.MimeType.JSON);
   }
+
 }
 function _forceReAuth() {
-  // Déclenche le consentement sans envoyer d’email
-  MailApp.getRemainingDailyQuota();
+  // Déclenche le consentement pour MailApp
+  Logger.log(MailApp.getRemainingDailyQuota());
 }
 

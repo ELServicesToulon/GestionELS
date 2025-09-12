@@ -224,12 +224,10 @@ function creerEtEnvoyerFactureResident(res) {
 
   var status;
   if (res.RESIDENT_EMAIL) {
-    MailApp.sendEmail({
-      to: res.RESIDENT_EMAIL,
-      subject: '[' + BILLING.INVOICE_PREFIX + '] Votre facture ' + num,
-      body: 'Bonjour,\n\nVeuillez trouver votre facture en pièce jointe.\nMontant TTC: ' + ttc.toFixed(2) + ' €.\n' + (BILLING.TVA_APPLICABLE ? '' : BILLING.TVA_MENTION) + '\n\nMerci,',
-      attachments: [pdfFile.getBlob()]
-    });
+    GmailApp.sendEmail(res.RESIDENT_EMAIL, '[' + BILLING.INVOICE_PREFIX + '] Votre facture ' + num,
+      'Bonjour,\n\nVeuillez trouver votre facture en pièce jointe.\nMontant TTC: ' + ttc.toFixed(2) + ' €.\n' + (BILLING.TVA_APPLICABLE ? '' : BILLING.TVA_MENTION) + '\n\nMerci,',
+      { attachments: [pdfFile.getBlob()] }
+    );
     status = 'ENVOYEE';
   } else {
     status = 'EMAIL_MANQUANT';

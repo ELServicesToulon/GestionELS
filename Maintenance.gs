@@ -8,7 +8,13 @@
 // --- Constantes de Rétention (RGPD) ---
 // Définies dans Configuration.gs : ANNEES_RETENTION_FACTURES, MOIS_RETENTION_LOGS
 
-const FACTURATION_HEADERS = ['Date', 'Client (Raison S. Client)', 'Client (Email)', 'Type', 'Détails', 'Montant', 'Statut', 'Valider', 'N° Facture', 'Event ID', 'ID Réservation', 'Note Interne', 'Tournée Offerte Appliquée', 'Type Remise Appliquée', 'Valeur Remise Appliquée', 'Lien Note'];
+const FACTURATION_HEADERS = (function() {
+  const headers = ['Date','Client (Raison S. Client)','Client (Email)','Type','Détails','Montant','Statut','Valider','N° Facture','Event ID','ID Réservation','Note Interne','Tournée Offerte Appliquée','Type Remise Appliquée','Valeur Remise Appliquée','Lien Note'];
+  if (BILLING_ID_PDF_CHECK_ENABLED) {
+    headers.splice(9, 0, 'ID PDF');
+  }
+  return headers;
+})();
 
 // =================================================================
 //                      1. JOURNALISATION (LOGGING)
@@ -113,11 +119,11 @@ function notifyAdminWithThrottle(typeErreur, sujet, corps) {
 function verifierStructureFeuilles() {
   const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
   const expectations = [
-    { name: SHEET_CLIENTS, headers: ['Email', 'Raison Sociale', 'Adresse', 'SIRET', COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES], required: true },
-    { name: SHEET_FACTURATION, headers: FACTURATION_HEADERS, required: true },
-    { name: SHEET_PLAGES_BLOQUEES, headers: ['Date', 'Heure_Debut', 'Heure_Fin'], required: false },
-    { name: SHEET_LOGS, headers: ['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut'], required: false },
-    { name: SHEET_ADMIN_LOGS, headers: ['Timestamp', 'Utilisateur', 'Action', 'Statut'], required: false }
+    { name: 'Clients', headers: ['Email', 'Raison Sociale', 'Adresse', 'SIRET', COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES], required: true },
+    { name: 'Facturation', headers: FACTURATION_HEADERS, required: true },
+    { name: 'Plages_Bloquees', headers: ['Date', 'Heure_Debut', 'Heure_Fin'], required: false },
+    { name: 'Logs', headers: ['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut'], required: false },
+    { name: 'Admin_Logs', headers: ['Timestamp', 'Utilisateur', 'Action', 'Statut'], required: false }
   ];
 
   const report = [];
@@ -822,77 +828,6 @@ function purgerEventIdInexistant(idReservation) {
     logAdminAction('Purge Event ID', `Échec: ${e.message}`);
     return false;
   }
-}
-
-/**
- * Resynchronise l'ensemble du calendrier Google et reconstruit l'index local.
- * @returns {{count:number}} Nombre d'événements analysés.
- */
-function resyncCalendrier() {
-  if (!CALENDAR_RESYNC_ENABLED) {
-    throw new Error('Resync désactivé');
-  }
-  const calendarId = getSecret('ID_CALENDRIER');
-  logAdminAction('Resync calendrier', 'Début');
-  let events = [];
-  let pageToken;
-  do {
-    const resp = executeWithBackoff(() => Calendar.Events.list(calendarId, {
-      maxResults: 2500,
-      singleEvents: true,
-      pageToken: pageToken
-    }));
-    events = events.concat(resp.items || []);
-    pageToken = resp.nextPageToken;
-  } while (pageToken);
-  const index = {};
-  events.forEach(ev => {
-    index[ev.id] = ev.start && (ev.start.dateTime || ev.start.date) || null;
-  });
-  PropertiesService.getScriptProperties().setProperty('CALENDAR_EVENT_INDEX', JSON.stringify(index));
-  logAdminAction('Resync calendrier', `Fin: ${events.length} événements`);
-  return { count: events.length };
-}
-
-/**
- * Purge les événements obsolètes du calendrier Google par lots.
- * @returns {{deleted:number,total:number}} Nombre supprimé et total.
- */
-function purgeCalendrier() {
-  if (!CALENDAR_PURGE_ENABLED) {
-    throw new Error('Purge désactivée');
-  }
-  const calendarId = getSecret('ID_CALENDRIER');
-  const limite = new Date();
-  limite.setMonth(limite.getMonth() - 1);
-  logAdminAction('Purge calendrier', 'Début');
-  let pageToken;
-  const aSupprimer = [];
-  do {
-    const resp = executeWithBackoff(() => Calendar.Events.list(calendarId, {
-      timeMax: limite.toISOString(),
-      maxResults: 2500,
-      singleEvents: true,
-      showDeleted: false,
-      pageToken: pageToken
-    }));
-    aSupprimer.push(...(resp.items || []));
-    pageToken = resp.nextPageToken;
-  } while (pageToken);
-  let deleted = 0;
-  for (const ev of aSupprimer) {
-    try {
-      executeWithBackoff(() => {
-        Calendar.Events.remove(calendarId, ev.id);
-      });
-      deleted++;
-      Utilities.sleep(100);
-    } catch (e) {
-      Logger.log(`Erreur suppression ${ev.id}: ${e.message}`);
-    }
-  }
-  logAdminAction('Purge calendrier', `Fin: ${deleted}/${aSupprimer.length} supprimés`);
-  return { deleted: deleted, total: aSupprimer.length };
 }
 
 /**

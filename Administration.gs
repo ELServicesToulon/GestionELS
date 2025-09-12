@@ -85,7 +85,7 @@ function obtenirToutesReservationsAdmin() {
 
     const reservations = donnees.slice(1).map(ligne => {
       try {
-        // Convertit la valeur de date en objet `Date` pour fiabilité.
+        // CORRECTION PRINCIPALE : On crée un objet Date complet dès le début
         const dateHeureSheet = new Date(ligne[indices["Date"]]);
         if (isNaN(dateHeureSheet.getTime())) return null; // Ignore les lignes avec une date invalide
 
@@ -183,7 +183,7 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
     const donnees = feuille.getDataRange().getValues();
     
     const reservations = donnees.slice(1).map(ligne => {
-      // Convertit la valeur de date en objet `Date` pour fiabilité.
+      // CORRECTION PRINCIPALE : On crée un objet Date complet dès le début
       const dateCell = ligne[indices["Date"]];
       if (!dateCell) return null;
       const dateHeureSheet = new Date(dateCell);

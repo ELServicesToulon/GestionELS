@@ -35,13 +35,8 @@ function obtenirEvenementsCalendrierPourPeriode(dateDebut, dateFin) {
  * @param {Array} autresCoursesPanier Les autres courses dans le panier de l'utilisateur.
  * @returns {Array<string>} Une liste de créneaux disponibles au format "HHhMM".
  */
-function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnorer = null, evenementsPrecharges = null, autresCoursesPanier = [], email, exp, sig) {
+function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnorer = null, evenementsPrecharges = null, autresCoursesPanier = []) {
   try {
-    if (email && !verifySignedLink(email, exp, sig)) {
-      const err = new Error('Lien invalide ou expiré');
-      err.code = 403;
-      throw err;
-    }
     const [annee, mois, jour] = dateString.split('-').map(Number);
     
     const [heureDebut, minuteDebut] = HEURE_DEBUT_SERVICE.split(':').map(Number);
@@ -52,7 +47,7 @@ function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnor
     const maintenant = new Date();
     const estAdmin = (Session.getActiveUser().getEmail().toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
-    // Les non‑admins ne peuvent réserver les jours passés.
+    // CORRECTION : Pour les non-admins, on bloque les jours passés. Pour les admins, on ne bloque JAMAIS.
     if (!estAdmin && new Date(dateString + "T23:59:59") < maintenant) {
         return [];
     }
@@ -82,7 +77,8 @@ function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnor
     let heureActuelle = new Date(debutJournee);
     const idPropreAIgnorer = idEvenementAIgnorer ? idEvenementAIgnorer.split('@')[0] : null;
 
-    // Le jour même, un non‑admin ne voit pas les créneaux déjà écoulés; l’admin voit toute la journée.
+    // CORRECTION : Pour les non-admins, si on est aujourd'hui, on ne propose pas de créneaux déjà passés.
+    // Pour les admins, on commence toujours au début du service.
     if (!estAdmin && formaterDateEnYYYYMMDD(debutJournee) === formaterDateEnYYYYMMDD(maintenant) && heureActuelle < maintenant) {
       heureActuelle = maintenant;
       const minutes = heureActuelle.getMinutes();

@@ -10,11 +10,8 @@
  * @param {string} emailClient L'e-mail à vérifier.
  * @returns {Object} Un objet indiquant le succès et les informations du client si trouvé.
  */
-function validerClientParEmail(emailClient, exp, sig) {
+function validerClientParEmail(emailClient) {
   try {
-    if (exp && sig && !verifySignedLink(emailClient, exp, sig)) {
-      return { success: false, error: 'Lien invalide ou expiré.' };
-    }
     if (!emailClient || typeof emailClient !== 'string') {
       return { success: false, error: "Email non fourni ou invalide." };
     }
@@ -102,11 +99,8 @@ function rechercherClientParIdentifiant(identifiant) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {Object} Un objet contenant les réservations futures du client.
  */
-function obtenirReservationsClient(emailClient, exp, sig) {
+function obtenirReservationsClient(emailClient) {
   try {
-    if (exp && sig && !verifySignedLink(emailClient, exp, sig)) {
-      return { success: false, error: 'Lien invalide ou expiré.' };
-    }
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const indices = obtenirIndicesEnTetes(feuille, ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant"]);
     
@@ -183,13 +177,8 @@ function obtenirReservationsClient(emailClient, exp, sig) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {number} Le total des montants à venir.
  */
-function calculerCAEnCoursClient(emailClient, exp, sig) {
+function calculerCAEnCoursClient(emailClient) {
   try {
-    if (exp && sig && !verifySignedLink(emailClient, exp, sig)) {
-      const err = new Error('Lien invalide ou expiré');
-      err.code = 403;
-      throw err;
-    }
     if (!CA_EN_COURS_ENABLED) return 0;
     if (!emailClient) return 0;
 
@@ -221,11 +210,8 @@ function calculerCAEnCoursClient(emailClient, exp, sig) {
  * @param {string} emailClient L'e-mail du client.
  * @returns {Object} success + liste des factures { numero, dateISO, montant, url, idPdf }.
  */
-function obtenirFacturesPourClient(emailClient, exp, sig) {
+function obtenirFacturesPourClient(emailClient) {
   try {
-    if (exp && sig && !verifySignedLink(emailClient, exp, sig)) {
-      return { success: false, error: 'Lien invalide ou expiré.' };
-    }
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuilles = BILLING_MULTI_SHEET_ENABLED
       ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
@@ -272,11 +258,8 @@ function obtenirFacturesPourClient(emailClient, exp, sig) {
  * @param {string} emailClient L'e-mail de destination.
  * @param {string} numeroFacture Le numéro de facture à envoyer.
  */
-function envoyerFactureClient(emailClient, numeroFacture, exp, sig) {
+function envoyerFactureClient(emailClient, numeroFacture) {
   try {
-    if (exp && sig && !verifySignedLink(emailClient, exp, sig)) {
-      return { success: false, error: 'Lien invalide ou expiré.' };
-    }
     if (!emailClient || !numeroFacture) throw new Error('Paramètres manquants.');
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuilles = BILLING_MULTI_SHEET_ENABLED
@@ -323,14 +306,11 @@ function envoyerFactureClient(emailClient, numeroFacture, exp, sig) {
  * @param {number} totalStops Le nouveau nombre d'arrêt(s) total(s).
  * @returns {Object} Un résumé de l'opération.
  */
-function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, exp, sig) {
+function mettreAJourDetailsReservation(idReservation, totalStops) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé, veuillez réessayer." };
 
   try {
-    if (emailClient && exp && sig && !verifySignedLink(emailClient, exp, sig)) {
-      return { success: false, error: 'Lien invalide ou expiré.' };
-    }
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
@@ -347,7 +327,7 @@ function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, e
     const ligneDonnees = donnees[indexLigne];
     const idEvenement = String(ligneDonnees[indices.idEvent]).trim();
     const detailsAnciens = String(ligneDonnees[indices.details]);
-    const emailClientSheet = ligneDonnees[indices.email];
+    const emailClient = ligneDonnees[indices.email];
     
     let ressourceEvenement = null;
     let dateDebutOriginale = new Date(ligneDonnees[indices.date]); // Fallback sur la date du Sheet
@@ -385,7 +365,7 @@ function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, e
     feuille.getRange(indexLigne + 1, indices.details + 1).setValue(nouveauxDetails);
     feuille.getRange(indexLigne + 1, indices.montant + 1).setValue(nouveauPrix);
 
-    logActivity(idReservation, emailClientSheet, `Modification: ${totalStops} arrêts totaux.`, nouveauPrix, "Modification");
+    logActivity(idReservation, emailClient, `Modification: ${totalStops} arrêts totaux.`, nouveauPrix, "Modification");
     return { success: true };
 
   } catch (e) {
@@ -403,14 +383,11 @@ function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, e
  * @param {string} nouvelleHeure La nouvelle heure.
  * @returns {Object} Un résumé de l'opération.
  */
-function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emailClient, exp, sig) {
+function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé." };
 
   try {
-    if (emailClient && exp && sig && !verifySignedLink(emailClient, exp, sig)) {
-      return { success: false, error: 'Lien invalide ou expiré.' };
-    }
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
@@ -426,7 +403,7 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emai
 
     const ligneDonnees = donnees[indexLigne];
     const idEvenementAncien = String(ligneDonnees[indices.idEvent]).trim();
-    const emailClientSheet = ligneDonnees[indices.email];
+    const emailClient = ligneDonnees[indices.email];
     const details = String(ligneDonnees[indices.details]);
 
     // Calcul de la durée depuis les détails du Sheet (source de vérité)
@@ -458,9 +435,9 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emai
     }
 
     // Créer un nouvel événement
-    const clientInfos = obtenirInfosClientParEmail(emailClientSheet);
+    const clientInfos = obtenirInfosClientParEmail(emailClient);
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${clientInfos.nom}`;
-    const descriptionEvenement = `Client: ${clientInfos.nom} (${emailClientSheet})\nID Réservation: ${idReservation}\nDétails: ${details}\nTotal: ${ligneDonnees[indices.montant].toFixed(2)} €\nNote: Déplacé par admin.`;
+    const descriptionEvenement = `Client: ${clientInfos.nom} (${emailClient})\nID Réservation: ${idReservation}\nDétails: ${details}\nTotal: ${ligneDonnees[indices.montant].toFixed(2)} €\nNote: Déplacé par admin.`;
     const nouvelEvenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, nouvelleDateDebut, nouvelleDateFin, { description: descriptionEvenement });
 
     if (!nouvelEvenement) {
@@ -471,7 +448,7 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emai
     feuille.getRange(indexLigne + 1, indices.date + 1).setValue(nouvelleDateDebut);
     feuille.getRange(indexLigne + 1, indices.idEvent + 1).setValue(nouvelEvenement.getId());
 
-    logActivity(idReservation, emailClientSheet, `Déplacement au ${nouvelleDate} à ${nouvelleHeure}.`, ligneDonnees[indices.montant], "Modification");
+    logActivity(idReservation, emailClient, `Déplacement au ${nouvelleDate} à ${nouvelleHeure}.`, ligneDonnees[indices.montant], "Modification");
     return { success: true };
 
   } catch (e) {

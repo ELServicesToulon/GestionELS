@@ -10,9 +10,9 @@
 function test_requiredProps() {
   const sp = PropertiesService.getScriptProperties();
   const missing = REQUIRED_PROPS.filter(k => {
-    if (k === 'DOCS_PUBLIC_FOLDER_ID') {
-      const v1 = sp.getProperty('DOCS_PUBLIC_FOLDER_ID');
-      const v2 = sp.getProperty('DOSSIER_PUBLIC_FOLDER_ID');
+    if (k === 'DOSSIER_PUBLIC_FOLDER_ID') {
+      const v1 = sp.getProperty('DOSSIER_PUBLIC_FOLDER_ID');
+      const v2 = sp.getProperty('DOCS_PUBLIC_FOLDER_ID');
       return (v1 === null || v1 === '') && (v2 === null || v2 === '');
     }
     const v = sp.getProperty(k);
