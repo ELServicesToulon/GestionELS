@@ -69,6 +69,7 @@ Le projet utilise `@google/clasp` version `2.5.0` en local comme en CI.
 
 ## Tests Manuels
 - Déplacer une facture vers `Facturation_Aout_2025` puis vérifier qu'elle reste visible et envoyable depuis l'espace client.
+- Choisir un créneau puis vérifier que le champ horaire est pré-rempli avant la validation.
 
 ## Resynchronisation du calendrier
 Lorsqu'un événement est supprimé manuellement dans Google Calendar, la ligne correspondante de "Facturation" conserve l'ID Réservation mais l'`Event ID` devient invalide.
