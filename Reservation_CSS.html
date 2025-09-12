@@ -141,13 +141,29 @@ body {
   display: grid;
   gap: var(--gap);
 }
-.els-col-right #vue-calendrier { width: 100%; justify-self: stretch; }
+.els-center { min-width: 0; display: block; }
+.els-col-right #vue-calendrier, .els-center #vue-calendrier { width: 100%; justify-self: stretch; }
 
 /* IMPORTANT : assure que le wrapper calendrier occupe la largeur colonne */
-.els-col-right > * {
+.els-col-right > *, .els-center > * {
   width: 100%;
   min-width: 0;
   justify-self: stretch;
+}
+
+/* Centre: Panier + Espace client au-dessus du calendrier */
+.els-center-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+  align-items: start;
+}
+.grid-calendar { grid-column: 1 / -1; }
+.els-client-col { position: sticky; top: var(--sticky-top); height: fit-content; }
+.client-card-text { margin: 0; color: var(--muted); }
+.els-center-grid .els-basket-wrap { grid-column: auto; width: 100%; max-width: none; margin: 0; padding: 0; }
+@media (max-width: 900px) {
+  .els-center-grid { grid-template-columns: 1fr; }
 }
 
 /* ===== Tweaks de lisibilité Desktop ===== */
@@ -191,7 +207,9 @@ body {
 .els-col-left { overflow: visible; }
 
 /* Panier en dessous, pleine largeur, même centrage que la grille */
+/* Ancien positionnement panier en pied de page — désactivé au profit du duo */
 .els-basket-wrap {
+  /* conservé pour compatibilité, neutralisé par .els-top-duo .els-basket-wrap */
   grid-column: 1 / -1;
   width: 100%;
   max-width: var(--shell-max);

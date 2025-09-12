@@ -1,4 +1,4 @@
-:root{ --violet:#8e44ad; --blue:#3498db; --blueLight:#5dade2; --radius:16px; }
+:root{ --violet:#8e44ad; --blue:#3498db; --blueLight:#5dade2; --radius:16px; --sticky-top:16px; }
 body{ font-family: Montserrat,system-ui,sans-serif; background:#f3f4f6; }
 .blister-bg{
   background-image:radial-gradient(circle,rgba(0,0,0,.25)10%,transparent 11%);
@@ -124,10 +124,12 @@ li{ margin: 6px 0; }
 
 /* ===== ELS Layout v2 ===== */
 :root{
-  --shell-max: min(90vw, 1600px);
-  --pad-x: clamp(12px, 1.8vw, 24px);
+  --shell-max: min(92vw, 1600px);
   --gap: clamp(16px, 2vw, 28px);
+  --pad-x: clamp(12px, 1.6vw, 22px);
+  --pad-y: clamp(10px, 1.2vw, 18px);
   --left-w: clamp(320px, 34vw, 420px);
+  --client-w: clamp(260px, 28vw, 340px);
 }
 
 .els-banner{ background: var(--bg); color: var(--txt); }
@@ -144,3 +146,141 @@ li{ margin: 6px 0; }
   .els-layout{ display: block; max-width: 700px; }
   .els-basket-wrap{ max-width: 700px; margin: 12px auto 24px; padding: 0 12px; }
 }
+
+/* ===== ELS Center Grid (Panier + Espace client au-dessus du calendrier) ===== */
+.els-center { display: grid; gap: var(--gap); min-width: 0; }
+.els-center-grid{
+  display: grid;
+  grid-template-columns: 1fr var(--client-w);
+  grid-template-areas:
+    "basket client"
+    "calendar calendar";
+  gap: var(--gap);
+  align-items: start;
+  max-width: min(92vw, 1400px);
+  margin: clamp(10px,2vh,20px) auto;
+  padding: 0 var(--pad-x);
+}
+
+/* Alias: mise en page "Panier + Client" au-dessus du calendrier */
+.els-grid-basket-client-over-calendar{
+  display: grid;
+  grid-template-columns: 1fr var(--client-w);
+  grid-template-areas:
+    "basket client"
+    "calendar calendar";
+  gap: var(--gap);
+  align-items: start;
+  max-width: min(92vw, 1400px);
+  margin: clamp(10px,2vh,20px) auto;
+  padding: 0 var(--pad-x);
+}
+.els-grid-basket-client-over-calendar .els-basket-wrap{ grid-column: auto; width: 100%; max-width: none; margin: 0; padding: 0; }
+@media (max-width: 900px){
+  .els-grid-basket-client-over-calendar{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "basket"
+      "client"
+      "calendar";
+  }
+}
+.grid-basket{ grid-area: basket; }
+.grid-client{ grid-area: client; }
+.grid-calendar{ grid-area: calendar; min-width: 0; }
+.grid-calendar > * { width: 100%; }
+
+/* Panier */
+.els-basket-wrap{
+  grid-area: basket;
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(0,0,0,.08);
+  padding: var(--pad-y) var(--pad-x);
+}
+.grid-calendar > * { width: 100%; }
+.els-center #vue-calendrier{ width: 100%; justify-self: stretch; }
+.els-center > *{ width: 100%; min-width: 0; justify-self: stretch; }
+.els-center-grid .els-basket-wrap{ grid-column: auto; width: 100%; max-width: none; margin: 0; padding: 0; }
+/* Espace client (sticky) */
+.els-client-col{
+  position: sticky;
+  top: clamp(12px, 2vh, 24px);
+  height: fit-content;
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(0,0,0,.08);
+  padding: var(--pad-y) var(--pad-x);
+  display: grid;
+  gap: 12px;
+}
+
+/* Bouton Espace client dans la colonne sticky */
+.els-client-col #btn-espace-client {
+  width: 100%;
+  border-radius: 999px;
+  padding: 10px 18px;
+  box-shadow: 0 8px 22px rgba(0,0,0,.10);
+}
+
+/* ===== Responsif ===== */
+@media (max-width: 1200px){
+  :root{
+    --client-w: clamp(260px, 26vw, 320px);
+    --gap: clamp(14px, 1.8vw, 24px);
+    --pad-x: clamp(12px, 1.4vw, 20px);
+  }
+  .els-center-grid,
+  .els-grid-basket-client-over-calendar{
+    max-width: min(95vw, 1200px);
+  }
+}
+
+@media (max-width: 1023px){
+  :root{
+    --gap: clamp(14px, 2.4vw, 22px);
+    --pad-x: clamp(12px, 2vw, 18px);
+    --client-w: clamp(260px, 38vw, 340px);
+  }
+  .els-center-grid,
+  .els-grid-basket-client-over-calendar{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "basket"
+      "client"
+      "calendar";
+    max-width: min(96vw, 1000px);
+  }
+  .els-client-col{ position: static; top: auto; }
+}
+
+@media (max-width: 767px){
+  :root{
+    --gap: clamp(12px, 3vw, 18px);
+    --pad-x: clamp(10px, 3.2vw, 16px);
+  }
+  .els-center-grid,
+  .els-grid-basket-client-over-calendar{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "basket"
+      "client"
+      "calendar";
+    max-width: 700px;
+    margin: 8px auto;
+    padding: 0 var(--pad-x);
+  }
+  .els-client-col{ position: static; top: auto; }
+}
+@media (max-width: 900px){
+  .els-center-grid{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "basket"
+      "client"
+      "calendar";
+  }
+}
+
+/* Optionnel: neutraliser un ancien wrapper si présent */
+.els-main-col{ display: contents; }

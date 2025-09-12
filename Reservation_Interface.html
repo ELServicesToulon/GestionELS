@@ -202,56 +202,65 @@
         </section>
       </aside>
 
-      <main id="calendar-panel" class="els-col-right" aria-label="Calendrier de réservation" role="main">
-
-        <? if (PROOF_SOCIAL_ENABLED) { ?>
-        <section class="preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
-          <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
-          <ul class="avis-list">
-            <li><strong>Pharmacie de Tamaris</strong> : « Service rapide et sécurisé »</li>
-            <li><strong>EHPAD Les Amandiers</strong> : « Livraisons fiables pour nos résidents »</li>
-          </ul>
-        </section>
-        <? } ?>
-
-        <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
-          <div class="carte-en-tete">
-            <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>
-            <h2 id="titre-calendrier" aria-live="polite"></h2>
-            <button id="btn-mois-suivant" class="btn-icone" aria-label="Mois suivant">&#9654;</button>
-          </div>
-          <div class="calendrier-jours-semaine" aria-hidden="true">
-            <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
-          </div>
-          <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
-        </div>
-
-        <section id="basket-section" class="els-basket-wrap" aria-label="Panier de réservation">
-          <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
-            <h3 id="panier-titre">Panier de réservation</h3>
-            <ul id="liste-panier">
-              <p class="panier-vide">Votre panier est vide.</p>
-            </ul>
-            <div id="panier-pied-de-page" class="hidden">
-              <div class="panier-total">
-                <span>Total estimé</span>
-                <strong id="panier-total-valeur">0 €</strong>
+      <main class="els-center" aria-label="Contenu de réservation" role="main">
+        <div class="els-center-grid els-grid-basket-client-over-calendar">
+          <!-- LIGNE 1 : Panier (gauche) -->
+          <section id="basket-section" class="els-basket-wrap grid-basket" aria-label="Panier de réservation">
+            <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
+              <h3 id="panier-titre">Panier de réservation</h3>
+              <ul id="liste-panier">
+                <p class="panier-vide">Votre panier est vide.</p>
+              </ul>
+              <div id="panier-pied-de-page" class="hidden">
+                <div class="panier-total">
+                  <span>Total estimé</span>
+                  <strong id="panier-total-valeur">0 €</strong>
+                </div>
+                <div class="panier-actions-groupe">
+                  <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
+                  <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
+                  <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
+                </div>
               </div>
-              <div class="panier-actions-groupe">
-                <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
-                <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
-                <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
-              </div>
-            </div>
+            </aside>
+          </section>
+
+          <!-- LIGNE 1 : Espace client (droite, sticky) -->
+          <? if (CLIENT_PORTAL_ENABLED) { ?>
+          <aside class="els-client-col grid-client carte" aria-label="Espace client">
+            <h3 id="espace-client-titre">Espace client</h3>
+            <p class="client-card-text">Retrouvez vos réservations, factures et informations.</p>
+            <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire">Mon Espace Client</a>
           </aside>
-        </section>
+          <? } ?>
+
+          <!-- LIGNE 2 : Calendrier (plein largeur) -->
+          <section id="calendar-panel" class="grid-calendar" aria-label="Calendrier de réservation">
+            <? if (PROOF_SOCIAL_ENABLED) { ?>
+            <section class="preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
+              <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
+              <ul class="avis-list">
+                <li><strong>Pharmacie de Tamaris</strong> : « Service rapide et sécurisé »</li>
+                <li><strong>EHPAD Les Amandiers</strong> : « Livraisons fiables pour nos résidents »</li>
+              </ul>
+            </section>
+            <? } ?>
+            <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
+              <div class="carte-en-tete">
+                <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>
+                <h2 id="titre-calendrier" aria-live="polite"></h2>
+                <button id="btn-mois-suivant" class="btn-icone" aria-label="Mois suivant">&#9654;</button>
+              </div>
+              <div class="calendrier-jours-semaine" aria-hidden="true">
+                <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+              </div>
+              <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
+            </div>
+          </section>
+        </div>
       </main>
       </div><!-- /els-layout -->
-      <footer class="els-footer">
-        <? if (CLIENT_PORTAL_ENABLED) { ?>
-          <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm">Mon Espace Client</a>
-        <? } ?>
-      </footer>
+      <footer class="els-footer"></footer>
     </section><!-- /els-shell -->
 
     <div id="conteneur-finalisation" class="carte hidden" style="margin-top: 2rem;">
