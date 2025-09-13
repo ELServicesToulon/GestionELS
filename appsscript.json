@@ -17,8 +17,8 @@
     ]
   },
   "webapp": {
-    "executeAs": "USER_DEPLOYING",
-    "access": "ANYONE"
+    "executeAs": "USER_ACCESSING",
+    "access": "MYSELF"
   },
   "oauthScopes": [
     "https://www.googleapis.com/auth/drive",
