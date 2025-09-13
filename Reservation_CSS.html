@@ -35,50 +35,8 @@
   );
   <? } ?>
   --shadow: 0 6px 18px rgba(15,23,42,.14);
-  --radius: 20px; /* default, overridden by responsive tokens below */
+  --radius: 20px;
   --muted: #64748b;
-}
-
-/* ===== Tokens responsive pour mieux “occuper” le FullHD sans casser mobile ===== */
-:root {
-  /* Layout */
-  --layout-max: 1280px;
-  --shell-padding-x: 16px;
-  --gap:        clamp(16px, 2vw, 28px);
-  --gap-tablet: 20px;    /* 768–1023px */
-  --gap-mobile: 12px;    /* <768px */
-
-  /* Colonne gauche */
-  --left-col-min: 300px;
-  --left-col-ideal: 36vw;
-  --left-col-max: 360px;
-  --sticky-top: 16px;
-
-  /* Panier */
-  --basket-max: 1280px;
-
-  /* ===== Tokens responsive FullHD ===== */
-  --radius: 16px;
-  --shell-max:  min(90vw, 1600px);  /* 1728px max en 1920x1080, sinon 1600px */
-  --left-w:     clamp(320px, 34vw, 420px); /* colonne tarifs confortable */
-  --pad-x:      clamp(12px, 1.8vw, 24px);
-  --pad-y:      clamp(10px, 1.5vw, 20px);
-  --card-h:     clamp(170px, 22vh, 230px); /* cartes plus hautes en desktop */
-  --text:       clamp(14px, 0.9vw, 16px);  /* légère montée en FullHD */
-  --lead:       clamp(16px, 1.05vw, 19px);
-}
-
-@media (max-width: 1023px) and (min-width: 768px) {
-  :root {
-    --gap: var(--gap-tablet);
-    --left-col-min: 320px;
-    --left-col-ideal: 32vw;
-    --left-col-max: 360px;
-  }
-}
-
-@media (max-width: 767px) {
-  :root { --gap: var(--gap-mobile); }
 }
 /* =================================================================
                       FEUILLE DE STYLE - INTERFACE DE RÃ‰SERVATION
@@ -106,146 +64,64 @@ body {
   margin: 30px auto;
   padding: 0 20px;
 }
- 
-/* ===== Grille principale 3 colonnes ===== */
 .els-layout {
   display: grid;
-  grid-template-columns: var(--left-w) 1fr var(--client-w);
-  gap: var(--gap);
+  grid-template-columns: clamp(300px, 36vw, 360px) 1fr;
+  gap: 18px;
   align-items: start;
-  max-width: var(--shell-max);
-  margin: clamp(12px, 2vh, 24px) auto 0;
-  padding: 0 var(--pad-x);
-  min-height: calc(100dvh - 120px);
+  max-width: 1280px;
+  margin: 24px auto;
+  margin-top: 16px;
+  padding: 0 16px;
 }
 
 /* Responsif tablette (<= 1023px) */
 @media (max-width: 1023px) and (min-width: 768px) {
   .els-layout {
-    grid-template-columns: clamp(300px, 38vw, 360px) 1fr;
-    gap: var(--gap);
+    grid-template-columns: clamp(320px, 32vw, 360px) 1fr;
+    gap: 20px;
   }
 }
 /* Colonne gauche (banniÃ¨re + tarifs) */
-/* Colonne gauche (bannière + tarifs) — sticky pour rester visible au scroll */
-.els-col-left {
-  position: sticky;
-  top: clamp(12px, 2vh, 24px);
-  height: fit-content;
+.els-col-left { position: sticky; top: 16px; height: fit-content; display: grid; gap: 12px; }
+/* Colonne droite (calendrier) */
+.els-col-right {
+  min-width: 0; /* évite débordement */
   display: grid;
-  gap: clamp(10px, 1.2vw, 16px);
-}
-/* Colonne centrale — le calendrier doit prendre la largeur */
-.els-center { min-width: 0; display: block; }
-.els-center #vue-calendrier { width: 100%; justify-self: stretch; }
-
-/* IMPORTANT : assure que le wrapper calendrier occupe la largeur colonne */
-.els-center > * {
-  width: 100%;
-  min-width: 0;
-  justify-self: stretch;
-}
-
-/* Centre: Panier + Espace client au-dessus du calendrier */
-.els-center-grid {
-  display: grid;
-  grid-template-columns: 1fr var(--client-w);
-  grid-template-areas:
-    "calendar calendar"
-    "basket client";
-  gap: var(--gap);
-  align-items: start;
-}
-.grid-basket { grid-area: basket; }
-.grid-client { grid-area: client; }
-.grid-calendar { grid-area: calendar; }
-.els-client-col { position: sticky; top: var(--sticky-top); height: fit-content; }
-.client-card-text { margin: 0; color: var(--muted); }
-.els-center-grid .els-basket-wrap { grid-column: auto; width: 100%; max-width: none; margin: 0; padding: 0; }
-@media (max-width: 900px) {
-  .els-center-grid {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "calendar"
-      "basket"
-      "client";
-  }
-}
-
-/* Colonne droite (cartes déplacées par JS) */
-.els-right-col { display: grid; gap: var(--gap); align-content: start; }
-
-/* Responsive 2 colonnes autour de 1280px */
-@media (max-width: 1280px) {
-  .layout-els { grid-template-columns: 1fr 1.2fr; }
-  .layout-els .els-right-col { grid-column: 2; }
-}
-
-/* Responsive 1 colonne à ≤ 992px (ordre: gauche → centre → droite) */
-@media (max-width: 992px) {
-  .layout-els { grid-template-columns: 1fr; }
-  .layout-els .els-right-col { grid-column: 1; }
-}
-
-/* ===== Tweaks de lisibilité Desktop ===== */
-@media (min-width: 1024px) {
-  .els-col-left h1,
-  .els-col-left h2,
-  .els-col-left .lead {
-    font-size: var(--lead);
-    line-height: 1.35;
-    margin-block: 0 8px;
-  }
-}
-
-/* ===== Optionnel : adoucir les cartes calendrier si présent ===== */
-.calendar .card,
-.calendar-card {
-  background: var(--bg);
-  color: var(--txt);
-  border-radius: var(--radius);
-  box-shadow: 0 8px 22px rgba(0,0,0,.06);
-  padding: var(--pad-y) var(--pad-x);
-}
-
-/* ===== Breakpoints ===== */
-@media (max-width: 1200px) {
-  :root {
-    /* Affine l'équilibre dès 1200px de large */
-    --left-w: clamp(340px, 32vw, 480px);
-    --gap: clamp(14px, 1.8vw, 24px);
-  }
+  gap: 16px;
 }
 #tarifs-panel { position: sticky; top: 16px; }
-
-/* Améliore la densité perçue sur grands écrans sans zoom usine à gaz */
-.els-shell { font-size: var(--text); line-height: 1.6; }
-.els-shell .hero-sous-titre { font-size: var(--lead, 18px); }
-.els-shell .tarif-carte { min-height: var(--card-h, 200px); padding: var(--pad-y, 12px) var(--pad-x, 16px); }
-
-/* Évite qu’un parent coupe le sticky */
-.els-layout,
-.els-col-left { overflow: visible; }
-
-/* Laisse scroller le conteneur calendrier sur grands écrans (FHD) */
-.els-center [data-component="calendar"] {
-  overflow: auto;
-  /* réserve de place approximative pour l’en-tête/bannières */
-  max-height: calc(100dvh - 220px);
+#calendar-panel { display: contents; }
+#app-conteneur { display: contents; }
+#colonne-droite { display: contents; }
+#vue-calendrier { grid-column: 2; }
+#vue-panier { grid-column: 1 / -1; }
+#app-conteneur {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
 }
-@media (max-height: 800px) {
-  .els-center [data-component="calendar"] { max-height: calc(100dvh - 160px); }
+/* Colonnes internes (calendrier + panier) */
+#vue-calendrier { min-width: 0; }
+
+@media (max-width: 900px) {
+  .els-layout { display: grid; grid-template-columns: clamp(320px, 32vw, 360px) 1fr; gap: 20px; }
 }
 
-/* Panier en dessous, pleine largeur, même centrage que la grille */
-/* Ancien positionnement panier en pied de page — désactivé au profit du duo */
+@media (max-width: 767px) {
+  .els-layout { display: block; max-width: 680px; }
+  .els-col-left { position: static; top: auto; margin-bottom: 16px; }
+  #tarifs-panel { position: static; top: auto; }
+  #vue-calendrier, #vue-panier { grid-column: auto; }
+  .els-basket-wrap { max-width: 1280px; margin: 12px auto 24px; padding: 0 12px; }
+}
+
+/* Panier sous la grille */
 .els-basket-wrap {
-  /* conservé pour compatibilité, neutralisé par .els-top-duo .els-basket-wrap */
   grid-column: 1 / -1;
-  width: 100%;
-  max-width: var(--shell-max);
-  margin: clamp(12px, 2vh, 24px) auto 32px;
-  padding: 0 var(--pad-x);
+  max-width: 1280px;
+  margin: 12px auto 32px;
+  padding: 0 16px;
   display: block;
 }
 
@@ -260,7 +136,7 @@ body {
   box-shadow: var(--shadow);
 }
 
-/* Uniformiser visuel des blocs de gauche */
+/* Harmonise les cartes tarifs déjà présentes */
 .els-col-left .tarif-carte,
 .els-col-left .card,
 .els-col-left .banner,
@@ -268,21 +144,11 @@ body {
 .els-col-left [data-options] {
   background: var(--bg);
   color: var(--txt);
-  border-radius: var(--radius);
-  box-shadow: 0 10px 28px rgba(0,0,0,.08);
-  padding: var(--pad-y) var(--pad-x);
+  border-radius: var(--radius, 16px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  padding: 16px;
 }
 .els-col-left .tarifs-cartes { display: grid; grid-template-columns: 1fr; gap: 12px; }
-
-/* Donne de la hauteur aux 3 cartes tarifs pour un équilibre visuel */
-.els-col-left .tarif-carte,
-.els-col-left .card[data-tarif],
-.els-col-left [data-tarif].card {
-  min-height: var(--card-h);
-  display: grid;
-  align-content: start;
-  gap: 8px;
-}
 .hero-tarifs h1 {
   margin-top: 0;
   font-size: 1.8em;
@@ -314,7 +180,6 @@ body {
   gap: 1.5rem;
   justify-content: center;
 }
-.tarif-carte > p { font-size: 0.9em; color: var(--muted); margin-top: 0.5rem; }
 .tarif-carte {
   background: var(--bg);
   color: var(--txt);
@@ -615,16 +480,6 @@ body.els-ui-theming.els-aluminium {
 .modale-contenu { background-color: var(--bg); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); width: 100%; max-width: 500px; position: relative; }
 .btn-fermer { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.8em; cursor: pointer; color: var(--muted); }
 .modale-resume { background-color: var(--bg); border-radius: var(--radius); padding: 15px; margin-top: 20px; display: flex; justify-content: space-around; text-align: center; }
-
-/* Pied de page (évite inline styles) */
-.els-footer { margin-top: 24px; padding: 16px; text-align: center; }
-
-/* Finalisation container spacing (inline -> CSS) */
-#conteneur-finalisation { margin-top: 2rem; }
-
-/* Theme menu/actions (inline -> CSS) */
-.banner-actions { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center; }
-.menu-theme { min-width: 100px; }
 .modale-resume strong { color: var(--violet); display: block; margin-top: 4px; }
 .modale-pied-de-page { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--muted); display: flex; justify-content: flex-end; }
 
@@ -768,6 +623,10 @@ input:checked + .glissiere:before { transform: translateX(22px); }
 .app-en-tete { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 30px; }
 
 /* --- RESPONSIVE DESIGN --- */
+@media (max-width: 900px) {
+  #app-conteneur { flex-direction: column; }
+  #colonne-droite { position: static; top: auto; width: 100%; box-sizing: border-box; }
+}
 @media (max-width: 600px) {
   #app-conteneur-principal { padding: 0 10px; margin: 15px auto; }
   .carte-en-tete { flex-direction: column; gap: 10px; }
@@ -783,8 +642,9 @@ input:checked + .glissiere:before { transform: translateX(22px); }
 /* --- STYLES D'IMPRESSION --- */
 @media print {
   body { background-color: var(--txt); color: var(--bg); }
-  .els-banner, .carte-en-tete button, #btn-valider-panier, .modale-overlay, #conteneur-notifications, .actions-formulaire button, .item-panier-supprimer, .app-pied-de-page { display: none; }
-  #app-conteneur-principal, #vue-calendrier, #vue-panier, .carte { box-shadow: none; border: 1px solid var(--muted); margin: 10px 0; padding: 15px; page-break-inside: avoid; }
+  .app-en-tete, .carte-en-tete button, #btn-valider-panier, .modale-overlay, #conteneur-notifications, .actions-formulaire button, .item-panier-supprimer, .app-pied-de-page { display: none; }
+  #app-conteneur-principal, #app-conteneur, #vue-calendrier, #vue-panier, .carte { box-shadow: none; border: 1px solid var(--muted); margin: 10px 0; padding: 15px; page-break-inside: avoid; }
+  #app-conteneur { flex-direction: column; }
   .jour-calendrier.desactive { color: var(--muted); }
   .champ-formulaire { border-color: var(--muted); }
 }
