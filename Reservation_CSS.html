@@ -66,7 +66,8 @@ body {
 }
 .els-layout {
   display: grid;
-  grid-template-columns: clamp(280px, 26vw, 340px) 1fr clamp(280px, 26vw, 340px);
+  /* Centre = 50% (2fr), côtés se partagent le reste (1fr chacun) */
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr) minmax(280px, 1fr);
   gap: 18px;
   align-items: start;
   max-width: 1280px;
