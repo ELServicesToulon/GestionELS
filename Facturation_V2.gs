@@ -85,9 +85,9 @@ function INV2_insertTotals_(body, marker, totaux, options) {
     ? [['Montant', INV2_fmt_(totaux.montant || 0)],
        ['Remises', INV2_fmt_(totaux.remise || 0)],
        ['Total à payer', INV2_fmt_(totaux.total || totaux.montant || 0)]]
-    : [['Sous-total HT', INV2_fmt_(totaux.ht || 0)],
+    : [['Sous-total', INV2_fmt_(totaux.ht || 0)],
        ['TVA', INV2_fmt_(totaux.tva || 0)],
-       ['Total TTC', INV2_fmt_(totaux.ttc || 0)]];
+       ['Total', INV2_fmt_(totaux.ttc || 0)]];
 
   rows.forEach(([k,v]) => {
     const r = table.appendTableRow();

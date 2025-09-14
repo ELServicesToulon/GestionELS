@@ -143,7 +143,7 @@ function envoyerDevisParEmail(donneesDevis) {
             <tr>
               <th style="padding: 8px; border-bottom: 2px solid #333; text-align: left;">Date et Heure</th>
               <th style="padding: 8px; border-bottom: 2px solid #333; text-align: left;">Détail de la prestation</th>
-              <th style="padding: 8px; border-bottom: 2px solid #333; text-align: right;">Prix TTC</th>
+              <th style="padding: 8px; border-bottom: 2px solid #333; text-align: right;">Prix</th>
             </tr>
           </thead>
           <tbody>

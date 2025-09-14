@@ -154,47 +154,37 @@
       <aside id="tarifs-panel-droite" class="els-col-right-aside" aria-label="Tarifs et options (droite)">
         <article class="carte hero-card-tarifs">
           <div class="tarifs-cartes">
-            <div class="tarif-carte">
-              <div class="tarif-icone">
-                <svg width="48" height="48" role="img" aria-label="Pilulier pharmaceutique" focusable="false">
-                  <use href="#icone-pilulier"></use>
-                </svg>
+              <div class="tarif-carte">
+                <div class="tarif-icone">
+                  <svg width="48" height="48" role="img" aria-label="Pilulier pharmaceutique" focusable="false">
+                    <use href="#icone-pilulier"></use>
+                  </svg>
+                </div>
+                <h3>Tarifs courses</h3>
+                <ul>
+                  <li><?= TARIFS.Normal.base ?> €</li>
+                  <li><?= KM_BASE ?> km inclus</li>
+                  <li><?= DUREE_BASE ?> min inclus</li>
+                  <li>Urgent : 20 €</li>
+                  <li>Samedi : 25 €</li>
+                </ul>
+                <a href="#vue-calendrier" class="btn btn-primaire">Réserver</a>
               </div>
-              <h3>Course de base</h3>
-              <ul>
-                <li><?= TARIFS.Normal.base ?> € TTC</li>
-                <li><?= KM_BASE ?> km inclus</li>
-                <li><?= DUREE_BASE ?> min inclus</li>
-              </ul>
-              <a href="#vue-calendrier" class="btn btn-primaire">Réserver</a>
-            </div>
-            <div class="tarif-carte">
+              <div class="tarif-carte">
               <div class="tarif-icone">
                 <svg width="48" height="48" role="img" aria-label="Flacon de médicament" focusable="false">
                   <use href="#icone-flacon"></use>
                 </svg>
               </div>
               <h3>Arrêts supplémentaires</h3>
-              <ul>
-                <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
-                     var label = (i === TARIFS.Normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
-                  <li><?= label ?> arrêt : <?= TARIFS.Normal.arrets[i] ?> € TTC</li>
-                <? } ?>
-              </ul>
-            </div>
-            <div class="tarif-carte">
-              <div class="tarif-icone">
-                <svg width="48" height="48" role="img" aria-label="Tampon officinal" focusable="false">
-                  <use href="#icone-tampon"></use>
-                </svg>
+                <ul>
+                  <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
+                       var label = (i === TARIFS.Normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
+                    <li><?= label ?> arrêt : <?= TARIFS.Normal.arrets[i] ?> €</li>
+                  <? } ?>
+                </ul>
               </div>
-              <h3>Options</h3>
-              <ul>
-                <li>Urgent : +<?= TARIFS.Urgent.base ?> € TTC</li>
-                <li>Samedi : +<?= TARIFS.Samedi.base ?> € TTC</li>
-              </ul>
-              <p style="font-size:0.9em;color:#555;margin-top:0.5rem;">Le samedi est prioritaire sur l’urgent : une course le samedi applique toujours le tarif samedi, même si elle est urgente.</p>
-            </div>
+              
           </div>
         </article>
       </aside>
