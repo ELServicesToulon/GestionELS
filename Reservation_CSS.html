@@ -44,12 +44,16 @@
 
 body {
   font-family: var(--font);
-  background-color: var(--bg);
+  background-color: #ffffff; /* fond totalement blanc */
   margin: 0;
   color: var(--txt);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--txt); margin: 0 0 8px; }
+/* Supprime le bandeau dégradé de l'en-tête */
+.app-en-tete { background: transparent !important; padding: 0 !important; margin: 0 !important; height: 0 !important; overflow: hidden !important; border: 0 !important; }
+.app-en-tete > * { display: none !important; }
 /* Typo uniforme pour tous les titres */
 h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--txt); margin: 0 0 8px; }
 
@@ -73,8 +77,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
   gap: 0;
   align-items: start;
   max-width: 1280px;
-  margin: 24px auto;
-  margin-top: 16px;
+  margin: 0 auto; /* retire l'espace au-dessus */
   padding: 0 16px;
 }
 
@@ -99,6 +102,10 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 #note-apres-panier { grid-column: 1; }
 /* Intro au-dessus du calendrier (colonne contenu) */
 #intro-calendrier { grid-column: 1; margin: 0; }
+.hero-titre { display: flex; align-items: center; gap: 10px; }
+.hero-logo { width: 48px; height: auto; display: inline-flex; align-items: center; justify-content: center; }
+.hero-logo svg { width: 48px; height: auto; display: block; }
+.hero-logo .app-logo-container { margin: 0; padding: 0; }
 
 /* Empêche la colonne droite de recouvrir le calendrier */
 #vue-calendrier { position: relative; z-index: 2; }
