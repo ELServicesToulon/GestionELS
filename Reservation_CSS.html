@@ -120,13 +120,20 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 #calendar-panel, #app-conteneur { margin-top: 0 !important; padding-top: 0 !important; }
 
 @media (max-width: 900px) {
-  .els-layout { display: grid; grid-template-columns: 1fr; gap: 16px; }
-  #tarifs-panel-droite, #vue-calendrier, #vue-panier, #note-apres-panier, #site-header { grid-column: 1; }
+  .els-layout { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  /* Forcer l'ordre: calendrier -> panier -> tarifs */
+  #vue-calendrier { grid-column: 1; grid-row: 1; margin-top: 0 !important; }
+  #vue-panier { grid-column: 1; grid-row: 2; }
+  #tarifs-panel-droite { grid-column: 1; grid-row: 3; position: static; top: auto; }
+  #note-apres-panier { grid-column: 1; grid-row: 4; }
 }
 
 @media (max-width: 767px) {
-  .els-layout { display: block; max-width: 680px; }
+  .els-layout { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 700px; }
   .els-col-left, #tarifs-panel, #tarifs-panel-droite { position: static; top: auto; }
+  #vue-calendrier { grid-row: 1; }
+  #vue-panier { grid-row: 2; }
+  #tarifs-panel-droite { grid-row: 3; }
   .els-basket-wrap { max-width: 1280px; margin: 12px auto 24px; padding: 0 12px; }
 }
 
