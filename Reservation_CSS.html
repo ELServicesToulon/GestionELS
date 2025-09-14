@@ -95,6 +95,8 @@ body {
 #vue-calendrier { grid-column: 2; }
 #vue-panier { grid-column: 2; }
 #note-apres-panier { grid-column: 2; }
+/* Intro au-dessus du calendrier (colonne centrale) */
+#intro-calendrier { grid-column: 2; margin-bottom: 12px; }
 
 /* Empêche les colonnes latérales de recouvrir le calendrier */
 #vue-calendrier { position: relative; z-index: 2; }
@@ -216,9 +218,10 @@ body {
 /* Alléger le détourage des blocs non essentiels */
 .hero-card-intro,
 .hero-card-tarifs,
-.hero-card-note { box-shadow: none; }
+.hero-card-note { box-shadow: none; background: transparent; border: 0; }
+.intro-calendrier { background: transparent; border: 0; box-shadow: none; padding: 0; border-radius: 0; }
 .els-col-left .tarif-carte,
-#tarifs-panel-droite .tarif-carte { box-shadow: none; border: 0; }
+#tarifs-panel-droite .tarif-carte { box-shadow: none; border: 0; background: transparent; }
 
 /* --- PREUVES SOCIALES --- */
 .preuves-sociales {

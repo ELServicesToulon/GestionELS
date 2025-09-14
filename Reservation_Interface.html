@@ -120,40 +120,39 @@
     </header>
 
     <section class="els-layout">
-      <aside id="tarifs-panel" class="els-col-left" aria-label="Tarifs et options">
-        <section id="hero-tarifs" class="els-left-stack" aria-label="Présentation et tarifs">
-          <article class="carte hero-card-intro">
-            <div class="hero-titre">
-              <div class="hero-icone">
-                <svg width="48" height="48" role="img" aria-label="Gélule de pharmacie" focusable="false">
-                  <use href="#icone-gelule"></use>
-                </svg>
-              </div>
-              <h1>Gagnez du temps au comptoir : la tournée pharmacie pensée pour pharmaciens, préparateurs, infirmiers</h1>
+      <aside id="tarifs-panel" class="els-col-left" aria-label="Tarifs et options"></aside>
+
+      <!-- Intro détachée, au-dessus de la colonne calendrier -->
+      <div id="intro-calendrier" class="intro-calendrier" aria-label="Présentation du service">
+        <div class="hero-titre">
+          <div class="hero-icone">
+            <svg width="48" height="48" role="img" aria-label="Gélule de pharmacie" focusable="false">
+              <use href="#icone-gelule"></use>
+            </svg>
+          </div>
+          <h1>Gagnez du temps au comptoir : la tournée pharmacie pensée pour pharmaciens, préparateurs, infirmiers</h1>
+        </div>
+        <p class="hero-sous-titre">Fiabilité éprouvée, sacs scellés sécurisés et respect du patient garanti.</p>
+        <? if (EXTRA_ICONS_ENABLED) { ?>
+          <div class="hero-icones">
+            <div class="hero-icone">
+              <svg width="48" height="48" role="img" aria-label="Semainier" focusable="false">
+                <use href="#icone-semainier"></use>
+              </svg>
             </div>
-            <p class="hero-sous-titre">Fiabilité éprouvée, sacs scellés sécurisés et respect du patient garanti.</p>
-            <? if (EXTRA_ICONS_ENABLED) { ?>
-              <div class="hero-icones">
-                <div class="hero-icone">
-                  <svg width="48" height="48" role="img" aria-label="Semainier" focusable="false">
-                    <use href="#icone-semainier"></use>
-                  </svg>
-                </div>
-                <div class="hero-icone">
-                  <svg width="48" height="48" role="img" aria-label="Boîte scellée" focusable="false">
-                    <use href="#icone-boite-scellee"></use>
-                  </svg>
-                </div>
-                <div class="hero-icone">
-                  <svg width="48" height="48" role="img" aria-label="Livraison à domicile" focusable="false">
-                    <use href="#icone-livraison"></use>
-                  </svg>
-                </div>
-              </div>
-            <? } ?>
-          </article>
-        </section>
-      </aside>
+            <div class="hero-icone">
+              <svg width="48" height="48" role="img" aria-label="Boîte scellée" focusable="false">
+                <use href="#icone-boite-scellee"></use>
+              </svg>
+            </div>
+            <div class="hero-icone">
+              <svg width="48" height="48" role="img" aria-label="Livraison à domicile" focusable="false">
+                <use href="#icone-livraison"></use>
+              </svg>
+            </div>
+          </div>
+        <? } ?>
+      </div>
 
       <!-- Panneau tarifs à droite du calendrier -->
       <aside id="tarifs-panel-droite" class="els-col-right-aside" aria-label="Tarifs et options (droite)">
