@@ -66,8 +66,8 @@ body {
 }
 .els-layout {
   display: grid;
-  /* Centre = 50% (2fr), côtés se partagent le reste (1fr chacun) */
-  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr) minmax(280px, 1fr);
+  /* Deux colonnes: 75% (contenu) / 25% (droite) */
+  grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr);
   gap: 24px;
   align-items: start;
   max-width: 1280px;
@@ -84,29 +84,29 @@ body {
   }
 }
 /* Colonnes */
-.els-col-left { position: sticky; top: 16px; height: fit-content; display: grid; gap: 12px; grid-column: 1; }
+.els-col-left { display: none; }
 .els-col-right { min-width: 0; display: contents; }
-#tarifs-panel { grid-column: 1; position: sticky; top: 16px; }
-#tarifs-panel-droite { grid-column: 3; position: sticky; top: 16px; height: fit-content; display: grid; gap: 12px; }
-#calendar-panel { display: contents; grid-column: 2; }
+#tarifs-panel { display: none !important; }
+#tarifs-panel-droite { grid-column: 2; position: sticky; top: 16px; height: fit-content; display: grid; gap: 12px; }
+#calendar-panel { display: contents; grid-column: 1; }
 /* Aplatis les conteneurs pour que calendrier/panier soient enfants de la grille */
 .els-layout #app-conteneur { display: contents; }
 #colonne-droite { display: contents; }
-#vue-calendrier { grid-column: 2; }
-#vue-panier { grid-column: 2; }
-#note-apres-panier { grid-column: 2; }
-/* Intro au-dessus du calendrier (colonne centrale) */
-#intro-calendrier { grid-column: 2; margin-bottom: 12px; }
+#vue-calendrier { grid-column: 1; }
+#vue-panier { grid-column: 1; }
+#note-apres-panier { grid-column: 1; }
+/* Intro au-dessus du calendrier (colonne contenu) */
+#intro-calendrier { grid-column: 1; margin-bottom: 12px; }
 
-/* Empêche les colonnes latérales de recouvrir le calendrier */
+/* Empêche la colonne droite de recouvrir le calendrier */
 #vue-calendrier { position: relative; z-index: 2; }
-#tarifs-panel, #tarifs-panel-droite { position: sticky; z-index: 1; }
+#tarifs-panel-droite { position: sticky; z-index: 1; }
 /* Colonnes internes (calendrier + panier) */
 #vue-calendrier { min-width: 0; }
 
 @media (max-width: 900px) {
   .els-layout { display: grid; grid-template-columns: 1fr; gap: 16px; }
-  #tarifs-panel, #tarifs-panel-droite, #vue-calendrier, #vue-panier, #note-apres-panier { grid-column: 1; }
+  #tarifs-panel-droite, #vue-calendrier, #vue-panier, #note-apres-panier, #intro-calendrier { grid-column: 1; }
 }
 
 @media (max-width: 767px) {
