@@ -112,18 +112,15 @@
           <? } ?>
         </div>
 
-        <?!= include('Logo'); ?>
+        <!-- Logo supprimé de l'en-tête -->
         <div id="banniere-client-reconnu" class="hidden">
             Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
             <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
         </div>
     </header>
 
-    <section class="els-layout">
-      <aside id="tarifs-panel" class="els-col-left" aria-label="Tarifs et options"></aside>
-
-      <!-- Intro détachée, au-dessus de la colonne calendrier -->
-      <div id="intro-calendrier" class="intro-calendrier" aria-label="Présentation du service">
+    <!-- Intro détachée, sur toute la largeur au-dessus de tout -->
+    <div id="intro-calendrier" class="intro-calendrier" aria-label="Présentation du service">
         <div class="hero-titre">
           <div class="hero-logo"><?!= include('Logo'); ?></div>
           <h1>Gagnez du temps au comptoir : la tournée pharmacie pensée pour pharmaciens, préparateurs, infirmiers</h1>
@@ -148,7 +145,10 @@
             </div>
           </div>
         <? } ?>
-      </div>
+    </div>
+
+    <section class="els-layout">
+      <aside id="tarifs-panel" class="els-col-left" aria-label="Tarifs et options"></aside>
 
       <!-- Panneau tarifs à droite du calendrier -->
       <aside id="tarifs-panel-droite" class="els-col-right-aside" aria-label="Tarifs et options (droite)">
