@@ -66,7 +66,7 @@ body {
 }
 .els-layout {
   display: grid;
-  grid-template-columns: clamp(300px, 36vw, 360px) 1fr;
+  grid-template-columns: clamp(280px, 26vw, 340px) 1fr clamp(280px, 26vw, 340px);
   gap: 18px;
   align-items: start;
   max-width: 1280px;
@@ -82,37 +82,29 @@ body {
     gap: 20px;
   }
 }
-/* Colonne gauche (banniÃ¨re + tarifs) */
-.els-col-left { position: sticky; top: 16px; height: fit-content; display: grid; gap: 12px; }
-/* Colonne droite (calendrier) */
-.els-col-right {
-  min-width: 0; /* évite débordement */
-  display: grid;
-  gap: 16px;
-}
-#tarifs-panel { position: sticky; top: 16px; }
-#calendar-panel { display: contents; }
-#app-conteneur { display: contents; }
+/* Colonnes */
+.els-col-left { position: sticky; top: 16px; height: fit-content; display: grid; gap: 12px; grid-column: 1; }
+.els-col-right { min-width: 0; display: contents; }
+#tarifs-panel { grid-column: 1; position: sticky; top: 16px; }
+#tarifs-panel-droite { grid-column: 3; position: sticky; top: 16px; height: fit-content; display: grid; gap: 12px; }
+#calendar-panel { display: contents; grid-column: 2; }
+/* Aplatis les conteneurs pour que calendrier/panier soient enfants de la grille */
+.els-layout #app-conteneur { display: contents; }
 #colonne-droite { display: contents; }
 #vue-calendrier { grid-column: 2; }
-#vue-panier { grid-column: 1 / -1; }
-#app-conteneur {
-  display: flex;
-  gap: 30px;
-  align-items: flex-start;
-}
+#vue-panier { grid-column: 2; }
+#note-apres-panier { grid-column: 2; }
 /* Colonnes internes (calendrier + panier) */
 #vue-calendrier { min-width: 0; }
 
 @media (max-width: 900px) {
-  .els-layout { display: grid; grid-template-columns: clamp(320px, 32vw, 360px) 1fr; gap: 20px; }
+  .els-layout { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  #tarifs-panel, #tarifs-panel-droite, #vue-calendrier, #vue-panier, #note-apres-panier { grid-column: 1; }
 }
 
 @media (max-width: 767px) {
   .els-layout { display: block; max-width: 680px; }
-  .els-col-left { position: static; top: auto; margin-bottom: 16px; }
-  #tarifs-panel { position: static; top: auto; }
-  #vue-calendrier, #vue-panier { grid-column: auto; }
+  .els-col-left, #tarifs-panel, #tarifs-panel-droite { position: static; top: auto; }
   .els-basket-wrap { max-width: 1280px; margin: 12px auto 24px; padding: 0 12px; }
 }
 
