@@ -102,12 +102,10 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 #note-apres-panier { grid-column: 1; }
 /* Intro au-dessus du calendrier (colonne contenu) */
 #site-header {
-  /* Pleine largeur au-dessus de la grille */
-  grid-column: 1 / -1;
-  width: 100vw;
-  margin: 0;
-  margin-left: calc(50% - 50vw);
-  padding: 0 16px 8px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto 8px;
+  padding: 0 20px;
 }
 .hero-titre { display: flex; align-items: center; gap: 10px; }
 .hero-logo { width: 48px; height: auto; display: inline-flex; align-items: center; justify-content: center; }

@@ -97,6 +97,34 @@
     <div class="spinner"></div>
   </div>
 
+  <!-- En-tête du site plein largeur, au-dessus du conteneur principal -->
+  <header id="site-header" class="intro-calendrier" role="banner" aria-label="En-tête du site">
+    <div class="hero-titre">
+      <div class="hero-logo"><?!= include('Logo'); ?></div>
+      <h1>Gagnez du temps au comptoir : la tournée pharmacie pensée pour pharmaciens, préparateurs, infirmiers</h1>
+    </div>
+    <p class="hero-sous-titre">Fiabilité éprouvée, sacs scellés sécurisés et respect du patient garanti.</p>
+    <? if (EXTRA_ICONS_ENABLED) { ?>
+      <div class="hero-icones">
+        <div class="hero-icone">
+          <svg width="48" height="48" role="img" aria-label="Semainier" focusable="false">
+            <use href="#icone-semainier"></use>
+          </svg>
+        </div>
+        <div class="hero-icone">
+          <svg width="48" height="48" role="img" aria-label="Boîte scellée" focusable="false">
+            <use href="#icone-boite-scellee"></use>
+          </svg>
+        </div>
+        <div class="hero-icone">
+          <svg width="48" height="48" role="img" aria-label="Livraison à domicile" focusable="false">
+            <use href="#icone-livraison"></use>
+          </svg>
+        </div>
+      </div>
+    <? } ?>
+  </header>
+
   <div id="app-conteneur-principal">
     
     <header class="app-en-tete" role="none" aria-hidden="true">
@@ -119,33 +147,7 @@
         </div>
     </header>
 
-    <!-- En-tête du site (plein largeur) -->
-    <header id="site-header" class="intro-calendrier" role="banner" aria-label="En-tête du site">
-        <div class="hero-titre">
-          <div class="hero-logo"><?!= include('Logo'); ?></div>
-          <h1>Gagnez du temps au comptoir : la tournée pharmacie pensée pour pharmaciens, préparateurs, infirmiers</h1>
-        </div>
-        <p class="hero-sous-titre">Fiabilité éprouvée, sacs scellés sécurisés et respect du patient garanti.</p>
-        <? if (EXTRA_ICONS_ENABLED) { ?>
-          <div class="hero-icones">
-            <div class="hero-icone">
-              <svg width="48" height="48" role="img" aria-label="Semainier" focusable="false">
-                <use href="#icone-semainier"></use>
-              </svg>
-            </div>
-            <div class="hero-icone">
-              <svg width="48" height="48" role="img" aria-label="Boîte scellée" focusable="false">
-                <use href="#icone-boite-scellee"></use>
-              </svg>
-            </div>
-            <div class="hero-icone">
-              <svg width="48" height="48" role="img" aria-label="Livraison à domicile" focusable="false">
-                <use href="#icone-livraison"></use>
-              </svg>
-            </div>
-          </div>
-        <? } ?>
-    </header>
+    
 
     <section class="els-layout">
       <aside id="tarifs-panel" class="els-col-left" aria-label="Tarifs et options"></aside>
