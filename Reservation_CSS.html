@@ -68,7 +68,7 @@ body {
   display: grid;
   /* Centre = 50% (2fr), côtés se partagent le reste (1fr chacun) */
   grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr) minmax(280px, 1fr);
-  gap: 18px;
+  gap: 24px;
   align-items: start;
   max-width: 1280px;
   margin: 24px auto;
@@ -95,6 +95,10 @@ body {
 #vue-calendrier { grid-column: 2; }
 #vue-panier { grid-column: 2; }
 #note-apres-panier { grid-column: 2; }
+
+/* Empêche les colonnes latérales de recouvrir le calendrier */
+#vue-calendrier { position: relative; z-index: 2; }
+#tarifs-panel, #tarifs-panel-droite { position: sticky; z-index: 1; }
 /* Colonnes internes (calendrier + panier) */
 #vue-calendrier { min-width: 0; }
 
@@ -208,6 +212,13 @@ body {
 
 /* Stack pour découpe en 3 cartes */
 .els-left-stack { display: grid; gap: 12px; }
+
+/* Alléger le détourage des blocs non essentiels */
+.hero-card-intro,
+.hero-card-tarifs,
+.hero-card-note { box-shadow: none; }
+.els-col-left .tarif-carte,
+#tarifs-panel-droite .tarif-carte { box-shadow: none; border: 0; }
 
 /* --- PREUVES SOCIALES --- */
 .preuves-sociales {
