@@ -92,8 +92,8 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 .els-col-left { display: none; }
 .els-col-right { min-width: 0; display: contents; }
 #tarifs-panel { display: none !important; }
-#tarifs-panel-droite { grid-column: 2; position: sticky; top: 16px; height: fit-content; display: grid; gap: 0; }
-#calendar-panel { display: contents; grid-column: 1; }
+#tarifs-panel-droite { grid-column: 2; grid-row: 1; position: sticky; top: 16px; height: fit-content; display: grid; gap: 0; align-self: start; }
+#calendar-panel { display: contents; grid-column: 1; grid-row: 1; align-self: start; }
 /* Aplatis les conteneurs pour que calendrier/panier soient enfants de la grille */
 .els-layout #app-conteneur { display: contents; }
 #colonne-droite { display: contents; }
