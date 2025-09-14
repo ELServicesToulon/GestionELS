@@ -50,6 +50,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* Typo uniforme pour tous les titres */
+h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--txt); margin: 0 0 8px; }
 
 /* --- ACCESSIBILITÃ‰ : Style pour le focus clavier --- */
 .btn:focus, .champ-formulaire:focus, .btn-fermer:focus, .btn-compteur:focus, .interrupteur input:focus + .glissiere, .slot-btn:focus {
@@ -172,10 +174,7 @@ body {
 .hero-sous-titre { margin: 0; font-weight: 500; }
 .tarifs-cartes { display: block; gap: 0; }
 .tarif-carte { background: transparent; color: var(--txt); border-radius: 0; padding: 0; box-shadow: none; }
-.tarif-carte h3 {
-  margin-top: 0;
-  color: var(--violet);
-}
+.tarif-carte h3 { margin-top: 0; color: var(--txt); }
 .tarif-icone {
   width: 48px;
   height: 48px;
@@ -393,9 +392,9 @@ body {
 
 /* --- Option: fond aluminium (si assets prÃ©sents) --- */
 body.els-ui-theming.els-aluminium {
-  background-image: var(--img-aluminium);
-  background-size: 64px 64px;
-  background-attachment: fixed;
+  /* Neutralisé: pas de fond aluminium */
+  background-image: none !important;
+  background-color: var(--bg);
 }
 
 /* Subtle clarity on surfaces */
@@ -431,7 +430,7 @@ body.els-ui-theming.els-aluminium {
 
 /* --- PANIER --- */
 #liste-panier { list-style: none; padding: 0; margin: 0; }
-.panier-vide { text-align: center; color: var(--muted); padding: 20px 0; }
+.panier-vide { text-align: center; color: var(--muted); padding: 8px 0; }
 .item-panier { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--muted); }
 .item-panier:last-child { border-bottom: none; }
 .item-panier-infos strong { display: block; }
@@ -439,9 +438,11 @@ body.els-ui-theming.els-aluminium {
 .item-panier-prix { font-weight: 600; color: var(--violet); }
 .item-panier-supprimer { background: none; border: none; font-size: 1.5em; color: var(--danger); cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
 .item-panier-supprimer:hover { opacity: 1; }
-#panier-pied-de-page { padding-top: 20px; border-top: 2px solid var(--muted); }
-.panier-total { display: flex; justify-content: space-between; align-items: center; font-size: 1.2em; font-weight: 600; margin-bottom: 20px; }
-#panier-pied-de-page .btn { width: 100%; }
+#panier-pied-de-page { padding-top: 12px; border-top: 1px solid var(--muted); }
+.panier-total { display: flex; justify-content: space-between; align-items: center; font-size: 1.1em; font-weight: 600; margin-bottom: 12px; }
+#panier-pied-de-page .btn { width: 100%; margin-top: 6px; }
+/* Bouton Espace Client placé dans le panier */
+#vue-panier #btn-espace-client { width: 100%; }
 
 /* --- FORMULAIRES & BOUTONS --- */
 .groupe-formulaire { margin-bottom: 15px; }

@@ -108,7 +108,7 @@
               </div>
             </div>
           <? if (CLIENT_PORTAL_ENABLED) { ?>
-            <a href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm btn-espace-client">Mon Espace Client</a>
+            <!-- Bouton Espace Client déplacé dans le bloc Panier -->
           <? } ?>
         </div>
 
@@ -233,6 +233,9 @@
       <div id="colonne-droite">
         <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
           <h3 id="panier-titre">Panier de réservation</h3>
+          <? if (CLIENT_PORTAL_ENABLED) { ?>
+            <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm" style="margin-bottom:8px;">Mon Espace Client</a>
+          <? } ?>
           <ul id="liste-panier">
             <p class="panier-vide">Votre panier est vide.</p>
           </ul>
