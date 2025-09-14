@@ -68,7 +68,7 @@ body {
   display: grid;
   /* Deux colonnes: 75% (contenu) / 25% (droite) */
   grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr);
-  gap: 24px;
+  gap: 0;
   align-items: start;
   max-width: 1280px;
   margin: 24px auto;
@@ -87,7 +87,7 @@ body {
 .els-col-left { display: none; }
 .els-col-right { min-width: 0; display: contents; }
 #tarifs-panel { display: none !important; }
-#tarifs-panel-droite { grid-column: 2; position: sticky; top: 16px; height: fit-content; display: grid; gap: 12px; }
+#tarifs-panel-droite { grid-column: 2; position: sticky; top: 16px; height: fit-content; display: grid; gap: 0; }
 #calendar-panel { display: contents; grid-column: 1; }
 /* Aplatis les conteneurs pour que calendrier/panier soient enfants de la grille */
 .els-layout #app-conteneur { display: contents; }
@@ -96,7 +96,7 @@ body {
 #vue-panier { grid-column: 1; }
 #note-apres-panier { grid-column: 1; }
 /* Intro au-dessus du calendrier (colonne contenu) */
-#intro-calendrier { grid-column: 1; margin-bottom: 12px; }
+#intro-calendrier { grid-column: 1; margin: 0; }
 
 /* Empêche la colonne droite de recouvrir le calendrier */
 #vue-calendrier { position: relative; z-index: 2; }
@@ -167,28 +167,11 @@ body {
   display: flex;
   justify-content: center;
   gap: 2rem;
-  margin: 1rem 0;
+  margin: 0;
 }
-.hero-sous-titre {
-  margin: 0.5rem 0 1.5rem;
-  font-weight: 500;
-}
-.tarifs-cartes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: center;
-}
-.tarif-carte {
-  background: var(--bg);
-  color: var(--txt);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  flex: 1;
-  min-width: 220px;
-  max-width: 280px;
-  box-shadow: var(--shadow);
-}
+.hero-sous-titre { margin: 0; font-weight: 500; }
+.tarifs-cartes { display: block; gap: 0; }
+.tarif-carte { background: transparent; color: var(--txt); border-radius: 0; padding: 0; box-shadow: none; }
 .tarif-carte h3 {
   margin-top: 0;
   color: var(--violet);
@@ -206,11 +189,7 @@ body {
 .tarif-carte li {
   margin: 0.4rem 0;
 }
-.hero-footnote {
-  margin-top: 1.5rem;
-  font-size: 0.75em;
-  line-height: 1.4;
-}
+.hero-footnote { margin: 0; font-size: 0.75em; line-height: 1.4; }
 
 /* Stack pour découpe en 3 cartes */
 .els-left-stack { display: grid; gap: 12px; }
@@ -252,13 +231,8 @@ body {
 
 
 /* --- COMPOSANT CARTE --- */
-.carte {
-  background-color: var(--bg);
-  padding: 25px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-.carte-en-tete { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.carte { background-color: transparent; padding: 0; border-radius: 0; box-shadow: none; }
+.carte-en-tete { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
 
 /* --- CALENDRIER --- */
 #titre-calendrier { margin: 0; font-size: 1.5em; color: var(--violet); }
