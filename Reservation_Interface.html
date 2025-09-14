@@ -99,7 +99,7 @@
 
   <div id="app-conteneur-principal">
     
-    <header class="app-en-tete" role="banner" aria-label="En-tête de la page de réservation">
+    <header class="app-en-tete" role="none" aria-hidden="true">
         <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
               <button id="btn-theme" class="btn btn-secondaire btn-sm hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
               <div id="menu-theme" class="hidden" role="menu" style="min-width: 100px;">
@@ -119,8 +119,8 @@
         </div>
     </header>
 
-    <!-- Intro détachée, sur toute la largeur au-dessus de tout -->
-    <div id="intro-calendrier" class="intro-calendrier" aria-label="Présentation du service">
+    <!-- En-tête du site (plein largeur) -->
+    <header id="site-header" class="intro-calendrier" role="banner" aria-label="En-tête du site">
         <div class="hero-titre">
           <div class="hero-logo"><?!= include('Logo'); ?></div>
           <h1>Gagnez du temps au comptoir : la tournée pharmacie pensée pour pharmaciens, préparateurs, infirmiers</h1>
@@ -145,7 +145,7 @@
             </div>
           </div>
         <? } ?>
-    </div>
+    </header>
 
     <section class="els-layout">
       <aside id="tarifs-panel" class="els-col-left" aria-label="Tarifs et options"></aside>
