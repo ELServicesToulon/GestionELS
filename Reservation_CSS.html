@@ -110,9 +110,16 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
   margin: 0 auto 8px;
   padding: 0 20px;
 }
-.hero-titre { display: flex; align-items: center; gap: 10px; }
-.hero-logo { width: 120px; height: auto; display: inline-flex; align-items: center; justify-content: center; }
-.hero-logo svg { width: 120px; height: auto; display: block; }
+.hero-titre { display: flex; align-items: center; gap: 18px; justify-content: flex-start; }
+.hero-logo { width: 140px; height: 140px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--card, rgba(255,255,255,0.88)); box-shadow: var(--shadow); }
+.hero-logo svg { width: 72%; height: auto; display: block; }
+.hero-claim { margin: 0; line-height: 1.15; }
+.hero-claim .ligne { display: block; font-weight: 700; }
+@media (max-width: 768px) {
+  .hero-titre { flex-direction: row; align-items: center; }
+  .hero-logo { width: 96px; height: 96px; }
+  .hero-logo svg { width: 74%; }
+}
 .hero-logo .app-logo-container { margin: 0; padding: 0; }
 
 /* Empêche la colonne droite de recouvrir le calendrier */
