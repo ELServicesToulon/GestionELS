@@ -141,10 +141,7 @@
         </div>
 
         <!-- Logo supprimé de l'en-tête -->
-        <div id="banniere-client-reconnu" class="hidden">
-            Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
-            <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
-        </div>
+        <!-- Banniere client déplacée dans l'entête du panier -->
     </header>
 
     
@@ -220,7 +217,13 @@
 
       <div id="colonne-droite">
         <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
-          <h3 id="panier-titre">Panier de réservation</h3>
+          <div class="panier-entete">
+            <h3 id="panier-titre">Panier de réservation</h3>
+            <div id="banniere-client-reconnu" class="panier-greeting hidden" aria-live="polite">
+              Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
+              <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
+            </div>
+          </div>
           <? if (CLIENT_PORTAL_ENABLED) { ?>
             <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm" style="margin-bottom:8px;">Mon Espace Client</a>
           <? } ?>

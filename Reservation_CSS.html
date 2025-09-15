@@ -44,7 +44,7 @@
 
 body {
   font-family: var(--font);
-  background-color: #ffffff; /* fond totalement blanc */
+  background-color: #f3f6fb; /* fond clair homogène */
   margin: 0;
   color: var(--txt);
   -webkit-font-smoothing: antialiased;
@@ -66,17 +66,20 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 
 /* --- MISE EN PAGE PRINCIPALE --- */
 #app-conteneur-principal {
-  max-width: 1400px;
-  margin: 0 auto; /* supprime l'espace au-dessus */
+  width: 100%;
+  max-width: 1920px; /* base Full HD et + */
+  margin: 0 auto; /* centré, mais pleine largeur */
   padding: 0 20px;
 }
 .els-layout {
   display: grid;
-  /* Deux colonnes: 75% (contenu) / 25% (droite) */
-  grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr);
-  gap: 0;
+  /* Colonne contenu + colonne droite bornée */
+  grid-template-columns: minmax(640px, 1fr) clamp(320px, 24vw, 420px);
+  column-gap: clamp(16px, 2vw, 28px);
+  row-gap: 0; /* pas d'espace vertical entre calendrier et panier */
   align-items: start;
-  max-width: 1280px;
+  width: 100%;
+  max-width: 1920px;
   margin: 0 auto; /* retire l'espace au-dessus */
   padding: 0 16px;
 }
@@ -92,7 +95,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 .els-col-left { display: none; }
 .els-col-right { min-width: 0; display: contents; }
 #tarifs-panel { display: none !important; }
-#tarifs-panel-droite { grid-column: 2; grid-row: 1; position: sticky; top: 16px; height: fit-content; display: grid; gap: 0; align-self: start; }
+#tarifs-panel-droite { grid-column: 2; grid-row: 1 / span 2; position: sticky; top: 16px; height: fit-content; display: grid; gap: 0; align-self: start; }
 #calendar-panel { display: contents; grid-column: 1; grid-row: 1; align-self: start; }
 /* Aplatis les conteneurs pour que calendrier/panier soient enfants de la grille */
 .els-layout #app-conteneur { display: contents; }
@@ -103,7 +106,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 /* Intro au-dessus du calendrier (colonne contenu) */
 #site-header {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1920px;
   margin: 0 auto 8px;
   padding: 0 20px;
 }
@@ -216,10 +219,10 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 /* Alléger le détourage des blocs non essentiels */
 .hero-card-intro,
 .hero-card-tarifs,
-.hero-card-note { box-shadow: none; background: transparent; border: 0; }
-.intro-calendrier { background: transparent; border: 0; box-shadow: none; padding: 0; border-radius: 0; }
+.hero-card-note { box-shadow: var(--shadow); background: var(--card, rgba(255,255,255,0.88)); border: 0; border-radius: var(--radius); }
+.intro-calendrier { background: var(--card, rgba(255,255,255,0.88)); border: 0; box-shadow: var(--shadow); padding: 0; border-radius: var(--radius); }
 .els-col-left .tarif-carte,
-#tarifs-panel-droite .tarif-carte { box-shadow: none; border: 0; background: transparent; }
+#tarifs-panel-droite .tarif-carte { box-shadow: var(--shadow); border: 0; background: var(--card, rgba(255,255,255,0.88)); border-radius: var(--radius); padding: 16px; }
 
 /* --- PREUVES SOCIALES --- */
 .preuves-sociales {
@@ -250,7 +253,7 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 
 
 /* --- COMPOSANT CARTE --- */
-.carte { background-color: transparent; padding: 0; border-radius: 0; box-shadow: none; }
+.carte { background-color: var(--card, rgba(255,255,255,0.88)); padding: 16px; border-radius: var(--radius, 16px); box-shadow: var(--shadow); }
 .carte-en-tete { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
 
 /* --- CALENDRIER --- */
@@ -449,6 +452,8 @@ body.els-ui-theming.els-aluminium {
 }
 
 /* --- PANIER --- */
+#vue-panier .panier-entete { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+#vue-panier .panier-greeting { display: inline-flex; align-items: center; gap: 10px; color: var(--muted); }
 #liste-panier { list-style: none; padding: 0; margin: 0; }
 .panier-vide { text-align: center; color: var(--muted); padding: 8px 0; }
 .item-panier { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--muted); }

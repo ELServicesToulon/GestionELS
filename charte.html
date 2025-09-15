@@ -2,7 +2,7 @@
 :root{
   --font:'Montserrat', sans-serif;
   --violet:#8e44ad; --blue:#3498db; --light:#5dade2;
-  --bg:#f7f9fc; --card:#fff; --text:#0f172a; --muted:#64748b; --border:#e5e7eb;
+  --bg:#f7f9fc; --card: rgba(255,255,255,0.88); --text:#0f172a; --muted:#64748b; --border:#e5e7eb;
   --radius:16px; --shadow:0 6px 22px rgba(16,24,40,.08); --focus:2px solid #1f6feb;
   --radius-pill:9999px; /* ajout */
   --grad:linear-gradient(90deg,var(--violet),var(--blue)); /* ajout */
@@ -55,8 +55,8 @@ section, article, .panel, .hero, .intro, .banner{
 }
 [class*="hero" i],[class*="intro" i],[class*="banner" i],
 [class*="tarif" i],[class*="pricing" i],[id*="tarif" i]{
-  background:#fff !important;border:1px solid var(--border);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:28px 22px;margin:0 auto 24px;max-width:1100px;
+  background: var(--card) !important; border:1px solid var(--border); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:28px 22px; margin:0 auto 24px; width: 100%; max-width: none;
 }
 /* colonnes tarifs propres (si listes/col) */
 [class*="tarif" i] .cols,[class*="pricing" i] .cols,[class*="hero" i] .cols{
