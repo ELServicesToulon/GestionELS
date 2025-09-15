@@ -104,25 +104,7 @@
       <h1>Gagnez du temps au comptoir : la tournée pharmacie pensée pour pharmaciens, préparateurs, infirmiers</h1>
     </div>
     <p class="hero-sous-titre">Fiabilité éprouvée, sacs scellés sécurisés et respect du patient garanti.</p>
-    <? if (EXTRA_ICONS_ENABLED) { ?>
-      <div class="hero-icones">
-        <div class="hero-icone">
-          <svg width="48" height="48" role="img" aria-label="Semainier" focusable="false">
-            <use href="#icone-semainier"></use>
-          </svg>
-        </div>
-        <div class="hero-icone">
-          <svg width="48" height="48" role="img" aria-label="Boîte scellée" focusable="false">
-            <use href="#icone-boite-scellee"></use>
-          </svg>
-        </div>
-        <div class="hero-icone">
-          <svg width="48" height="48" role="img" aria-label="Livraison à domicile" focusable="false">
-            <use href="#icone-livraison"></use>
-          </svg>
-        </div>
-      </div>
-    <? } ?>
+    <!-- Ligne d'icônes sous le titre supprimée pour alléger l'en-tête -->
   </header>
 
   <div id="app-conteneur-principal">
@@ -179,7 +161,9 @@
                 <ul>
                   <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
                        var label = (i === TARIFS.Normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
-                    <li><?= label ?> arrêt : <?= TARIFS.Normal.arrets[i] ?> €</li>
+                    <li><?= label ?> arrêt : <?= TARIFS.Normal.arrets[i] ?> €
+                      <small class="muted">(+ <?= DUREE_ARRET_SUP ?> min, + <?= KM_ARRET_SUP ?> km)</small>
+                    </li>
                   <? } ?>
                 </ul>
               </div>
