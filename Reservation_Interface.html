@@ -97,14 +97,30 @@
     <div class="spinner"></div>
   </div>
 
-  <!-- En-tête du site plein largeur, au-dessus du conteneur principal -->
-  <header id="site-header" class="intro-calendrier" role="banner" aria-label="En-tête du site">
-    <div class="hero-titre">
-      <div class="hero-logo"><?!= include('Logo'); ?></div>
-      <h1 class="hero-claim" aria-label="Accroche principale"><span class="ligne">La tournée pharmacie</span><span class="ligne">pensée pour les équipes officinales</span></h1>
+  <!-- En-tete du site plein largeur, au-dessus du conteneur principal -->
+  <header id="site-header" class="intro-calendrier" role="banner" aria-label="En-tete du site">
+    <div class="hero carte">
+      <div class="hero__brand">
+        <div class="hero__logo">
+          <?!= include('Logo'); ?>
+        </div>
+        <div class="hero__content">
+          <p class="hero__eyebrow">
+            ELS &mdash; Tourn&eacute;es pour officines, infirmeries et r&eacute;sidences (EHPAD/SSR)
+          </p>
+          <h1 class="hero__title">Votre logistique patients, r&eacute;gl&eacute;e.</h1>
+          <p class="hero__subtitle">
+            Officines, infirmeries et r&eacute;sidences&nbsp;: cr&eacute;neaux garantis, sacs scell&eacute;s, respect du circuit du m&eacute;dicament.
+          </p>
+          <div class="hero__cta">
+            <a class="btn btn--primary" href="#vue-calendrier">R&eacute;server une tourn&eacute;e</a>
+            <? if (CLIENT_PORTAL_ENABLED) { ?>
+            <a class="btn btn--ghost" href="<?= appUrl ?>?page=gestion">Espace client</a>
+            <? } ?>
+          </div>
+        </div>
+      </div>
     </div>
-    <p class="hero-sous-titre">Fiabilité éprouvée, sacs scellés sécurisés et respect du patient garanti.</p>
-    <!-- Ligne d'icônes sous le titre supprimée pour alléger l'en-tête -->
   </header>
 
   <div id="app-conteneur-principal">

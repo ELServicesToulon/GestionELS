@@ -107,65 +107,148 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 #site-header {
   width: 100%;
   max-width: 1920px;
-  margin: 0 auto 8px;
+  margin: 0 auto 24px;
   padding: 0 20px;
 }
-#site-header .hero-titre {
+
+#site-header .hero {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 24px;
+  justify-content: center;
+  padding: clamp(24px, 4vw, 40px);
+  color: #1b1f2a;
+  background: var(--card, rgba(255,255,255,0.9));
+  border-radius: var(--radius, 20px);
+  box-shadow: var(--shadow);
+}
+
+.hero__brand {
+  display: flex;
+  align-items: center;
+  gap: clamp(20px, 4vw, 56px);
   width: 100%;
 }
-#site-header .hero-logo {
-  flex: 0 0 200px;
-  width: 200px;
-  height: 200px;
-  display: inline-flex;
+
+.hero__logo {
+  flex: 0 0 auto;
+  width: clamp(96px, 12vw, 140px);
+  height: clamp(96px, 12vw, 140px);
+  display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: var(--card, rgba(255,255,255,0.88));
-  box-shadow: var(--shadow);
-  overflow: hidden;
+  border-radius: 24px;
+  background: var(--grad-soft, linear-gradient(135deg, color-mix(in oklab, var(--violet) 75%, #ffffff 25%), color-mix(in oklab, var(--bleu) 80%, #ffffff 20%)));
+  box-shadow: 0 16px 30px rgba(17, 33, 60, 0.14);
 }
-#site-header .hero-logo svg {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  display: block;
-  transform: scale(1.25);
-  transform-origin: center;
-}
-#site-header .hero-claim {
+
+.hero__logo .app-logo-container {
   margin: 0;
-  line-height: 1.15;
-  flex: 0 1 80%;
-  max-width: 80%;
+  padding: 0;
+  width: 80%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-#site-header .hero-claim .ligne { display: block; font-weight: 700; }
-@media (max-width: 768px) {
-  #site-header .hero-titre {
+
+.hero__logo svg {
+  width: 100%;
+  height: auto;
+}
+
+.hero__content {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vw, 20px);
+  max-width: 640px;
+}
+
+.hero__eyebrow {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bleu);
+}
+
+.hero__title {
+  margin: 0;
+  font-size: clamp(2.2rem, 3.6vw, 2.9rem);
+  line-height: 1.15;
+  color: #111827;
+}
+
+.hero__subtitle {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #334155;
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.hero__cta .btn {
+  flex: 0 0 auto;
+  min-width: clamp(160px, 20vw, 220px);
+}
+
+.btn--primary {
+  background: var(--grad, linear-gradient(135deg, var(--violet), var(--bleu)));
+  color: #ffffff;
+}
+
+.btn--primary:not(:disabled):hover {
+  background: linear-gradient(135deg, color-mix(in oklab, var(--violet) 85%, var(--bleu) 15%), var(--bleu));
+  transform: translateY(-2px);
+}
+
+.btn--ghost {
+  background: transparent;
+  border: 1px solid color-mix(in oklab, var(--violet) 35%, #ffffff 65%);
+  color: var(--violet);
+}
+
+.btn--ghost:not(:disabled):hover {
+  background: color-mix(in oklab, var(--violet) 12%, #ffffff 88%);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 1024px) {
+  #site-header .hero {
+    padding: clamp(20px, 6vw, 32px);
+  }
+
+  .hero__brand {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
   }
-  #site-header .hero-logo {
-    flex: 0 0 auto;
-    width: 140px;
-    height: 140px;
-  }
-  #site-header .hero-logo svg {
-    transform: scale(1.18);
-    transform-origin: center;
-  }
-  #site-header .hero-claim {
-    max-width: 100%;
-    flex: 1 1 100%;
+
+  .hero__logo {
+    width: 100px;
+    height: 100px;
   }
 }
-#site-header .hero-logo .app-logo-container { margin: 0; padding: 0; }
 
+@media (max-width: 600px) {
+  .hero__title {
+    font-size: 2rem;
+  }
+
+  .hero__cta {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero__cta .btn {
+    width: 100%;
+  }
+}
 /* Empêche la colonne droite de recouvrir le calendrier */
 #vue-calendrier { position: relative; z-index: 2; }
 #tarifs-panel-droite { position: sticky; z-index: 1; }
@@ -228,24 +311,6 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
   margin-top: 0;
   font-size: 1.8em;
 }
-.hero-titre {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-}
-.hero-icone {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-}
-.hero-icones {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin: 0;
-}
-.hero-sous-titre { margin: 0; font-weight: 500; }
 .tarifs-cartes { display: block; gap: 0; }
 .tarif-carte { background: transparent; color: var(--txt); border-radius: 0; padding: 0; box-shadow: none; }
 .tarif-carte h3 { margin-top: 0; color: var(--txt); }
@@ -271,7 +336,13 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 .hero-card-intro,
 .hero-card-tarifs,
 .hero-card-note { box-shadow: var(--shadow); background: var(--card, rgba(255,255,255,0.88)); border: 0; border-radius: var(--radius); }
-.intro-calendrier { background: var(--card, rgba(255,255,255,0.88)); border: 0; box-shadow: var(--shadow); padding: 0; border-radius: var(--radius); }
+.intro-calendrier {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+}
 .els-col-left .tarif-carte,
 #tarifs-panel-droite .tarif-carte { box-shadow: var(--shadow); border: 0; background: var(--card, rgba(255,255,255,0.88)); border-radius: var(--radius); padding: 16px; }
 
