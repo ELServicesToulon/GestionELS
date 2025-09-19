@@ -65,6 +65,44 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 }
 
 /* --- MISE EN PAGE PRINCIPALE --- */
+main.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 380px);
+  gap: clamp(20px, 3vw, 36px);
+  align-items: start;
+  width: 100%;
+  max-width: min(1400px, 96vw);
+  margin: 0 auto;
+  padding: clamp(16px, 2vw, 32px);
+}
+
+main.layout > .main {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2vw, 28px);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2vw, 24px);
+  min-width: 0;
+}
+
+.sidebar .card {
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  main.layout {
+    grid-template-columns: 1fr;
+    padding: clamp(12px, 4vw, 20px);
+  }
+
+  .sidebar {
+    flex-direction: column;
+  }
+}
 #app-conteneur-principal {
   width: 100%;
   max-width: 1920px; /* base Full HD et + */
@@ -781,4 +819,5 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   .champ-formulaire { border-color: var(--muted); }
 }
 </style>
+
 
