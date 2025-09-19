@@ -70,7 +70,7 @@
   <?!= include('Reservation_CSS'); ?>
   <?!= include('charte'); ?>
 </head>
-<body class="page">
+<body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <?!= include('icons.svg'); ?>
   </svg>
@@ -97,13 +97,14 @@
     <div class="spinner"></div>
   </div>
 
-  <main class="layout">
-    <div class="main">
-      <section id="site-header" class="card hero" role="banner" aria-label="En-t&ecirc;te du site">
-        <div class="hero__brand">
-          <div class="hero__logo">
-            <?!= include('Logo'); ?>
-          </div>
+  <!-- En-tete du site plein largeur, au-dessus du conteneur principal -->
+  <header id="site-header" class="intro-calendrier" role="banner" aria-label="En-tete du site">
+    <div class="hero carte">
+      <div class="hero__brand">
+        <div class="hero__logo">
+          <?!= include('Logo'); ?>
+        </div>
+        <div class="hero__content">
           <p class="hero__eyebrow">
             ELS &mdash; Tourn&eacute;es pour officines, infirmeries et r&eacute;sidences (EHPAD/SSR)
           </p>
@@ -112,117 +113,164 @@
             Officines, infirmeries et r&eacute;sidences&nbsp;: cr&eacute;neaux garantis, sacs scell&eacute;s, respect du circuit du m&eacute;dicament.
           </p>
           <div class="hero__cta">
-            <a class="btn btn--primary" href="<?= appUrl ?>?page=reservation">R&eacute;server une tourn&eacute;e</a>
+            <a class="btn btn--primary" href="#vue-calendrier">R&eacute;server une tourn&eacute;e</a>
             <? if (CLIENT_PORTAL_ENABLED) { ?>
             <a class="btn btn--ghost" href="<?= appUrl ?>?page=gestion">Espace client</a>
             <? } ?>
           </div>
         </div>
-      </section>
-      <div id="app-conteneur-principal">
-        <? if (PROOF_SOCIAL_ENABLED) { ?>
-        <section class="section">
-          <div class="card preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
-            <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
-            <ul class="avis-list">
-              <li><strong>Pharmacie de Tamaris</strong> : &laquo;Service rapide et s&eacute;curis&eacute;&raquo;</li>
-              <li><strong>EHPAD Les Amandiers</strong> : &laquo;Livraisons fiables pour nos r&eacute;sidents&raquo;</li>
-            </ul>
-          </div>
-        </section>
-        <? } ?>
-        <section class="section section--calendar">
-          <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de r&eacute;servation">
-            <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte card">
-                    <div class="carte-en-tete">
-                      <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>
-                      <h2 id="titre-calendrier" aria-live="polite"></h2>
-                      <button id="btn-mois-suivant" class="btn-icone" aria-label="Mois suivant">&#9654;</button>
-                    </div>
-                    <div class="calendrier-jours-semaine" aria-hidden="true">
-                      <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
-                    </div>
-                    <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
-                  </div>
-          </div>
-        </section>
-        <section class="section">
-          <aside id="vue-panier" aria-labelledby="panier-titre" class="carte card">
-                    <div class="panier-entete">
-                      <h3 id="panier-titre">Panier de réservation</h3>
-                      <div id="banniere-client-reconnu" class="panier-greeting hidden" aria-live="polite">
-                        Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
-                        <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
-                      </div>
-                    </div>
-                    <? if (CLIENT_PORTAL_ENABLED) { ?>
-                      <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm" style="margin-bottom:8px;">Mon Espace Client</a>
-                    <? } ?>
-                    <ul id="liste-panier">
-                      <p class="panier-vide">Votre panier est vide.</p>
-                    </ul>
-                    <div id="panier-pied-de-page" class="hidden">
-                      <div class="panier-total">
-                        <span>Total estimé</span>
-                        <strong id="panier-total-valeur">0 €</strong>
-                      </div>
-                      <div class="panier-actions-groupe">
-                          <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
-                          <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
-                          <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
-                      </div>
-                    </div>
-                  </aside>
-        </section>
-        <section class="section">
-          <div id="conteneur-finalisation" class="carte card hidden" style="margin-top: 2rem;">
-                  <h3>Finaliser la réservation</h3>
-                  <form id="formulaire-reservation">
-                      <h4>Informations Client</h4>
-                      <div class="groupe-formulaire"><label for="client-email">Email</label><input type="email" id="client-email" required></div>
-                      <div class="groupe-formulaire"><label for="client-nom">Raison Sociale</label><input type="text" id="client-nom" required></div>
-                      <div class="groupe-formulaire"><label for="client-adresse">Adresse</label><input type="text" id="client-adresse"></div>
-                      <div class="groupe-formulaire"><label for="client-siret">SIRET</label><input type="text" id="client-siret"></div>
-                      <div class="groupe-formulaire"><label for="note-reservation">Note (optionnel)</label><textarea id="note-reservation"></textarea></div>
-                      <div class="modale-pied-de-page">
-                          <button type="button" id="btn-annuler-reservation" class="btn btn-secondaire">Annuler</button>
-                          <button type="submit" class="btn btn-primaire">Confirmer la réservation</button>
-                      </div>
-                  </form>
-              </div>
-        </section>
       </div>
     </div>
-    <aside class="sidebar">
-      <div class="card sidebar-header">
-        <h2 style="margin:0;">Votre logistique patients, r&eacute;gl&eacute;e.</h2>
-        <p style="margin:.3rem 0 0; color:#4b5563;">Cr&eacute;neaux garantis, tra&ccedil;abilit&eacute;, scell&eacute;s conformes. On g&egrave;re le dernier kilom&egrave;tre.</p>
-      </div>
-      <div id="tarifs-panel-droite" class="card sidebar-tarifs pricing" aria-label="Tarifs et options">
-        <h3>Tarifs courses</h3>
-        <ul>
-          <li><?= TARIFS.Normal.base ?>&nbsp;&euro; &mdash; <?= KM_BASE ?> km &amp; <?= DUREE_BASE ?> min inclus</li>
-          <li>Urgent&nbsp;: 20&nbsp;&euro;</li>
-          <li>Samedi&nbsp;: 25&nbsp;&euro;</li>
-        </ul>
-        <h3>Arr&ecirc;ts suppl&eacute;mentaires</h3>
-        <ul>
-          <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
-               var label = (i === TARIFS.Normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
-            <li><?= label ?> arr&ecirc;t : <?= TARIFS.Normal.arrets[i] ?> &euro;
-              <small class="muted">(+ <?= DUREE_ARRET_SUP ?> min, + <?= KM_ARRET_SUP ?> km)</small>
-            </li>
+  </header>
+
+  <div id="app-conteneur-principal">
+    
+    <header class="app-en-tete" role="none" aria-hidden="true">
+        <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center;">
+              <button id="btn-theme" class="btn btn-secondaire btn-sm hidden" aria-haspopup="true" aria-expanded="false">Thème</button>
+              <div id="menu-theme" class="hidden" role="menu" style="min-width: 100px;">
+                <button class="option-theme btn btn-secondaire btn-sm" data-theme="clarte" role="menuitem">Clarté</button>
+                <button class="option-theme btn btn-secondaire btn-sm" data-theme="nocturne" role="menuitem">Nocturne</button>
+              </div>
+            </div>
+          <? if (CLIENT_PORTAL_ENABLED) { ?>
+            <!-- Bouton Espace Client déplacé dans le bloc Panier -->
           <? } ?>
-        </ul>
-        <a href="#vue-calendrier" class="btn btn--primary">R&eacute;server</a>
-      </div>
-      <div class="card scroll-card">
-        <div id="note-apres-panier" class="sidebar-note">
-          <p class="hero-footnote">TVA non applicable (Art. 293 B CGI) - Tarifs &amp; forfaits modifiables &agrave; tout moment par l'administrateur - Paiement &amp; s&eacute;curit&eacute; garanties - Contact&nbsp;: elservicestoulon@gmail.com</p>
         </div>
+
+        <!-- Logo supprimé de l'en-tête -->
+        <!-- Banniere client déplacée dans l'entête du panier -->
+    </header>
+
+    
+
+    <section class="els-layout">
+      <aside id="tarifs-panel" class="els-col-left" aria-label="Tarifs et options"></aside>
+
+      <!-- Panneau tarifs à droite du calendrier -->
+      <aside id="tarifs-panel-droite" class="els-col-right-aside" aria-label="Tarifs et options (droite)">
+        <article class="carte hero-card-tarifs">
+          <div class="tarifs-cartes">
+              <div class="tarif-carte">
+                <div class="tarif-icone">
+                  <svg width="48" height="48" role="img" aria-label="Pilulier pharmaceutique" focusable="false">
+                    <use href="#icone-pilulier"></use>
+                  </svg>
+                </div>
+                <h3>Tarifs courses</h3>
+                <ul>
+                  <li><?= TARIFS.Normal.base ?> €</li>
+                  <li><?= KM_BASE ?> km inclus</li>
+                  <li><?= DUREE_BASE ?> min inclus</li>
+                  <li>Urgent : 20 €</li>
+                  <li>Samedi : 25 €</li>
+                </ul>
+                <a href="#vue-calendrier" class="btn btn-primaire">Réserver</a>
+              </div>
+              <div class="tarif-carte">
+              <div class="tarif-icone">
+                <svg width="48" height="48" role="img" aria-label="Flacon de médicament" focusable="false">
+                  <use href="#icone-flacon"></use>
+                </svg>
+              </div>
+              <h3>Arrêts supplémentaires</h3>
+                <ul>
+                  <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
+                       var label = (i === TARIFS.Normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
+                    <li><?= label ?> arrêt : <?= TARIFS.Normal.arrets[i] ?> €
+                      <small class="muted">(+ <?= DUREE_ARRET_SUP ?> min, + <?= KM_ARRET_SUP ?> km)</small>
+                    </li>
+                  <? } ?>
+                </ul>
+              </div>
+              
+          </div>
+        </article>
+      </aside>
+
+      <div id="calendar-panel" class="els-col-right" aria-label="Calendrier de r�servation" role="main">
+
+    <? if (PROOF_SOCIAL_ENABLED) { ?>
+    <section class="preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
+      <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
+      <ul class="avis-list">
+        <li><strong>Pharmacie de Tamaris</strong> : « Service rapide et sécurisé »</li>
+        <li><strong>EHPAD Les Amandiers</strong> : « Livraisons fiables pour nos résidents »</li>
+      </ul>
+    </section>
+    <? } ?>
+
+    <!-- Script supprimé : les cartes tarifs sont désormais générées côté serveur -->
+
+    <main id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
+      <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
+        <div class="carte-en-tete">
+          <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>
+          <h2 id="titre-calendrier" aria-live="polite"></h2>
+          <button id="btn-mois-suivant" class="btn-icone" aria-label="Mois suivant">&#9654;</button>
+        </div>
+        <div class="calendrier-jours-semaine" aria-hidden="true">
+          <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+        </div>
+        <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
       </div>
-    </aside>
-  </main>
+
+      <div id="colonne-droite">
+        <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
+          <div class="panier-entete">
+            <h3 id="panier-titre">Panier de réservation</h3>
+            <div id="banniere-client-reconnu" class="panier-greeting hidden" aria-live="polite">
+              Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
+              <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
+            </div>
+          </div>
+          <? if (CLIENT_PORTAL_ENABLED) { ?>
+            <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm" style="margin-bottom:8px;">Mon Espace Client</a>
+          <? } ?>
+          <ul id="liste-panier">
+            <p class="panier-vide">Votre panier est vide.</p>
+          </ul>
+          <div id="panier-pied-de-page" class="hidden">
+            <div class="panier-total">
+              <span>Total estimé</span>
+              <strong id="panier-total-valeur">0 €</strong>
+            </div>
+            <div class="panier-actions-groupe">
+                <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
+                <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
+                <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+      </div><!-- /calendar-panel -->
+
+      <!-- Note sous le panier -->
+      <div id="note-apres-panier" class="carte hero-card-note">
+        <p class="hero-footnote">
+          TVA non applicable (Art. 293 B CGI) — Tarifs &amp; forfaits modifiables à tout moment par l'administrateur — Paiement &amp; sécurité garanties — Contact : elservicestoulon@gmail.com
+        </p>
+      </div>
+    </section><!-- /els-layout -->
+
+    <div id="conteneur-finalisation" class="carte hidden" style="margin-top: 2rem;">
+        <h3>Finaliser la réservation</h3>
+        <form id="formulaire-reservation">
+            <h4>Informations Client</h4>
+            <div class="groupe-formulaire"><label for="client-email">Email</label><input type="email" id="client-email" required></div>
+            <div class="groupe-formulaire"><label for="client-nom">Raison Sociale</label><input type="text" id="client-nom" required></div>
+            <div class="groupe-formulaire"><label for="client-adresse">Adresse</label><input type="text" id="client-adresse"></div>
+            <div class="groupe-formulaire"><label for="client-siret">SIRET</label><input type="text" id="client-siret"></div>
+            <div class="groupe-formulaire"><label for="note-reservation">Note (optionnel)</label><textarea id="note-reservation"></textarea></div>
+            <div class="modale-pied-de-page">
+                <button type="button" id="btn-annuler-reservation" class="btn btn-secondaire">Annuler</button>
+                <button type="submit" class="btn btn-primaire">Confirmer la réservation</button>
+            </div>
+        </form>
+    </div>
+  </div>
+
   <!-- MODALE 1: Configuration de la tournée (VERSION COMPLÈTE) -->
   <div id="modale-config-tournee" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-config-titre">
     <div class="modale-contenu">
