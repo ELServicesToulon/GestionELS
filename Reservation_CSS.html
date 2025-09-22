@@ -67,55 +67,45 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 /* --- MISE EN PAGE PRINCIPALE --- */
 main.layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(320px, 28vw, 380px);
-  column-gap: clamp(20px, 3vw, 36px);
-  row-gap: clamp(16px, 2vw, 24px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(24px, 3vw, 40px);
   align-items: start;
   width: 100%;
-  max-width: min(1400px, 96vw);
+  max-width: min(1500px, 96vw);
   margin: 0 auto;
   padding: clamp(16px, 2vw, 32px);
 }
 
 main.layout > .main {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(16px, 2vw, 28px);
+  display: grid;
+  gap: clamp(18px, 2vw, 28px);
   min-width: 0;
+  justify-self: stretch;
 }
 
 main.layout > .sidebar {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: clamp(16px, 2vw, 24px);
-  min-width: clamp(280px, 26vw, 360px);
-  max-width: clamp(280px, 28vw, 380px);
-  justify-self: stretch;
+  min-width: 0;
   align-self: start;
+  justify-self: stretch;
 }
 
 main.layout > .sidebar > * {
   width: 100%;
 }
 
-@media (max-width: 1200px) {
-  main.layout {
-    grid-template-columns: minmax(0, 1fr) clamp(280px, 32vw, 360px);
-  }
-}
-
 @media (max-width: 1024px) {
   main.layout {
     grid-template-columns: 1fr;
-    padding: clamp(12px, 4vw, 20px);
+    max-width: min(960px, 94vw);
   }
 
   main.layout > .sidebar {
-    min-width: 0;
-    max-width: none;
-    align-self: stretch;
+    margin-top: clamp(20px, 4vw, 32px);
   }
 }
+
 #app-conteneur-principal {
   width: 100%;
   max-width: 1920px; /* base Full HD et + */
@@ -146,7 +136,7 @@ main.layout > .sidebar > * {
 .els-col-left { display: none; }
 .els-col-right { min-width: 0; display: contents; }
 #tarifs-panel { display: none !important; }
-#tarifs-panel-droite { grid-column: 2; grid-row: 1 / span 2; position: sticky; top: 16px; height: fit-content; display: grid; gap: 0; align-self: start; }
+#tarifs-panel-droite { grid-column: auto; grid-row: auto; position: static; top: auto; height: auto; display: grid; gap: clamp(12px, 1.6vw, 20px); align-self: stretch; }
 #calendar-panel { display: contents; grid-column: 1; grid-row: 1; align-self: start; }
 /* Aplatis les conteneurs pour que calendrier/panier soient enfants de la grille */
 .els-layout #app-conteneur { display: contents; }
@@ -302,7 +292,7 @@ main.layout > .sidebar > * {
 }
 /* Empêche la colonne droite de recouvrir le calendrier */
 #vue-calendrier { position: relative; z-index: 2; }
-#tarifs-panel-droite { position: sticky; z-index: 1; }
+#tarifs-panel-droite { position: static; z-index: auto; }
 /* Colonnes internes (calendrier + panier) */
 #vue-calendrier { min-width: 0; margin-top: 0 !important; }
 #calendar-panel, #app-conteneur { margin-top: 0 !important; padding-top: 0 !important; }
@@ -832,5 +822,7 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   .champ-formulaire { border-color: var(--muted); }
 }
 </style>
+
+
 
 
