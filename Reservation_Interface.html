@@ -194,30 +194,30 @@
       </div>
     </div>
     <aside class="sidebar">
-      <div class="card sidebar-header">
-        <h2 style="margin:0;">Votre logistique patients, r&eacute;gl&eacute;e.</h2>
-        <p style="margin:.3rem 0 0; color:#4b5563;">Cr&eacute;neaux garantis, tra&ccedil;abilit&eacute;, scell&eacute;s conformes. On g&egrave;re le dernier kilom&egrave;tre.</p>
-      </div>
-      <div id="tarifs-panel-droite" class="card sidebar-tarifs pricing" aria-label="Tarifs et options">
-        <h3>Tarifs courses</h3>
-        <ul>
-          <li><?= TARIFS.Normal.base ?>&nbsp;&euro; &mdash; <?= KM_BASE ?> km &amp; <?= DUREE_BASE ?> min inclus</li>
-          <li>Urgent&nbsp;: 20&nbsp;&euro;</li>
-          <li>Samedi&nbsp;: 25&nbsp;&euro;</li>
-        </ul>
-        <h3>Arr&ecirc;ts suppl&eacute;mentaires</h3>
-        <ul>
-          <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
-               var label = (i === TARIFS.Normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
-            <li><?= label ?> arr&ecirc;t : <?= TARIFS.Normal.arrets[i] ?> &euro;
-              <small class="muted">(+ <?= DUREE_ARRET_SUP ?> min, + <?= KM_ARRET_SUP ?> km)</small>
-            </li>
-          <? } ?>
-        </ul>
-        <a href="#vue-calendrier" class="btn btn--primary">R&eacute;server</a>
-      </div>
-      <div class="card scroll-card">
-        <div id="note-apres-panier" class="sidebar-note">
+      <div class="card sidebar-stack">
+        <div class="sidebar-section sidebar-header">
+          <h2 style="margin:0;">Votre logistique patients, r&eacute;gl&eacute;e.</h2>
+          <p style="margin:.3rem 0 0; color:#4b5563;">Cr&eacute;neaux garantis, tra&ccedil;abilit&eacute;, scell&eacute;s conformes. On g&egrave;re le dernier kilom&egrave;tre.</p>
+        </div>
+        <div id="tarifs-panel-droite" class="sidebar-section sidebar-tarifs pricing" aria-label="Tarifs et options">
+          <h3>Tarifs courses</h3>
+          <ul>
+            <li><?= TARIFS.Normal.base ?>&nbsp;&euro; &mdash; <?= KM_BASE ?> km &amp; <?= DUREE_BASE ?> min inclus</li>
+            <li>Urgent&nbsp;: 20&nbsp;&euro;</li>
+            <li>Samedi&nbsp;: 25&nbsp;&euro;</li>
+          </ul>
+          <h3>Arr&ecirc;ts suppl&eacute;mentaires</h3>
+          <ul>
+            <? for (var i = 0; i < TARIFS.Normal.arrets.length; i++) {
+                 var label = (i === TARIFS.Normal.arrets.length - 1) ? (i + 2) + 'e et +' : (i + 2) + 'e'; ?>
+              <li><?= label ?> arr&ecirc;t : <?= TARIFS.Normal.arrets[i] ?> &euro;
+                <small class="muted">(+ <?= DUREE_ARRET_SUP ?> min, + <?= KM_ARRET_SUP ?> km)</small>
+              </li>
+            <? } ?>
+          </ul>
+          <a href="#vue-calendrier" class="btn btn--primary">R&eacute;server</a>
+        </div>
+        <div class="sidebar-section sidebar-note">
           <p class="hero-footnote">TVA non applicable (Art. 293 B CGI) - Tarifs &amp; forfaits modifiables &agrave; tout moment par l'administrateur - Paiement &amp; s&eacute;curit&eacute; garanties - Contact&nbsp;: elservicestoulon@gmail.com</p>
         </div>
       </div>
@@ -362,6 +362,7 @@
   <? } ?>
 </body>
 </html>
+
 
 
 
