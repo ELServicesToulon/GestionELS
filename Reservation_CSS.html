@@ -142,13 +142,13 @@ main.layout > .sidebar > * {
 .els-col-left { display: none; }
 .els-col-right { min-width: 0; display: contents; }
 #tarifs-panel { display: none !important; }
-#tarifs-panel-droite { grid-column: auto; grid-row: auto; position: static; top: auto; height: auto; display: flex; flex-direction: column; gap: clamp(12px, 1.6vw, 20px); align-self: stretch; }
 .sidebar-stack { display: flex; flex-direction: column; gap: clamp(20px, 2.4vw, 28px); padding: clamp(20px, 2.4vw, 28px); }
-.sidebar-section { display: flex; flex-direction: column; gap: clamp(10px, 1.4vw, 18px); border-bottom: 1px solid var(--border, rgba(148, 163, 184, 0.34)); padding-bottom: clamp(12px, 1.6vw, 20px); }
-.sidebar-section:last-child { border-bottom: 0; padding-bottom: 0; }
-.sidebar-header h2 { margin: 0; }
-.sidebar-tarifs ul { margin: 0; padding-left: 20px; }
-.sidebar-note { font-size: 0.85rem; line-height: 1.5; color: var(--muted); }
+.sidebar-info { display: flex; flex-direction: column; gap: clamp(16px, 2vw, 24px); padding: clamp(20px, 2.4vw, 28px); }
+.sidebar-info-eyebrow { margin: 0; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bleu); }
+.sidebar-info-title { margin: 0; font-size: clamp(1.6rem, 2.6vw, 2.1rem); line-height: 1.2; color: #111827; }
+.sidebar-info-text { margin: 0; font-size: 1rem; line-height: 1.6; color: #334155; }
+.sidebar-info-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.sidebar-info-actions .btn { width: 100%; justify-content: center; }
 #calendar-panel { display: contents; grid-column: 1; grid-row: 1; align-self: start; }
 /* Aplatis les conteneurs pour que calendrier/panier soient enfants de la grille */
 .els-layout #app-conteneur { display: contents; }
@@ -304,7 +304,6 @@ main.layout > .sidebar > * {
 }
 /* Empêche la colonne droite de recouvrir le calendrier */
 #vue-calendrier { position: relative; z-index: 2; }
-#tarifs-panel-droite { position: static; z-index: auto; }
 /* Colonnes internes (calendrier + panier) */
 #vue-calendrier { min-width: 0; margin-top: 0 !important; }
 #calendar-panel, #app-conteneur { margin-top: 0 !important; padding-top: 0 !important; }
@@ -314,16 +313,14 @@ main.layout > .sidebar > * {
   /* Forcer l'ordre: calendrier -> panier -> tarifs */
   #vue-calendrier { grid-column: 1; grid-row: 1; margin-top: 0 !important; }
   #vue-panier { grid-column: 1; grid-row: 2; }
-  #tarifs-panel-droite { grid-column: 1; grid-row: 3; position: static; top: auto; }
   #note-apres-panier { grid-column: 1; grid-row: 4; }
 }
 
 @media (max-width: 767px) {
   .els-layout { display: grid; grid-template-columns: 1fr; gap: 12px; max-width: 700px; }
-  .els-col-left, #tarifs-panel, #tarifs-panel-droite { position: static; top: auto; }
+  .els-col-left, #tarifs-panel { position: static; top: auto; }
   #vue-calendrier { grid-row: 1; }
   #vue-panier { grid-row: 2; }
-  #tarifs-panel-droite { grid-row: 3; }
   .els-basket-wrap { max-width: 1280px; margin: 12px auto 24px; padding: 0 12px; }
 }
 
@@ -396,8 +393,7 @@ main.layout > .sidebar > * {
   padding: 0;
   border-radius: 0;
 }
-.els-col-left .tarif-carte,
-#tarifs-panel-droite .tarif-carte { box-shadow: var(--shadow); border: 0; background: var(--card, rgba(255,255,255,0.88)); border-radius: var(--radius); padding: 16px; }
+.els-col-left .tarif-carte { box-shadow: var(--shadow); border: 0; background: var(--card, rgba(255,255,255,0.88)); border-radius: var(--radius); padding: 16px; }
 
 /* --- PREUVES SOCIALES --- */
 .preuves-sociales {
