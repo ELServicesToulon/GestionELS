@@ -210,6 +210,32 @@
           <? } ?>
         </div>
       </div>
+
+      <section class="card hero-card-tarifs hidden" id="tarifs-detaille" aria-labelledby="titre-tarifs-detaille">
+        <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
+        <div class="tarifs-cartes">
+          <article class="tarif-carte" data-tarif="tournees">
+            <h3>Tournées</h3>
+            <ul>
+              <li>Normal: <strong><span id="tarif-normal-base">—</span> €</strong> (base)</li>
+              <li>Samedi: <strong><span id="tarif-samedi-base">—</span> €</strong> (base)</li>
+              <li>Urgent: <strong><span id="tarif-urgent-base">—</span> €</strong> (base)</li>
+              <li>Suppléments par arrêt: <span id="tarif-supplements">—</span> €</li>
+            </ul>
+          </article>
+          <article class="tarif-carte" data-tarif="forfait-resident">
+            <h3>Forfait résident — Retrait PUI Sainte Musse</h3>
+            <ul>
+              <li>Facturation: <strong>résident</strong></li>
+              <li>Pré-collecte veille + livraison lendemain: <strong><span id="forfait-resident-prix">—</span> €</strong></li>
+              <li>Si retrait sur trajet de pharmacie: <strong>remise <span id="forfait-resident-remise">—</span> €</strong></li>
+              <li>Devis partageable à la famille du résident.</li>
+              <li>Forfait modifiable à tout moment.</li>
+            </ul>
+          </article>
+        </div>
+        <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
+      </section>
     </aside>
   </main>
   <!-- MODALE 1: Configuration de la tournée (VERSION COMPLÈTE) -->
@@ -350,33 +376,6 @@
   <?!= include('Reservation_JS_Client'); ?>
   <?!= include('Reservation_JS_Tournee'); ?>
   <? } ?>
-
-  <!-- Bloc Tarifs détaillés (affiché si activé) -->
-  <section class="card hero-card-tarifs hidden" id="tarifs-detaille" aria-labelledby="titre-tarifs-detaille">
-    <h2 id="titre-titres-detaille">Tarifs détaillés</h2>
-    <div class="tarifs-cartes">
-      <article class="tarif-carte" data-tarif="tournees">
-        <h3>Tournées</h3>
-        <ul>
-          <li>Normal: <strong><span id="tarif-normal-base">—</span> €</strong> (base)</li>
-          <li>Samedi: <strong><span id="tarif-samedi-base">—</span> €</strong> (base)</li>
-          <li>Urgent: <strong><span id="tarif-urgent-base">—</span> €</strong> (base)</li>
-          <li>Suppléments par arrêt: <span id="tarif-supplements">—</span> €</li>
-        </ul>
-      </article>
-      <article class="tarif-carte" data-tarif="forfait-resident">
-        <h3>Forfait résident — Retrait PUI Sainte Musse</h3>
-        <ul>
-          <li>Facturation: <strong>résident</strong></li>
-          <li>Pré-collecte veille + livraison lendemain: <strong><span id="forfait-resident-prix">—</span> €</strong></li>
-          <li>Si retrait sur trajet de pharmacie: <strong>remise <span id="forfait-resident-remise">—</span> €</strong></li>
-          <li>Devis partageable à la famille du résident.</li>
-          <li>Forfait modifiable à tout moment.</li>
-        </ul>
-      </article>
-    </div>
-    <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
-  </section>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const t = configServeur?.TARIFS || {};
