@@ -89,7 +89,12 @@
       URGENT_THRESHOLD_MINUTES: <?= URGENT_THRESHOLD_MINUTES || 45 ?>,
       dateDuJour: "<?= dateDuJour ?>",
       PRICING_RULES_V2_ENABLED: <?= PRICING_RULES_V2_ENABLED ? 'true' : 'false' ?>,
-      RETURN_IMPACTS_ESTIMATES_ENABLED: <?= RETURN_IMPACTS_ESTIMATES_ENABLED ? 'true' : 'false' ?>
+      RETURN_IMPACTS_ESTIMATES_ENABLED: <?= RETURN_IMPACTS_ESTIMATES_ENABLED ? 'true' : 'false' ?>,
+      // Nouveaux drapeaux & constantes tarifs détaillés / forfait résident
+      TARIFS_DETAILLE_ENABLED: <?= TARIFS_DETAILLE_ENABLED ? 'true' : 'false' ?>,
+      FORFAIT_RESIDENT_ENABLED: <?= FORFAIT_RESIDENT_ENABLED ? 'true' : 'false' ?>,
+      FORFAIT_RESIDENT_BASE: <?= FORFAIT_RESIDENT.BASE_PRICE ?>,
+      FORFAIT_RESIDENT_DISCOUNT: <?= FORFAIT_RESIDENT.DISCOUNT_PICKUP_ON_ROUTE ?>
     };
   </script>
 
@@ -274,11 +279,12 @@
       <div class="modale-contenu">
           <button id="btn-fermer-email-devis" class="btn-fermer" aria-label="Fermer">&times;</button>
           <h3 id="modale-devis-titre">Recevoir votre devis</h3>
-          <p>Veuillez saisir votre adresse e-mail pour recevoir le devis détaillé.</p>
+          <p>Les directeurs d’EHPAD peuvent envoyer le devis directement à la famille du résident.</p>
           <form id="formulaire-email-devis">
               <div class="groupe-formulaire">
-                  <label for="email-pour-devis">Adresse e-mail</label>
+                  <label for="email-pour-devis">Adresse e-mail (famille du résident si souhaité)</label>
                   <input type="email" id="email-pour-devis" required>
+                  <small class="muted">Nous n’utilisons cet e-mail que pour l’envoi du devis.</small>
               </div>
               <div class="modale-pied-de-page">
                   <button type="submit" class="btn btn-primaire">Envoyer le devis</button>
@@ -344,6 +350,55 @@
   <?!= include('Reservation_JS_Client'); ?>
   <?!= include('Reservation_JS_Tournee'); ?>
   <? } ?>
+
+  <!-- Bloc Tarifs détaillés (affiché si activé) -->
+  <section class="card hero-card-tarifs hidden" id="tarifs-detaille" aria-labelledby="titre-tarifs-detaille">
+    <h2 id="titre-titres-detaille">Tarifs détaillés</h2>
+    <div class="tarifs-cartes">
+      <article class="tarif-carte" data-tarif="tournees">
+        <h3>Tournées</h3>
+        <ul>
+          <li>Normal: <strong><span id="tarif-normal-base">—</span> €</strong> (base)</li>
+          <li>Samedi: <strong><span id="tarif-samedi-base">—</span> €</strong> (base)</li>
+          <li>Urgent: <strong><span id="tarif-urgent-base">—</span> €</strong> (base)</li>
+          <li>Suppléments par arrêt: <span id="tarif-supplements">—</span> €</li>
+        </ul>
+      </article>
+      <article class="tarif-carte" data-tarif="forfait-resident">
+        <h3>Forfait résident — Retrait PUI Sainte Musse</h3>
+        <ul>
+          <li>Facturation: <strong>résident</strong></li>
+          <li>Pré-collecte veille + livraison lendemain: <strong><span id="forfait-resident-prix">—</span> €</strong></li>
+          <li>Si retrait sur trajet de pharmacie: <strong>remise <span id="forfait-resident-remise">—</span> €</strong></li>
+          <li>Devis partageable à la famille du résident.</li>
+          <li>Forfait modifiable à tout moment.</li>
+        </ul>
+      </article>
+    </div>
+    <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
+  </section>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const t = configServeur?.TARIFS || {};
+      const fmt = (n) => (typeof n === 'number' && !isNaN(n)) ? String(n) : '—';
+      try {
+        const elN = document.getElementById('tarif-normal-base'); if (elN) elN.textContent = fmt(t?.Normal?.base);
+        const elS = document.getElementById('tarif-samedi-base'); if (elS) elS.textContent = fmt(t?.Samedi?.base);
+        const elU = document.getElementById('tarif-urgent-base'); if (elU) elU.textContent = fmt(t?.Urgent?.base);
+        const supplements = Array.isArray(t?.Normal?.arrets) ? t.Normal.arrets : [];
+        const elSup = document.getElementById('tarif-supplements'); if (elSup) elSup.textContent = supplements.length ? supplements.join(' / ') : '—';
+        const elFrP = document.getElementById('forfait-resident-prix'); if (elFrP) elFrP.textContent = fmt(configServeur?.FORFAIT_RESIDENT_BASE);
+        const elFrR = document.getElementById('forfait-resident-remise'); if (elFrR) elFrR.textContent = fmt(configServeur?.FORFAIT_RESIDENT_DISCOUNT);
+      } catch (e) { /* no-op */ }
+
+      const bloc = document.getElementById('tarifs-detaille');
+      if (bloc) bloc.classList.toggle('hidden', !configServeur?.TARIFS_DETAILLE_ENABLED);
+      if (!configServeur?.FORFAIT_RESIDENT_ENABLED) {
+        const fr = document.querySelector('[data-tarif="forfait-resident"]');
+        if (fr) fr.remove();
+      }
+    });
+  </script>
 </body>
 </html>
 

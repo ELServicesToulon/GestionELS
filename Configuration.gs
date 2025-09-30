@@ -149,6 +149,12 @@ const RESERVATION_UI_V2_ENABLED = true;
 /** @const {boolean} Active la facturation directe au résident. */
 const RESIDENT_BILLING_ENABLED = false;
 
+/** @const {boolean} Affiche le bloc "Tarifs détaillés" dans l'UI. */
+const TARIFS_DETAILLE_ENABLED = false;
+
+/** @const {boolean} Active le forfait Résident (PUI Sainte Musse). */
+const FORFAIT_RESIDENT_ENABLED = false;
+
 /** @const {boolean} Active la numérotation atomique des factures (AAAA-0001). */
 const BILLING_ATOMIC_NUMBERING_ENABLED = false;
 
@@ -255,7 +261,9 @@ const FLAGS = Object.freeze({
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED,
   adminOptimisticCreationEnabled: ADMIN_OPTIMISTIC_CREATION_ENABLED,
-  adminSlotsPngEnabled: ADMIN_SLOTS_PNG_ENABLED
+  adminSlotsPngEnabled: ADMIN_SLOTS_PNG_ENABLED,
+  tarifsDetailleEnabled: TARIFS_DETAILLE_ENABLED,
+  forfaitResidentEnabled: FORFAIT_RESIDENT_ENABLED
 });
 
 
@@ -291,6 +299,17 @@ const TARIFS = {
   }
 };
 
+/**
+ * Forfait Résident — Retrait PUI Sainte Musse.
+ * 30€ si pré-collecte de l'ordonnance la veille à la résidence puis livraison le lendemain.
+ * Remise de 5€ si retrait de l'ordonnance est effectué sur une tournée de pharmacie (sur trajet).
+ */
+const FORFAIT_RESIDENT = Object.freeze({
+  LABEL: 'Forfait Résident — Retrait PUI Sainte Musse',
+  BASE_PRICE: 30,
+  DISCOUNT_PICKUP_ON_ROUTE: 5
+});
+
 if (TARIFS.SainteMusse_EHPAD_CLASSIC) {
   TARIFS.SainteMusse_EHPAD_CLASSIC.PRECOLLECTE_VEILLE = {
     prixParBande: [5, 5, 5, 5],
@@ -320,6 +339,7 @@ const COLONNE_NB_TOURNEES_OFFERTES = "Nombre Tournées Offertes";
 
 const CONFIG = Object.freeze({
   TARIFS,
+  FORFAIT_RESIDENT,
   DUREE_BASE,
   DUREE_ARRET_SUP,
   KM_BASE,
@@ -354,6 +374,7 @@ function getConfig() {
 function getPublicConfig() {
   return {
     TARIFS: CONFIG.TARIFS,
+    FORFAIT_RESIDENT: CONFIG.FORFAIT_RESIDENT,
     DUREE_BASE: CONFIG.DUREE_BASE,
     DUREE_ARRET_SUP: CONFIG.DUREE_ARRET_SUP,
     KM_BASE: CONFIG.KM_BASE,
