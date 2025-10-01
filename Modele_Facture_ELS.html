@@ -2,119 +2,302 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Modele de facture ELS - Exemple</title>
+    <title>Modele de facture ELS</title>
     <style>
-      body { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.4; color: #1f1f1f; }
-      h1, h2, h3 { margin: 0; }
-      .header { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
-      .logo { max-width: 140px; min-height: 40px; display: flex; align-items: center; }
-      .logo-placeholder { font-size: 11pt; color: #7f8c8d; border: 1px dashed #bdc3c7; padding: 12px; text-align: center; }
-      .company-info p { margin: 0; }
-      .section { margin-bottom: 24px; }
-      .coords { display: flex; gap: 32px; }
-      .coords > div { flex: 1; }
-      .resume { width: 60%; border-collapse: collapse; margin-top: 16px; }
-      .resume th, .resume td { border: 1px solid #555; padding: 8px 10px; text-align: left; }
-      .resume th { background: #f2f2f2; text-transform: uppercase; font-size: 10pt; letter-spacing: 0.5px; }
-      .mentions { font-size: 10pt; color: #555; margin-top: 24px; }
-      .page-break { page-break-before: always; }
-      table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-      th, td { border: 1px solid #555; padding: 6px 8px; vertical-align: top; }
-      th { background: #f7f7f7; text-transform: uppercase; font-size: 10pt; letter-spacing: 0.5px; }
-      .notes { font-style: italic; color: #7f8c8d; }
+      :root {
+        --violet: #8e44ad;
+        --cyan: #5dade2;
+        --marine: #1f2d3d;
+        --gris: #7b8a97;
+        --fond: #f4f6fb;
+        --carte: #ffffff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Montserrat", Arial, sans-serif;
+        font-size: 12pt;
+        line-height: 1.38;
+        color: var(--marine);
+        background: var(--fond);
+      }
+      .page {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        background: var(--carte);
+        padding: 22mm 22mm 18mm;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px 22px;
+        background: linear-gradient(120deg, var(--violet), var(--cyan));
+        border-radius: 16px;
+        color: #ffffff;
+        position: relative;
+        overflow: hidden;
+      }
+      .header::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(255,255,255,0.25), transparent 55%);
+        pointer-events: none;
+      }
+      .logo {
+        min-width: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+      }
+      .company-info {
+        z-index: 1;
+      }
+      .company-info h1 {
+        margin: 0 0 6px;
+        font-size: 21pt;
+        letter-spacing: 0.4px;
+      }
+      .company-info p {
+        margin: 2px 0;
+        font-size: 10pt;
+      }
+      .tagline {
+        margin-top: 6px;
+        font-size: 9.5pt;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+      .section {
+        margin: 20px 0 14px;
+        page-break-inside: avoid;
+      }
+      .section h2 {
+        margin: 0 0 10px;
+        font-size: 14pt;
+        color: var(--violet);
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+      }
+      .section h3 {
+        margin: 14px 0 6px;
+        font-size: 12pt;
+        color: var(--cyan);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 12px;
+        border-radius: 999px;
+        background: rgba(141, 68, 173, 0.12);
+        color: var(--violet);
+        font-size: 9pt;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+      }
+      .facture-meta p {
+        margin: 4px 0;
+      }
+      .coords {
+        display: flex;
+        gap: 20px;
+      }
+      .coords > div {
+        flex: 1;
+        padding: 14px 16px;
+        border: 1px solid rgba(94,110,133,0.2);
+        border-radius: 12px;
+        background: #f8f9ff;
+      }
+      .coords h3 {
+        margin-top: 0;
+        font-size: 11pt;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        color: var(--violet);
+      }
+      .resume-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11pt;
+      }
+      .resume-table th {
+        text-align: left;
+        font-size: 9.5pt;
+        color: var(--gris);
+        font-weight: 500;
+      }
+      .resume-table td {
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        color: var(--marine);
+      }
+      .resume-table tr + tr td,
+      .resume-table tr + tr th {
+        padding-top: 8px;
+        border-top: 1px solid rgba(142, 68, 173, 0.18);
+      }
+      .cta-links {
+        margin-top: 14px;
+        font-size: 10.5pt;
+        color: var(--gris);
+      }
+      .cta-links span {
+        color: var(--violet);
+        font-weight: 600;
+      }
+      .cta-links small {
+        display: block;
+        font-size: 9pt;
+        margin-top: 4px;
+        color: var(--gris);
+      }
+      .mentions {
+        margin-top: 18px;
+        padding: 12px 16px;
+        border-left: 4px solid var(--cyan);
+        background: #f0f5ff;
+        font-size: 10.2pt;
+        color: var(--gris);
+      }
+      .page-break {
+        page-break-before: always;
+        margin: 0;
+        height: 0;
+      }
+      .annexe {
+        padding-top: 16mm;
+      }
+      table.data {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10.2pt;
+      }
+      table.data th,
+      table.data td {
+        border: 1px solid rgba(141, 68, 173, 0.16);
+        padding: 5px 7px;
+      }
+      table.data th {
+        background: rgba(141, 68, 173, 0.13);
+        color: var(--violet);
+        font-size: 9.5pt;
+        text-transform: uppercase;
+        letter-spacing: 0.35px;
+      }
+      table.data td.notes {
+        color: var(--gris);
+        font-style: italic;
+      }
+      table.data tbody tr:nth-child(even) {
+        background: rgba(93,173,226,0.06);
+      }
+      @media print {
+        body { background: #ffffff; }
+        .page { box-shadow: none; padding: 20mm; }
+        .annexe { padding-top: 10mm; }
+      }
     </style>
   </head>
   <body>
-    <div class="header">
-      <div class="logo">
-        {{logo}}
+    <div class="page">
+      <div class="header">
+        <div class="logo">{{logo}}</div>
+        <div class="company-info">
+          <h1>{{nom_entreprise}}</h1>
+          <p>{{adresse_entreprise}}</p>
+          <p>SIRET : {{siret}} &bull; Email : {{email_entreprise}}</p>
+          <p class="tagline">Bien-&ecirc;tre patient &bull; Excellence officinale</p>
+        </div>
       </div>
-      <div class="company-info">
-        <h1>{{nom_entreprise}}</h1>
-        <p>{{adresse_entreprise}}</p>
-        <p>SIRET : {{siret}} &bull; Email : {{email_entreprise}}</p>
-      </div>
+
+      <section class="section facture-meta">
+        <span class="pill">Synth&egrave;se</span>
+        <h2>Votre facture</h2>
+        <p><strong>Num&eacute;ro :</strong> {{numero_facture}} &nbsp; &mdash; &nbsp; <strong>Date :</strong> {{date_facture}}</p>
+        <p><strong>P&eacute;riode couverte :</strong> {{periode_facturee}} ({{date_debut_periode}} &rarr; {{date_fin_periode}})</p>
+        <p><strong>&Eacute;ch&eacute;ance :</strong> {{date_echeance}}</p>
+      </section>
+
+      <section class="section coords">
+        <div>
+          <h3>Destinataire</h3>
+          <p><strong>{{client_nom}}</strong></p>
+          <p>{{client_adresse}}</p>
+        </div>
+        <div>
+          <h3>Focus bien-&ecirc;tre</h3>
+          <table class="resume-table">
+            <tr>
+              <th>Total &agrave; r&eacute;gler</th>
+              <td>{{total_du}} &euro;</td>
+            </tr>
+            <tr>
+              <th>Nombre de tourn&eacute;es</th>
+              <td>{{nombre_courses}}</td>
+            </tr>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Transparence</h3>
+        <div class="cta-links">
+          Tarifs &amp; CGV :
+          <span>{{lien_tarifs}}</span> &bull; <span>{{lien_cgv}}</span>
+          <small>Conservez ce lien pour consulter les mises &agrave; jour.</small>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Paiement</h3>
+        <div class="mentions">
+          <p>Paiement &agrave; effectuer sous {{delai_paiement}} jours sur le compte indiqu&eacute; ci-dessous.</p>
+          <p>IBAN : {{rib_entreprise}} &bull; BIC : {{bic_entreprise}}</p>
+          <p>Nous restons disponibles pour toute question relative &agrave; cette facture.</p>
+        </div>
+      </section>
     </div>
 
-    <section class="section">
-      <h2>Facture</h2>
-      <p>Numéro : <strong>{{numero_facture}}</strong></p>
-      <p>Date : {{date_facture}}</p>
-      <p>Période facturée : {{periode_facturee}}</p>
-      <p>Détails de la période : {{date_debut_periode}} &rarr; {{date_fin_periode}}</p>
-      <p>Échéance : {{date_echeance}}</p>
-    </section>
+    <div class="page-break"></div>
 
-    <section class="section coords">
-      <div>
-        <h2>Destinataire</h2>
-        <p><strong>{{client_nom}}</strong></p>
-        <p>{{client_adresse}}</p>
-      </div>
-      <div>
-        <h2>Résumé</h2>
-        <table class="resume">
-          <tr>
-            <th>Total à payer</th>
-            <td>{{total_du}} €</td>
-          </tr>
-          <tr>
-            <th>Courses facturées</th>
-            <td>{{nombre_courses}}</td>
-          </tr>
+    <div class="page annexe">
+      <section class="section">
+        <span class="pill">D&eacute;tail de vos services</span>
+        <h2>Annexe &agrave; la facture {{numero_facture}}</h2>
+        <p class="notes">Imprimez uniquement cette page si n&eacute;cessaire pour votre suivi interne.</p>
+        <table class="data" data-els="bordereau-annexe">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Horaire</th>
+              <th>D&eacute;tails</th>
+              <th>Notes</th>
+              <th>Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>01/09/25</td>
+              <td>10h00</td>
+              <td>Tourn&eacute;e pharmacie &ndash; 3 arr&ecirc;ts</td>
+              <td class="notes">Exemple de note interne</td>
+              <td>36,00 &euro; (Remise : 4,00 &euro;)</td>
+            </tr>
+            <tr>
+              <td>05/09/25</td>
+              <td>14h00</td>
+              <td>Livraison urgente</td>
+              <td class="notes"></td>
+              <td>0,00 &euro; (Offert)</td>
+            </tr>
+          </tbody>
         </table>
-      </div>
-    </section>
-
-    <section class="mentions">
-      <p>Paiement à effectuer sous {{delai_paiement}} jours sur le compte indiqué ci-dessous.</p>
-      <p>IBAN : {{rib_entreprise}} &bull; BIC : {{bic_entreprise}}</p>
-      <p>TVA non applicable, art. 293B du CGI.</p>
-    </section>
-
-    <div class="page-break"></div>
-
-    <section class="section">
-      <h2>Annexe à la facture {{numero_facture}} &ndash; {{periode_facturee}}</h2>
-      <p class="notes">Détail des courses facturées.</p>
-      <table data-els="bordereau-annexe">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Horaire</th>
-            <th>Détails de la course</th>
-            <th>Notes</th>
-            <th>Montant</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>01/09/25</td>
-            <td>10h00</td>
-            <td>Tournée pharmacie &ndash; 3 arrêts</td>
-            <td class="notes">Exemple de note interne</td>
-            <td>36,00 € (Remise : 4,00 €)</td>
-          </tr>
-          <tr>
-            <td>05/09/25</td>
-            <td>14h00</td>
-            <td>Livraison urgente</td>
-            <td></td>
-            <td>0,00 € (Offert)</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-  
-    <div class="page-break"></div>
-
-    <section class="section">
-      <h2>Annexe Tarifs &amp; CGV</h2>
-      <h3>Tarifs indicatifs</h3>
-      <p>{{tarifs_details}}</p>
-      <h3>Conditions générales de vente</h3>
-      <p>{{cgv_details}}</p>
-    </section>
+      </section>
+    </div>
   </body>
 </html>
-

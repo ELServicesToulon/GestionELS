@@ -643,32 +643,30 @@ function genererFactures() {
         corps.replaceText('{{total_avant_remises}}', totalAvantRemisesTexte);
         corps.replaceText('{{nombre_courses}}', String(lignesBordereau.length));
 
-        const resumeTarifs = [];
-        if (typeof TARIFS === 'object' && TARIFS) {
-          Object.keys(TARIFS).forEach(type => {
-            const info = TARIFS[type];
-            if (!info || typeof info.base !== 'number') return;
-            const baseTexte = `${formatMontantEuro(info.base)} ${symboleEuro}`;
-            let supplementsTexte = '';
-            if (Array.isArray(info.arrets) && info.arrets.length) {
-              const supplements = info.arrets.map((val, idx) => {
-                const numero = idx + 2;
-                return `${numero} arret${numero > 1 ? 's' : ''}: +${formatMontantEuro(val)} ${symboleEuro}`;
-              }).join(', ');
-              supplementsTexte = ` | Supplements: ${supplements}`;
+        const lienTarifs = (() => {
+          try {
+            return getSecret('URL_TARIFS_PUBLIC');
+          } catch (_err) {
+            try {
+              const docTarifs = getSecret('ID_DOCUMENT_TARIFS');
+              return docTarifs ? `https://drive.google.com/file/d/${docTarifs}/view` : `Contactez ${EMAIL_ENTREPRISE}`;
+            } catch (_err2) {
+              return `Contactez ${EMAIL_ENTREPRISE}`;
             }
-            resumeTarifs.push(`${type}: ${baseTexte}${supplementsTexte}`);
-          });
-        }
-        const resumeTarifsTexte = resumeTarifs.length ? resumeTarifs.join('\n') : 'Tarifs detailles disponibles sur demande.';
-        const resumeCgvTexte = [
-          `Paiement a effectuer sous ${DELAI_PAIEMENT_JOURS} jour(s).`,
-          TVA_APPLICABLE ? `TVA applicable au taux de ${Math.round(TAUX_TVA * 100)}%.` : 'TVA non applicable, art. 293B du CGI.',
-          'Indemnite forfaitaire de 40 € en cas de retard de paiement (L441-10 C. com.).',
-          `Pour toute question ou litige, contacter ${EMAIL_ENTREPRISE}.`
-        ].join('\n');
-        corps.replaceText('{{tarifs_details}}', resumeTarifsTexte);
-        corps.replaceText('{{cgv_details}}', resumeCgvTexte);
+          }
+        })();
+
+        const lienCgv = (() => {
+          try {
+            const cgvId = getSecret('ID_DOCUMENT_CGV');
+            return `https://drive.google.com/file/d/${cgvId}/view`;
+          } catch (_err) {
+            return `Contactez ${EMAIL_ENTREPRISE}`;
+          }
+        })();
+
+        corps.replaceText('{{lien_tarifs}}', lienTarifs);
+        corps.replaceText('{{lien_cgv}}', lienCgv);
         corps.replaceText('{{date_echeance}}', formaterDatePersonnalise(dateEcheance, 'dd/MM/yyyy'));
         corps.replaceText('{{rib_entreprise}}', getSecret('RIB_ENTREPRISE'));
         corps.replaceText('{{bic_entreprise}}', getSecret('BIC_ENTREPRISE'));
@@ -930,4 +928,5 @@ function onOpen() {
 
   menu.addToUi();
 }
+
 
