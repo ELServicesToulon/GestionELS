@@ -66,57 +66,81 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 
 /* --- MISE EN PAGE PRINCIPALE --- */
 main.layout {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(24px, 3vw, 40px);
-  align-items: start;
   width: 100%;
-  max-width: min(1500px, 96vw);
+  max-width: min(1280px, 94vw);
   margin: 0 auto;
   padding: clamp(16px, 2vw, 32px);
 }
 
 main.layout > .main {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(18px, 2vw, 28px);
-  min-width: 0;
-  justify-self: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
+  gap: clamp(24px, 3vw, 40px);
+  align-items: start;
 }
 
 main.layout > .main > * {
-  width: 100%;
-}
-
-main.layout > .sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(16px, 2vw, 24px);
   min-width: 0;
-  align-self: start;
-  justify-self: stretch;
 }
 
-main.layout > .sidebar > * {
-  width: 100%;
-}
-
-@media (max-width: 1024px) {
-  main.layout {
-    grid-template-columns: 1fr;
-    max-width: min(960px, 94vw);
-  }
-
-  main.layout > .sidebar {
-    margin-top: clamp(20px, 4vw, 32px);
-  }
+#site-header {
+  grid-column: 1 / -1;
 }
 
 #app-conteneur-principal {
   width: 100%;
-  max-width: none; /* suit la largeur de la colonne */
+  max-width: none;
   margin: 0;
-  padding: 0 12px;
+  padding: 0;
+  display: contents;
+}
+
+.section--calendar {
+  grid-column: 1;
+}
+
+.section--panier,
+.section--finalisation,
+.section--tarifs {
+  grid-column: 2;
+}
+
+.section--tarifs { order: -1; }
+.section--panier { order: 0; }
+.section--finalisation { order: 1; }
+
+.section--finalisation,
+.section--tarifs {
+  align-self: start;
+}
+
+@media (max-width: 1080px) {
+  main.layout > .main {
+    grid-template-columns: 1fr;
+  }
+
+  #site-header,
+  .section--calendar,
+  .section--panier,
+  .section--finalisation,
+  .section--tarifs {
+    grid-column: 1;
+  }
+
+  .section--panier,
+  .section--finalisation,
+  .section--tarifs {
+    order: initial;
+  }
+
+  #app-conteneur-principal {
+    display: block;
+    padding: 0 12px;
+  }
+}
+
+#app-conteneur {
+  width: 100%;
 }
 .els-layout {
   display: grid;
@@ -823,6 +847,7 @@ input:checked + .glissiere:before { transform: translateX(22px); }
 /* --- STYLES D'IMPRESSION --- */
 @media print {
   body { background-color: var(--txt); color: var(--bg); }
+  #app-conteneur-principal { display: block !important; }
   .app-en-tete, .carte-en-tete button, #btn-valider-panier, .modale-overlay, #conteneur-notifications, .actions-formulaire button, .item-panier-supprimer, .app-pied-de-page { display: none; }
   #app-conteneur-principal, #app-conteneur, #vue-calendrier, #vue-panier, .carte { box-shadow: none; border: 1px solid var(--muted); margin: 10px 0; padding: 15px; page-break-inside: avoid; }
   #app-conteneur { flex-direction: column; }

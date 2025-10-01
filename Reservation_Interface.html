@@ -151,7 +151,7 @@
                   </div>
           </div>
         </section>
-        <section class="section">
+        <section class="section section--panier">
           <aside id="vue-panier" aria-labelledby="panier-titre" class="carte card">
                     <div class="panier-entete">
                       <h3 id="panier-titre">Panier de réservation</h3>
@@ -179,7 +179,7 @@
                     </div>
                   </aside>
         </section>
-        <section class="section">
+        <section class="section section--finalisation">
           <div id="conteneur-finalisation" class="carte card hidden" style="margin-top: 2rem;">
                   <h3>Finaliser la réservation</h3>
                   <form id="formulaire-reservation">
@@ -197,9 +197,7 @@
               </div>
         </section>
       </div>
-    </div>
-    <aside class="sidebar">
-      <section class="card hero-card-tarifs hidden" id="tarifs-detaille" aria-labelledby="titre-tarifs-detaille">
+      <section class="section section--tarifs card hero-card-tarifs hidden" id="tarifs-detaille" aria-labelledby="titre-tarifs-detaille">
         <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
         <div class="tarifs-cartes">
           <article class="tarif-carte" data-tarif="tournees">
@@ -224,7 +222,7 @@
         </div>
         <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
       </section>
-    </aside>
+    </div>
   </main>
   <!-- MODALE 1: Configuration de la tournée (VERSION COMPLÈTE) -->
   <div id="modale-config-tournee" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-config-titre">
