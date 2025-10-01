@@ -139,21 +139,63 @@ function obtenirOuCreerDossier(dossierParent, nomDossier) {
  * @returns {GoogleAppsScript.Document.Table|null} Le tableau trouvé ou null.
  */
 function trouverTableBordereau(corps) {
-    const enTetesAttendus = ["Date", "Heure", "Détails de la course", "Notes", "Montant HT"];
-    const tables = corps.getTables();
-    for (let i = 0; i < tables.length; i++) {
-        const table = tables[i];
-        if (table.getNumRows() > 0) {
-            const premiereLigne = table.getRow(0);
-            if (premiereLigne.getNumCells() >= enTetesAttendus.length) {
-                let enTetesTrouves = enTetesAttendus.every((enTete, j) => premiereLigne.getCell(j).getText().trim() === enTete);
-                if (enTetesTrouves) {
-                    return table;
-                }
-            }
-        }
+  // Autorise de petites variations: accents/casse/espaces/synonymes (ex: "Montant" vs "Montant HT").
+  // On garde l'ordre logique attendu (Date, Heure, Détails, Notes, Montant) pour éviter toute ambiguïté.
+  const expected = [
+    ["date"],
+    ["heure", "horaire"],
+    ["details de la course", "details", "detail", "description"],
+    ["notes", "note", "commentaire", "remarque"],
+    ["montant ht", "montant", "montant ttc", "total ht", "total"]
+  ];
+
+  const normalize = s => String(s || "")
+    .replace(/\u00A0/g, " ") // espaces insécables
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlève les accents
+    .toLowerCase().trim().replace(/\s+/g, ' ');
+
+  const tables = corps.getTables();
+  for (let i = 0; i < tables.length; i++) {
+    const table = tables[i];
+    if (table.getNumRows() === 0) continue;
+    const headerRow = table.getRow(0);
+    if (headerRow.getNumCells() < expected.length) continue;
+
+    let ok = true;
+    for (let j = 0; j < expected.length; j++) {
+      const cellText = normalize(headerRow.getCell(j).getText());
+      const wanted = expected[j];
+      const match = wanted.some(token => cellText.includes(token));
+      if (!match) { ok = false; break; }
     }
-    return null;
+    if (ok) return table;
+  }
+  return null;
+}
+
+/**
+ * Test helper: journalise les en-têtes trouvés dans le modèle de facture.
+ * Exécuter via `npx clasp run test_logHeadersModeleFacture`.
+ */
+function test_logHeadersModeleFacture() {
+  const fileId = getSecret('ID_MODELE_FACTURE');
+  const doc = DocumentApp.openById(fileId);
+  const corps = doc.getBody();
+  const tables = corps.getTables();
+  const headers = [];
+  for (let i = 0; i < tables.length; i++) {
+    const t = tables[i];
+    if (t.getNumRows() === 0) continue;
+    const r0 = t.getRow(0);
+    const cols = [];
+    for (let c = 0; c < r0.getNumCells(); c++) {
+      cols.push(r0.getCell(c).getText());
+    }
+    headers.push(cols.join(' | '));
+  }
+  Logger.log('Tables dans le modèle:');
+  headers.forEach((h, idx) => Logger.log(`#${idx + 1}: ${h}`));
+  return headers;
 }
 
 /**
