@@ -79,6 +79,41 @@ function formatMontantEuro(valeur) {
   return nombre.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+/**
+ * Remplace un placeholder par une image Drive (logo) dans un document Google Docs.
+ * @param {GoogleAppsScript.Document.Body} corps
+ * @param {string} placeholder Texte à remplacer (ex: {{logo}})
+ * @param {string|null} fileId ID du fichier Drive
+ * @param {number} [largeurMax] Largeur maximale en pixels
+ * @returns {boolean} true si une image a été insérée
+ */
+function insererImageDepuisPlaceholder(corps, placeholder, fileId, largeurMax) {
+  if (!fileId) return false;
+  try {
+    const fichier = DriveApp.getFileById(fileId);
+    let range = corps.findText(placeholder);
+    let insere = false;
+    while (range) {
+      const elementTexte = range.getElement();
+      if (!elementTexte) break;
+      const paragraphe = elementTexte.getParent().asParagraph();
+      paragraphe.clear();
+      const image = paragraphe.insertInlineImage(0, fichier.getBlob());
+      if (largeurMax && image.getWidth() > largeurMax) {
+        const ratio = image.getHeight() / image.getWidth();
+        image.setWidth(largeurMax);
+        image.setHeight(Math.round(largeurMax * ratio));
+      }
+      insere = true;
+      range = corps.findText(placeholder);
+    }
+    return insere;
+  } catch (e) {
+    Logger.log(`Impossible d'insérer l'image pour ${placeholder}: ${e.message}`);
+    return false;
+  }
+}
+
 
 // --- NOUVELLES FONCTIONS UTILITAIRES AJOUTÉES ---
 

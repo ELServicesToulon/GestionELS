@@ -537,6 +537,9 @@ function genererFactures() {
         const dateFacture = new Date();
 
         let totalMontant = 0;
+        let totalRemises = 0;
+        let totalAvantRemises = 0;
+        const symboleEuro = String.fromCharCode(8364);
         const lignesBordereau = [];
         let dateMin = new Date(lignesFactureClient[0].data[indicesFacturation['Date']]);
         let dateMax = new Date(lignesFactureClient[0].data[indicesFacturation['Date']]);
@@ -555,27 +558,35 @@ function genererFactures() {
 
           let libelleRemise = '';
           let montantRemiseValeur = 0;
+          let montantAvantRemise = montantLigne;
 
           if (tourneeOfferte) {
             libelleRemise = 'Offerte';
-            montantRemiseValeur = montantLigne;
+            montantRemiseValeur = 0;
           } else if (typeRemise === 'Pourcentage' && valeurRemise > 0) {
             libelleRemise = `-${valeurRemise}%`;
             if (valeurRemise < 100) {
-              const montantAvantRemise = montantLigne / (1 - (valeurRemise / 100));
+              montantAvantRemise = montantLigne / (1 - (valeurRemise / 100));
               montantRemiseValeur = Math.max(0, montantAvantRemise - montantLigne);
             }
           } else if (typeRemise === 'Montant Fixe' && valeurRemise > 0) {
-            libelleRemise = `-${formatMontantEuro(valeurRemise)} €`;
+            libelleRemise = `-${formatMontantEuro(valeurRemise)} ${symboleEuro}`;
             montantRemiseValeur = valeurRemise;
+            montantAvantRemise = montantLigne + valeurRemise;
           }
 
           if (montantRemiseValeur > 0) {
             montantRemiseValeur = Math.round(montantRemiseValeur * 100) / 100;
           }
+          if (montantAvantRemise > 0) {
+            montantAvantRemise = Math.round(montantAvantRemise * 100) / 100;
+          }
+
+          totalRemises += montantRemiseValeur;
+          totalAvantRemises += montantAvantRemise;
 
           const montantFormate = formatMontantEuro(montantLigne);
-          const remiseMontantFormatee = montantRemiseValeur > 0 ? formatMontantEuro(montantRemiseValeur) : '';
+          const remiseMontantFormatee = montantRemiseValeur > 0 ? `${formatMontantEuro(montantRemiseValeur)} ${symboleEuro}` : '';
 
           lignesBordereau.push({
             date: formaterDatePersonnalise(dateCourse, 'dd/MM/yy'),
@@ -592,6 +603,9 @@ function genererFactures() {
 
         const tva = TVA_APPLICABLE ? totalMontant * TAUX_TVA : 0;
         const totalTTC = totalMontant + tva;
+        if (totalAvantRemises === 0) {
+          totalAvantRemises = totalMontant;
+        }
         const dateEcheance = new Date(dateFacture.getTime() + (DELAI_PAIEMENT_JOURS * 24 * 60 * 60 * 1000));
 
         const dossierArchives = DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES'));
@@ -602,6 +616,10 @@ function genererFactures() {
         const copieFactureDoc = modeleFacture.makeCopy(`${numFacture} - ${clientInfos.nom}`, dossierMois);
         const doc = DocumentApp.openById(copieFactureDoc.getId());
         const corps = doc.getBody();
+
+        if (!insererImageDepuisPlaceholder(corps, '{{logo}}', FACTURE_LOGO_FILE_ID, 160)) {
+          corps.replaceText('{{logo}}', '');
+        }
 
         corps.replaceText('{{nom_entreprise}}', NOM_ENTREPRISE);
         corps.replaceText('{{adresse_entreprise}}', ADRESSE_ENTREPRISE);
@@ -618,6 +636,11 @@ function genererFactures() {
         corps.replaceText('{{total_ht}}', formatMontantEuro(totalMontant));
         corps.replaceText('{{montant_tva}}', formatMontantEuro(tva));
         corps.replaceText('{{total_ttc}}', formatMontantEuro(totalTTC));
+        const totalRemisesTexte = totalRemises > 0 ? `- ${formatMontantEuro(totalRemises)} ${symboleEuro}` : `0,00 ${symboleEuro}`;
+        const totalAvantRemisesTexte = formatMontantEuro(totalAvantRemises);
+        corps.replaceText('{{total_remises}}', totalRemisesTexte);
+        corps.replaceText('{{total_avant_remises}}', totalAvantRemisesTexte);
+        corps.replaceText('{{nombre_courses}}', String(lignesBordereau.length));
         corps.replaceText('{{date_echeance}}', formaterDatePersonnalise(dateEcheance, 'dd/MM/yyyy'));
         corps.replaceText('{{rib_entreprise}}', getSecret('RIB_ENTREPRISE'));
         corps.replaceText('{{bic_entreprise}}', getSecret('BIC_ENTREPRISE'));
@@ -665,9 +688,10 @@ function genererFactures() {
             }
 
             if (colonnesBordereau.montant !== undefined) {
-              let valeurMontant = ligne.montantTexte ? `${ligne.montantTexte} €` : '';
+              let valeurMontant = ligne.montantTexte ? `${ligne.montantTexte} ${symboleEuro}` : '';
               if (ligne.remiseMontantTexte) {
-                valeurMontant = `${valeurMontant} (Remise : ${ligne.remiseMontantTexte} €)`;
+                const etiquette = ligne.remiseTexte ? `Remise ${ligne.remiseTexte}` : 'Remise';
+                valeurMontant = `${valeurMontant} (${etiquette} : ${ligne.remiseMontantTexte})`;
               } else if (ligne.estOfferte) {
                 valeurMontant = valeurMontant ? `${valeurMontant} (Offert)` : 'Offert';
               }
@@ -878,7 +902,3 @@ function onOpen() {
 
   menu.addToUi();
 }
-
-
-
-

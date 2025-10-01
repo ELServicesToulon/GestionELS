@@ -4,85 +4,106 @@
     <meta charset="UTF-8" />
     <title>Modele de facture ELS - Exemple</title>
     <style>
-      body { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.35; }
-      h1, h2 { margin: 0; }
-      .header, .footer { width: 100%; margin-bottom: 16px; }
-      .coords { display: flex; justify-content: space-between; gap: 24px; }
-      .coords div { width: 50%; }
+      body { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.4; color: #1f1f1f; }
+      h1, h2, h3 { margin: 0; }
+      .header { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+      .logo { max-width: 140px; min-height: 40px; display: flex; align-items: center; }
+      .logo-placeholder { font-size: 11pt; color: #7f8c8d; border: 1px dashed #bdc3c7; padding: 12px; text-align: center; }
+      .company-info p { margin: 0; }
+      .section { margin-bottom: 24px; }
+      .coords { display: flex; gap: 32px; }
+      .coords > div { flex: 1; }
+      .resume { width: 60%; border-collapse: collapse; margin-top: 16px; }
+      .resume th, .resume td { border: 1px solid #555; padding: 8px 10px; text-align: left; }
+      .resume th { background: #f2f2f2; text-transform: uppercase; font-size: 10pt; letter-spacing: 0.5px; }
+      .mentions { font-size: 10pt; color: #555; margin-top: 24px; }
+      .page-break { page-break-before: always; }
       table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-      th, td { border: 1px solid #555; padding: 6px 8px; }
-      th { background: #f0f0f0; text-transform: uppercase; font-size: 10pt; letter-spacing: 0.5px; }
-      .totaux { margin-top: 24px; width: 260px; float: right; border: 1px solid #555; border-collapse: collapse; }
-      .totaux td { padding: 6px 10px; border: 1px solid #555; }
-      .mentions { clear: both; margin-top: 32px; font-size: 10pt; }
-      .notes { font-style: italic; color: #555; }
+      th, td { border: 1px solid #555; padding: 6px 8px; vertical-align: top; }
+      th { background: #f7f7f7; text-transform: uppercase; font-size: 10pt; letter-spacing: 0.5px; }
+      .notes { font-style: italic; color: #7f8c8d; }
     </style>
   </head>
   <body>
-    <section class="header">
-      <h1>{{nom_entreprise}}</h1>
-      <p>{{adresse_entreprise}}</p>
-      <p>SIRET : {{siret}} &bull; Email : {{email_entreprise}}</p>
+    <div class="header">
+      <div class="logo">
+        {{logo}}
+      </div>
+      <div class="company-info">
+        <h1>{{nom_entreprise}}</h1>
+        <p>{{adresse_entreprise}}</p>
+        <p>SIRET : {{siret}} &bull; Email : {{email_entreprise}}</p>
+      </div>
+    </div>
+
+    <section class="section">
+      <h2>Facture</h2>
+      <p>Numéro : <strong>{{numero_facture}}</strong></p>
+      <p>Date : {{date_facture}}</p>
+      <p>Période facturée : {{periode_facturee}}</p>
+      <p>Détails de la période : {{date_debut_periode}} &rarr; {{date_fin_periode}}</p>
+      <p>Échéance : {{date_echeance}}</p>
     </section>
 
-    <section class="coords">
-      <div>
-        <h2>Facture</h2>
-        <p>Num&eacute;ro : <strong>{{numero_facture}}</strong></p>
-        <p>Date : {{date_facture}}</p>
-        <p>P&eacute;riode factur&eacute;e : {{periode_facturee}}</p>
-        <p>D&eacute;tails de la p&eacute;riode : {{date_debut_periode}} &rarr; {{date_fin_periode}}</p>
-        <p>&Eacute;ch&eacute;ance : {{date_echeance}}</p>
-      </div>
+    <section class="section coords">
       <div>
         <h2>Destinataire</h2>
         <p><strong>{{client_nom}}</strong></p>
         <p>{{client_adresse}}</p>
       </div>
+      <div>
+        <h2>Résumé</h2>
+        <table class="resume">
+          <tr>
+            <th>Total à payer</th>
+            <td>{{total_du}} €</td>
+          </tr>
+          <tr>
+            <th>Courses facturées</th>
+            <td>{{nombre_courses}}</td>
+          </tr>
+        </table>
+      </div>
     </section>
 
-    <table data-section="bordereau">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Horaire</th>
-          <th>D&eacute;tails de la course</th>
-          <th>Notes</th>
-          <th>Remise appliqu&eacute;e</th>
-          <th>Montant</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>01/09/25</td>
-          <td>10h00</td>
-          <td>Tourn&eacute;e pharmacie - 3 arr&ecirc;ts</td>
-          <td class="notes">Exemple de note interne</td>
-          <td>-10%</td>
-          <td>36,00 &euro; (Remise : 4,00 &euro;)</td>
-        </tr>
-        <tr>
-          <td>05/09/25</td>
-          <td>14h00</td>
-          <td>Livraison urgente</td>
-          <td></td>
-          <td>Offerte</td>
-          <td>0,00 &euro;</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <table class="totaux">
-      <tr>
-        <td><strong>Total d&ucirc;</strong></td>
-        <td style="text-align: right;"><strong>{{total_du}} &euro;</strong></td>
-      </tr>
-    </table>
-
     <section class="mentions">
-      <p>Paiement &agrave; effectuer sous {{delai_paiement}} jours sur le compte :</p>
+      <p>Paiement à effectuer sous {{delai_paiement}} jours sur le compte indiqué ci-dessous.</p>
       <p>IBAN : {{rib_entreprise}} &bull; BIC : {{bic_entreprise}}</p>
-      <p class="notes">TVA non applicable, art. 293B du CGI.</p>
+      <p>TVA non applicable, art. 293B du CGI.</p>
+    </section>
+
+    <div class="page-break"></div>
+
+    <section class="section">
+      <h2>Annexe à la facture {{numero_facture}} &ndash; {{periode_facturee}}</h2>
+      <p class="notes">Détail des courses facturées.</p>
+      <table data-els="bordereau-annexe">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Horaire</th>
+            <th>Détails de la course</th>
+            <th>Notes</th>
+            <th>Montant</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>01/09/25</td>
+            <td>10h00</td>
+            <td>Tournée pharmacie &ndash; 3 arrêts</td>
+            <td class="notes">Exemple de note interne</td>
+            <td>36,00 € (Remise : 4,00 €)</td>
+          </tr>
+          <tr>
+            <td>05/09/25</td>
+            <td>14h00</td>
+            <td>Livraison urgente</td>
+            <td></td>
+            <td>0,00 € (Offert)</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
   </body>
 </html>

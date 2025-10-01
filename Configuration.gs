@@ -38,6 +38,16 @@ const FACTURES_FOLDER_ID = (function() {
   catch (e) { return getSecret('ID_DOSSIER_ARCHIVES'); }
 })();
 
+/** @const {string|null} ID du fichier Drive utilisé comme logo sur les factures (optionnel). */
+const FACTURE_LOGO_FILE_ID = (function() {
+  try {
+    const id = getSecret('ID_LOGO_FACTURE');
+    return id || null;
+  } catch (_err) {
+    return null;
+  }
+})();
+
 // --- Bloc de facturation générique ---
 /** @const {Object} Paramètres de facturation centralisés. */
 const BILLING = {
@@ -360,7 +370,8 @@ const CONFIG = Object.freeze({
   RESERVATION_VERIFY_ENABLED,
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN,
-  BILLING_ID_PDF_CHECK_ENABLED
+  BILLING_ID_PDF_CHECK_ENABLED,
+  FACTURE_LOGO_FILE_ID
 });
 
 /**
