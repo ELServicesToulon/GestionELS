@@ -489,6 +489,12 @@ function genererFactures() {
     }
 
     const indicesFacturation = obtenirIndicesEnTetes(feuilleFacturation, ['Date', 'Client (Email)', 'Valider', 'N° Facture', 'Montant', 'ID PDF', 'Détails', 'Note Interne', 'Lien Note']);
+    const enTeteFacturation = feuilleFacturation.getRange(1, 1, 1, feuilleFacturation.getLastColumn()).getValues()[0].map(v => String(v).trim());
+    const indicesRemise = {
+      type: enTeteFacturation.indexOf('Type Remise Appliquée'),
+      valeur: enTeteFacturation.indexOf('Valeur Remise Appliquée'),
+      tourneeOfferte: enTeteFacturation.indexOf('Tournée Offerte Appliquée')
+    };
     const indicesClients = obtenirIndicesEnTetes(feuilleClients, ["Email", "Raison Sociale", "Adresse"]);
 
     const clientsData = feuilleClients.getDataRange().getValues();
@@ -530,7 +536,7 @@ function genererFactures() {
         const numFacture = `FACT-${new Date().getFullYear()}-${String(prochainNumFacture).padStart(4, '0')}`;
         const dateFacture = new Date();
 
-        let totalHT = 0;
+        let totalMontant = 0;
         const lignesBordereau = [];
         let dateMin = new Date(lignesFactureClient[0].data[indicesFacturation['Date']]);
         let dateMax = new Date(lignesFactureClient[0].data[indicesFacturation['Date']]);
@@ -538,23 +544,54 @@ function genererFactures() {
         lignesFactureClient.forEach(item => {
           const ligneData = item.data;
           const montantLigne = parseFloat(ligneData[indicesFacturation['Montant']]) || 0;
-          totalHT += montantLigne;
+          totalMontant += montantLigne;
           const dateCourse = new Date(ligneData[indicesFacturation['Date']]);
           if (dateCourse < dateMin) dateMin = dateCourse;
           if (dateCourse > dateMax) dateMax = dateCourse;
-          
+
+          const typeRemise = indicesRemise.type !== -1 ? String(ligneData[indicesRemise.type] || '').trim() : '';
+          const valeurRemise = indicesRemise.valeur !== -1 ? parseFloat(ligneData[indicesRemise.valeur]) || 0 : 0;
+          const tourneeOfferte = indicesRemise.tourneeOfferte !== -1 && ligneData[indicesRemise.tourneeOfferte] === true;
+
+          let libelleRemise = '';
+          let montantRemiseValeur = 0;
+
+          if (tourneeOfferte) {
+            libelleRemise = 'Offerte';
+            montantRemiseValeur = montantLigne;
+          } else if (typeRemise === 'Pourcentage' && valeurRemise > 0) {
+            libelleRemise = `-${valeurRemise}%`;
+            if (valeurRemise < 100) {
+              const montantAvantRemise = montantLigne / (1 - (valeurRemise / 100));
+              montantRemiseValeur = Math.max(0, montantAvantRemise - montantLigne);
+            }
+          } else if (typeRemise === 'Montant Fixe' && valeurRemise > 0) {
+            libelleRemise = `-${formatMontantEuro(valeurRemise)} €`;
+            montantRemiseValeur = valeurRemise;
+          }
+
+          if (montantRemiseValeur > 0) {
+            montantRemiseValeur = Math.round(montantRemiseValeur * 100) / 100;
+          }
+
+          const montantFormate = formatMontantEuro(montantLigne);
+          const remiseMontantFormatee = montantRemiseValeur > 0 ? formatMontantEuro(montantRemiseValeur) : '';
+
           lignesBordereau.push({
             date: formaterDatePersonnalise(dateCourse, 'dd/MM/yy'),
-            heure: formaterDatePersonnalise(dateCourse, 'HH\'h\'mm'),
+            heure: formaterDatePersonnalise(dateCourse, "HH'h'mm"),
             details: ligneData[indicesFacturation['Détails']] || '',
             note: ligneData[indicesFacturation['Note Interne']] || '',
             lienNote: ligneData[indicesFacturation['Lien Note']] || null,
-            montant: montantLigne.toFixed(2)
+            montantTexte: montantFormate,
+            remiseTexte: libelleRemise,
+            remiseMontantTexte: remiseMontantFormatee,
+            estOfferte: tourneeOfferte && montantLigne === 0
           });
         });
 
-        const tva = TVA_APPLICABLE ? totalHT * TAUX_TVA : 0;
-        const totalTTC = totalHT + tva;
+        const tva = TVA_APPLICABLE ? totalMontant * TAUX_TVA : 0;
+        const totalTTC = totalMontant + tva;
         const dateEcheance = new Date(dateFacture.getTime() + (DELAI_PAIEMENT_JOURS * 24 * 60 * 60 * 1000));
 
         const dossierArchives = DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES'));
@@ -574,34 +611,68 @@ function genererFactures() {
         corps.replaceText('{{client_adresse}}', clientInfos.adresse);
         corps.replaceText('{{numero_facture}}', numFacture);
         corps.replaceText('{{date_facture}}', formaterDatePersonnalise(dateFacture, 'dd/MM/yyyy'));
-        corps.replaceText('{{periode_facturee}}', formaterDatePersonnalise(dateMin, 'MMMM yyyy'));
+        corps.replaceText('{{periode_facturee}}', formatMoisFrancais(dateMin));
         corps.replaceText('{{date_debut_periode}}', formaterDatePersonnalise(dateMin, 'dd/MM/yyyy'));
         corps.replaceText('{{date_fin_periode}}', formaterDatePersonnalise(dateMax, 'dd/MM/yyyy'));
-        corps.replaceText('{{total_ht}}', totalHT.toFixed(2));
-        corps.replaceText('{{montant_tva}}', tva.toFixed(2));
-        corps.replaceText('{{total_ttc}}', totalTTC.toFixed(2));
+        corps.replaceText('{{total_du}}', formatMontantEuro(totalTTC));
+        corps.replaceText('{{total_ht}}', formatMontantEuro(totalMontant));
+        corps.replaceText('{{montant_tva}}', formatMontantEuro(tva));
+        corps.replaceText('{{total_ttc}}', formatMontantEuro(totalTTC));
         corps.replaceText('{{date_echeance}}', formaterDatePersonnalise(dateEcheance, 'dd/MM/yyyy'));
         corps.replaceText('{{rib_entreprise}}', getSecret('RIB_ENTREPRISE'));
         corps.replaceText('{{bic_entreprise}}', getSecret('BIC_ENTREPRISE'));
+        corps.replaceText('{{delai_paiement}}', String(DELAI_PAIEMENT_JOURS));
         
-        const tableBordereau = trouverTableBordereau(corps);
-        if (tableBordereau) {
-          while(tableBordereau.getNumRows() > 1) { tableBordereau.removeRow(1); }
-          
+        const detectionBordereau = trouverTableBordereau(corps);
+        if (detectionBordereau) {
+          const tableBordereau = detectionBordereau.table;
+          const colonnesBordereau = detectionBordereau.columns;
+          while (tableBordereau.getNumRows() > 1) {
+            tableBordereau.removeRow(1);
+          }
+
+          const headerCellCount = tableBordereau.getRow(0).getNumCells();
+
           lignesBordereau.forEach(ligne => {
             const nouvelleLigne = tableBordereau.appendTableRow();
-            nouvelleLigne.appendTableCell(ligne.date);
-            nouvelleLigne.appendTableCell(ligne.heure);
-            nouvelleLigne.appendTableCell(ligne.details);
-            
-            const celluleNote = nouvelleLigne.appendTableCell('');
-            if (ligne.lienNote && ligne.lienNote.startsWith('http')) {
-                celluleNote.setText('Voir Note').editAsText().setLinkUrl(ligne.lienNote);
-            } else {
-                celluleNote.setText(ligne.note);
+            while (nouvelleLigne.getNumCells() < headerCellCount) {
+              nouvelleLigne.appendTableCell('');
             }
 
-            nouvelleLigne.appendTableCell(ligne.montant + ' €');
+            const setCell = (key, valeur) => {
+              if (colonnesBordereau[key] === undefined) return;
+              nouvelleLigne.getCell(colonnesBordereau[key]).setText(valeur || '');
+            };
+
+            setCell('date', ligne.date);
+            setCell('heure', ligne.heure);
+            setCell('details', ligne.details);
+
+            if (colonnesBordereau.notes !== undefined) {
+              const celluleNote = nouvelleLigne.getCell(colonnesBordereau.notes);
+              if (ligne.lienNote && ligne.lienNote.startsWith('http')) {
+                const text = celluleNote.editAsText();
+                text.setText('Voir la note');
+                text.setLinkUrl(0, text.getText().length - 1, ligne.lienNote);
+              } else {
+                celluleNote.setText(ligne.note || '');
+              }
+            }
+
+            if (colonnesBordereau.remise !== undefined) {
+              const valeur = ligne.remiseTexte || '';
+              nouvelleLigne.getCell(colonnesBordereau.remise).setText(valeur);
+            }
+
+            if (colonnesBordereau.montant !== undefined) {
+              let valeurMontant = ligne.montantTexte ? `${ligne.montantTexte} €` : '';
+              if (ligne.remiseMontantTexte) {
+                valeurMontant = `${valeurMontant} (Remise : ${ligne.remiseMontantTexte} €)`;
+              } else if (ligne.estOfferte) {
+                valeurMontant = valeurMontant ? `${valeurMontant} (Offert)` : 'Offert';
+              }
+              nouvelleLigne.getCell(colonnesBordereau.montant).setText(valeurMontant.trim());
+            }
           });
         } else {
             throw new Error("Aucun tableau de bordereau valide trouvé. Vérifiez les en-têtes.");
@@ -807,3 +878,7 @@ function onOpen() {
 
   menu.addToUi();
 }
+
+
+
+

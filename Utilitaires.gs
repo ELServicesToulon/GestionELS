@@ -53,6 +53,32 @@ function formaterDatePersonnalise(date, format, fuseauHoraire = "Europe/Paris") 
   }
 }
 
+/**
+ * Retourne le mois en toutes lettres au format français (ex: "aout 2025").
+ * @param {Date} date
+ * @returns {string}
+ */
+function formatMoisFrancais(date) {
+  if (!(date instanceof Date) || isNaN(date)) {
+    return '';
+  }
+  const mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  return `${mois[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+/**
+ * Formate un montant en euros avec la convention française.
+ * @param {number|string} valeur
+ * @returns {string}
+ */
+function formatMontantEuro(valeur) {
+  const nombre = Number(valeur);
+  if (!isFinite(nombre)) {
+    return '';
+  }
+  return nombre.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 
 // --- NOUVELLES FONCTIONS UTILITAIRES AJOUTÉES ---
 
@@ -139,19 +165,20 @@ function obtenirOuCreerDossier(dossierParent, nomDossier) {
  * @returns {GoogleAppsScript.Document.Table|null} Le tableau trouvé ou null.
  */
 function trouverTableBordereau(corps) {
-  // Autorise de petites variations: accents/casse/espaces/synonymes (ex: "Montant" vs "Montant HT").
-  // On garde l'ordre logique attendu (Date, Heure, Détails, Notes, Montant) pour éviter toute ambiguïté.
-  const expected = [
-    ["date"],
-    ["heure", "horaire"],
-    ["details de la course", "details", "detail", "description"],
-    ["notes", "note", "commentaire", "remarque"],
-    ["montant ht", "montant", "montant ttc", "total ht", "total"]
-  ];
+  // Autorise des variations (accents, casse, synonymes) et retourne aussi la correspondance de colonnes.
+  const expected = {
+    date: ["date"],
+    heure: ["heure", "horaire"],
+    details: ["details de la course", "details", "detail", "description", "prestation"],
+    notes: ["notes", "note", "commentaire", "remarque", "observations"],
+    remise: ["remise", "reductions", "discount", "offerte"],
+    montant: ["montant ht", "montant", "montant ttc", "total ht", "total ttc", "total"]
+  };
+  const required = ['date', 'heure', 'details', 'montant'];
 
   const normalize = s => String(s || "")
-    .replace(/\u00A0/g, " ") // espaces insécables
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlève les accents
+    .replace(/\u00A0/g, " ")
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toLowerCase().trim().replace(/\s+/g, ' ');
 
   const tables = corps.getTables();
@@ -159,16 +186,22 @@ function trouverTableBordereau(corps) {
     const table = tables[i];
     if (table.getNumRows() === 0) continue;
     const headerRow = table.getRow(0);
-    if (headerRow.getNumCells() < expected.length) continue;
 
-    let ok = true;
-    for (let j = 0; j < expected.length; j++) {
-      const cellText = normalize(headerRow.getCell(j).getText());
-      const wanted = expected[j];
-      const match = wanted.some(token => cellText.includes(token));
-      if (!match) { ok = false; break; }
+    const columns = {};
+    for (let col = 0; col < headerRow.getNumCells(); col++) {
+      const text = normalize(headerRow.getCell(col).getText());
+      Object.keys(expected).forEach(key => {
+        if (columns[key] !== undefined) return;
+        if (expected[key].some(token => text.includes(token))) {
+          columns[key] = col;
+        }
+      });
     }
-    if (ok) return table;
+
+    const ok = required.every(key => columns[key] !== undefined);
+    if (ok) {
+      return { table: table, columns: columns };
+    }
   }
   return null;
 }
@@ -195,6 +228,12 @@ function test_logHeadersModeleFacture() {
   }
   Logger.log('Tables dans le modèle:');
   headers.forEach((h, idx) => Logger.log(`#${idx + 1}: ${h}`));
+  const res = trouverTableBordereau(corps);
+  if (res) {
+    Logger.log(`Table bordereau détectée: colonnes ${JSON.stringify(res.columns)}`);
+  } else {
+    Logger.log('Aucun tableau de bordereau détecté par la fonction.');
+  }
   return headers;
 }
 

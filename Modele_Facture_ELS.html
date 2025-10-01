@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Modele de facture ELS - Exemple</title>
+    <style>
+      body { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.35; }
+      h1, h2 { margin: 0; }
+      .header, .footer { width: 100%; margin-bottom: 16px; }
+      .coords { display: flex; justify-content: space-between; gap: 24px; }
+      .coords div { width: 50%; }
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+      th, td { border: 1px solid #555; padding: 6px 8px; }
+      th { background: #f0f0f0; text-transform: uppercase; font-size: 10pt; letter-spacing: 0.5px; }
+      .totaux { margin-top: 24px; width: 260px; float: right; border: 1px solid #555; border-collapse: collapse; }
+      .totaux td { padding: 6px 10px; border: 1px solid #555; }
+      .mentions { clear: both; margin-top: 32px; font-size: 10pt; }
+      .notes { font-style: italic; color: #555; }
+    </style>
+  </head>
+  <body>
+    <section class="header">
+      <h1>{{nom_entreprise}}</h1>
+      <p>{{adresse_entreprise}}</p>
+      <p>SIRET : {{siret}} &bull; Email : {{email_entreprise}}</p>
+    </section>
+
+    <section class="coords">
+      <div>
+        <h2>Facture</h2>
+        <p>Num&eacute;ro : <strong>{{numero_facture}}</strong></p>
+        <p>Date : {{date_facture}}</p>
+        <p>P&eacute;riode factur&eacute;e : {{periode_facturee}}</p>
+        <p>D&eacute;tails de la p&eacute;riode : {{date_debut_periode}} &rarr; {{date_fin_periode}}</p>
+        <p>&Eacute;ch&eacute;ance : {{date_echeance}}</p>
+      </div>
+      <div>
+        <h2>Destinataire</h2>
+        <p><strong>{{client_nom}}</strong></p>
+        <p>{{client_adresse}}</p>
+      </div>
+    </section>
+
+    <table data-section="bordereau">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Horaire</th>
+          <th>D&eacute;tails de la course</th>
+          <th>Notes</th>
+          <th>Remise appliqu&eacute;e</th>
+          <th>Montant</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01/09/25</td>
+          <td>10h00</td>
+          <td>Tourn&eacute;e pharmacie - 3 arr&ecirc;ts</td>
+          <td class="notes">Exemple de note interne</td>
+          <td>-10%</td>
+          <td>36,00 &euro; (Remise : 4,00 &euro;)</td>
+        </tr>
+        <tr>
+          <td>05/09/25</td>
+          <td>14h00</td>
+          <td>Livraison urgente</td>
+          <td></td>
+          <td>Offerte</td>
+          <td>0,00 &euro;</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="totaux">
+      <tr>
+        <td><strong>Total d&ucirc;</strong></td>
+        <td style="text-align: right;"><strong>{{total_du}} &euro;</strong></td>
+      </tr>
+    </table>
+
+    <section class="mentions">
+      <p>Paiement &agrave; effectuer sous {{delai_paiement}} jours sur le compte :</p>
+      <p>IBAN : {{rib_entreprise}} &bull; BIC : {{bic_entreprise}}</p>
+      <p class="notes">TVA non applicable, art. 293B du CGI.</p>
+    </section>
+  </body>
+</html>
