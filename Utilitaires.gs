@@ -87,10 +87,24 @@ function formatMontantEuro(valeur) {
  * @param {number} [largeurMax] Largeur maximale en pixels
  * @returns {boolean} true si une image a été insérée
  */
-function insererImageDepuisPlaceholder(corps, placeholder, fileId, largeurMax) {
-  if (!fileId) return false;
+function insererImageDepuisPlaceholder(corps, placeholder, fileId, largeurMax, fallbackBlob) {
   try {
-    const fichier = DriveApp.getFileById(fileId);
+    let blob = null;
+    if (fileId) {
+      blob = DriveApp.getFileById(fileId).getBlob();
+    } else if (fallbackBlob) {
+      blob = fallbackBlob;
+    }
+    if (!blob) return false;
+
+    if (blob.getContentType() === 'image/svg+xml') {
+      try {
+        blob = blob.getAs(MimeType.PNG);
+      } catch (e) {
+        Logger.log('Impossible de convertir le SVG du logo en PNG: ' + e.message);
+      }
+    }
+
     let range = corps.findText(placeholder);
     let insere = false;
     while (range) {
@@ -98,7 +112,7 @@ function insererImageDepuisPlaceholder(corps, placeholder, fileId, largeurMax) {
       if (!elementTexte) break;
       const paragraphe = elementTexte.getParent().asParagraph();
       paragraphe.clear();
-      const image = paragraphe.insertInlineImage(0, fichier.getBlob());
+      const image = paragraphe.insertInlineImage(0, blob);
       if (largeurMax && image.getWidth() > largeurMax) {
         const ratio = image.getHeight() / image.getWidth();
         image.setWidth(largeurMax);
@@ -111,6 +125,23 @@ function insererImageDepuisPlaceholder(corps, placeholder, fileId, largeurMax) {
   } catch (e) {
     Logger.log(`Impossible d'insérer l'image pour ${placeholder}: ${e.message}`);
     return false;
+  }
+}
+
+/**
+ * Récupère le logo défini dans Logo.html et le retourne sous forme de blob.
+ * @returns {GoogleAppsScript.Base.Blob|null}
+ */
+function getLogoSvgBlob() {
+  try {
+    const html = HtmlService.createHtmlOutputFromFile('Logo').getContent();
+    const match = html && html.match(/<svg[\s\S]*?<\/svg>/i);
+    if (!match) return null;
+    const svg = match[0];
+    return Utilities.newBlob(svg, 'image/svg+xml', 'logo.svg');
+  } catch (e) {
+    Logger.log('Impossible de récupérer le logo HTML: ' + e.message);
+    return null;
   }
 }
 
