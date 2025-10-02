@@ -1,198 +1,343 @@
+// =================================================================
+//                      POINT D'ENTRÉE & MENUS
+// =================================================================
+// Description: Contrôleur principal qui gère les menus dans le Google
+//              Sheet et les requêtes web pour afficher les interfaces.
+// =================================================================
+
 /**
- * ---------------------------
- *  Facturation ELS - Helpers
- * ---------------------------
- * - tinyMustache_ : mini-moteur de templates (variables + sections tableaux)
- * - renderInvoice_(data) : remplace les {{placeholders}} + {{#prestations}}…{{/prestations}}
- * - exportPdf_(html, filename?) : export HTML -> PDF (Drive)
- * - exampleData_() : dataset d’essai
- * - test_placeholders_() : vérifie la présence des placeholders requis
- * - test_rows_sum_() : vérifie somme des lignes = montant_total (exemple)
- *
- * NB logo :
- *  - Place un fichier "logo.png" dans un dossier Drive nommé "assets"
- *  - getLogoDataUrl_() embarque le logo en data URL dans {{logo_src}}
+ * S'exécute à l'ouverture du Google Sheet pour créer les menus.
+ * @summary Fonction trigger `onOpen` pour créer l'interface utilisateur du menu.
  */
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
 
-/** -------- Template engine minimal (variables + sections tableaux) -------- */
-function tinyMustache_(tpl, data) {
-  // Sections (tableaux) : {{#key}} ... {{/key}}
-  // On itère tant qu’on trouve des sections (gère récursif simple)
-  var sectionRe = /{{#\s*([a-zA-Z0-9_]+)\s*}}([\s\S]*?){{\/\s*\1\s*}}/g;
-  var match;
-  while ((match = sectionRe.exec(tpl)) !== null) {
-    var key = match[1];
-    var inner = match[2];
-    var arr = data[key];
-    var rendered = "";
-    if (Array.isArray(arr)) {
-      rendered = arr.map(function (item) {
-        // Permet d’accéder aux props parent si besoin (omission ici par simplicité)
-        return tinyMustache_(inner, Object.assign({}, data, item));
-      }).join("");
-    } else {
-      rendered = ""; // section non tableau => retire
+  // --- Création du menu principal ---
+  const menuPrincipal = ui.createMenu('EL Services')
+    .addItem('Générer les factures sélectionnées', 'genererFactures')
+    .addItem('Envoyer les factures contrôlées', 'envoyerFacturesControlees')
+    .addItem('Générer lien Espace Client', 'menuGenererLienClient')
+    .addItem("Archiver les factures du mois dernier", "archiverFacturesDuMois")
+    .addSeparator()
+    .addItem("Vérifier la cohérence du calendrier", "verifierCoherenceCalendrier");
+
+  // --- Création du sous-menu Maintenance ---
+  const sousMenuMaintenance = ui.createMenu('Maintenance')
+    .addItem("Sauvegarder le code du projet", "sauvegarderCodeProjet")
+    .addItem("Sauvegarder les données", "sauvegarderDonnees")
+    .addItem("Vérifier structure des feuilles", "menuVerifierStructureFeuilles")
+    .addItem("Vérifier l’installation", "menuVerifierInstallation")
+    .addItem("Purger les anciennes données (RGPD)", "purgerAnciennesDonnees")
+    .addSeparator()
+    .addItem("Nettoyer l'onglet Facturation", "nettoyerOngletFacturation")
+    .addItem("Reparer entetes Facturation", "reparerEntetesFacturation")
+    .addItem("Normaliser entetes Facturation", "normaliserEntetesFacturation");
+
+  // Ajout des options conditionnelles au menu Maintenance
+  if (typeof CALENDAR_RESYNC_ENABLED !== 'undefined' && CALENDAR_RESYNC_ENABLED) {
+    sousMenuMaintenance.addItem("Resynchroniser événement manquant", "menuResynchroniserEvenement");
+  }
+  if (typeof CALENDAR_PURGE_ENABLED !== 'undefined' && CALENDAR_PURGE_ENABLED) {
+    sousMenuMaintenance.addItem("Purger Event ID introuvable", "menuPurgerEventId");
+  }
+
+  menuPrincipal.addSubMenu(sousMenuMaintenance);
+
+  // --- Ajout du sous-menu Debug (s'il est activé) ---
+  // CORRECTION: La création du menu Debug est maintenant entièrement contenue
+  // dans cette condition pour éviter la redondance et la confusion.
+  if (typeof DEBUG_MENU_ENABLED !== 'undefined' && DEBUG_MENU_ENABLED) {
+    const sousMenuDebug = ui.createMenu('Debug')
+      .addItem("Lancer tous les tests", "lancerTousLesTests")
+      .addItem("Tester audit Drive", "testerAuditDrive")
+      .addItem("Générer lien Espace Client", "menuGenererLienClient");
+    menuPrincipal.addSubMenu(sousMenuDebug);
+  }
+
+  menuPrincipal.addToUi();
+
+  try {
+    validerConfiguration();
+  } catch (err) {
+    ui.alert('Configuration invalide', err.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Menu: Génère un lien signé pour l'Espace Client (admin requis).
+ */
+function menuGenererLienClient() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    if (!CLIENT_PORTAL_SIGNED_LINKS) {
+      ui.alert('Fonction indisponible', "CLIENT_PORTAL_SIGNED_LINKS est désactivé dans la configuration.", ui.ButtonSet.OK);
+      return;
     }
-    tpl = tpl.slice(0, match.index) + rendered + tpl.slice(match.index + match[0].length);
-    sectionRe.lastIndex = 0; // reset après modification
+    const emailResp = ui.prompt('Générer lien Espace Client', "Email du client:", ui.ButtonSet.OK_CANCEL);
+    if (emailResp.getSelectedButton() !== ui.Button.OK) return;
+    const email = String(emailResp.getResponseText() || '').trim();
+    if (!email) { ui.alert('Erreur', 'Email requis.', ui.ButtonSet.OK); return; }
+    const hoursResp = ui.prompt('Validité du lien', "Durée en heures (défaut 168):", ui.ButtonSet.OK_CANCEL);
+    if (hoursResp.getSelectedButton() !== ui.Button.OK) return;
+    const hours = parseInt(hoursResp.getResponseText() || '168', 10);
+    const res = genererLienEspaceClient(email, isNaN(hours) ? 168 : hours);
+    const html = HtmlService.createHtmlOutput(
+      `<div style="font-family:Montserrat,sans-serif;line-height:1.5">
+         <h3>Lien Espace Client</h3>
+         <p>Ce lien expire à: ${new Date(res.exp*1000).toLocaleString()}</p>
+         <input id="l" type="text" value="${res.url.replace(/&/g,'&amp;').replace(/</g,'&lt;')}" style="width:100%" readonly />
+         <div style="margin-top:8px"><button onclick="copy()">Copier</button></div>
+         <script>
+           function copy(){var i=document.getElementById('l');i.select();try{document.execCommand('copy');}catch(e){} }
+         </script>
+       </div>`
+    ).setWidth(520).setHeight(160);
+    ui.showModalDialog(html, 'Lien Espace Client');
+  } catch (e) {
+    ui.alert('Erreur', e.message, ui.ButtonSet.OK);
+  }
+}
+
+
+/**
+ * Menu: Vérifie l'installation via checkSetup_ELS.
+ */
+function menuVerifierInstallation() {
+  const ui = SpreadsheetApp.getUi();
+  const result = checkSetup_ELS();
+  Logger.log(JSON.stringify(result));
+  const message = result.ok
+    ? 'OK'
+    : 'Propriétés manquantes: ' + result.missingProps.join(', ');
+  ui.alert('Vérification installation', message, ui.ButtonSet.OK);
+}
+
+/**
+ * Crée une réponse HTML standard pour les messages d'erreur ou d'information.
+ * @param {string} titre Le titre de la page HTML.
+ * @param {string} message Le message à afficher dans le corps de la page.
+ * @returns {HtmlOutput} Le contenu HTML formaté.
+ */
+function creerReponseHtml(titre, message) {
+  return HtmlService.createHtmlOutput(`<h1>${titre}</h1><p>${message}</p>`).setTitle(titre);
+}
+
+
+/**
+ * S'exécute lorsqu'un utilisateur accède à l'URL de l'application web.
+ * Fait office de routeur pour afficher la bonne page.
+ * @param {Object} e L'objet d'événement de la requête.
+ * @returns {HtmlOutput} Le contenu HTML à afficher.
+ */
+function doGet(e) {
+  try {
+    try {
+      const setup = checkSetup_ELS();
+      if (setup.missingProps && setup.missingProps.length > 0) {
+        return HtmlService.createHtmlOutput(
+          `<h1>Configuration manquante</h1><p>Propriétés manquantes: ${setup.missingProps.join(', ')}</p>`
+        ).setTitle('Configuration manquante');
+      }
+    } catch (err) {
+      Logger.log('checkSetup_ELS erreur: ' + err.message);
+    }
+
+    const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : '';
+    if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
+      logRequest(e); // Assurez-vous que la fonction logRequest existe
+    }
+
+    // --- Routeur de page ---
+    if (e && e.parameter && e.parameter.page) {
+      switch (e.parameter.page) {
+
+        case 'admin':
+          const adminEmail = Session.getActiveUser().getEmail();
+          // CORRECTION: L'opérateur de comparaison '===' était manquant.
+          if (adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+            const templateAdmin = HtmlService.createTemplateFromFile('Admin_Interface');
+            return templateAdmin.evaluate().setTitle("Tableau de Bord Administrateur").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+          }
+          return creerReponseHtml('Accès Refusé', 'Vous n\'avez pas les permissions nécessaires.');
+
+        case 'gestion':
+          if (typeof CLIENT_PORTAL_ENABLED !== 'undefined' && CLIENT_PORTAL_ENABLED) {
+            if (typeof CLIENT_PORTAL_SIGNED_LINKS !== 'undefined' && CLIENT_PORTAL_SIGNED_LINKS) {
+              const params = (e && e.parameter) || {};
+              const emailRaw = params.email || '';
+              const emailParam = String(emailRaw).trim().toLowerCase();
+              const exp = params.exp || '';
+              const sig = params.sig || '';
+              if (!verifySignedLink(emailParam, exp, sig) || emailRaw !== emailParam) {
+                return creerReponseHtml('Lien invalide', 'Authentification requise pour accéder à l\'espace client.');
+              }
+            }
+            const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
+            templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
+            return templateGestion.evaluate().setTitle("Mon Espace Client").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+          }
+          return creerReponseHtml('Espace client indisponible', 'Merci de votre compréhension.');
+
+        case 'debug':
+          if (typeof DEBUG_MENU_ENABLED !== 'undefined' && DEBUG_MENU_ENABLED) {
+            const debugEmail = Session.getActiveUser().getEmail();
+            if (debugEmail && debugEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+              return HtmlService.createHtmlOutputFromFile('Debug_Interface').setTitle("Panneau de Débogage");
+            }
+            return creerReponseHtml('Accès Refusé', 'Vous n\'avez pas les permissions nécessaires.');
+          }
+          // CORRECTION: Message clair si le debug est désactivé au niveau global.
+          return creerReponseHtml('Accès Refusé', 'Le mode de débogage est désactivé.');
+
+        case 'infos':
+          if (typeof PRIVACY_LINK_ENABLED !== 'undefined' && PRIVACY_LINK_ENABLED) {
+            return HtmlService.createHtmlOutputFromFile('Infos_confidentialite')
+              .setTitle("Infos & confidentialité");
+          }
+          // CORRECTION: Ajout d'un 'break' pour éviter de tomber sur la page par défaut
+          // si cette page est désactivée.
+          break;
+      }
+    }
+
+    // --- Page par défaut : Interface de réservation ---
+    if (typeof DEMO_RESERVATION_ENABLED !== 'undefined' && DEMO_RESERVATION_ENABLED) {
+      return HtmlService.createHtmlOutputFromFile('examples/Reservation_Demo')
+        .setTitle(NOM_ENTREPRISE + " | Réservation (Démo)")
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+    }
+
+    const template = HtmlService.createTemplateFromFile('Reservation_Interface');
+    const conf = getPublicConfig();
+
+    // Assignation des variables au template
+    template.appUrl = ScriptApp.getService().getUrl();
+    template.nomService = NOM_ENTREPRISE;
+    template.EMAIL_ENTREPRISE = EMAIL_ENTREPRISE;
+    template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
+    template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
+    template.TARIFS = conf.TARIFS;
+    template.DUREE_BASE = conf.DUREE_BASE;
+    template.DUREE_ARRET_SUP = conf.DUREE_ARRET_SUP;
+    template.KM_BASE = conf.KM_BASE;
+    template.KM_ARRET_SUP = conf.KM_ARRET_SUP;
+    template.URGENT_THRESHOLD_MINUTES = conf.URGENT_THRESHOLD_MINUTES;
+    template.dateDuJour = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+    template.PRICING_RULES_V2_ENABLED = (typeof PRICING_RULES_V2_ENABLED !== 'undefined') ? PRICING_RULES_V2_ENABLED : false;
+    template.RETURN_IMPACTS_ESTIMATES_ENABLED = (typeof RETURN_IMPACTS_ESTIMATES_ENABLED !== 'undefined') ? RETURN_IMPACTS_ESTIMATES_ENABLED : false;
+
+    // Variables pour la bannière d'information
+    template.heureDebut = conf.HEURE_DEBUT_SERVICE;
+    template.heureFin = conf.HEURE_FIN_SERVICE;
+    template.prixBaseNormal = (conf.TARIFS && conf.TARIFS['Normal']) ? conf.TARIFS['Normal'].base : '';
+    template.prixBaseSamedi = (conf.TARIFS && conf.TARIFS['Samedi']) ? conf.TARIFS['Samedi'].base : '';
+    template.prixBaseUrgent = (conf.TARIFS && conf.TARIFS['Urgent']) ? conf.TARIFS['Urgent'].base : '';
+    template.tvaApplicable = typeof conf.TVA_APPLICABLE !== 'undefined' ? conf.TVA_APPLICABLE : false;
+
+    return template.evaluate()
+      .setTitle(NOM_ENTREPRISE + " | Réservation")
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+
+  } catch (error) {
+    if (error && error.code === 403) {
+      return ContentService.createTextOutput(JSON.stringify({ error: 'Forbidden' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    Logger.log(`Erreur critique dans doGet: ${error.stack}`);
+    return creerReponseHtml(
+      'Erreur de configuration',
+      `L'application ne peut pas démarrer. L'administrateur a été notifié.<br><pre style="color:red;">${error.message}</pre>`
+    );
+  }
+}
+
+
+/**
+ * Gère les requêtes POST entrantes.
+ * Parse les données et route vers la logique appropriée.
+ * @param {Object} e L'objet d'événement de la requête.
+ * @returns {ContentService.TextOutput} Réponse au format JSON.
+ */
+function doPost(e) {
+  try {
+    try {
+      validerConfiguration();
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'Configuration invalide',
+        details: err.message
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
+      logRequest(e);
+    }
+
+    if (typeof POST_ENDPOINT_ENABLED === 'undefined' || !POST_ENDPOINT_ENABLED) {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: 'error',
+        message: 'POST endpoint is disabled.'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    let payload = {};
+    if (e && e.postData && e.postData.contents) {
+      try {
+        if (e.postData.type === 'application/json') {
+          payload = JSON.parse(e.postData.contents);
+        } else {
+          // Pour les formulaires standards (application/x-www-form-urlencoded)
+          payload = e.parameter;
+        }
+      } catch (jsonError) {
+        throw new Error("Invalid JSON payload received.");
+      }
+    } else {
+      payload = e.parameter; // Fallback pour les cas simples
+    }
+
+
+    if (payload.action) {
+      switch (payload.action) {
+        case 'getConfiguration':
+          // Assurez-vous que getConfiguration() est une fonction globale disponible
+          return ContentService.createTextOutput(JSON.stringify(getConfiguration()))
+            .setMimeType(ContentService.MimeType.JSON);
+
+          // Ajoutez d'autres 'case' pour d'autres actions ici
+
+        default:
+          return ContentService.createTextOutput(JSON.stringify({
+            status: 'error',
+            message: 'Unknown action specified.'
+          })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // Comportement par défaut si aucune action n'est spécifiée.
+    // Le code original appelait doGet(e), ce qui est inhabituel pour un endpoint POST.
+    // Il est souvent préférable de retourner une erreur claire.
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: 'No action specified in the POST request.'
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    if (error && error.code === 403) {
+      return ContentService.createTextOutput(JSON.stringify({ error: 'Forbidden' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    Logger.log(`Erreur critique dans doPost: ${error.stack}`);
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: error.message
+    })).setMimeType(ContentService.MimeType.JSON);
   }
 
-  // Variables simples : {{key}}
-  tpl = tpl.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, function(_, k){
-    var v = (data[k] != null) ? String(data[k]) : "";
-    return v;
-  });
-  return tpl;
+}
+function _forceReAuth() {
+  // Déclenche le consentement pour MailApp
+  Logger.log(MailApp.getRemainingDailyQuota());
 }
 
-/** -------- Rendu de la facture -------- */
-function renderInvoice_(data) {
-  // Charge le HTML brut (sans évaluation <% … %>)
-  var tpl = HtmlService.createTemplateFromFile('Facture').getRawContent();
-
-  // Injection du logo si absent : cherche assets/logo.png dans Drive
-  if (!data.logo_src) {
-    var logo = getLogoDataUrl_();
-    if (logo) data.logo_src = logo;
-  }
-
-  return tinyMustache_(tpl, data);
-}
-
-/** -------- Export PDF -------- */
-function exportPdf_(html, filename) {
-  filename = filename || ('Facture-' + new Date().toISOString().slice(0,10));
-  var out = HtmlService.createHtmlOutput(html)
-    .setWidth(794)  // ~ A4 px @96dpi
-    .setHeight(1123);
-
-  var pdfBlob = out.getBlob().getAs('application/pdf');
-  pdfBlob.setName(filename + '.pdf');
-
-  var folder = getOrCreateFolder_('Factures');
-  var file = folder.createFile(pdfBlob);
-  Logger.log('PDF créé : %s (%s)', file.getName(), file.getUrl());
-  return file;
-}
-
-/** -------- Helpers Drive -------- */
-function getOrCreateFolder_(name, parent) {
-  var root = parent || DriveApp.getRootFolder();
-  var it = root.getFoldersByName(name);
-  return it.hasNext() ? it.next() : root.createFolder(name);
-}
-
-function getLogoDataUrl_() {
-  // Cherche dossier "assets" à la racine
-  var root = DriveApp.getRootFolder();
-  var assets = (function(){
-    var it = root.getFoldersByName('assets');
-    return it.hasNext() ? it.next() : null;
-  })();
-  if (!assets) { return ''; }
-
-  var files = assets.getFilesByName('logo.png');
-  if (!files.hasNext()) { return ''; }
-
-  var file = files.next();
-  var blob = file.getBlob();
-  var contentType = blob.getContentType() || 'image/png';
-  var base64 = Utilities.base64Encode(blob.getBytes());
-  return 'data:' + contentType + ';base64,' + base64;
-}
-
-/** -------- Données d’exemple -------- */
-function exampleData_() {
-  var prestations = [
-    { designation: 'Tournée Pharmacie Portissol → EHPAD Tamaris (livraison scellée)', quantite: '1', prix_unitaire_ttc: '25.00', total_ligne_ttc: '25.00' },
-    { designation: 'Arrêt supplémentaire (La Seyne)', quantite: '1', prix_unitaire_ttc: '6.00', total_ligne_ttc: '6.00' },
-    { designation: 'Majoration urgence (< 2h)', quantite: '1', prix_unitaire_ttc: '9.00', total_ligne_ttc: '9.00' }
-  ];
-  var total = prestations.reduce(function(sum, l){
-    var n = Number(String(l.total_ligne_ttc).replace(',','.'));
-    return sum + (isFinite(n) ? n : 0);
-  }, 0);
-  total = total.toFixed(2);
-
-  return {
-    // Entreprise
-    entreprise_nom: 'EI Emmanuel Lecourt – EL Services Toulon',
-    entreprise_siren: '{{$SIREN}}',
-    entreprise_siret: '{{$SIRET}}',
-    entreprise_adresse: '{{$ADRESSE}}',
-    entreprise_tel: '{{$TEL}}',
-    entreprise_email: '{{$EMAIL}}',
-    entreprise_site: 'elsservicestoulon.fr',
-    // Facture
-    facture_numero: '2025-001',
-    facture_date: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy'),
-    lieu_emission: 'Toulon',
-    // Client
-    client_nom: 'Pharmacie de Portissol',
-    client_adresse: '12 Rue du Littoral\n83110 Sanary-sur-Mer',
-    // Paiement / banque
-    delai: '30',
-    banque_nom: '{{$BANQUE}}',
-    iban: '{{$IBAN}}',
-    bic: '{{$BIC}}',
-    // Totaux
-    montant_total: total,
-    // Lignes
-    prestations: prestations,
-    // Logo (optionnel, auto si vide)
-    logo_src: ''
-  };
-}
-
-/** -------- Démo rapide : génère et exporte le PDF -------- */
-function demo_export_() {
-  var html = renderInvoice_(exampleData_());
-  exportPdf_(html, 'Facture-ELS-demo');
-}
-
-/** -------- Mini-tests -------- */
-function test_placeholders_() {
-  var required = [
-    // Entreprise
-    'entreprise_nom','entreprise_siren','entreprise_siret','entreprise_adresse','entreprise_tel','entreprise_email','entreprise_site',
-    // Facture
-    'facture_numero','facture_date','lieu_emission',
-    // Client
-    'client_nom','client_adresse',
-    // Paiement
-    'delai','iban','bic','banque_nom',
-    // Total
-    'montant_total',
-    // Bloc répétable
-    '#prestations','/prestations','designation','quantite','prix_unitaire_ttc','total_ligne_ttc'
-  ];
-
-  var raw = HtmlService.createTemplateFromFile('Facture').getRawContent();
-  var missing = [];
-  required.forEach(function(tok){
-    // supporte #prestations et /prestations
-    var needle = (tok === '#prestations') ? '{{#prestations}}'
-               : (tok === '/prestations') ? '{{/prestations}}'
-               : '{{' + tok + '}}';
-    if (raw.indexOf(needle) === -1) missing.push(needle);
-  });
-
-  if (missing.length) {
-    throw new Error('Placeholders manquants: ' + JSON.stringify(missing));
-  }
-  Logger.log('OK placeholders présents (%s).', required.length);
-}
-
-function test_rows_sum_() {
-  var data = exampleData_();
-  var sum = data.prestations.reduce(function(s, l){
-    return s + Number(String(l.total_ligne_ttc).replace(',','.'));
-  }, 0);
-  sum = Number(sum.toFixed(2));
-  var total = Number(String(data.montant_total).replace(',','.'));
-
-  if (sum !== total) {
-    throw new Error('Somme lignes ('+sum+') ≠ montant_total ('+total+').');
-  }
-  Logger.log('OK somme lignes == montant_total (%s).', total.toFixed(2));
-}

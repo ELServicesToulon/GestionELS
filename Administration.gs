@@ -612,7 +612,124 @@ function genererFactures() {
         const dossierAnnee = obtenirOuCreerDossier(dossierArchives, dateFacture.getFullYear().toString());
         const dossierMois = obtenirOuCreerDossier(dossierAnnee, formaterDatePersonnalise(dateFacture, "MMMM yyyy"));
 
-        const modeleFacture = DriveApp.getFileById(getSecret('ID_MODELE_FACTURE'));\n        const copieFactureDoc = modeleFacture.makeCopy(`${numFacture} - ${clientInfos.nom}`, dossierMois);\n        const doc = DocumentApp.openById(copieFactureDoc.getId());\n        const corps = doc.getBody();\n        if (!corps) throw new Error(\"Impossible d'accéder au corps du document de facture.\");\n\n        corps.clear();\n        const header = doc.getHeader();\n        if (header) header.clear();\n        const footer = doc.getFooter();\n        if (footer) footer.clear();\n\n        let logoBlob = null;\n        try {\n          if (FACTURE_LOGO_FILE_ID) {\n            logoBlob = DriveApp.getFileById(FACTURE_LOGO_FILE_ID).getBlob();\n          }\n        } catch (eLogo) {\n          Logger.log('Logo Drive indisponible: ' + eLogo.message);\n        }\n        if (!logoBlob) {\n          logoBlob = getLogoSvgBlob();\n        }\n        if (logoBlob && logoBlob.getContentType() === 'image/svg+xml') {\n          try {\n            logoBlob = logoBlob.getAs(MimeType.PNG);\n          } catch (convErr) {\n            Logger.log('Conversion logo SVG vers PNG échouée: ' + convErr.message);\n          }\n        }\n\n        if (logoBlob) {\n          const paraLogo = corps.appendParagraph('');\n          paraLogo.setAlignment(DocumentApp.HorizontalAlignment.RIGHT);\n          const image = paraLogo.appendInlineImage(logoBlob);\n          if (image.getWidth() > 140) {\n            const ratio = image.getHeight() / image.getWidth();\n            image.setWidth(140);\n            image.setHeight(Math.round(140 * ratio));\n          }\n          paraLogo.setSpacingAfter(10);\n        }\n\n        const titre = corps.appendParagraph(`FACTURE ${numFacture}`);\n        titre.setHeading(DocumentApp.ParagraphHeading.HEADING1)\n          .setBold(true)\n          .setForegroundColor('#8e44ad')\n          .setAlignment(DocumentApp.HorizontalAlignment.CENTER);\n\n        const sousTitre = corps.appendParagraph(`${NOM_ENTREPRISE} - ${formaterDatePersonnalise(dateFacture, 'MMMM yyyy')}`);\n        sousTitre.setAlignment(DocumentApp.HorizontalAlignment.CENTER)\n          .setForegroundColor('#5d6d7e')\n          .setSpacingAfter(18);\n\n        const blocClient = corps.appendParagraph(`Client : ${clientInfos.nom}\\nAdresse : ${clientInfos.adresse}`);\n        blocClient.setSpacingAfter(12);\n\n        const tableauSynthese = corps.appendTable([\n          ['Total à régler', `${formatMontantEuro(totalTTC)} ${symboleEuro}`],\n          ['Nombre de tournées', `${lignesBordereau.length}`],\n          ['Période couverte', `${formaterDatePersonnalise(dateMin, 'dd/MM/yyyy')} -> ${formaterDatePersonnalise(dateMax, 'dd/MM/yyyy')}`],\n          ['Échéance de paiement', formaterDatePersonnalise(dateEcheance, 'dd/MM/yyyy')]\n        ]);\n        tableauSynthese.setSpacingAfter(18);\n        for (let r = 0; r < tableauSynthese.getNumRows(); r++) {\n          const cellLabel = tableauSynthese.getRow(r).getCell(0);\n          cellLabel.setBackgroundColor('#f0ecf8');\n          cellLabel.getChild(0).asText().setBold(true);\n        }\n\n        const DEFAULT_DOC_LINK = 'https://drive.google.com/drive/folders/1gY_690EmUxTwJDJIkyT_U6mtwatSTEFk';\n        const lienTarifs = (() => {\n          try {\n            return getSecret('URL_TARIFS_PUBLIC');\n          } catch (_err) {\n            try {\n              const docTarifs = getSecret('ID_DOCUMENT_TARIFS');\n              return docTarifs ? `https://drive.google.com/file/d/${docTarifs}/view` : DEFAULT_DOC_LINK;\n            } catch (_err2) {\n              return DEFAULT_DOC_LINK;\n            }\n          }\n        })();\n\n        const lienCgv = (() => {\n          try {\n            const cgvId = getSecret('ID_DOCUMENT_CGV');\n            return `https://drive.google.com/file/d/${cgvId}/view`;\n          } catch (_err) {\n            return DEFAULT_DOC_LINK;\n          }\n        })();\n\n        const liensPara = corps.appendParagraph('Tarifs & CGV : ');\n        liensPara.setSpacingAfter(8);\n        liensPara.appendText('Tarifs').setBold(true).setLinkUrl(lienTarifs);\n        liensPara.appendText(' - ');\n        liensPara.appendText('CGV').setBold(true).setLinkUrl(lienCgv);\n\n        const ribEntreprise = getSecret('RIB_ENTREPRISE');\n        const bicEntreprise = getSecret('BIC_ENTREPRISE');\n        corps.appendParagraph(`Paiement à effectuer sous ${DELAI_PAIEMENT_JOURS} jours.`).setSpacingAfter(4);\n        corps.appendParagraph(`IBAN : ${ribEntreprise} - BIC : ${bicEntreprise}`).setSpacingAfter(4);\n        corps.appendParagraph(`Contact : ${EMAIL_ENTREPRISE}`).setSpacingAfter(16);\n\n        corps.appendPageBreak();\n\n        const annexeTitre = corps.appendParagraph(`Annexe - Facture ${numFacture}`);\n        annexeTitre.setHeading(DocumentApp.ParagraphHeading.HEADING2)\n          .setForegroundColor('#3498db');\n        corps.appendParagraph('Détail des tournées réalisées.').setSpacingAfter(8);\n\n        const annexeTable = corps.appendTable();\n        const entetes = ['Date', 'Horaire', 'Détails', 'Notes', 'Montant'];\n        const headerRow = annexeTable.appendTableRow();\n        entetes.forEach(libelle => {\n          headerRow.appendTableCell(libelle).setBackgroundColor('#e8efff')\n            .getChild(0).asText().setBold(true);\n        });\n\n        lignesBordereau.forEach(ligne => {\n          const row = annexeTable.appendTableRow();\n          row.appendTableCell(ligne.date);\n          row.appendTableCell(ligne.heure);\n          row.appendTableCell(ligne.details);\n\n          const noteCell = row.appendTableCell('');\n          const noteText = noteCell.getChild(0).asText();\n          if (ligne.lienNote && ligne.lienNote.startsWith('http')) {\n            noteText.setText('Voir la note');\n            noteText.setLinkUrl(ligne.lienNote);\n          } else {\n            noteText.setText(ligne.note || '');\n          }\n\n          let montantAffiche = ligne.montantTexte ? `${ligne.montantTexte} ${symboleEuro}` : '';\n          if (ligne.remiseMontantTexte) {\n            const etiquette = ligne.remiseTexte || 'Remise';\n            montantAffiche = `${montantAffiche} (${etiquette} : ${ligne.remiseMontantTexte})`;\n          } else if (ligne.estOfferte) {\n            montantAffiche = montantAffiche ? `${montantAffiche} (Offert)` : 'Offert';\n          }\n          row.appendTableCell(montantAffiche);\n        });\n\n        doc.saveAndClose();\n
+        const modeleFacture = DriveApp.getFileById(getSecret('ID_MODELE_FACTURE'));
+        const copieFactureDoc = modeleFacture.makeCopy(`${numFacture} - ${clientInfos.nom}`, dossierMois);
+        const doc = DocumentApp.openById(copieFactureDoc.getId());
+        const corps = doc.getBody();
+
+        const logoFallbackBlob = getLogoSvgBlob();
+        if (!insererImageDepuisPlaceholder(corps, '{{logo}}', FACTURE_LOGO_FILE_ID, 160, logoFallbackBlob)) {
+          corps.replaceText('{{logo}}', '');
+        }
+
+        corps.replaceText('{{nom_entreprise}}', NOM_ENTREPRISE);
+        corps.replaceText('{{adresse_entreprise}}', ADRESSE_ENTREPRISE);
+        corps.replaceText('{{siret}}', getSecret('SIRET'));
+        corps.replaceText('{{email_entreprise}}', EMAIL_ENTREPRISE);
+        corps.replaceText('{{client_nom}}', clientInfos.nom);
+        corps.replaceText('{{client_adresse}}', clientInfos.adresse);
+        corps.replaceText('{{numero_facture}}', numFacture);
+        corps.replaceText('{{date_facture}}', formaterDatePersonnalise(dateFacture, 'dd/MM/yyyy'));
+        corps.replaceText('{{periode_facturee}}', formatMoisFrancais(dateMin));
+        corps.replaceText('{{date_debut_periode}}', formaterDatePersonnalise(dateMin, 'dd/MM/yyyy'));
+        corps.replaceText('{{date_fin_periode}}', formaterDatePersonnalise(dateMax, 'dd/MM/yyyy'));
+        corps.replaceText('{{total_du}}', formatMontantEuro(totalTTC));
+        corps.replaceText('{{total_ht}}', formatMontantEuro(totalMontant));
+        corps.replaceText('{{montant_tva}}', formatMontantEuro(tva));
+        corps.replaceText('{{total_ttc}}', formatMontantEuro(totalTTC));
+        const totalRemisesTexte = totalRemises > 0 ? `- ${formatMontantEuro(totalRemises)} ${symboleEuro}` : `0,00 ${symboleEuro}`;
+        const totalAvantRemisesTexte = formatMontantEuro(totalAvantRemises);
+        corps.replaceText('{{total_remises}}', totalRemisesTexte);
+        corps.replaceText('{{total_avant_remises}}', totalAvantRemisesTexte);
+        corps.replaceText('{{nombre_courses}}', String(lignesBordereau.length));
+
+        const lienTarifs = (() => {
+          try {
+            return getSecret('URL_TARIFS_PUBLIC');
+          } catch (_err) {
+            try {
+              const docTarifs = getSecret('ID_DOCUMENT_TARIFS');
+              return docTarifs ? `https://drive.google.com/file/d/${docTarifs}/view` : `Contactez ${EMAIL_ENTREPRISE}`;
+            } catch (_err2) {
+              return `Contactez ${EMAIL_ENTREPRISE}`;
+            }
+          }
+        })();
+
+        const lienCgv = (() => {
+          try {
+            const cgvId = getSecret('ID_DOCUMENT_CGV');
+            return `https://drive.google.com/file/d/${cgvId}/view`;
+          } catch (_err) {
+            return `Contactez ${EMAIL_ENTREPRISE}`;
+          }
+        })();
+
+        corps.replaceText('{{lien_tarifs}}', lienTarifs);
+        corps.replaceText('{{lien_cgv}}', lienCgv);
+        corps.replaceText('{{date_echeance}}', formaterDatePersonnalise(dateEcheance, 'dd/MM/yyyy'));
+        corps.replaceText('{{rib_entreprise}}', getSecret('RIB_ENTREPRISE'));
+        corps.replaceText('{{bic_entreprise}}', getSecret('BIC_ENTREPRISE'));
+        corps.replaceText('{{delai_paiement}}', String(DELAI_PAIEMENT_JOURS));
+        
+        const detectionBordereau = trouverTableBordereau(corps);
+        if (detectionBordereau) {
+          const tableBordereau = detectionBordereau.table;
+          const colonnesBordereau = detectionBordereau.columns;
+          while (tableBordereau.getNumRows() > 1) {
+            tableBordereau.removeRow(1);
+          }
+
+          const headerCellCount = tableBordereau.getRow(0).getNumCells();
+
+          lignesBordereau.forEach(ligne => {
+            const nouvelleLigne = tableBordereau.appendTableRow();
+            while (nouvelleLigne.getNumCells() < headerCellCount) {
+              nouvelleLigne.appendTableCell('');
+            }
+
+            const setCell = (key, valeur) => {
+              if (colonnesBordereau[key] === undefined) return;
+              nouvelleLigne.getCell(colonnesBordereau[key]).setText(valeur || '');
+            };
+
+            setCell('date', ligne.date);
+            setCell('heure', ligne.heure);
+            setCell('details', ligne.details);
+
+            if (colonnesBordereau.notes !== undefined) {
+              const celluleNote = nouvelleLigne.getCell(colonnesBordereau.notes);
+              if (ligne.lienNote && ligne.lienNote.startsWith('http')) {
+                const text = celluleNote.editAsText();
+                text.setText('Voir la note');
+                text.setLinkUrl(0, text.getText().length - 1, ligne.lienNote);
+              } else {
+                celluleNote.setText(ligne.note || '');
+              }
+            }
+
+            if (colonnesBordereau.remise !== undefined) {
+              const valeur = ligne.remiseTexte || '';
+              nouvelleLigne.getCell(colonnesBordereau.remise).setText(valeur);
+            }
+
+            if (colonnesBordereau.montant !== undefined) {
+              let valeurMontant = ligne.montantTexte ? `${ligne.montantTexte} ${symboleEuro}` : '';
+              if (ligne.remiseMontantTexte) {
+                const etiquette = ligne.remiseTexte ? `Remise ${ligne.remiseTexte}` : 'Remise';
+                valeurMontant = `${valeurMontant} (${etiquette} : ${ligne.remiseMontantTexte})`;
+              } else if (ligne.estOfferte) {
+                valeurMontant = valeurMontant ? `${valeurMontant} (Offert)` : 'Offert';
+              }
+              nouvelleLigne.getCell(colonnesBordereau.montant).setText(valeurMontant.trim());
+            }
+          });
+        } else {
+            throw new Error("Aucun tableau de bordereau valide trouvé. Vérifiez les en-têtes.");
+        }
+
+        doc.saveAndClose();
+
         const blobPDF = copieFactureDoc.getAs(MimeType.PDF);
         const fichierPDF = dossierMois.createFile(blobPDF).setName(`${numFacture} - ${clientInfos.nom}.pdf`);
 
