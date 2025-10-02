@@ -445,3 +445,144 @@ li{ margin: 6px 0; }
   .hero{padding:16px;} .hero__logo{width:60px; height:60px;} .hero__subtitle{font-size:1rem;}
 }
 /* === ELS-LAYOUT-V1:END === */
+/* === Reservation hero & layout v3 === */
+:root{
+  --gap-lg: 24px;
+  --gap-md: 16px;
+  --page-max: 1280px;
+  --hero-max: 1200px;
+}
+
+#hero.container,
+#layout.container{
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 24px;
+}
+
+#hero.container{
+  max-width: var(--hero-max);
+}
+
+#hero{
+  padding-top: var(--gap-lg);
+  padding-bottom: var(--gap-lg);
+}
+
+#hero .hero-wrap{
+  display: flex;
+  align-items: stretch;
+  gap: var(--gap-lg);
+}
+
+#hero .hero-logo{
+  flex: 1 1 55%;
+  height: 140px;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+#hero .hero-cards{
+  flex: 1 1 45%;
+  display: flex;
+  align-items: stretch;
+  gap: var(--gap-md);
+}
+
+.hero-chip{
+  width: 0;
+  flex: 1 1 33%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero-chip--xl{
+  flex-basis: 40%;
+}
+
+img.card{
+  padding: 0;
+  border-radius: var(--radius);
+}
+
+#layout.two-cols{
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: var(--gap-lg);
+  align-items: start;
+  margin-top: 8px;
+}
+
+#layout.two-cols > *{
+  min-width: 0;
+}
+
+#col-left,
+#col-right{
+  display: contents;
+}
+
+#calendar-card,
+#proof-card,
+#conteneur-finalisation{
+  grid-column: 1;
+}
+
+#tarifs-card,
+#cart-card{
+  grid-column: 2;
+}
+
+#tarifs-card{
+  margin-bottom: var(--gap-lg);
+}
+
+#calendar-card,
+#cart-card{
+  padding: var(--gap-md);
+}
+
+#calendar-card .carte,
+#cart-card .carte{
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+#conteneur-finalisation{
+  padding: var(--gap-md);
+}
+
+@media (max-width: 1023px){
+  #hero .hero-wrap{
+    flex-direction: column;
+  }
+  #hero .hero-logo{
+    height: auto;
+  }
+  #hero .hero-cards{
+    width: 100%;
+  }
+  #layout.two-cols{
+    grid-template-columns: 1fr;
+  }
+  #tarifs-card{
+    order: 1;
+    margin-bottom: var(--gap-md);
+  }
+  #calendar-card{
+    order: 2;
+    margin-top: var(--gap-md);
+  }
+  #cart-card{
+    order: 3;
+  }
+  #proof-card{
+    order: 4;
+  }
+  #conteneur-finalisation{
+    order: 5;
+  }
+}

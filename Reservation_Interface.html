@@ -102,127 +102,116 @@
     <div class="spinner"></div>
   </div>
 
-  <main class="layout">
-    <div class="main">
-      <section id="site-header" class="card hero" role="banner" aria-label="En-t&ecirc;te du site">
-        <div class="hero__brand">
-          <div class="hero__logo">
-            <?!= include('Logo'); ?>
-          </div>
-          <p class="hero__eyebrow">
-            ELS &mdash; Tourn&eacute;es pour officines, infirmeries et r&eacute;sidences (EHPAD/SSR)
-          </p>
-          <h1 class="hero__title">Votre logistique patients, r&eacute;gl&eacute;e.</h1>
-          <p class="hero__subtitle">
-            Officines, infirmeries et r&eacute;sidences&nbsp;: cr&eacute;neaux garantis, sacs scell&eacute;s, respect du circuit du m&eacute;dicament.
-          </p>
-          <div class="hero__cta">
-            <a class="btn btn--primary" href="<?= appUrl ?>?page=reservation">R&eacute;server une tourn&eacute;e</a>
-            <? if (CLIENT_PORTAL_ENABLED) { ?>
-            <a class="btn btn--ghost" href="<?= appUrl ?>?page=gestion">Espace client</a>
-            <? } ?>
+  <section id="hero" class="container">
+    <div class="hero-wrap">
+      <img class="card hero-logo" src="/assets/ui/hero/els-banner-logo.png" alt="ELS bannière">
+      <div class="hero-cards">
+        <img class="card hero-chip" src="/assets/ui/hero/eles-tournees.png" alt="ELS — TOURNÉES">
+        <img class="card hero-chip hero-chip--xl" src="/assets/ui/hero/votre-logistique.png" alt="Votre logistique patients, réglée.">
+        <img class="card hero-chip" src="/assets/ui/hero/officines-infirmeries.png" alt="Officines, infirmiers, résidences…">
+      </div>
+    </div>
+  </section>
+
+  <main id="layout" class="container two-cols">
+    <section id="col-left" class="col">
+      <div id="calendar-card" class="card">
+        <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
+          <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
+            <div class="carte-en-tete">
+              <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>
+              <h2 id="titre-calendrier" aria-live="polite"></h2>
+              <button id="btn-mois-suivant" class="btn-icone" aria-label="Mois suivant">&#9654;</button>
+            </div>
+            <div class="calendrier-jours-semaine" aria-hidden="true">
+              <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+            </div>
+            <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
           </div>
         </div>
+      </div>
+      <? if (PROOF_SOCIAL_ENABLED) { ?>
+      <section id="proof-card" class="card" aria-labelledby="preuves-sociales-titre" role="region">
+        <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
+        <ul class="avis-list">
+          <li><strong>Pharmacie de Tamaris</strong> : &laquo;Service rapide et sécurisé&raquo;</li>
+          <li><strong>EHPAD Les Amandiers</strong> : &laquo;Livraisons fiables pour nos résidents&raquo;</li>
+        </ul>
       </section>
-      <div id="app-conteneur-principal">
-        <? if (PROOF_SOCIAL_ENABLED) { ?>
-        <section class="section">
-          <div class="card preuves-sociales" aria-labelledby="preuves-sociales-titre" role="region">
-            <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
-            <ul class="avis-list">
-              <li><strong>Pharmacie de Tamaris</strong> : &laquo;Service rapide et s&eacute;curis&eacute;&raquo;</li>
-              <li><strong>EHPAD Les Amandiers</strong> : &laquo;Livraisons fiables pour nos r&eacute;sidents&raquo;</li>
-            </ul>
+      <? } ?>
+      <div id="conteneur-finalisation" class="carte card hidden">
+        <h3>Finaliser la réservation</h3>
+        <form id="formulaire-reservation">
+          <h4>Informations Client</h4>
+          <div class="groupe-formulaire"><label for="client-email">Email</label><input type="email" id="client-email" required></div>
+          <div class="groupe-formulaire"><label for="client-nom">Raison Sociale</label><input type="text" id="client-nom" required></div>
+          <div class="groupe-formulaire"><label for="client-adresse">Adresse</label><input type="text" id="client-adresse"></div>
+          <div class="groupe-formulaire"><label for="client-siret">SIRET</label><input type="text" id="client-siret"></div>
+          <div class="groupe-formulaire"><label for="note-reservation">Note (optionnel)</label><textarea id="note-reservation"></textarea></div>
+          <div class="modale-pied-de-page">
+            <button type="button" id="btn-annuler-reservation" class="btn btn-secondaire">Annuler</button>
+            <button type="submit" class="btn btn-primaire">Confirmer la réservation</button>
           </div>
-        </section>
-        <? } ?>
-        <section class="section section--calendar">
-          <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de r&eacute;servation">
-            <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte card">
-                    <div class="carte-en-tete">
-                      <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>
-                      <h2 id="titre-calendrier" aria-live="polite"></h2>
-                      <button id="btn-mois-suivant" class="btn-icone" aria-label="Mois suivant">&#9654;</button>
-                    </div>
-                    <div class="calendrier-jours-semaine" aria-hidden="true">
-                      <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
-                    </div>
-                    <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
-                  </div>
+        </form>
+      </div>
+    </section>
+    <section id="col-right" class="col">
+      <div id="tarifs-card" class="card hidden">
+        <section id="tarifs-detaille" class="section section--tarifs hero-card-tarifs hidden" aria-labelledby="titre-tarifs-detaille">
+          <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
+          <div class="tarifs-cartes">
+            <article class="tarif-carte" data-tarif="tournees">
+              <h3>Tournées</h3>
+              <ul>
+                <li>Normal: <strong><span id="tarif-normal-base">-</span> &euro;</strong> (base)</li>
+                <li>Samedi: <strong><span id="tarif-samedi-base">-</span> &euro;</strong> (base)</li>
+                <li>Urgent: <strong><span id="tarif-urgent-base">-</span> &euro;</strong> (base)</li>
+                <li>Suppléments par arrêt: <span id="tarif-supplements">-</span> &euro;</li>
+              </ul>
+            </article>
+            <article class="tarif-carte" data-tarif="forfait-resident">
+              <h3>Forfait résident - Retrait PUI Sainte Musse</h3>
+              <ul>
+                <li>Facturation: <strong>résident</strong></li>
+                <li>Pré-collecte veille + livraison lendemain: <strong><span id="forfait-resident-prix">-</span> &euro;</strong></li>
+                <li>Si retrait sur trajet de pharmacie: <strong>remise <span id="forfait-resident-remise">-</span> &euro;</strong></li>
+                <li>Devis partageable à la famille du résident.</li>
+                <li>Forfait modifiable à tout moment.</li>
+              </ul>
+            </article>
           </div>
-        </section>
-        <section class="section section--panier">
-          <aside id="vue-panier" aria-labelledby="panier-titre" class="carte card">
-                    <div class="panier-entete">
-                      <h3 id="panier-titre">Panier de réservation</h3>
-                      <div id="banniere-client-reconnu" class="panier-greeting hidden" aria-live="polite">
-                        Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
-                        <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
-                      </div>
-                    </div>
-                    <? if (CLIENT_PORTAL_ENABLED) { ?>
-                      <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm" style="margin-bottom:8px;">Mon Espace Client</a>
-                    <? } ?>
-                    <ul id="liste-panier">
-                      <p class="panier-vide">Votre panier est vide.</p>
-                    </ul>
-                    <div id="panier-pied-de-page" class="hidden">
-                      <div class="panier-total">
-                        <span>Total estimé</span>
-                        <strong id="panier-total-valeur">0 €</strong>
-                      </div>
-                      <div class="panier-actions-groupe">
-                          <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
-                          <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
-                          <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
-                      </div>
-                    </div>
-                  </aside>
-        </section>
-        <section class="section section--finalisation">
-          <div id="conteneur-finalisation" class="carte card hidden" style="margin-top: 2rem;">
-                  <h3>Finaliser la réservation</h3>
-                  <form id="formulaire-reservation">
-                      <h4>Informations Client</h4>
-                      <div class="groupe-formulaire"><label for="client-email">Email</label><input type="email" id="client-email" required></div>
-                      <div class="groupe-formulaire"><label for="client-nom">Raison Sociale</label><input type="text" id="client-nom" required></div>
-                      <div class="groupe-formulaire"><label for="client-adresse">Adresse</label><input type="text" id="client-adresse"></div>
-                      <div class="groupe-formulaire"><label for="client-siret">SIRET</label><input type="text" id="client-siret"></div>
-                      <div class="groupe-formulaire"><label for="note-reservation">Note (optionnel)</label><textarea id="note-reservation"></textarea></div>
-                      <div class="modale-pied-de-page">
-                          <button type="button" id="btn-annuler-reservation" class="btn btn-secondaire">Annuler</button>
-                          <button type="submit" class="btn btn-primaire">Confirmer la réservation</button>
-                      </div>
-                  </form>
-              </div>
+          <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
         </section>
       </div>
-      <section class="section section--tarifs card hero-card-tarifs hidden" id="tarifs-detaille" aria-labelledby="titre-tarifs-detaille">
-        <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
-        <div class="tarifs-cartes">
-          <article class="tarif-carte" data-tarif="tournees">
-            <h3>Tournées</h3>
-            <ul>
-              <li>Normal: <strong><span id="tarif-normal-base">—</span> €</strong> (base)</li>
-              <li>Samedi: <strong><span id="tarif-samedi-base">—</span> €</strong> (base)</li>
-              <li>Urgent: <strong><span id="tarif-urgent-base">—</span> €</strong> (base)</li>
-              <li>Suppléments par arrêt: <span id="tarif-supplements">—</span> €</li>
-            </ul>
-          </article>
-          <article class="tarif-carte" data-tarif="forfait-resident">
-            <h3>Forfait résident — Retrait PUI Sainte Musse</h3>
-            <ul>
-              <li>Facturation: <strong>résident</strong></li>
-              <li>Pré-collecte veille + livraison lendemain: <strong><span id="forfait-resident-prix">—</span> €</strong></li>
-              <li>Si retrait sur trajet de pharmacie: <strong>remise <span id="forfait-resident-remise">—</span> €</strong></li>
-              <li>Devis partageable à la famille du résident.</li>
-              <li>Forfait modifiable à tout moment.</li>
-            </ul>
-          </article>
-        </div>
-        <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
-      </section>
-    </div>
+      <div id="cart-card" class="card">
+        <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
+          <div class="panier-entete">
+            <h3 id="panier-titre">Panier de réservation</h3>
+            <div id="banniere-client-reconnu" class="panier-greeting hidden" aria-live="polite">
+              Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
+              <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
+            </div>
+          </div>
+          <? if (CLIENT_PORTAL_ENABLED) { ?>
+            <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm" style="margin-bottom:8px;">Mon Espace Client</a>
+          <? } ?>
+          <ul id="liste-panier">
+            <p class="panier-vide">Votre panier est vide.</p>
+          </ul>
+          <div id="panier-pied-de-page" class="hidden">
+            <div class="panier-total">
+              <span>Total estimé</span>
+              <strong id="panier-total-valeur">0 &euro;</strong>
+            </div>
+            <div class="panier-actions-groupe">
+              <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
+              <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
+              <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
   </main>
   <!-- MODALE 1: Configuration de la tournée (VERSION COMPLÈTE) -->
   <div id="modale-config-tournee" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-config-titre">
@@ -377,7 +366,14 @@
       } catch (e) { /* no-op */ }
 
       const bloc = document.getElementById('tarifs-detaille');
-      if (bloc) bloc.classList.toggle('hidden', !configServeur?.TARIFS_DETAILLE_ENABLED);
+      const wrapper = document.getElementById('tarifs-card');
+      const hideTarifs = !configServeur?.TARIFS_DETAILLE_ENABLED;
+      if (bloc) {
+        bloc.classList.toggle('hidden', hideTarifs);
+      }
+      if (wrapper) {
+        wrapper.classList.toggle('hidden', hideTarifs);
+      }
       if (!configServeur?.FORFAIT_RESIDENT_ENABLED) {
         const fr = document.querySelector('[data-tarif="forfait-resident"]');
         if (fr) fr.remove();
