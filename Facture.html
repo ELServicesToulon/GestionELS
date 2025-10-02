@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Facture {{facture_numero}}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* ---------- A4 + impression ---------- */
+    @page {
+      size: A4;
+      margin: 12mm;
+    }
+    @media print {
+      html, body { height: auto; }
+      .no-break { page-break-inside: avoid; }
+      .header, .total-wrap, .bank-table, .footer { page-break-inside: avoid; }
+    }
+
+    /* ---------- Base ---------- */
+    :root{
+      --capsule-start:#6b2bd8; /* violet */
+      --capsule-end:#2f69ff;   /* bleu */
+      --bg-soft:#f2f4f7;
+      --bg-soft-2:#e5e7eb;
+      --border:#cccccc;
+      --text:#111827;
+      --muted:#4b5563;
+    }
+    *{ box-sizing:border-box; }
+    html, body{
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      color:var(--text);
+      background:#fff;
+      line-height:1.35;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    h1,h2,h3{ margin:0 0 .5rem 0; line-height:1.2; }
+    p{ margin:.25rem 0; }
+    small { color:var(--muted); }
+    .container{
+      max-width: 190mm; /* laisse un peu d'air dans la page */
+      margin: 0 auto;
+    }
+
+    /* ---------- Capsule gradient band ---------- */
+    .band{
+      height: 8mm;
+      background: linear-gradient(90deg, var(--capsule-start), var(--capsule-end));
+      border-radius: 6px;
+      margin-bottom: 10mm;
+    }
+
+    /* ---------- Header ---------- */
+    .header{
+      display:flex;
+      gap:12mm;
+      align-items:flex-start;
+      margin-bottom: 8mm;
+    }
+    .logo{
+      width: 36mm; height: 36mm;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--bg-soft), #dfe3ea);
+      display:flex; align-items:center; justify-content:center;
+      border:1px solid var(--border);
+      overflow:hidden;
+    }
+    .logo img{ width:100%; height:100%; object-fit:contain; }
+
+    .issuer{ flex:1; }
+    .issuer h1{ font-size: 18px; margin-bottom: 2mm; }
+    .issuer .meta{ color:var(--muted); font-size: 12px; }
+    .invoice-meta{
+      margin-top: 4mm;
+      padding: 4mm;
+      border:1px solid var(--border);
+      border-radius:8px;
+      background: #fff;
+    }
+    .invoice-meta strong{ font-weight:600; }
+
+    /* ---------- Destinataire ---------- */
+    .destinataire{
+      margin: 8mm 0;
+      padding: 4mm;
+      background: var(--bg-soft);
+      border:1px solid var(--border);
+      border-radius:8px;
+    }
+    .destinataire h2{
+      font-size:14px;
+      margin:0 0 2mm 0;
+      color:#0f172a;
+    }
+    .destinataire pre{
+      margin:0; white-space:pre-wrap; font: inherit;
+    }
+
+    /* ---------- Tableau prestations ---------- */
+    table{ width:100%; border-collapse: collapse; }
+    .facture-table{
+      border:1px solid var(--border);
+      border-radius:10px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .facture-table thead th{
+      text-align:left;
+      padding: 4mm 3mm;
+      font-size: 12px;
+      color: #ffffff;
+      background: linear-gradient(90deg, var(--capsule-start), var(--capsule-end));
+      border-right:1px solid rgba(255,255,255,.25);
+    }
+    .facture-table thead th:last-child{ border-right:none; }
+    .facture-table tbody td{
+      padding: 3.5mm 3mm;
+      border-top:1px solid var(--border);
+      vertical-align: top;
+      font-size: 12px;
+    }
+    .facture-table tbody tr:nth-child(even){
+      background: #fafafa;
+    }
+    .col-designation{ width: 55%; }
+    .col-qty{ width: 15%; text-align:right; }
+    .col-unit{ width: 15%; text-align:right; }
+    .col-total{ width: 15%; text-align:right; }
+
+    /* ---------- Total ---------- */
+    .total-wrap{
+      margin-top: 4mm;
+      border:1px solid var(--border);
+      border-radius:10px;
+      overflow:hidden;
+    }
+    .total{
+      display:flex; justify-content:space-between; align-items:center;
+      padding: 5mm 6mm;
+      color:#fff;
+      background: linear-gradient(90deg, var(--capsule-start), var(--capsule-end));
+      font-weight:700;
+      font-size: 14px;
+    }
+    .total .amount{ font-size: 18px; }
+
+    /* ---------- Mentions / conditions ---------- */
+    .badges{
+      display:flex; gap:6mm; flex-wrap:wrap;
+      margin: 6mm 0 2mm 0;
+    }
+    .badge{
+      font-size: 12px; color:#0f172a;
+      background: var(--bg-soft-2);
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding: 2mm 3mm;
+    }
+    .conditions{
+      margin: 2mm 0 6mm 0;
+      padding: 4mm;
+      border:1px solid var(--border);
+      border-radius:8px;
+      background:#fff;
+    }
+    .conditions ul{
+      margin: 2mm 0 0 4mm;
+      padding-left: 4mm;
+    }
+    .conditions li{ margin: 1mm 0; font-size:12px; }
+
+    /* ---------- IBAN / BIC ---------- */
+    .bank-table{
+      margin-top: 6mm;
+      border:1px solid var(--border);
+      border-radius:8px;
+      overflow:hidden;
+      background:#fff;
+    }
+    .bank-table table td{
+      padding: 3.5mm 4mm;
+      font-size: 12px;
+      border-top:1px solid var(--border);
+    }
+    .bank-table table tr:first-child td{ border-top:none; }
+    .bank-table .label{ color:var(--muted); width: 28%; }
+    .bank-table .value{ font-weight:600; }
+
+    /* ---------- Footer ---------- */
+    .footer{
+      text-align:center;
+      margin-top: 10mm;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ---------- Subtle blister backdrop for header block ---------- */
+    .blister{
+      background:
+        radial-gradient(12px 12px at 10% 20%, #ffffff 0%, #f5f6f8 60%, #e6e8ed 100%),
+        radial-gradient(12px 12px at 60% 0%, #ffffff 0%, #f5f6f8 60%, #e6e8ed 100%),
+        radial-gradient(12px 12px at 90% 60%, #ffffff 0%, #f5f6f8 60%, #e6e8ed 100%);
+      background-color:#eef1f6;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding: 6mm;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="band"></div>
+
+    <section class="header blister no-break">
+      <div class="logo" aria-hidden="true">
+        <!-- Rempli par Code.gs : data URL ou laisser vide -->
+        <img src="{{logo_src}}" alt="Logo EL Services" />
+      </div>
+      <div class="issuer">
+        <h1>EI Emmanuel Lecourt – EL Services Toulon</h1>
+        <div class="meta">
+          <div>{{entreprise_adresse}}</div>
+          <div>Tél : {{entreprise_tel}} · {{entreprise_email}} · {{entreprise_site}}</div>
+          <div>SIREN : {{entreprise_siren}} · SIRET : {{entreprise_siret}}</div>
+        </div>
+
+        <div class="invoice-meta">
+          <div><strong>Facture n°</strong> {{facture_numero}}</div>
+          <div><strong>Date</strong> : {{facture_date}} · <strong>Émis à</strong> : {{lieu_emission}}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="destinataire no-break" aria-labelledby="dest-title">
+      <h2 id="dest-title">Destinataire :</h2>
+      <pre>
+{{client_nom}}
+{{client_adresse}}</pre>
+    </section>
+
+    <section class="no-break">
+      <table class="facture-table" role="table" aria-label="Détail des prestations">
+        <thead>
+          <tr>
+            <th scope="col" class="col-designation">Désignation</th>
+            <th scope="col" class="col-qty">Quantité</th>
+            <th scope="col" class="col-unit">Prix unitaire TTC (€)</th>
+            <th scope="col" class="col-total">Total TTC (€)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#prestations}}
+          <tr>
+            <td class="col-designation">{{designation}}</td>
+            <td class="col-qty">{{quantite}}</td>
+            <td class="col-unit">{{prix_unitaire_ttc}}</td>
+            <td class="col-total">{{total_ligne_ttc}}</td>
+          </tr>
+          {{/prestations}}
+        </tbody>
+      </table>
+
+      <div class="total-wrap">
+        <div class="total">
+          <div>TOTAL À PAYER (TTC)</div>
+          <div class="amount">{{montant_total}} €</div>
+        </div>
+      </div>
+
+      <div class="badges">
+        <div class="badge" aria-label="TVA non applicable">TVA non applicable, art. 293 B du CGI</div>
+      </div>
+
+      <div class="conditions">
+        <strong>Conditions de règlement</strong>
+        <ul>
+          <li>Règlement par virement sous <strong>{{delai}}</strong> jours à réception de facture.</li>
+          <li>En cas de retard, pénalités au <em>taux d’intérêt légal</em> et indemnité forfaitaire de <strong>40 €</strong> (art. L441-10 C. com.).</li>
+        </ul>
+      </div>
+
+      <div class="bank-table no-break" role="region" aria-label="Coordonnées bancaires">
+        <table>
+          <tr>
+            <td class="label">Banque</td>
+            <td class="value">{{banque_nom}}</td>
+          </tr>
+          <tr>
+            <td class="label">IBAN</td>
+            <td class="value">{{iban}}</td>
+          </tr>
+          <tr>
+            <td class="label">BIC</td>
+            <td class="value">{{bic}}</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      EI Emmanuel Lecourt – Livraison pharmaceutique Toulon &amp; Littoral – elsservicestoulon.fr
+    </footer>
+  </div>
+</body>
+</html>
