@@ -121,15 +121,15 @@ const CLIENT_SESSION_TTL_HOURS = 24;
 /** @const {boolean} Active l'espace client. */
 const CLIENT_PORTAL_ENABLED = true;
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
-const CLIENT_PORTAL_SIGNED_LINKS = false;
+const CLIENT_PORTAL_SIGNED_LINKS = true;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
-const PRIVACY_LINK_ENABLED = false;
+const PRIVACY_LINK_ENABLED = true;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
-const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
+const CLIENT_SESSION_OPAQUE_ID_ENABLED = true;
 /** @const {boolean} Vérifie la présence du scope script.send_mail lors du setup. */
 const SEND_MAIL_SCOPE_CHECK_ENABLED = true;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
@@ -145,7 +145,7 @@ const CALENDAR_PURGE_ENABLED = true;
 const CALENDAR_BAR_OPACITY_ENABLED = true;
 
 /** @const {boolean} Active la création optimiste des courses admin. */
-const ADMIN_OPTIMISTIC_CREATION_ENABLED = false;
+const ADMIN_OPTIMISTIC_CREATION_ENABLED = true;
 
 /** @const {boolean} Active la colonne de créneaux PNG dans la modale admin. */
 const ADMIN_SLOTS_PNG_ENABLED = false;
@@ -157,25 +157,25 @@ const RESERVATION_VERIFY_ENABLED = true;
 const RESERVATION_UI_V2_ENABLED = true;
 
 /** @const {boolean} Active la facturation directe au résident. */
-const RESIDENT_BILLING_ENABLED = false;
+const RESIDENT_BILLING_ENABLED = true;
 
 /** @const {boolean} Affiche le bloc "Tarifs détaillés" dans l'UI. */
-const TARIFS_DETAILLE_ENABLED = false;
+const TARIFS_DETAILLE_ENABLED = true;
 
 /** @const {boolean} Active le forfait Résident (PUI Sainte Musse). */
-const FORFAIT_RESIDENT_ENABLED = false;
+const FORFAIT_RESIDENT_ENABLED = true;
 
 /** @const {boolean} Active la numérotation atomique des factures (AAAA-0001). */
 const BILLING_ATOMIC_NUMBERING_ENABLED = false;
 
 /** @const {boolean} Active la modale de coordonnées de facturation. */
-const BILLING_MODAL_ENABLED = false;
+const BILLING_MODAL_ENABLED = true;
 /** @const {boolean} Active la réinitialisation du panier côté client. */
-const CART_RESET_ENABLED = false;
+const CART_RESET_ENABLED = true;
 /** @const {boolean} Inclut le retour dans la durée et la distance estimées (UI uniquement). */
-const RETURN_IMPACTS_ESTIMATES_ENABLED = false;
+const RETURN_IMPACTS_ESTIMATES_ENABLED = true;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
-const PRICING_RULES_V2_ENABLED = false;
+const PRICING_RULES_V2_ENABLED = true;
 
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
 const PROOF_SOCIAL_ENABLED = false;
@@ -216,7 +216,7 @@ const THEME_V2_ENABLED = true;
 const ELS_UI_THEMING_ENABLED = true;
 
 /** @const {boolean} Utilise les icônes hébergées sur Drive au lieu des Data URI. */
-const DRIVE_ASSETS_ENABLED = false;
+const DRIVE_ASSETS_ENABLED = true;
 
 /** @const {{CAPSULE_1X:string,CAPSULE_2X:string,BLISTER_1X:string,BLISTER_2X:string,ALUMINIUM_1X:string,ALUMINIUM_2X:string}} Identifiants Drive des icônes. */
 const DRIVE_ASSET_IDS = Object.freeze({
