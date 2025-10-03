@@ -217,6 +217,7 @@ function doGet(e) {
     template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
     template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
     template.TARIFS = conf.TARIFS;
+    template.heroImages = buildReservationHeroImages();
     template.DUREE_BASE = conf.DUREE_BASE;
     template.DUREE_ARRET_SUP = conf.DUREE_ARRET_SUP;
     template.KM_BASE = conf.KM_BASE;
@@ -251,6 +252,30 @@ function doGet(e) {
   }
 }
 
+
+function buildReservationHeroImages() {
+  const files = {
+    banner: 'Hero_ElsBanner_b64',
+    tours: 'Hero_ElesTournees_b64',
+    logistics: 'Hero_VotreLogistique_b64',
+    care: 'Hero_OfficinesInfirmeries_b64'
+  };
+  const images = {};
+  Object.keys(files).forEach(function(key) {
+    images[key] = loadBase64ImageDataUri(files[key]);
+  });
+  return images;
+}
+
+function loadBase64ImageDataUri(partialName) {
+  try {
+    const content = HtmlService.createHtmlOutputFromFile(partialName).getContent().trim();
+    return content ? 'data:image/png;base64,' + content : '';
+  } catch (err) {
+    Logger.log('Asset manquant pour ' + partialName + ': ' + err.message);
+    return '';
+  }
+}
 
 /**
  * Gère les requêtes POST entrantes.
