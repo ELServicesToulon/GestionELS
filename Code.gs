@@ -277,6 +277,23 @@ function loadBase64ImageDataUri(partialName) {
   }
 }
 
+function fetchGoogleChartsLoader() {
+  const cache = CacheService.getScriptCache();
+  const cacheKey = 'GOOGLE_CHARTS_LOADER_V1';
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+  const response = UrlFetchApp.fetch('https://www.gstatic.com/charts/loader.js', { muteHttpExceptions: true });
+  const status = response.getResponseCode();
+  if (status === 200) {
+    const content = response.getContentText();
+    cache.put(cacheKey, content, 21600);
+    return content;
+  }
+  throw new Error('Impossible de recuperer Google Charts loader (HTTP ' + status + ')');
+}
+
 /**
  * Gère les requêtes POST entrantes.
  * Parse les données et route vers la logique appropriée.

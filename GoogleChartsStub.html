@@ -1,0 +1,130 @@
+<script>
+(function () {
+  const CHARTS_CDN_REGEX = /(?:https?:)?\/\/www\.gstatic\.com\/charts\/loader\.js/i;
+  let stubInjected = false;
+  let loaderRequested = false;
+
+  function requestRealLoader() {
+    if (loaderRequested) {
+      return;
+    }
+    if (!(window.google && window.google.script && window.google.script.run)) {
+      setTimeout(requestRealLoader, 80);
+      return;
+    }
+    loaderRequested = true;
+    google.script.run
+      .withSuccessHandler((content) => {
+        if (!content) {
+          return;
+        }
+        const tag = document.createElement('script');
+        tag.type = 'text/javascript';
+        tag.textContent = content;
+        document.head.appendChild(tag);
+      })
+      .withFailureHandler((err) => {
+        console.warn('[ELS] Google Charts proxy failed', err);
+        loaderRequested = false;
+        setTimeout(requestRealLoader, 60000);
+      })
+      .fetchGoogleChartsLoader();
+  }
+
+  function injectStub() {
+    if (stubInjected) {
+      return;
+    }
+    stubInjected = true;
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.textContent = `(() => {
+      const root = window.google = window.google || {};
+      const charts = root.charts = root.charts || {};
+      const pending = [];
+      const run = (cb) => {
+        if (typeof cb === 'function') {
+          try {
+            cb();
+          } catch (err) {
+            console.error('[ELS] Google Charts stub callback error', err);
+          }
+        }
+      };
+      charts.load = function (_version, options) {
+        if (options && typeof options.callback === 'function') {
+          pending.push(options.callback);
+        }
+        while (pending.length) {
+          run(pending.shift());
+        }
+        return Promise.resolve();
+      };
+      charts.setOnLoadCallback = function (cb) {
+        pending.push(cb);
+        while (pending.length) {
+          run(pending.shift());
+        }
+      };
+    })();`;
+    document.head.appendChild(script);
+    console.info('[ELS] Google Charts loader CDN blocked; using Apps Script proxy');
+    requestRealLoader();
+  }
+
+  function fulfillScript(element) {
+    if (!element || element.__elsChartsStubbed) {
+      return;
+    }
+    const src = element.src || element.getAttribute('src') || '';
+    if (!CHARTS_CDN_REGEX.test(src)) {
+      return;
+    }
+    element.__elsChartsStubbed = true;
+    element.removeAttribute('src');
+    injectStub();
+    const onload = element.onload;
+    if (typeof onload === 'function') {
+      try {
+        onload.call(element);
+      } catch (err) {
+        console.warn('[ELS] Google Charts stub onload handler error', err);
+      }
+    }
+    const inlineHandler = element.getAttribute('onload');
+    if (inlineHandler) {
+      try {
+        new Function(inlineHandler).call(element);
+      } catch (err) {
+        console.warn('[ELS] Google Charts stub inline onload error', err);
+      }
+    }
+    element.dispatchEvent(new Event('load'));
+  }
+
+  function scanExistingScripts() {
+    document.querySelectorAll('script[src]').forEach(fulfillScript);
+  }
+
+  scanExistingScripts();
+
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof HTMLScriptElement) {
+          fulfillScript(node);
+        } else if (node && node.querySelectorAll) {
+          node.querySelectorAll('script[src]').forEach(fulfillScript);
+        }
+      });
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    scanExistingScripts();
+    requestRealLoader();
+  }, { once: true });
+
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+})();
+</script>
