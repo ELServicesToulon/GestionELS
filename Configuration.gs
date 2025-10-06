@@ -309,56 +309,13 @@ const TARIFS = {
   }
 };
 
-// Paramétrage EHPAD Sainte-Musse (utilisé par la facturation résident)
-// Structure attendue par FacturationResident.gs: `bands` (tableau d'objets {km, prix}),
-// `PDL_PRIX` (prix par arrêt supplémentaire), `SAMEDI_SURC`, `ATTENTE`
-TARIFS.SainteMusse_EHPAD_CLASSIC = {
-  bands: [
-    { km: 18, prix: 18 },
-    { km: 24, prix: 22 },
-    { km: 30, prix: 26 },
-    { km: 36, prix: 30 }
-  ],
-  PDL_PRIX: [2, 2, 3, 3],
-  SAMEDI_SURC: 5,
-  ATTENTE: { graceMin: 10, palierMin: 5, prixParPalier: 2 }
-};
-
-TARIFS.SainteMusse_EHPAD_URGENCE = {
-  bands: [
-    { km: 18, prix: 26 },
-    { km: 24, prix: 30 },
-    { km: 30, prix: 34 },
-    { km: 36, prix: 38 }
-  ],
-  PDL_PRIX: [3, 3, 4, 4],
-  SAMEDI_SURC: 5,
-  ATTENTE: { graceMin: 10, palierMin: 5, prixParPalier: 3 }
-};
-
-/**
- * Forfait Résident — Retrait PUI Sainte Musse.
- * 30€ si pré-collecte de l'ordonnance la veille à la résidence puis livraison le lendemain.
- * Remise de 5€ si retrait de l'ordonnance est effectué sur une tournée de pharmacie (sur trajet).
- */
 const FORFAIT_RESIDENT = Object.freeze({
-  LABEL: 'Forfait Résident — Retrait PUI Sainte Musse',
-  BASE_PRICE: 30,
-  DISCOUNT_PICKUP_ON_ROUTE: 5
+  STANDARD_LABEL: 'Pré-collecte veille + livraison lendemain',
+  STANDARD_PRICE: 30,
+  URGENCE_LABEL: 'Retrait et livraison sous 4 h',
+  URGENCE_PRICE: 50,
+  DURATION_HOURS: 4
 });
-
-if (TARIFS.SainteMusse_EHPAD_CLASSIC) {
-  TARIFS.SainteMusse_EHPAD_CLASSIC.PRECOLLECTE_VEILLE = {
-    prixParBande: [5, 5, 5, 5],
-    label: "Pré-collecte veille (ordonnance + carte Vitale, J-1)"
-  };
-}
-if (TARIFS.SainteMusse_EHPAD_URGENCE) {
-  TARIFS.SainteMusse_EHPAD_URGENCE.PRECOLLECTE_VEILLE = {
-    prixParBande: [5, 5, 5, 5],
-    label: "Pré-collecte veille (ordonnance + carte Vitale, J-1)"
-  };
-}
 
 
 // --- Noms des colonnes spécifiques (Feuille Clients) ---
@@ -368,6 +325,8 @@ const COLONNE_TYPE_REMISE_CLIENT = "Type de Remise";
 const COLONNE_VALEUR_REMISE_CLIENT = "Valeur Remise";
 /** @const {string} Nom de la colonne pour le nombre de tournées offertes. */
 const COLONNE_NB_TOURNEES_OFFERTES = "Nombre Tournées Offertes";
+/** @const {string} Colonne indiquant si le client est un résident. */
+const COLONNE_RESIDENT_CLIENT = "Resident";
 
 
 // =================================================================

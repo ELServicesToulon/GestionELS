@@ -1,4 +1,4 @@
-<script>
+﻿<script>
 /**
  * =================================================================
  * MODULE JAVASCRIPT - TABLEAU DE BORD ADMIN
@@ -401,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="groupe-formulaire"><label>Nom / Raison Sociale</label><input type="text" id="champ-nom-client" class="champ-formulaire"></div>
                 <div class="groupe-formulaire"><label>Adresse</label><input type="text" id="champ-adresse-client" class="champ-formulaire"></div>
                 <div class="groupe-formulaire"><label>SIRET</label><input type="text" id="champ-siret-client" class="champ-formulaire" pattern="\\d{14}"></div>
+                <div class="groupe-formulaire"><label class="checkbox-inline"><input type="checkbox" id="check-client-resident"> Client résident</label></div>
                 <h4>Gestion des remises (Admin seulement)</h4>
                 <div class="groupe-formulaire"><label for="type-remise">Type de Remise</label><select id="type-remise" class="champ-formulaire"><option value="">Aucune</option><option value="Pourcentage">Pourcentage</option><option value="Montant Fixe">Montant Fixe</option><option value="Tournées Offertes">Tournées Offertes</option></select></div>
                 <div class="groupe-formulaire hidden" id="conteneur-valeur-remise"><label for="valeur-remise">Valeur Remise</label><input type="number" id="valeur-remise" class="champ-formulaire" step="0.01" min="0"></div>
@@ -634,9 +635,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function attacherEcouteursModaleAjout() {
         const selectClient = document.getElementById('select-client');
         const champsClient = {
-            email: document.getElementById('champ-email-client'), nom: document.getElementById('champ-nom-client'),
-            adresse: document.getElementById('champ-adresse-client'), siret: document.getElementById('champ-siret-client'),
-            typeRemise: document.getElementById('type-remise'), valeurRemise: document.getElementById('valeur-remise'),
+            email: document.getElementById('champ-email-client'),
+            nom: document.getElementById('champ-nom-client'),
+            adresse: document.getElementById('champ-adresse-client'),
+            siret: document.getElementById('champ-siret-client'),
+            resident: document.getElementById('check-client-resident'),
+            typeRemise: document.getElementById('type-remise'),
+            valeurRemise: document.getElementById('valeur-remise'),
             nbTourneesOffertes: document.getElementById('nb-tournees-offertes')
         };
         const conteneurValeurRemise = document.getElementById('conteneur-valeur-remise');
@@ -659,8 +664,18 @@ document.addEventListener('DOMContentLoaded', () => {
             champsClient.adresse.value = client ? client.adresse : ''; champsClient.siret.value = client ? client.siret : '';
             champsClient.typeRemise.value = client ? (client.typeRemise || '') : ''; champsClient.valeurRemise.value = client ? (client.valeurRemise || 0) : 0;
             champsClient.nbTourneesOffertes.value = client ? (client.nbTourneesOffertes || 0) : 0;
+            if (champsClient.resident) champsClient.resident.checked = !!(client && client.resident);
             const isNewClient = !client;
-            Object.values(champsClient).forEach(champ => { if (champ.id !== 'type-remise' && champ.id !== 'valeur-remise' && champ.id !== 'nb-tournees-offertes') { champ.readOnly = !isNewClient; } });
+            Object.values(champsClient).forEach(champ => {
+                if (!champ) return;
+                if (champ.tagName === 'INPUT' && champ.type === 'checkbox') {
+                    champ.disabled = false;
+                    return;
+                }
+                if (champ.id !== 'type-remise' && champ.id !== 'valeur-remise' && champ.id !== 'nb-tournees-offertes') {
+                    champ.readOnly = !isNewClient;
+                }
+            });
             majAffichageRemise();
         };
         selectClient?.addEventListener('change', () => { const selectedEmail = selectClient.value; remplirChampsClient(selectedEmail === 'new' ? null : tousLesClients.find(c => c.email === selectedEmail)); });
@@ -702,9 +717,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         btnConfirmer?.addEventListener('click', () => {
             const clientData = {
-                email: champsClient.email.value.trim(), nom: champsClient.nom.value.trim(), adresse: champsClient.adresse.value.trim(),
-                siret: champsClient.siret.value.trim(), typeRemise: champsClient.typeRemise.value,
-                valeurRemise: parseFloat(champsClient.valeurRemise.value) || 0, nbTourneesOffertes: parseInt(champsClient.nbTourneesOffertes.value) || 0
+                email: champsClient.email.value.trim(),
+                nom: champsClient.nom.value.trim(),
+                adresse: champsClient.adresse.value.trim(),
+                siret: champsClient.siret.value.trim(),
+                typeRemise: champsClient.typeRemise.value,
+                valeurRemise: parseFloat(champsClient.valeurRemise.value) || 0,
+                nbTourneesOffertes: parseInt(champsClient.nbTourneesOffertes.value) || 0,
+                resident: !!champsClient.resident?.checked
             };
             const data = {
                 client: clientData, date: champDateAjout?.value, startTime: creneauSelectionne,
@@ -723,7 +743,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function afficherNotification(message, type = "succes") {
         const conteneur = document.getElementById('conteneur-notifications'); if(!conteneur) return;
         const notif = document.createElement('div');
-        notif.className = `notification ${type}`;
+        notif.className = 
+otification ${type}`;
         notif.textContent = message;
         conteneur.appendChild(notif);
         setTimeout(() => notif.remove(), 5000);

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <base target="_top">
@@ -94,8 +94,9 @@
       // Nouveaux drapeaux & constantes tarifs détaillés / forfait résident
       TARIFS_DETAILLE_ENABLED: <?= TARIFS_DETAILLE_ENABLED ? 'true' : 'false' ?>,
       FORFAIT_RESIDENT_ENABLED: <?= FORFAIT_RESIDENT_ENABLED ? 'true' : 'false' ?>,
-      FORFAIT_RESIDENT_BASE: <?= FORFAIT_RESIDENT.BASE_PRICE ?>,
-      FORFAIT_RESIDENT_DISCOUNT: <?= FORFAIT_RESIDENT.DISCOUNT_PICKUP_ON_ROUTE ?>
+      FORFAIT_RESIDENT_STANDARD: <?= FORFAIT_RESIDENT.STANDARD_PRICE ?>,
+      FORFAIT_RESIDENT_URGENCE: <?= FORFAIT_RESIDENT.URGENCE_PRICE ?>,
+      FORFAIT_RESIDENT_DURATION: <?= FORFAIT_RESIDENT.DURATION_HOURS ?>
     };
   </script>
 
@@ -148,6 +149,12 @@
           <div class="groupe-formulaire"><label for="client-nom">Raison Sociale</label><input type="text" id="client-nom" required></div>
           <div class="groupe-formulaire"><label for="client-adresse">Adresse</label><input type="text" id="client-adresse"></div>
           <div class="groupe-formulaire"><label for="client-siret">SIRET</label><input type="text" id="client-siret"></div>
+          <div class="groupe-formulaire">
+            <label class="checkbox-inline">
+              <input type="checkbox" id="client-resident">
+              <span>Course résident (forfait dédié)</span>
+            </label>
+          </div>
           <div class="groupe-formulaire"><label for="note-reservation">Note (optionnel)</label><textarea id="note-reservation"></textarea></div>
           <div class="modale-pied-de-page">
             <button type="button" id="btn-annuler-reservation" class="btn btn-secondaire">Annuler</button>
@@ -171,13 +178,13 @@
               </ul>
             </article>
             <article class="tarif-carte" data-tarif="forfait-resident">
-              <h3>Forfait résident - Retrait PUI Sainte Musse</h3>
+              <h3>Forfait résident</h3>
               <ul>
-                <li>Facturation: <strong>résident</strong></li>
-                <li>Pré-collecte veille + livraison lendemain: <strong><span id="forfait-resident-prix">-</span> &euro;</strong></li>
-                <li>Si retrait sur trajet de pharmacie: <strong>remise <span id="forfait-resident-remise">-</span> &euro;</strong></li>
-                <li>Devis partageable à la famille du résident.</li>
-                <li>Forfait modifiable à tout moment.</li>
+                
+                <li>Pré-collecte veille + livraison lendemain: <strong><span id="forfait-resident-standard">-</span> &euro;</strong></li>
+                <li>Retrait &amp; livraison sous 4&nbsp;h: <strong><span id="forfait-resident-urgence">-</span> &euro;</strong></li>
+                <li>Durée facturée (planification interne): <strong><span id="forfait-resident-duree">-</span> h</strong></li>
+                <li>Tri facilité dans la feuille « Facturation » (colonne Résident).</li>
               </ul>
             </article>
           </div>
@@ -362,8 +369,9 @@
         const elU = document.getElementById('tarif-urgent-base'); if (elU) elU.textContent = fmt(t?.Urgent?.base);
         const supplements = Array.isArray(t?.Normal?.arrets) ? t.Normal.arrets : [];
         const elSup = document.getElementById('tarif-supplements'); if (elSup) elSup.textContent = supplements.length ? supplements.join(' / ') : '—';
-        const elFrP = document.getElementById('forfait-resident-prix'); if (elFrP) elFrP.textContent = fmt(configServeur?.FORFAIT_RESIDENT_BASE);
-        const elFrR = document.getElementById('forfait-resident-remise'); if (elFrR) elFrR.textContent = fmt(configServeur?.FORFAIT_RESIDENT_DISCOUNT);
+        const elFrStd = document.getElementById('forfait-resident-standard'); if (elFrStd) elFrStd.textContent = fmt(configServeur?.FORFAIT_RESIDENT_STANDARD);
+        const elFrUrg = document.getElementById('forfait-resident-urgence'); if (elFrUrg) elFrUrg.textContent = fmt(configServeur?.FORFAIT_RESIDENT_URGENCE);
+        const elFrDur = document.getElementById('forfait-resident-duree'); if (elFrDur) elFrDur.textContent = fmt(configServeur?.FORFAIT_RESIDENT_DURATION);
       } catch (e) { /* no-op */ }
 
       const bloc = document.getElementById('tarifs-detaille');

@@ -103,12 +103,14 @@ function afficherConteneurFinalisation() {
     ui.champNomClient.value = clientReconnu.nom;
     ui.champAdresseClient.value = clientReconnu.adresse || '';
     ui.champSiretClient.value = clientReconnu.siret || '';
+    if (ui.champResidentClient) ui.champResidentClient.checked = !!clientReconnu.resident;
     ui.champEmailClient.readOnly = true;
     ui.champNomClient.readOnly = true;
   } else {
     if (ui.formulaireReservation) ui.formulaireReservation.reset();
     ui.champEmailClient.readOnly = false;
     ui.champNomClient.readOnly = false;
+    if (ui.champResidentClient) ui.champResidentClient.checked = false;
   }
 
   ui.conteneurFinalisation.classList.remove('hidden');
@@ -311,7 +313,8 @@ function gererSoumissionReservation(e) {
       nom: ui.champNomClient.value.trim(),
       adresse: ui.champAdresseClient.value.trim(),
       siret: ui.champSiretClient.value.trim(),
-      note: ui.champNoteReservation.value.trim()
+      note: ui.champNoteReservation.value.trim(),
+      resident: !!ui.champResidentClient?.checked
     },
     items: panier
   };

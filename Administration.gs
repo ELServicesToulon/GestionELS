@@ -280,16 +280,24 @@ function obtenirTousLesClients() {
     try {
         const feuilleClients = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_CLIENTS);
         if (!feuilleClients) return [];
-        const indices = obtenirIndicesEnTetes(feuilleClients, ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES]);
+
+        const headerRow = feuilleClients.getRange(1, 1, 1, Math.max(1, feuilleClients.getLastColumn())).getValues()[0];
+        const headerTrimmed = headerRow.map(function (h) { return String(h || '').trim(); });
+        if (headerTrimmed.indexOf(COLONNE_RESIDENT_CLIENT) === -1) {
+            feuilleClients.getRange(1, headerTrimmed.length + 1).setValue(COLONNE_RESIDENT_CLIENT);
+        }
+
+        const indices = obtenirIndicesEnTetes(feuilleClients, ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT]);
         const donnees = feuilleClients.getDataRange().getValues();
         return donnees.slice(1).map(ligne => ({
             email: ligne[indices["Email"]],
-            nom: ligne[indices["Raison Sociale"]],
-            adresse: ligne[indices["Adresse"]],
-            siret: ligne[indices["SIRET"]],
-            typeRemise: ligne[indices[COLONNE_TYPE_REMISE_CLIENT]],
-            valeurRemise: ligne[indices[COLONNE_VALEUR_REMISE_CLIENT]],
-            nbTourneesOffertes: ligne[indices[COLONNE_NB_TOURNEES_OFFERTES]]
+            nom: ligne[indices["Raison Sociale"]] || '',
+            adresse: ligne[indices["Adresse"]] || '',
+            siret: ligne[indices["SIRET"]] || '',
+            typeRemise: ligne[indices[COLONNE_TYPE_REMISE_CLIENT]] || '',
+            valeurRemise: ligne[indices[COLONNE_VALEUR_REMISE_CLIENT]] || 0,
+            nbTourneesOffertes: ligne[indices[COLONNE_NB_TOURNEES_OFFERTES]] || 0,
+            resident: ligne[indices[COLONNE_RESIDENT_CLIENT]] === true
         }));
     } catch (e) {
         Logger.log("Erreur dans obtenirTousLesClients: " + e.toString());
@@ -314,6 +322,8 @@ function creerReservationAdmin(data) {
     if (!data.client.email || !data.client.nom || !data.date || !data.startTime) {
         throw new Error("Données de réservation incomplètes.");
     }
+
+    data.client.resident = data.client.resident === true;
 
     enregistrerOuMajClient(data.client);
 
@@ -357,13 +367,30 @@ function creerReservationAdmin(data) {
     // typeCourse computed above
 
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${data.client.nom}`;
-    const descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${typeCourse}\nID Réservation: ${idReservation}\nArrêts totaux: ${totalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${prix.toFixed(2)} €\nNote: Ajouté par admin.`;
+    let descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${typeCourse}\nID Réservation: ${idReservation}\nArrêts totaux: ${totalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${prix.toFixed(2)} €\nNote: Ajouté par admin.`;
+    if (data.client.resident === true) {
+      descriptionEvenement += '\nResident: Oui';
+    }
 
     const evenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
 
     if (evenement) {
       const detailsFacturation = formatCourseLabel_(duree, totalStops, data.returnToPharmacy);
-      enregistrerReservationPourFacturation(dateDebut, data.client.nom, data.client.email, typeCourse, detailsFacturation, prix, evenement.getId(), idReservation, "Ajouté par admin", tourneeOfferteAppliquee, clientPourCalcul.typeRemise, clientPourCalcul.valeurRemise);
+      enregistrerReservationPourFacturation(
+        dateDebut,
+        data.client.nom,
+        data.client.email,
+        typeCourse,
+        detailsFacturation,
+        prix,
+        evenement.getId(),
+        idReservation,
+        "Ajouté par admin",
+        tourneeOfferteAppliquee,
+        clientPourCalcul.typeRemise,
+        clientPourCalcul.valeurRemise,
+        data.client.resident === true
+      );
       logActivity(idReservation, data.client.email, `Réservation manuelle par admin`, prix, "Succès");
 
       if (tourneeOfferteAppliquee) {

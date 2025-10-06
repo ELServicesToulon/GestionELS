@@ -53,6 +53,7 @@ function preRemplirInfosClient(identifiant) {
         if (window.ui.champNomClient) window.ui.champNomClient.value = client.nom || '';
         if (window.ui.champAdresseClient) window.ui.champAdresseClient.value = client.adresse || '';
         if (window.ui.champSiretClient) window.ui.champSiretClient.value = client.siret || '';
+        if (window.ui.champResidentClient) window.ui.champResidentClient.checked = !!client.resident;
         if (nomClientEl) nomClientEl.textContent = client.nom;
         if (banniere) banniere.classList.remove('hidden');
       }
@@ -86,7 +87,10 @@ function reinitialiserClient() {
     localStorage.removeItem(CLE_LOCALSTORAGE_CLIENT);
     window.etat.clientReconnu = null;
     if (window.ui && window.ui.formulaireReservation) {
-        window.ui.formulaireReservation.reset();
+    window.ui.formulaireReservation.reset();
+    if (window.ui.champResidentClient) {
+        window.ui.champResidentClient.checked = false;
+    }
     }
     const banniere = document.getElementById('banniere-client-reconnu');
     if (banniere) {

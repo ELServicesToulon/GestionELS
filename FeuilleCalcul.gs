@@ -15,7 +15,13 @@ function enregistrerOuMajClient(donneesClient) {
     const feuilleClients = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_CLIENTS);
     if (!feuilleClients) throw new Error("La feuille 'Clients' est introuvable.");
 
-    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES];
+    const headerRow = feuilleClients.getRange(1, 1, 1, Math.max(1, feuilleClients.getLastColumn())).getValues()[0];
+    const headerTrimmed = headerRow.map(function (h) { return String(h || '').trim(); });
+    if (headerTrimmed.indexOf(COLONNE_RESIDENT_CLIENT) === -1) {
+      feuilleClients.getRange(1, headerTrimmed.length + 1).setValue(COLONNE_RESIDENT_CLIENT);
+    }
+
+    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT];
     const indices = obtenirIndicesEnTetes(feuilleClients, enTetesRequis);
     
     const donneesFeuille = feuilleClients.getDataRange().getValues();
@@ -29,6 +35,7 @@ function enregistrerOuMajClient(donneesClient) {
       ligneAjour[indices[COLONNE_TYPE_REMISE_CLIENT]] = donneesClient.typeRemise || '';
       ligneAjour[indices[COLONNE_VALEUR_REMISE_CLIENT]] = donneesClient.valeurRemise !== undefined ? donneesClient.valeurRemise : 0;
       ligneAjour[indices[COLONNE_NB_TOURNEES_OFFERTES]] = donneesClient.nbTourneesOffertes !== undefined ? donneesClient.nbTourneesOffertes : 0;
+      ligneAjour[indices[COLONNE_RESIDENT_CLIENT]] = donneesClient.resident === true;
       feuilleClients.getRange(indexLigneClient + 1, 1, 1, ligneAjour.length).setValues([ligneAjour]);
     } else { // Le client n'existe pas : CRÉATION
       const nouvelleLigne = new Array(feuilleClients.getLastColumn()).fill('');
@@ -39,6 +46,7 @@ function enregistrerOuMajClient(donneesClient) {
       nouvelleLigne[indices[COLONNE_TYPE_REMISE_CLIENT]] = donneesClient.typeRemise || '';
       nouvelleLigne[indices[COLONNE_VALEUR_REMISE_CLIENT]] = donneesClient.valeurRemise !== undefined ? donneesClient.valeurRemise : 0;
       nouvelleLigne[indices[COLONNE_NB_TOURNEES_OFFERTES]] = donneesClient.nbTourneesOffertes !== undefined ? donneesClient.nbTourneesOffertes : 0;
+      nouvelleLigne[indices[COLONNE_RESIDENT_CLIENT]] = donneesClient.resident === true;
       feuilleClients.appendRow(nouvelleLigne);
     }
   } catch (e) {
@@ -56,7 +64,13 @@ function obtenirInfosClientParEmail(email) {
     const feuilleClients = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_CLIENTS);
     if (!feuilleClients) return null;
 
-    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES];
+    const headerRow = feuilleClients.getRange(1, 1, 1, Math.max(1, feuilleClients.getLastColumn())).getValues()[0];
+    const headerTrimmed = headerRow.map(function (h) { return String(h || '').trim(); });
+    if (headerTrimmed.indexOf(COLONNE_RESIDENT_CLIENT) === -1) {
+      feuilleClients.getRange(1, headerTrimmed.length + 1).setValue(COLONNE_RESIDENT_CLIENT);
+    }
+
+    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT];
     const indices = obtenirIndicesEnTetes(feuilleClients, enTetesRequis);
     
     const donnees = feuilleClients.getDataRange().getValues();
@@ -70,7 +84,8 @@ function obtenirInfosClientParEmail(email) {
         siret: ligneClient[indices["SIRET"]] || '',
         typeRemise: String(ligneClient[indices[COLONNE_TYPE_REMISE_CLIENT]]).trim() || '',
         valeurRemise: parseFloat(ligneClient[indices[COLONNE_VALEUR_REMISE_CLIENT]]) || 0,
-        nbTourneesOffertes: parseInt(ligneClient[indices[COLONNE_NB_TOURNEES_OFFERTES]]) || 0
+        nbTourneesOffertes: parseInt(ligneClient[indices[COLONNE_NB_TOURNEES_OFFERTES]]) || 0,
+        resident: ligneClient[indices[COLONNE_RESIDENT_CLIENT]] === true
       };
     }
     return null;
@@ -124,13 +139,20 @@ function decrementerTourneesOffertesClient(emailClient) {
  * @param {boolean} tourneeOfferteAppliquee Si une tournée a été offerte.
  * @param {string} typeRemiseAppliquee Le type de remise appliqué.
  * @param {number} valeurRemiseAppliquee La valeur de la remise.
+ * @param {boolean} estResident Indique si la course concerne un résident.
  */
-function enregistrerReservationPourFacturation(dateHeureDebut, nomClient, emailClient, type, details, montant, idEvenement, idReservation, note, tourneeOfferteAppliquee = false, typeRemiseAppliquee = '', valeurRemiseAppliquee = 0) {
+function enregistrerReservationPourFacturation(dateHeureDebut, nomClient, emailClient, type, details, montant, idEvenement, idReservation, note, tourneeOfferteAppliquee = false, typeRemiseAppliquee = '', valeurRemiseAppliquee = 0, estResident = false) {
   try {
     const feuilleFacturation = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     if (!feuilleFacturation) throw new Error("La feuille 'Facturation' est introuvable.");
 
-    const enTetesRequis = ["Date", "Client (Raison S. Client)", "Client (Email)", "Type", "Détails", "Montant", "Statut", "Valider", "N° Facture", "Event ID", "ID Réservation", "Note Interne", "Tournée Offerte Appliquée", "Type Remise Appliquée", "Valeur Remise Appliquée", "Lien Note"];
+    const headerRow = feuilleFacturation.getRange(1, 1, 1, Math.max(1, feuilleFacturation.getLastColumn())).getValues()[0];
+    const trimmedHeaders = headerRow.map(function (h) { return String(h || '').trim(); });
+    if (trimmedHeaders.indexOf('Resident') === -1) {
+      feuilleFacturation.getRange(1, trimmedHeaders.length + 1).setValue('Resident');
+    }
+
+    const enTetesRequis = ["Date", "Client (Raison S. Client)", "Client (Email)", "Type", "Détails", "Montant", "Statut", "Valider", "N° Facture", "Event ID", "ID Réservation", "Note Interne", "Tournée Offerte Appliquée", "Type Remise Appliquée", "Valeur Remise Appliquée", "Lien Note", "Resident"];
     const indices = obtenirIndicesEnTetes(feuilleFacturation, enTetesRequis);
 
     const nouvelleLigne = new Array(feuilleFacturation.getLastColumn()).fill('');
@@ -150,6 +172,7 @@ function enregistrerReservationPourFacturation(dateHeureDebut, nomClient, emailC
     nouvelleLigne[indices["Type Remise Appliquée"]] = typeRemiseAppliquee;
     nouvelleLigne[indices["Valeur Remise Appliquée"]] = valeurRemiseAppliquee;
     nouvelleLigne[indices["Lien Note"]] = "";
+    nouvelleLigne[indices["Resident"]] = estResident === true;
 
     feuilleFacturation.appendRow(nouvelleLigne);
   } catch (e) {

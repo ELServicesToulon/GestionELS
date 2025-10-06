@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Helpers de facturation résidente.
  * Génère les lignes de facture et envoie un PDF par e-mail.
  */
@@ -93,81 +93,15 @@ function doSaveBillingForOrder(payload) {
   }
 }
 
-function bandIndexFromKm(km, bands) {
-  for (var i = 0; i < bands.length; i++) {
-    var b = bands[i];
-    var threshold = (typeof b === 'number') ? b : Number(b && b.km);
-    if (!isNaN(threshold) && km <= threshold) {
-      return i;
-    }
-  }
-  return bands.length - 1;
-}
-
 function buildInvoiceLinesSainteMusseEHPAD(opts) {
-  var mode = opts.mode;
-  var t = mode === 'Urgence' ? TARIFS.SainteMusse_EHPAD_URGENCE : TARIFS.SainteMusse_EHPAD_CLASSIC;
-  var idx = bandIndexFromKm(opts.km, t.bands);
-  var zoneLabel = ['Zone A ≤18km', 'Zone B ≤24km', 'Zone C ≤30km', 'Zone D ≤36km'][idx] || 'Zone D';
-  var base;
-  if (t.bands && typeof t.bands[idx] === 'object' && t.bands[idx] && typeof t.bands[idx].prix === 'number') {
-    base = t.bands[idx].prix;
-  } else if (t.PRIX_BANDES && typeof t.PRIX_BANDES[idx] === 'number') {
-    base = t.PRIX_BANDES[idx];
-  } else {
-    base = 0;
-  }
+  var mode = String(opts.mode || '').toLowerCase();
+  var isUrgent = mode === 'urgence' || opts.urgence === true;
+  var prix = isUrgent ? FORFAIT_RESIDENT.URGENCE_PRICE : FORFAIT_RESIDENT.STANDARD_PRICE;
+  var label = isUrgent
+    ? (FORFAIT_RESIDENT.URGENCE_LABEL || 'Forfait résident - Urgence <4h')
+    : (FORFAIT_RESIDENT.STANDARD_LABEL || 'Forfait résident');
 
-  var lines = [];
-  var libBase = mode === 'Urgence'
-    ? 'URGENCE — Sainte-Musse ↔ EHPAD (' + zoneLabel + ', retour inclus)'
-    : 'Classique — Sainte-Musse → EHPAD (' + zoneLabel + ')';
-  lines.push({ label: libBase, qty: 1, unit: 'forfait', pu: base, total: base });
-
-  var extras = Math.max(0, opts.nbArretsTotaux - 1);
-  for (var i = 0; i < extras; i++) {
-    var puExtra = (t.PDL_PRIX && t.PDL_PRIX.length)
-      ? t.PDL_PRIX[Math.min(i, t.PDL_PRIX.length - 1)]
-      : 0;
-    lines.push({ label: 'Arrêt supplémentaire #' + (i + 2), qty: 1, unit: 'arrêt', pu: puExtra, total: puExtra });
-  }
-
-  if (opts.precollecteVeille) {
-    lines.push({
-      label: 'Pré-collecte veille (ordonnance + carte Vitale, J-1)',
-      qty: 1,
-      unit: 'forfait',
-      pu: 5,
-      total: 5
-    });
-  }
-
-  if (opts.samedi && typeof t.SAMEDI_SURC === 'number' && t.SAMEDI_SURC > 0) {
-    lines.push({
-      label: 'Majoration samedi',
-      qty: 1,
-      unit: 'forfait',
-      pu: t.SAMEDI_SURC,
-      total: t.SAMEDI_SURC
-    });
-  }
-
-  var over = Math.max(0, opts.minutesAttente - (t.ATTENTE && t.ATTENTE.graceMin || 0));
-  if (over > 0) {
-    var palier = (t.ATTENTE && t.ATTENTE.palierMin) || 1;
-    var prixPalier = (t.ATTENTE && t.ATTENTE.prixParPalier) || 0;
-    var tranches = Math.ceil(over / palier);
-    var totalAttente = tranches * prixPalier;
-    lines.push({
-      label: 'Attente au-delà de ' + ((t.ATTENTE && t.ATTENTE.graceMin) || 0) + ' min',
-      qty: tranches,
-      unit: palier + ' min',
-      pu: prixPalier,
-      total: totalAttente
-    });
-  }
-
-  return lines;
+  return [{ label: label, qty: 1, unit: 'forfait', pu: prix, total: prix }];
 }
 
 function sumHT(lines) {

@@ -17,6 +17,9 @@ function reserverPanier(donneesReservation) {
 
   try {
     const client = donneesReservation.client;
+    if (client) {
+      client.resident = client.resident === true;
+    }
     const items = donneesReservation.items;
     let failedItemIds = [];
     let successfulReservations = [];
@@ -76,7 +79,10 @@ function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
     const idReservation = overrideIdReservation || ('RESA-' + Utilities.getUuid());
 
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${client.nom}`;
-    const descriptionEvenement = `Client: ${client.nom} (${client.email})\nID Réservation: ${idReservation}\nDétails: ${infosTournee.details}\nNote: ${client.note || ''}`;
+    let descriptionEvenement = `Client: ${client.nom} (${client.email})\nID Réservation: ${idReservation}\nDétails: ${infosTournee.details}\nNote: ${client.note || ''}`;
+    if (client.resident === true) {
+      descriptionEvenement += '\nResident: Oui';
+    }
     const calendrier = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER'));
     const evenement = calendrier.createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
 
@@ -91,9 +97,23 @@ function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
           }
         }
 
-        const infosPrixFinal = calculerPrixEtDureeServeur(totalStops, returnToPharmacy, date, startTime, clientPourCalcul);
+      const infosPrixFinal = calculerPrixEtDureeServeur(totalStops, returnToPharmacy, date, startTime, clientPourCalcul, { resident: client.resident === true });
         if (!skipFacturation) {
-          enregistrerReservationPourFacturation(dateDebut, client.nom, client.email, infosTournee.typeCourse, infosTournee.details, infosPrixFinal.prix, evenement.getId(), idReservation, client.note, infosPrixFinal.tourneeOfferteAppliquee, clientPourCalcul.typeRemise, clientPourCalcul.valeurRemise);
+        enregistrerReservationPourFacturation(
+          dateDebut,
+          client.nom,
+          client.email,
+          infosTournee.typeCourse,
+          infosTournee.details,
+          infosPrixFinal.prix,
+          evenement.getId(),
+          idReservation,
+          client.note,
+          infosPrixFinal.tourneeOfferteAppliquee,
+          clientPourCalcul.typeRemise,
+          clientPourCalcul.valeurRemise,
+          client.resident === true
+        );
         }
         if (infosPrixFinal.tourneeOfferteAppliquee) {
           decrementerTourneesOffertesClient(client.email);
@@ -241,10 +261,17 @@ function calculerInfosTourneeBase(totalStops, returnToPharmacy, dateString, star
 /**
  * Calcule le prix final en appliquant les remises client.
  */
-function calculerPrixEtDureeServeur(totalStops, returnToPharmacy, dateString, startTime, clientInfo) {
+function calculerPrixEtDureeServeur(totalStops, returnToPharmacy, dateString, startTime, clientInfo, options) {
+  const opts = options || {};
   const infosBase = calculerInfosTourneeBase(totalStops, returnToPharmacy, dateString, startTime);
   let prixFinal = infosBase.prix;
   let tourneeOfferteAppliquee = false;
+
+  if (opts.resident === true) {
+    prixFinal = infosBase.typeCourse === 'Urgent'
+      ? FORFAIT_RESIDENT.URGENCE_PRICE
+      : FORFAIT_RESIDENT.STANDARD_PRICE;
+  }
 
   if (clientInfo) {
     if (clientInfo.nbTourneesOffertes > 0) {
