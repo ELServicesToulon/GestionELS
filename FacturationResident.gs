@@ -95,7 +95,9 @@ function doSaveBillingForOrder(payload) {
 
 function bandIndexFromKm(km, bands) {
   for (var i = 0; i < bands.length; i++) {
-    if (km <= bands[i]) {
+    var b = bands[i];
+    var threshold = (typeof b === 'number') ? b : Number(b && b.km);
+    if (!isNaN(threshold) && km <= threshold) {
       return i;
     }
   }
@@ -107,7 +109,14 @@ function buildInvoiceLinesSainteMusseEHPAD(opts) {
   var t = mode === 'Urgence' ? TARIFS.SainteMusse_EHPAD_URGENCE : TARIFS.SainteMusse_EHPAD_CLASSIC;
   var idx = bandIndexFromKm(opts.km, t.bands);
   var zoneLabel = ['Zone A ≤18km', 'Zone B ≤24km', 'Zone C ≤30km', 'Zone D ≤36km'][idx] || 'Zone D';
-  var base = t.bands[idx].prix;
+  var base;
+  if (t.bands && typeof t.bands[idx] === 'object' && t.bands[idx] && typeof t.bands[idx].prix === 'number') {
+    base = t.bands[idx].prix;
+  } else if (t.PRIX_BANDES && typeof t.PRIX_BANDES[idx] === 'number') {
+    base = t.PRIX_BANDES[idx];
+  } else {
+    base = 0;
+  }
 
   var lines = [];
   var libBase = mode === 'Urgence'
@@ -117,7 +126,9 @@ function buildInvoiceLinesSainteMusseEHPAD(opts) {
 
   var extras = Math.max(0, opts.nbArretsTotaux - 1);
   for (var i = 0; i < extras; i++) {
-    var puExtra = t.PDL_PRIX[Math.min(i, t.PDL_PRIX.length - 1)];
+    var puExtra = (t.PDL_PRIX && t.PDL_PRIX.length)
+      ? t.PDL_PRIX[Math.min(i, t.PDL_PRIX.length - 1)]
+      : 0;
     lines.push({ label: 'Arrêt supplémentaire #' + (i + 2), qty: 1, unit: 'arrêt', pu: puExtra, total: puExtra });
   }
 
@@ -131,7 +142,7 @@ function buildInvoiceLinesSainteMusseEHPAD(opts) {
     });
   }
 
-  if (opts.samedi) {
+  if (opts.samedi && typeof t.SAMEDI_SURC === 'number' && t.SAMEDI_SURC > 0) {
     lines.push({
       label: 'Majoration samedi',
       qty: 1,
@@ -141,15 +152,17 @@ function buildInvoiceLinesSainteMusseEHPAD(opts) {
     });
   }
 
-  var over = Math.max(0, opts.minutesAttente - t.ATTENTE.graceMin);
+  var over = Math.max(0, opts.minutesAttente - (t.ATTENTE && t.ATTENTE.graceMin || 0));
   if (over > 0) {
-    var tranches = Math.ceil(over / t.ATTENTE.palierMin);
-    var totalAttente = tranches * t.ATTENTE.prixParPalier;
+    var palier = (t.ATTENTE && t.ATTENTE.palierMin) || 1;
+    var prixPalier = (t.ATTENTE && t.ATTENTE.prixParPalier) || 0;
+    var tranches = Math.ceil(over / palier);
+    var totalAttente = tranches * prixPalier;
     lines.push({
-      label: 'Attente au-delà de ' + t.ATTENTE.graceMin + ' min',
+      label: 'Attente au-delà de ' + ((t.ATTENTE && t.ATTENTE.graceMin) || 0) + ' min',
       qty: tranches,
-      unit: t.ATTENTE.palierMin + ' min',
-      pu: t.ATTENTE.prixParPalier,
+      unit: palier + ' min',
+      pu: prixPalier,
       total: totalAttente
     });
   }
@@ -201,7 +214,11 @@ function creerEtEnvoyerFactureResident(res) {
     var monthFolder = obtenirOuCreerDossier(yearFolder, Utilities.formatDate(now, Session.getScriptTimeZone(), 'MM'));
     parentFolder = monthFolder;
   }
-  var tmpl = DriveApp.getFileById(BILLING.DOC_TEMPLATE_FACTURE_ID).makeCopy(num + ' - ' + res.RESIDENT_NOM, parentFolder);
+  // Modèle dédié résident si présent, sinon fallback modèle global
+  var _props = PropertiesService.getScriptProperties();
+  var _tplResident = (function(){ try { return _props.getProperty('ID_MODELE_FACTURE_RESIDENT'); } catch(e){ return null; } })();
+  var _tplId = _tplResident || BILLING.DOC_TEMPLATE_FACTURE_ID;
+  var tmpl = DriveApp.getFileById(_tplId).makeCopy(num + ' - ' + res.RESIDENT_NOM, parentFolder);
   var doc = DocumentApp.openById(tmpl.getId());
   var body = doc.getBody();
 
@@ -225,6 +242,56 @@ function creerEtEnvoyerFactureResident(res) {
     return '• ' + l.label + ' — ' + l.qty + ' ' + l.unit + ' × ' + l.pu.toFixed(2) + ' € = ' + l.total.toFixed(2) + ' €';
   }).join('\n');
   body.replaceText('{{LIGNES}}', lignesTexte || '');
+
+  // Alignement supplémentaire sur le modèle Admin (tokens minuscules) et compléments
+  try {
+    var _dateFacture = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd/MM/yyyy');
+    var _delai = Number(BILLING.PAIEMENT_DELAI_JOURS.RESIDENT || 0);
+    var _echeance = new Date();
+    if (_delai > 0) { _echeance = new Date(_echeance.getTime() + _delai * 24 * 60 * 60 * 1000); }
+    var _dateEcheance = Utilities.formatDate(_echeance, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+
+    var _nomEnt = (function(){ try { return getSecret('NOM_ENTREPRISE'); } catch(e){ return ''; } })();
+    var _adrEnt = (function(){ try { return getSecret('ADRESSE_ENTREPRISE'); } catch(e){ return ''; } })();
+    var _mailEnt = (function(){ try { return getSecret('EMAIL_ENTREPRISE'); } catch(e){ try { return getSecret('ADMIN_EMAIL'); } catch(_e){ return ''; } } })();
+    var _siret = (function(){ try { return getSecret('SIRET'); } catch(e){ return ''; } })();
+    var _rib = (function(){ try { return getSecret('RIB_ENTREPRISE'); } catch(e){ return ''; } })();
+    var _bic = (function(){ try { return getSecret('BIC_ENTREPRISE'); } catch(e){ return ''; } })();
+    var _lienTarifs = (function(){
+      try { var u = getSecret('URL_TARIFS_PUBLIC'); if (u) return u; } catch(e){}
+      try { var id = getSecret('ID_DOCUMENT_TARIFS'); if (id) return 'https://drive.google.com/open?id=' + id; } catch(e){}
+      return '';
+    })();
+    var _lienCgv = (function(){ try { var id = getSecret('ID_DOCUMENT_CGV'); return id ? ('https://drive.google.com/open?id=' + id) : ''; } catch(e){ return ''; } })();
+
+    var _repl = {
+      '{{numero_facture}}': num,
+      '{{date_facture}}': _dateFacture,
+      '{{date_echeance}}': _dateEcheance,
+      '{{client_nom}}': res.RESIDENT_NOM || '',
+      '{{client_adresse}}': res.RESIDENT_CHAMBRE ? ('Chambre: ' + res.RESIDENT_CHAMBRE) : '',
+      '{{total_du}}': fromCents(ttcCents) + ' €',
+      '{{nombre_courses}}': '1',
+      '{{delai_paiement}}': String(_delai || 0),
+      '{{lien_tarifs}}': _lienTarifs,
+      '{{lien_cgv}}': _lienCgv,
+      '{{nom_entreprise}}': _nomEnt,
+      '{{adresse_entreprise}}': _adrEnt,
+      '{{email_entreprise}}': _mailEnt,
+      '{{siret}}': _siret,
+      '{{rib_entreprise}}': _rib,
+      '{{bic_entreprise}}': _bic
+    };
+    Object.keys(_repl).forEach(function (k) { body.replaceText(k, _repl[k]); });
+
+    // Réécrit {{LIGNES}} si présent avec un formatage clair
+    try {
+      var _lignesTxt = lines.map(function (l) {
+        return '• ' + l.label + ' - ' + l.qty + ' ' + l.unit + ' à ' + Number(l.pu).toFixed(2) + ' € = ' + Number(l.total).toFixed(2) + ' €';
+      }).join('\n');
+      body.replaceText('{{LIGNES}}', _lignesTxt || '');
+    } catch (_inner) {}
+  } catch (_outer) {}
 
   doc.saveAndClose();
   var pdf = DriveApp.getFileById(tmpl.getId()).getAs('application/pdf');

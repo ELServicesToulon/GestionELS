@@ -925,6 +925,16 @@ function onOpen() {
   if (typeof checkSetup_ELS === 'function') {
     menu.addItem('Check setup (console)', 'checkSetup_ELS');
   }
+  // Actions de facturation (si disponibles)
+  if (typeof genererFactures === 'function') {
+    menu.addItem('Generer les factures', 'genererFactures');
+  }
+  if (typeof envoyerFacturesControlees === 'function') {
+    menu.addItem('Envoyer les factures controlees', 'envoyerFacturesControlees');
+  }
+  if (typeof archiverFacturesDuMois === 'function') {
+    menu.addItem('Archiver factures (mois prec.)', 'archiverFacturesDuMois');
+  }
 
   menu.addToUi();
 }
