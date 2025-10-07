@@ -164,8 +164,10 @@ function envoyerDevisParEmail(donneesDevis) {
     }).join('');
 
     const sujet = `Votre devis de réservation - ${NOM_ENTREPRISE}`;
+    const logoBlock = getLogoEmailBlockHtml();
     const corpsHtml = `
       <div style="font-family: Montserrat, sans-serif; color: #333;">
+        ${logoBlock}
         <h2>Devis pour vos réservations de tournées</h2>
         <p>Bonjour ${client.nom || ''},</p>
         <p>Voici le détail du devis pour les tournées actuellement dans votre panier. Ce devis est valable 24 heures, sous réserve de disponibilité des créneaux.</p>
@@ -213,15 +215,19 @@ function envoyerDevisParEmail(donneesDevis) {
 function notifierClientConfirmation(email, nom, reservations) {
     try {
         if (!email || !reservations || reservations.length === 0) return;
+        const logoBlock = getLogoEmailBlockHtml();
         let corpsHtml = `
-            <h1>Confirmation de votre réservation</h1>
-            <p>Bonjour ${nom},</p>
-            <p>Nous avons le plaisir de vous confirmer la réservation des tournées suivantes :</p>
-            <ul>
-                ${reservations.map(r => `<li>Le <strong>${r.date} à ${r.time}</strong> pour un montant de ${r.price.toFixed(2)} €</li>`).join('')}
-            </ul>
-            <p>Merci de votre confiance.</p>
-            <p>L'équipe ${NOM_ENTREPRISE}</p>
+            <div style="font-family: Montserrat, sans-serif; color: #333;">
+                ${logoBlock}
+                <h1>Confirmation de votre réservation</h1>
+                <p>Bonjour ${nom},</p>
+                <p>Nous avons le plaisir de vous confirmer la réservation des tournées suivantes :</p>
+                <ul>
+                    ${reservations.map(r => `<li>Le <strong>${r.date} à ${r.time}</strong> pour un montant de ${r.price.toFixed(2)} €</li>`).join('')}
+                </ul>
+                <p>Merci de votre confiance.</p>
+                <p>L'équipe ${NOM_ENTREPRISE}</p>
+            </div>
         `;
         MailApp.sendEmail({
             to: email,
@@ -426,7 +432,5 @@ function reservationIdExiste(idReservation) {
     return false;
   }
 }
-
-
 
 

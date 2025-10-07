@@ -291,10 +291,12 @@ function envoyerFactureClient(emailClient, numeroFacture, exp, sig) {
     const fichier = DriveApp.getFileById(idPdf);
     const pdfBlob = fichier.getAs(MimeType.PDF).setName(`${String(row[idx.numero]).trim()}.pdf`);
     const sujet = `[${NOM_ENTREPRISE}] Facture ${String(row[idx.numero]).trim()}`;
+    const logoBlock = getLogoEmailBlockHtml();
     const corps = [
+      logoBlock,
       `<p>Veuillez trouver ci-joint votre facture <strong>${String(row[idx.numero]).trim()}</strong>${montant !== null ? ` d'un montant de <strong>${montant.toFixed(2)} €</strong>` : ''}.</p>`,
       `<p>Cordiales salutations,<br>${NOM_ENTREPRISE}</p>`
-    ].join('');
+    ].filter(Boolean).join('');
     MailApp.sendEmail({ to: emailNorm, subject: sujet, htmlBody: corps, attachments: [pdfBlob], replyTo: EMAIL_ENTREPRISE });
   return { success: true };
   } catch (e) {

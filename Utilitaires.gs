@@ -145,6 +145,52 @@ function getLogoSvgBlob() {
   }
 }
 
+/**
+ * Retourne une data URL (PNG si possible) du logo pour une utilisation dans des e-mails HTML.
+ * @returns {string} Data URL ou chaîne vide en cas d'erreur.
+ */
+function getLogoDataUrl() {
+  try {
+    let blob = getLogoSvgBlob();
+    if (!blob) return '';
+    if (blob.getContentType() === 'image/svg+xml') {
+      try {
+        blob = blob.getAs(MimeType.PNG);
+      } catch (conversionError) {
+        Logger.log('Logo: conversion SVG -> PNG échouée, utilisation du SVG brut. ' + conversionError.message);
+      }
+    }
+    const usableBlob = blob || getLogoSvgBlob();
+    if (!usableBlob) return '';
+    const bytes = usableBlob.getBytes();
+    if (!bytes || !bytes.length) return '';
+    const contentType = usableBlob.getContentType() || 'image/png';
+    const base64 = Utilities.base64Encode(bytes);
+    return 'data:' + contentType + ';base64,' + base64;
+  } catch (e) {
+    Logger.log('Impossible de générer la data URL du logo: ' + e.message);
+    return '';
+  }
+}
+
+/**
+ * Construit un bloc HTML prêt à être injecté dans un e-mail avec le logo de l'entreprise.
+ * @returns {string} HTML contenant le logo ou chaîne vide.
+ */
+function getLogoEmailBlockHtml() {
+  try {
+    const dataUrl = getLogoDataUrl();
+    if (!dataUrl) return '';
+    const altText = 'Logo ' + (typeof NOM_ENTREPRISE !== 'undefined' ? NOM_ENTREPRISE : 'EL Services');
+    return '<div style="text-align:center;margin:0 0 24px;">' +
+      '<img src="' + dataUrl + '" alt="' + altText + '" style="max-width:160px;width:100%;height:auto;display:inline-block;" />' +
+      '</div>';
+  } catch (e) {
+    Logger.log('Impossible de générer le bloc e-mail du logo: ' + e.message);
+    return '';
+  }
+}
+
 
 // --- NOUVELLES FONCTIONS UTILITAIRES AJOUTÉES ---
 

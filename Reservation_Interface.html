@@ -105,6 +105,7 @@
   </div>
 
   <section id="hero" class="container">
+    <?!= include('Logo'); ?>
     <div class="hero-wrap">
       <img class="card hero-logo" src="<?= heroImages.banner ?>" alt="ELS bannière">
       <div class="hero-cards">
@@ -250,6 +251,7 @@
   <div id="modale-config-tournee" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-config-titre">
     <div class="modale-contenu">
       <button id="btn-fermer-config-tournee" class="btn-fermer" aria-label="Fermer la fenêtre de configuration">&times;</button>
+      <?!= include('Logo'); ?>
       <h3 id="modale-config-titre"></h3>
       <form id="formulaire-config-tournee">
         <div class="groupe-formulaire">
@@ -276,6 +278,7 @@
   <div id="modale-selection-creneau" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-selection-titre">
       <div class="modale-contenu">
           <button id="btn-fermer-selection-creneau" class="btn-fermer" aria-label="Fermer la fenêtre de sélection">&times;</button>
+          <?!= include('Logo'); ?>
           <h3 id="modale-selection-titre">Sélectionner un créneau</h3>
           <div id="grille-selection-creneau" class="grille-selection-creneau"></div>
           <div class="groupe-formulaire conteneur-interrupteur" style="margin-top: 1rem;">
@@ -298,6 +301,7 @@
   <div id="modale-confirmation-recurrence" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-recurrence-titre">
       <div class="modale-contenu">
           <button id="btn-fermer-confirmation-recurrence" class="btn-fermer" aria-label="Fermer">&times;</button>
+          <?!= include('Logo'); ?>
           <h3 id="modale-recurrence-titre">Confirmer les dates récurrentes</h3>
           <p>Veuillez vérifier les créneaux pour votre réservation récurrente. Les conflits ont été ajustés au plus proche.</p>
           <ul id="liste-recurrence-details" class="liste-recurrence"></ul>
@@ -312,6 +316,7 @@
   <div id="modale-email-devis" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-devis-titre">
       <div class="modale-contenu">
           <button id="btn-fermer-email-devis" class="btn-fermer" aria-label="Fermer">&times;</button>
+          <?!= include('Logo'); ?>
           <h3 id="modale-devis-titre">Recevoir votre devis</h3>
           <p>Les directeurs d’EHPAD peuvent envoyer le devis directement à la famille du résident.</p>
           <form id="formulaire-email-devis">
@@ -331,6 +336,7 @@
   <div id="modale-billing" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="billing-titre">
       <div class="modale-contenu">
           <button id="btn-fermer-billing" class="btn-fermer" aria-label="Fermer">&times;</button>
+          <?!= include('Logo'); ?>
           <h3 id="billing-titre">Coordonnées de facturation</h3>
           <form id="formulaire-billing">
               <div class="groupe-formulaire">

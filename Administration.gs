@@ -895,6 +895,7 @@ function archiverFacturesDuMois() {
   }
 }
 
+    const logoBlock = getLogoEmailBlockHtml();
     const data = feuille.getDataRange().getValues();
     let envoyees = 0;
     let erreurs = [];
@@ -913,10 +914,11 @@ function archiverFacturesDuMois() {
         const montant = idx.montant !== -1 ? parseFloat(row[idx.montant]) || 0 : null;
         const sujet = `[${NOM_ENTREPRISE}] Facture ${numero}`;
         const corps = [
+          logoBlock,
           `<p>Bonjour,</p>`,
           `<p>Veuillez trouver ci-joint votre facture <strong>${numero}</strong>${montant !== null ? ` d'un montant de <strong>${montant.toFixed(2)} €</strong>` : ''}.</p>`,
           `<p>Merci pour votre confiance.<br/>${NOM_ENTREPRISE}</p>`
-        ].join('');
+        ].filter(Boolean).join('');
 
         MailApp.sendEmail({ to: email, subject: sujet, htmlBody: corps, attachments: [pdfBlob] });
 
