@@ -133,7 +133,7 @@ const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
 /** @const {boolean} Vérifie la présence du scope script.send_mail lors du setup. */
 const SEND_MAIL_SCOPE_CHECK_ENABLED = false;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
-const BILLING_MULTI_SHEET_ENABLED = true;
+const BILLING_MULTI_SHEET_ENABLED = false;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
 const CA_EN_COURS_ENABLED = true;
 /** @const {boolean} Resynchronise les événements manquants du calendrier Google. */
@@ -145,7 +145,7 @@ const CALENDAR_PURGE_ENABLED = true;
 const CALENDAR_BAR_OPACITY_ENABLED = false;
 
 /** @const {boolean} Active la création optimiste des courses admin. */
-const ADMIN_OPTIMISTIC_CREATION_ENABLED = false;
+const ADMIN_OPTIMISTIC_CREATION_ENABLED = true;
 
 /** @const {boolean} Active la colonne de créneaux PNG dans la modale admin. */
 const ADMIN_SLOTS_PNG_ENABLED = false;
@@ -209,7 +209,7 @@ const CONFIG_CACHE_ENABLED = true;
 const RESERVATION_CACHE_ENABLED = true;
 /** @const {boolean} Affiche les créneaux déjà réservés dans la sélection de créneau. */
 /** @const {boolean} Active le flux d'envoi de devis pour les clients. */
-const DEVIS_ENABLED = false;
+const DEVIS_ENABLED = true;
 
 const RESERVATION_SHOW_TAKEN_SLOTS_ENABLED = true;
 
@@ -254,6 +254,7 @@ const FLAGS = Object.freeze({
   residentBillingEnabled: RESIDENT_BILLING_ENABLED,
   billingModalEnabled: BILLING_MODAL_ENABLED,
   cartResetEnabled: CART_RESET_ENABLED,
+  devisEnabled: DEVIS_ENABLED,
   debugMenuEnabled: DEBUG_MENU_ENABLED,
   demoReservationEnabled: DEMO_RESERVATION_ENABLED,
   billingV2Dryrun: BILLING_V2_DRYRUN,
