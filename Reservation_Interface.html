@@ -361,32 +361,44 @@
   <? } ?>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const FALLBACK_VALUE = '—';
       const t = configServeur?.TARIFS || {};
       const fmt = (value) => {
-        const fallback = '—';
-        if (value === null || value === undefined) return fallback;
+        if (value === null || value === undefined) return FALLBACK_VALUE;
         if (typeof value === 'number') {
-          return Number.isFinite(value) ? String(value) : fallback;
+          return Number.isFinite(value) ? String(value) : FALLBACK_VALUE;
         }
         if (typeof value === 'string') {
           const trimmed = value.trim();
-          if (!trimmed) return fallback;
+          if (!trimmed) return FALLBACK_VALUE;
           const normalized = Number(trimmed.replace(',', '.'));
-          if (!Number.isFinite(normalized)) return fallback;
+          if (!Number.isFinite(normalized)) return FALLBACK_VALUE;
           return String(normalized);
         }
         const coerced = Number(value);
-        return Number.isFinite(coerced) ? String(coerced) : fallback;
+        return Number.isFinite(coerced) ? String(coerced) : FALLBACK_VALUE;
+      };
+      const setText = (element, value, suffix = '') => {
+        if (!element) return;
+        const formatted = fmt(value);
+        element.textContent = formatted === FALLBACK_VALUE ? formatted : formatted + suffix;
       };
       try {
-        const elN = document.getElementById('tarif-normal-base'); if (elN) elN.textContent = fmt(t?.Normal?.base);
-        const elS = document.getElementById('tarif-samedi-base'); if (elS) elS.textContent = fmt(t?.Samedi?.base);
-        const elU = document.getElementById('tarif-urgent-base'); if (elU) elU.textContent = fmt(t?.Urgent?.base);
-        const supplements = Array.isArray(t?.Normal?.arrets) ? t.Normal.arrets : [];
-        const elSup = document.getElementById('tarif-supplements'); if (elSup) elSup.textContent = supplements.length ? supplements.join(' / ') : '—';
-        const elFrStd = document.getElementById('forfait-resident-standard'); if (elFrStd) elFrStd.textContent = fmt(configServeur?.FORFAIT_RESIDENT_STANDARD);
-        const elFrUrg = document.getElementById('forfait-resident-urgence'); if (elFrUrg) elFrUrg.textContent = fmt(configServeur?.FORFAIT_RESIDENT_URGENCE);
-        const elFrDur = document.getElementById('forfait-resident-duree'); if (elFrDur) elFrDur.textContent = fmt(configServeur?.FORFAIT_RESIDENT_DURATION);
+        setText(document.getElementById('tarif-normal-base'), t?.Normal?.base, ' €');
+        setText(document.getElementById('tarif-samedi-base'), t?.Samedi?.base, ' €');
+        setText(document.getElementById('tarif-urgent-base'), t?.Urgent?.base, ' €');
+
+        const supplementsSource = Array.isArray(t?.Normal?.arrets) ? t.Normal.arrets : [];
+        const supplementsFormatted = supplementsSource.map((value) => fmt(value));
+        const supplementsValid = supplementsFormatted.length > 0 && supplementsFormatted.every((value) => value !== FALLBACK_VALUE);
+        const supplementsElement = document.getElementById('tarif-supplements');
+        if (supplementsElement) {
+          supplementsElement.textContent = supplementsValid ? supplementsFormatted.join(' / ') + ' €' : FALLBACK_VALUE;
+        }
+
+        setText(document.getElementById('forfait-resident-standard'), configServeur?.FORFAIT_RESIDENT_STANDARD, ' €');
+        setText(document.getElementById('forfait-resident-urgence'), configServeur?.FORFAIT_RESIDENT_URGENCE, ' €');
+        setText(document.getElementById('forfait-resident-duree'), configServeur?.FORFAIT_RESIDENT_DURATION, ' h');
       } catch (e) { /* no-op */ }
 
       const bloc = document.getElementById('tarifs-detaille');
