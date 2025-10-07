@@ -178,6 +178,7 @@ function enregistrerReservationPourFacturation(dateHeureDebut, nomClient, emailC
   } catch (e) {
     Logger.log(`ERREUR CRITIQUE dans enregistrerReservationPourFacturation: ${e.stack}`);
     notifyAdminWithThrottle('ERREUR_LOG_FACTURE', `[${NOM_ENTREPRISE}] Erreur Critique d'Enregistrement Facturation`, `Erreur: ${e.message}`);
+    throw e;
   }
 }
 

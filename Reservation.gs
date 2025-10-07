@@ -99,24 +99,33 @@ function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
 
       const infosPrixFinal = calculerPrixEtDureeServeur(totalStops, returnToPharmacy, date, startTime, clientPourCalcul, { resident: client.resident === true });
         if (!skipFacturation) {
-        enregistrerReservationPourFacturation(
-          dateDebut,
-          client.nom,
-          client.email,
-          infosTournee.typeCourse,
-          infosTournee.details,
-          infosPrixFinal.prix,
-          evenement.getId(),
-          idReservation,
-          client.note,
-          infosPrixFinal.tourneeOfferteAppliquee,
-          clientPourCalcul.typeRemise,
-          clientPourCalcul.valeurRemise,
-          client.resident === true
-        );
+          try {
+            enregistrerReservationPourFacturation(
+              dateDebut,
+              client.nom,
+              client.email,
+              infosTournee.typeCourse,
+              infosTournee.details,
+              infosPrixFinal.prix,
+              evenement.getId(),
+              idReservation,
+              client.note,
+              infosPrixFinal.tourneeOfferteAppliquee,
+              clientPourCalcul.typeRemise,
+              clientPourCalcul.valeurRemise,
+              client.resident === true
+            );
+          } catch (err) {
+            try { evenement.deleteEvent(); } catch (_cleanupErr) { /* no-op */ }
+            Logger.log(ERREUR lors de l'enregistrement facturation pour : );
+            return null;
+          }
         }
         if (infosPrixFinal.tourneeOfferteAppliquee) {
           decrementerTourneesOffertesClient(client.email);
+          if (clientPourCalcul && typeof clientPourCalcul.nbTourneesOffertes !== 'undefined') {
+            clientPourCalcul.nbTourneesOffertes = Math.max(0, (clientPourCalcul.nbTourneesOffertes || 0) - 1);
+          }
         }
         return { date: formaterDateEnFrancais(dateDebut), time: startTime, price: infosPrixFinal.prix, eventId: evenement.getId(), reservationId: idReservation };
     }

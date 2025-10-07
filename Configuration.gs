@@ -121,19 +121,19 @@ const CLIENT_SESSION_TTL_HOURS = 24;
 /** @const {boolean} Active l'espace client. */
 const CLIENT_PORTAL_ENABLED = true;
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
-const CLIENT_PORTAL_SIGNED_LINKS = true;
+const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
-const PRIVACY_LINK_ENABLED = true;
+const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
-const CLIENT_SESSION_OPAQUE_ID_ENABLED = true;
+const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
 /** @const {boolean} Vérifie la présence du scope script.send_mail lors du setup. */
-const SEND_MAIL_SCOPE_CHECK_ENABLED = true;
+const SEND_MAIL_SCOPE_CHECK_ENABLED = false;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
-const BILLING_MULTI_SHEET_ENABLED = false;
+const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
 const CA_EN_COURS_ENABLED = true;
 /** @const {boolean} Resynchronise les événements manquants du calendrier Google. */
@@ -142,10 +142,10 @@ const CALENDAR_RESYNC_ENABLED = true;
 const CALENDAR_PURGE_ENABLED = true;
 
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
-const CALENDAR_BAR_OPACITY_ENABLED = true;
+const CALENDAR_BAR_OPACITY_ENABLED = false;
 
 /** @const {boolean} Active la création optimiste des courses admin. */
-const ADMIN_OPTIMISTIC_CREATION_ENABLED = true;
+const ADMIN_OPTIMISTIC_CREATION_ENABLED = false;
 
 /** @const {boolean} Active la colonne de créneaux PNG dans la modale admin. */
 const ADMIN_SLOTS_PNG_ENABLED = false;
@@ -154,7 +154,7 @@ const ADMIN_SLOTS_PNG_ENABLED = false;
 const RESERVATION_VERIFY_ENABLED = true;
 
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
-const RESERVATION_UI_V2_ENABLED = true;
+const RESERVATION_UI_V2_ENABLED = false;
 
 /** @const {boolean} Active la facturation directe au résident. */
 const RESIDENT_BILLING_ENABLED = true;
@@ -180,10 +180,10 @@ const PRICING_RULES_V2_ENABLED = true;
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
 const PROOF_SOCIAL_ENABLED = false;
 /** @const {boolean} Active le module Questions/Réponses pour les professionnels. */
-const PRO_QA_ENABLED = true;
+const PRO_QA_ENABLED = false;
 
 /** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
-const EXTRA_ICONS_ENABLED = true;
+const EXTRA_ICONS_ENABLED = false;
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = false;
@@ -208,6 +208,9 @@ const CONFIG_CACHE_ENABLED = true;
 /** @const {boolean} Active la mise en cache des réservations (désactivé par défaut). */
 const RESERVATION_CACHE_ENABLED = true;
 /** @const {boolean} Affiche les créneaux déjà réservés dans la sélection de créneau. */
+/** @const {boolean} Active le flux d'envoi de devis pour les clients. */
+const DEVIS_ENABLED = false;
+
 const RESERVATION_SHOW_TAKEN_SLOTS_ENABLED = true;
 
 // --- Drapeaux de Thème ---
@@ -216,7 +219,7 @@ const THEME_V2_ENABLED = true;
 const ELS_UI_THEMING_ENABLED = true;
 
 /** @const {boolean} Utilise les icônes hébergées sur Drive au lieu des Data URI. */
-const DRIVE_ASSETS_ENABLED = true;
+const DRIVE_ASSETS_ENABLED = false;
 
 /** @const {{CAPSULE_1X:string,CAPSULE_2X:string,BLISTER_1X:string,BLISTER_2X:string,ALUMINIUM_1X:string,ALUMINIUM_2X:string}} Identifiants Drive des icônes. */
 const DRIVE_ASSET_IDS = Object.freeze({
