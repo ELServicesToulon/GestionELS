@@ -396,10 +396,71 @@ main.layout > .main > * {
 .tarif-carte ul {
   list-style: none;
   padding: 0;
-  margin: 1rem 0;
+  margin: 0;
 }
-.tarif-carte li {\n  margin: 0.4rem 0;\n}\n/* Neutralise pill styling inherited by tariff values */\n#tarifs-card strong {\n  display: inline;\n  padding: 0;\n  background: transparent;\n  box-shadow: none;\n  border: 0;\n}\n.hero-footnote { margin: 0; font-size: 0.75em; line-height: 1.4; }
+#tarifs-card .tarif-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+#tarifs-card .tarif-ligne {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+}
+#tarifs-card .tarif-ligne--wrap,
+#tarifs-card .tarif-ligne--note {
+  grid-template-columns: minmax(0, 1fr);
+}
+#tarifs-card .tarif-libelle {
+  font-weight: 600;
+  color: var(--txt);
+}
+#tarifs-card .tarif-valeur {
+  justify-self: end;
+  font-weight: 600;
+  color: var(--violet);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#tarifs-card .tarif-valeur.is-na {
+  color: var(--muted);
+}
+#tarifs-card .tarif-ligne--wrap .tarif-valeur,
+#tarifs-card .tarif-ligne--note .tarif-valeur {
+  justify-self: start;
+}
+#tarifs-card .tarif-supplement-chip {
+  background: rgba(142, 68, 173, 0.12);
+  color: var(--violet);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill, 999px);
+  font-weight: 600;
+  white-space: nowrap;
+}
+#tarifs-card .tarif-supplement-chip::before {
+  content: '+';
+  margin-right: 4px;
+  font-weight: 700;
+}
+#tarifs-card .tarif-note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.hero-footnote { margin: 0; font-size: 0.75em; line-height: 1.4; }
 
+@media (max-width: 720px) {
+  #tarifs-card .tarif-ligne {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #tarifs-card .tarif-valeur {
+    justify-self: start;
+  }
+}
 /* Stack pour découpe en 3 cartes */
 .els-left-stack { display: grid; gap: 12px; }
 
@@ -852,6 +913,9 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   .champ-formulaire { border-color: var(--muted); }
 }
 </style>
+
+
+
 
 
 

@@ -170,21 +170,46 @@
           <div class="tarifs-cartes">
             <article class="tarif-carte" data-tarif="tournees">
               <h3>Tournées</h3>
-              <ul>
-                <li>Normal: <strong id="tarif-normal-base">—</strong> (base)</li>
-                <li>Samedi: <strong id="tarif-samedi-base">—</strong> (base)</li>
-                <li>Urgent: <strong id="tarif-urgent-base">—</strong> (base)</li>
-                <li>Suppléments par arrêt: <strong id="tarif-supplements">—</strong></li>
+              <ul class="tarif-liste">
+                <li class="tarif-ligne">
+                  <span class="tarif-libelle">Normal</span>
+                  <span class="tarif-valeur" id="tarif-normal-base">—</span>
+                  <span class="tarif-note">(base)</span>
+                </li>
+                <li class="tarif-ligne">
+                  <span class="tarif-libelle">Samedi</span>
+                  <span class="tarif-valeur" id="tarif-samedi-base">—</span>
+                  <span class="tarif-note">(base)</span>
+                </li>
+                <li class="tarif-ligne">
+                  <span class="tarif-libelle">Urgent</span>
+                  <span class="tarif-valeur" id="tarif-urgent-base">—</span>
+                  <span class="tarif-note">(base)</span>
+                </li>
+                <li class="tarif-ligne tarif-ligne--wrap">
+                  <span class="tarif-libelle">Suppléments par arrêt</span>
+                  <span class="tarif-valeur" id="tarif-supplements">—</span>
+                </li>
               </ul>
             </article>
             <article class="tarif-carte" data-tarif="forfait-resident">
               <h3>Forfait résident</h3>
-              <ul>
-                
-                <li>Pré-collecte veille + livraison lendemain: <strong id="forfait-resident-standard">—</strong></li>
-                <li>Retrait &amp; livraison sous 4&nbsp;h: <strong id="forfait-resident-urgence">—</strong></li>
-                <li>Durée facturée (planification interne): <strong id="forfait-resident-duree">—</strong></li>
-                <li>Tri facilité dans la feuille « Facturation » (colonne Résident).</li>
+              <ul class="tarif-liste">
+                <li class="tarif-ligne">
+                  <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
+                  <span class="tarif-valeur" id="forfait-resident-standard">—</span>
+                </li>
+                <li class="tarif-ligne">
+                  <span class="tarif-libelle">Retrait &amp; livraison sous 4&nbsp;h</span>
+                  <span class="tarif-valeur" id="forfait-resident-urgence">—</span>
+                </li>
+                <li class="tarif-ligne">
+                  <span class="tarif-libelle">Durée facturée (planification interne)</span>
+                  <span class="tarif-valeur" id="forfait-resident-duree">—</span>
+                </li>
+                <li class="tarif-ligne tarif-ligne--note">
+                  <span class="tarif-note">Tri facilité dans la feuille « Facturation » (colonne Résident).</span>
+                </li>
               </ul>
             </article>
           </div>
@@ -361,44 +386,95 @@
   <? } ?>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const FALLBACK_VALUE = '—';
-      const t = configServeur?.TARIFS || {};
-      const fmt = (value) => {
-        if (value === null || value === undefined) return FALLBACK_VALUE;
+      const FALLBACK_TEXT = '—';
+      const NBSP = '\u00A0';
+      const tariffs = configServeur?.TARIFS || {};
+      const currencyFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const hoursFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+
+      const toNumber = (value) => {
+        if (value === null || value === undefined) return null;
         if (typeof value === 'number') {
-          return Number.isFinite(value) ? String(value) : FALLBACK_VALUE;
+          return Number.isFinite(value) ? value : null;
         }
         if (typeof value === 'string') {
-          const trimmed = value.trim();
-          if (!trimmed) return FALLBACK_VALUE;
-          const normalized = Number(trimmed.replace(',', '.'));
-          if (!Number.isFinite(normalized)) return FALLBACK_VALUE;
-          return String(normalized);
+          const normalized = value
+            .trim()
+            .replace(/\u202f/g, ' ')
+            .replace(/\s+/g, '')
+            .replace(',', '.');
+          if (!normalized) return null;
+          const parsed = Number(normalized);
+          return Number.isFinite(parsed) ? parsed : null;
         }
         const coerced = Number(value);
-        return Number.isFinite(coerced) ? String(coerced) : FALLBACK_VALUE;
+        return Number.isFinite(coerced) ? coerced : null;
       };
-      const setText = (element, value, suffix = '') => {
-        if (!element) return;
-        const formatted = fmt(value);
-        element.textContent = formatted === FALLBACK_VALUE ? formatted : formatted + suffix;
-      };
-      try {
-        setText(document.getElementById('tarif-normal-base'), t?.Normal?.base, ' €');
-        setText(document.getElementById('tarif-samedi-base'), t?.Samedi?.base, ' €');
-        setText(document.getElementById('tarif-urgent-base'), t?.Urgent?.base, ' €');
 
-        const supplementsSource = Array.isArray(t?.Normal?.arrets) ? t.Normal.arrets : [];
-        const supplementsFormatted = supplementsSource.map((value) => fmt(value));
-        const supplementsValid = supplementsFormatted.length > 0 && supplementsFormatted.every((value) => value !== FALLBACK_VALUE);
+      const setFallback = (element) => {
+        if (!element) return;
+        element.textContent = FALLBACK_TEXT;
+        element.classList.add('is-na');
+      };
+
+      const setCurrency = (element, rawValue) => {
+        if (!element) return;
+        const numericValue = toNumber(rawValue);
+        if (numericValue === null) {
+          setFallback(element);
+          return;
+        }
+        element.textContent = `${currencyFormatter.format(numericValue)}${NBSP}€`;
+        element.classList.remove('is-na');
+      };
+
+      const setHours = (element, rawValue) => {
+        if (!element) return;
+        const numericValue = toNumber(rawValue);
+        if (numericValue === null) {
+          setFallback(element);
+          return;
+        }
+        element.textContent = `${hoursFormatter.format(numericValue)}${NBSP}h`;
+        element.classList.remove('is-na');
+      };
+
+      const renderSupplements = () => {
         const supplementsElement = document.getElementById('tarif-supplements');
-        if (supplementsElement) {
-          supplementsElement.textContent = supplementsValid ? supplementsFormatted.join(' / ') + ' €' : FALLBACK_VALUE;
+        if (!supplementsElement) return;
+        supplementsElement.innerHTML = '';
+
+        const supplements = Array.isArray(tariffs?.Normal?.arrets) ? tariffs.Normal.arrets : [];
+        const chips = supplements
+          .map((value, index, array) => {
+            const amount = toNumber(value);
+            if (amount === null) return null;
+            const stopNumber = index + 2;
+            const label = index === array.length - 1 ? `Arrêt ${stopNumber}+` : `Arrêt ${stopNumber}`;
+            const chip = document.createElement('span');
+            chip.className = 'tarif-supplement-chip';
+            chip.textContent = `${label} : ${currencyFormatter.format(amount)}${NBSP}€`;
+            return chip;
+          })
+          .filter(Boolean);
+
+        if (chips.length === 0) {
+          setFallback(supplementsElement);
+          return;
         }
 
-        setText(document.getElementById('forfait-resident-standard'), configServeur?.FORFAIT_RESIDENT_STANDARD, ' €');
-        setText(document.getElementById('forfait-resident-urgence'), configServeur?.FORFAIT_RESIDENT_URGENCE, ' €');
-        setText(document.getElementById('forfait-resident-duree'), configServeur?.FORFAIT_RESIDENT_DURATION, ' h');
+        supplementsElement.classList.remove('is-na');
+        chips.forEach(chip => supplementsElement.appendChild(chip));
+      };
+
+      try {
+        setCurrency(document.getElementById('tarif-normal-base'), tariffs?.Normal?.base);
+        setCurrency(document.getElementById('tarif-samedi-base'), tariffs?.Samedi?.base);
+        setCurrency(document.getElementById('tarif-urgent-base'), tariffs?.Urgent?.base);
+        renderSupplements();
+        setCurrency(document.getElementById('forfait-resident-standard'), configServeur?.FORFAIT_RESIDENT_STANDARD);
+        setCurrency(document.getElementById('forfait-resident-urgence'), configServeur?.FORFAIT_RESIDENT_URGENCE);
+        setHours(document.getElementById('forfait-resident-duree'), configServeur?.FORFAIT_RESIDENT_DURATION);
       } catch (e) { /* no-op */ }
 
       const bloc = document.getElementById('tarifs-detaille');
@@ -418,3 +494,4 @@
   </script>
 </body>
 </html>
+
