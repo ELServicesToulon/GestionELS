@@ -117,7 +117,9 @@ function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
             );
           } catch (err) {
             try { evenement.deleteEvent(); } catch (_cleanupErr) { /* no-op */ }
-            Logger.log(ERREUR lors de l'enregistrement facturation pour : );
+            const errMessage = err && err.message ? err.message : String(err);
+            const emailClient = client && client.email ? client.email : 'email inconnu';
+            Logger.log("ERREUR lors de l'enregistrement facturation pour : " + emailClient + " (" + errMessage + ")");
             return null;
           }
         }
