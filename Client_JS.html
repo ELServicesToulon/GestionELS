@@ -40,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkEmail = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.email) || '';
     const linkExp = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.exp) || '';
     const linkSig = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.sig) || '';
+    let signatureExp = linkExp || '';
+    let signatureSig = linkSig || '';
 
     // --- Variable d'état pour stocker les réservations chargées ---
     let toutesLesReservationsClient = [];
@@ -98,11 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} email L'email à valider.
      */
     function validerEtChargerClient(email, unlock) {
-        if (!linkEmail || !linkExp || !linkSig) {
-            document.getElementById('conteneur-app')?.classList.add('hidden');
-            document.getElementById('non-connecte')?.classList.remove('hidden');
-            basculerIndicateurChargement(false);
-            return;
+        if (!linkExp || !linkSig || email !== linkEmail) {
+            signatureExp = '';
+            signatureSig = '';
         }
         basculerIndicateurChargement(true);
         google.script.run
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 basculerIndicateurChargement(false);
                 unlock && unlock();
             })
-            .validerClientParEmail(email, linkExp, linkSig);
+            .validerClientParEmail(email, signatureExp, signatureSig);
     }
 
     /**
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         })
                         .withFailureHandler(err => logError(err))
-                        .calculerCAEnCoursClient(email, linkExp, linkSig);
+                        .calculerCAEnCoursClient(email, signatureExp, signatureSig);
                 } else {
                     afficherErreur(reponse.error);
                 }
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 afficherErreur(err);
                 basculerIndicateurChargement(false);
             })
-            .obtenirReservationsClient(email, linkExp, linkSig);
+            .obtenirReservationsClient(email, signatureExp, signatureSig);
     }
 
     /**
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .obtenirFacturesPourClient(email, linkExp, linkSig);
+            .obtenirFacturesPourClient(email, signatureExp, signatureSig);
     }
 
     /**
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function envoyerFactureParEmail(numero, btn) {
-        const email = linkEmail;
+        const email = emailClientCourant;
         if (!email) return;
         const unlock = lockButton(btn);
         basculerIndicateurChargement(true);
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 afficherErreur(err);
                 unlock();
             })
-            .envoyerFactureClient(email, numero, linkExp, linkSig);
+            .envoyerFactureClient(email, numero, signatureExp, signatureSig);
     }
 
     /**
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .getQuestions(linkEmail, linkExp, linkSig);
+            .getQuestions(emailClientCourant, signatureExp, signatureSig);
     }
 
     function posterQuestion(unlock) {
@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 afficherErreur(err);
                 unlock && unlock();
             })
-            .addQuestion(texte, emailClientCourant, emailClientCourant, linkExp, linkSig);
+            .addQuestion(texte, emailClientCourant, emailClientCourant, signatureExp, signatureSig);
     }
 
     function posterReponse(questionId, reponse) {
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 afficherErreur(err);
                 unlock();
             })
-            .addAnswer(questionId, reponse, emailClientCourant, emailClientCourant, linkExp, linkSig);
+            .addAnswer(questionId, reponse, emailClientCourant, emailClientCourant, signatureExp, signatureSig);
     }
 
     /**
@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .withFailureHandler(afficherErreur)
-            .obtenirCreneauxDisponiblesPourDate(dateString, duree, resa.eventId, null, [], linkEmail, linkExp, linkSig);
+            .obtenirCreneauxDisponiblesPourDate(dateString, duree, resa.eventId, null, [], emailClientCourant, signatureExp, signatureSig);
     }
 
     /**
@@ -440,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
                     afficherNotification("Réservation mise à jour avec succès !");
-                    chargerReservationsClient(linkEmail);
+                    chargerReservationsClient(emailClientCourant);
                 } else {
                     afficherErreur(reponse.error);
                 }
@@ -450,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 afficherErreur(err);
                 unlock && unlock();
             })
-            .mettreAJourDetailsReservation(idReservation, totalStops, linkEmail, linkExp, linkSig);
+            .mettreAJourDetailsReservation(idReservation, totalStops, emailClientCourant, signatureExp, signatureSig);
     }
 
     /**
@@ -467,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
                     afficherNotification("Réservation déplacée avec succès !");
-                    chargerReservationsClient(linkEmail);
+                    chargerReservationsClient(emailClientCourant);
                 } else {
                     afficherErreur(reponse.error);
                 }
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 afficherErreur(err);
                 unlock && unlock();
             })
-            .replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, linkEmail, linkExp, linkSig);
+            .replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emailClientCourant, signatureExp, signatureSig);
     }
 
     function afficherErreurConnexion(message) {

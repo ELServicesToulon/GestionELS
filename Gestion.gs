@@ -64,6 +64,9 @@ function genererIdentifiantClient(email) {
  */
 function rechercherClientParIdentifiant(identifiant) {
   try {
+    if (typeof CLIENT_SESSION_OPAQUE_ID_ENABLED === 'undefined' || !CLIENT_SESSION_OPAQUE_ID_ENABLED) {
+      return null;
+    }
     if (!identifiant) return null;
     const feuilleClients = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_CLIENTS);
     if (!feuilleClients) return null;
