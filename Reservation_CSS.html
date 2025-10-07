@@ -398,10 +398,7 @@ main.layout > .main > * {
   padding: 0;
   margin: 1rem 0;
 }
-.tarif-carte li {
-  margin: 0.4rem 0;
-}
-.hero-footnote { margin: 0; font-size: 0.75em; line-height: 1.4; }
+.tarif-carte li {\n  margin: 0.4rem 0;\n}\n/* Neutralise pill styling inherited by tariff values */\n#tarifs-card strong {\n  display: inline;\n  padding: 0;\n  background: transparent;\n  box-shadow: none;\n  border: 0;\n}\n.hero-footnote { margin: 0; font-size: 0.75em; line-height: 1.4; }
 
 /* Stack pour découpe en 3 cartes */
 .els-left-stack { display: grid; gap: 12px; }
@@ -855,6 +852,7 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   .champ-formulaire { border-color: var(--muted); }
 }
 </style>
+
 
 
 
