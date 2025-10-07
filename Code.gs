@@ -164,11 +164,11 @@ function doGet(e) {
           if (typeof CLIENT_PORTAL_ENABLED !== 'undefined' && CLIENT_PORTAL_ENABLED) {
             if (typeof CLIENT_PORTAL_SIGNED_LINKS !== 'undefined' && CLIENT_PORTAL_SIGNED_LINKS) {
               const params = (e && e.parameter) || {};
-              const emailRaw = params.email || '';
-              const emailParam = String(emailRaw).trim().toLowerCase();
+              const emailRaw = String(params.email || '').trim();
+              const emailParam = emailRaw.toLowerCase();
               const exp = params.exp || '';
               const sig = params.sig || '';
-              if (!verifySignedLink(emailParam, exp, sig) || emailRaw !== emailParam) {
+              if (!verifySignedLink(emailParam, exp, sig)) {
                 return creerReponseHtml('Lien invalide', 'Authentification requise pour accéder à l\'espace client.');
               }
             }
