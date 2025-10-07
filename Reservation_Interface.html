@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <base target="_top">
@@ -362,7 +362,22 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const t = configServeur?.TARIFS || {};
-      const fmt = (n) => (typeof n === 'number' && !isNaN(n)) ? String(n) : '—';
+      const fmt = (value) => {
+        const fallback = '—';
+        if (value === null || value === undefined) return fallback;
+        if (typeof value === 'number') {
+          return Number.isFinite(value) ? String(value) : fallback;
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          if (!trimmed) return fallback;
+          const normalized = Number(trimmed.replace(',', '.'));
+          if (!Number.isFinite(normalized)) return fallback;
+          return String(normalized);
+        }
+        const coerced = Number(value);
+        return Number.isFinite(coerced) ? String(coerced) : fallback;
+      };
       try {
         const elN = document.getElementById('tarif-normal-base'); if (elN) elN.textContent = fmt(t?.Normal?.base);
         const elS = document.getElementById('tarif-samedi-base'); if (elS) elS.textContent = fmt(t?.Samedi?.base);
@@ -391,4 +406,3 @@
   </script>
 </body>
 </html>
-
