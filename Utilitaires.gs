@@ -129,10 +129,13 @@ function insererImageDepuisPlaceholder(corps, placeholder, fileId, largeurMax, f
 }
 
 /**
- * Récupère le logo défini dans Logo.html et le retourne sous forme de blob.
+ * Récupère le logo depuis Drive (secret ID_LOGO) et le retourne sous forme de blob.
  * @returns {GoogleAppsScript.Base.Blob|null}
  */
 function getLogoSvgBlob() {
+  const blob = getLogoBlob();
+  if (blob) return blob;
+  // Fallback legacy: tente de récupérer un éventuel SVG statique dans Logo.html
   try {
     const html = HtmlService.createHtmlOutputFromFile('Logo').getContent();
     const match = html && html.match(/<svg[\s\S]*?<\/svg>/i);
@@ -140,7 +143,24 @@ function getLogoSvgBlob() {
     const svg = match[0];
     return Utilities.newBlob(svg, 'image/svg+xml', 'logo.svg');
   } catch (e) {
-    Logger.log('Impossible de récupérer le logo HTML: ' + e.message);
+    Logger.log('Impossible de récupérer un logo statique: ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * Récupère le logo principal sous forme de blob depuis Drive.
+ * @returns {GoogleAppsScript.Base.Blob|null}
+ */
+function getLogoBlob() {
+  try {
+    const fileId = getSecret('ID_LOGO');
+    if (!fileId) return null;
+    const file = DriveApp.getFileById(fileId);
+    if (!file) return null;
+    return file.getBlob();
+  } catch (e) {
+    Logger.log('Impossible de récupérer le logo Drive: ' + e.message);
     return null;
   }
 }
@@ -151,7 +171,10 @@ function getLogoSvgBlob() {
  */
 function getLogoDataUrl() {
   try {
-    let blob = getLogoSvgBlob();
+    let blob = getLogoBlob();
+    if (!blob) {
+      blob = getLogoSvgBlob();
+    }
     if (!blob) return '';
     if (blob.getContentType() === 'image/svg+xml') {
       try {
@@ -169,6 +192,21 @@ function getLogoDataUrl() {
     return 'data:' + contentType + ';base64,' + base64;
   } catch (e) {
     Logger.log('Impossible de générer la data URL du logo: ' + e.message);
+    return '';
+  }
+}
+
+/**
+ * Retourne une URL publique (Google Drive) pour le logo.
+ * @returns {string}
+ */
+function getLogoPublicUrl() {
+  try {
+    const fileId = getSecret('ID_LOGO');
+    if (!fileId) return '';
+    return 'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(fileId);
+  } catch (e) {
+    Logger.log('Impossible de construire l’URL publique du logo: ' + e.message);
     return '';
   }
 }
