@@ -24,6 +24,10 @@ function logError(...args) {
   console.error('[ELS]', ...args);
 }
 
+const CLE_LOCALSTORAGE_CLIENT = 'sessionClientELServices';
+const CLIENT_SESSION_OPAQUE_ID_ENABLED = <?!= CLIENT_SESSION_OPAQUE_ID_ENABLED ?>;
+const CLIENT_SESSION_TTL_HOURS = <?!= CLIENT_SESSION_TTL_HOURS ?>;
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Références aux éléments du DOM ---
     const indicateurChargement = document.getElementById('indicateur-chargement');
@@ -48,6 +52,74 @@ document.addEventListener('DOMContentLoaded', () => {
     let toutesLesFacturesClient = [];
     let emailClientCourant = linkEmail || '';
     let removeFocusTrap = () => {};
+
+    function afficherVueConnexion(prefilledEmail) {
+        document.getElementById('conteneur-app')?.classList.add('hidden');
+        document.getElementById('non-connecte')?.classList.remove('hidden');
+        if (prefilledEmail && emailConnexionInput) {
+            emailConnexionInput.value = prefilledEmail;
+        }
+        if (erreurConnexionDiv) {
+            erreurConnexionDiv.textContent = '';
+            erreurConnexionDiv.classList.add('hidden');
+        }
+        basculerIndicateurChargement(false);
+    }
+
+    function recupererSessionLocale() {
+        try {
+            const brute = localStorage.getItem(CLE_LOCALSTORAGE_CLIENT);
+            if (!brute) return null;
+            const session = JSON.parse(brute);
+            if (CLIENT_SESSION_TTL_HOURS && session && session.ts) {
+                const ageHeures = (Date.now() - session.ts) / 36e5;
+                if (ageHeures > CLIENT_SESSION_TTL_HOURS) {
+                    localStorage.removeItem(CLE_LOCALSTORAGE_CLIENT);
+                    return null;
+                }
+            }
+            return session;
+        } catch (err) {
+            logWarn('Session client locale invalide, r�initialisation.', err);
+            localStorage.removeItem(CLE_LOCALSTORAGE_CLIENT);
+            return null;
+        }
+    }
+
+    function connecterDepuisSession(session) {
+        if (!session) {
+            afficherVueConnexion();
+            return;
+        }
+        if (CLIENT_SESSION_OPAQUE_ID_ENABLED && session.token) {
+            basculerIndicateurChargement(true);
+            google.script.run
+                .withSuccessHandler(client => {
+                    if (client && client.email) {
+                        if (emailConnexionInput) {
+                            emailConnexionInput.value = client.email;
+                        }
+                        validerEtChargerClient(client.email);
+                    } else {
+                        afficherVueConnexion();
+                    }
+                })
+                .withFailureHandler(err => {
+                    logWarn('Impossible de r�cup�rer le client via son identifiant opaque.', err);
+                    afficherVueConnexion();
+                })
+                .rechercherClientParIdentifiant(session.token);
+            return;
+        }
+        if (session.email) {
+            if (emailConnexionInput) {
+                emailConnexionInput.value = session.email;
+            }
+            validerEtChargerClient(session.email);
+            return;
+        }
+        afficherVueConnexion();
+    }
 
     /**
      * Initialise l'espace client.
@@ -88,11 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function gererAffichageInitial() {
         if (linkEmail && linkExp && linkSig) {
             validerEtChargerClient(linkEmail);
-        } else {
-            document.getElementById('conteneur-app')?.classList.add('hidden');
-            document.getElementById('non-connecte')?.classList.remove('hidden');
-            basculerIndicateurChargement(false);
+            return;
         }
+        const sessionLocale = recupererSessionLocale();
+        if (sessionLocale) {
+            connecterDepuisSession(sessionLocale);
+            return;
+        }
+        afficherVueConnexion();
     }
     
     /**
@@ -108,6 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
         google.script.run
             .withSuccessHandler(reponse => {
                 if (reponse.success) {
+                    if (erreurConnexionDiv) {
+                        erreurConnexionDiv.textContent = '';
+                        erreurConnexionDiv.classList.add('hidden');
+                    }
                     document.getElementById('message-bienvenue-client').textContent = `Bienvenue, ${reponse.client.nom}`;
                     document.getElementById('conteneur-app').classList.remove('hidden');
                     document.getElementById('non-connecte').classList.add('hidden');
@@ -119,12 +198,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } else {
                     afficherErreurConnexion(reponse.error);
+                    afficherVueConnexion(email);
                     basculerIndicateurChargement(false);
                 }
                 unlock && unlock();
             })
             .withFailureHandler(err => {
                 afficherErreurConnexion("Une erreur de communication est survenue.");
+                afficherVueConnexion(email);
                 basculerIndicateurChargement(false);
                 unlock && unlock();
             })

@@ -49,6 +49,7 @@ function preRemplirInfosClient(identifiant) {
       basculerIndicateurChargement(false);
       if (client && window.ui) {
         window.etat.clientReconnu = client;
+        memoriserClientReconnu(client);
         if (window.ui.champEmailClient) window.ui.champEmailClient.value = client.email || '';
         if (window.ui.champNomClient) window.ui.champNomClient.value = client.nom || '';
         if (window.ui.champAdresseClient) window.ui.champAdresseClient.value = client.adresse || '';
@@ -80,6 +81,32 @@ async function sauvegarderSessionClient(email) {
   const session = { token: token, ts: Date.now() };
   localStorage.setItem(CLE_LOCALSTORAGE_CLIENT, JSON.stringify(session));
 }
+
+/**
+ * M�morise un client reconnu dans le stockage local pour faciliter les futurs acc�s.
+ * @param {{email:string,nom?:string,adresse?:string,siret?:string,resident?:boolean}} client
+ */
+function memoriserClientReconnu(client) {
+  if (!client || !client.email) return;
+  if (CLIENT_SESSION_OPAQUE_ID_ENABLED) {
+    sauvegarderSessionClient(client.email);
+    return;
+  }
+  const snapshot = {
+    email: client.email || '',
+    nom: client.nom || '',
+    adresse: client.adresse || '',
+    siret: client.siret || '',
+    resident: !!client.resident,
+    ts: Date.now()
+  };
+  try {
+    localStorage.setItem(CLE_LOCALSTORAGE_CLIENT, JSON.stringify(snapshot));
+  } catch (err) {
+    console.warn('[ELS] Impossible de m�moriser le client reconnu:', err);
+  }
+}
+
 /**
  * Réinitialise la session client et vide les champs.
  */

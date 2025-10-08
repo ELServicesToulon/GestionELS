@@ -330,11 +330,7 @@ function gererSoumissionReservation(e) {
           sauvegarderPanierDansLocalStorage();
           afficherPanier();
           ui.conteneurFinalisation.classList.add('hidden');
-          if (typeof CLIENT_SESSION_OPAQUE_ID_ENABLED !== 'undefined' && CLIENT_SESSION_OPAQUE_ID_ENABLED) {
-            sauvegarderSessionClient(donneesReservation.client.email);
-          } else {
-            localStorage.setItem(CLE_LOCALSTORAGE_CLIENT, JSON.stringify(donneesReservation.client));
-          }
+          memoriserClientReconnu(donneesReservation.client);
         } else {
           afficherErreur(reponse.summary || "Une erreur est survenue lors de la réservation.");
           if (reponse.failedItemIds && reponse.failedItemIds.length > 0) {
