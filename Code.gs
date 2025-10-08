@@ -269,8 +269,19 @@ function buildReservationHeroImages() {
 
 function loadBase64ImageDataUri(partialName) {
   try {
-    const content = HtmlService.createHtmlOutputFromFile(partialName).getContent().trim();
-    return content ? 'data:image/png;base64,' + content : '';
+    const template = HtmlService.createTemplateFromFile(partialName);
+    let content = template.getCode().trim();
+    if (!content) {
+      return '';
+    }
+    if (/^data:image\//i.test(content)) {
+      return content;
+    }
+    const normalized = content.replace(/\s+/g, '');
+    if (!/^[A-Za-z0-9+/=]+$/.test(normalized)) {
+      throw new Error('Contenu base64 invalide');
+    }
+    return 'data:image/png;base64,' + normalized;
   } catch (err) {
     Logger.log('Asset manquant pour ' + partialName + ': ' + err.message);
     return '';

@@ -137,14 +137,27 @@ function getLogoSvgBlob() {
   if (blob) return blob;
   // Fallback legacy: tente de récupérer un éventuel SVG statique dans Logo.html
   try {
-    const html = HtmlService.createHtmlOutputFromFile('Logo').getContent();
-    const match = html && html.match(/<svg[\s\S]*?<\/svg>/i);
-    if (!match) return null;
-    const svg = match[0];
+    let svg = loadInlineSvgFromFile('Logo');
+    if (!svg) {
+      svg = loadInlineSvgFromFile('Logo_Fallback_SVG');
+    }
+    if (!svg) return null;
     return Utilities.newBlob(svg, 'image/svg+xml', 'logo.svg');
   } catch (e) {
     Logger.log('Impossible de récupérer un logo statique: ' + e.message);
     return null;
+  }
+}
+
+function loadInlineSvgFromFile(filename) {
+  try {
+    const template = HtmlService.createTemplateFromFile(filename);
+    const content = template.getCode();
+    if (!content) return '';
+    const match = content.match(/<svg[\s\S]*?<\/svg>/i);
+    return match ? match[0] : '';
+  } catch (e) {
+    return '';
   }
 }
 
