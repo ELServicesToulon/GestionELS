@@ -498,6 +498,178 @@ function supprimerReservation(idReservation) {
 }
 
 /**
+ * Applique ou supprime une remise sur une tournée existante.
+ * @param {string} idReservation ID de la réservation à modifier.
+ * @param {string} typeRemise Type de remise sélectionné (Aucune|Pourcentage|Montant Fixe|Tournées Offertes).
+ * @param {number} valeurRemise Valeur numérique de la remise.
+ * @param {number} nbTourneesOffertesClient Nombre de tournées offertes restantes côté client (indicatif).
+ * @returns {{success:boolean, montant?:number, error?:string}}
+ */
+function appliquerRemiseSurTournee(idReservation, typeRemise, valeurRemise, nbTourneesOffertesClient) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé." };
+
+  try {
+    if (Session.getActiveUser().getEmail().toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      return { success: false, error: "Accès non autorisé." };
+    }
+
+    const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
+    if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
+
+    const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0].map(h => String(h || '').trim());
+    const indices = {
+      idResa: enTete.indexOf("ID Réservation"),
+      typeCourse: enTete.indexOf("Type"),
+      details: enTete.indexOf("Détails"),
+      montant: enTete.indexOf("Montant"),
+      email: enTete.indexOf("Client (Email)"),
+      typeRemise: enTete.indexOf("Type Remise Appliquée"),
+      valeurRemise: enTete.indexOf("Valeur Remise Appliquée"),
+      tourneeOfferte: enTete.indexOf("Tournée Offerte Appliquée"),
+      eventId: enTete.indexOf("Event ID"),
+      resident: enTete.indexOf("Resident")
+    };
+    if (indices.idResa === -1 || indices.details === -1 || indices.montant === -1 || indices.email === -1) {
+      throw new Error("Colonnes requises introuvables dans la feuille de facturation.");
+    }
+
+    const donnees = feuille.getDataRange().getValues();
+    const indexLigne = donnees.findIndex(row => String(row[indices.idResa]).trim() === String(idReservation).trim());
+    if (indexLigne === -1) return { success: false, error: "Réservation introuvable." };
+
+    const ligne = donnees[indexLigne];
+    const emailClient = String(ligne[indices.email] || '').trim();
+    const detailsCourse = String(ligne[indices.details] || '');
+    const typeCourse = indices.typeCourse !== -1 ? String(ligne[indices.typeCourse] || '').trim().toLowerCase() : 'normal';
+    const eventId = indices.eventId !== -1 ? String(ligne[indices.eventId] || '').trim() : '';
+    const etaitTourneeOfferte = indices.tourneeOfferte !== -1 ? ligne[indices.tourneeOfferte] === true : false;
+    const estResident = indices.resident !== -1 ? ligne[indices.resident] === true : false;
+
+    const matchStops = detailsCourse.match(/(\d+)\s*arr/i);
+    if (!matchStops) return { success: false, error: "Impossible de déterminer le nombre d'arrêts à partir des détails." };
+    const totalStops = Math.max(1, parseInt(matchStops[1], 10));
+    const retourPharmacie = /retour\s*:\s*oui/i.test(detailsCourse);
+    const urgent = typeCourse === 'urgent';
+    const samedi = typeCourse === 'samedi';
+
+    let prixBase;
+    if (estResident && typeof FORFAIT_RESIDENT !== 'undefined') {
+      prixBase = urgent ? FORFAIT_RESIDENT.URGENCE_PRICE : FORFAIT_RESIDENT.STANDARD_PRICE;
+    } else {
+      const calcul = computeCoursePrice({ totalStops: totalStops, retour: retourPharmacie, urgent: urgent, samedi: samedi });
+      if (calcul.error) {
+        throw new Error(`Tarification indisponible (${calcul.error}).`);
+      }
+      prixBase = calcul.total;
+    }
+
+    if (!isFinite(prixBase)) {
+      throw new Error("Prix de base indéterminé.");
+    }
+
+    const normaliserType = function (val) {
+      const str = String(val || '').trim();
+      const decompose = typeof str.normalize === 'function' ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : str;
+      return decompose.toLowerCase();
+    };
+
+    const typeNormalise = normaliserType(typeRemise);
+    let nouveauMontant = prixBase;
+    let typeRemiseStockee = '';
+    let valeurRemiseStockee = 0;
+    let nouvelleTourneeOfferte = false;
+
+    if (typeNormalise === 'tournees offertes') {
+      if (!etaitTourneeOfferte) {
+        const infosClient = emailClient ? obtenirInfosClientParEmail(emailClient) : null;
+        const creditsDisponibles = Math.max(
+          Number(nbTourneesOffertesClient) || 0,
+          infosClient ? (Number(infosClient.nbTourneesOffertes) || 0) : 0
+        );
+        if (creditsDisponibles <= 0) {
+          return { success: false, error: "Aucune tournée offerte disponible pour ce client." };
+        }
+      }
+      nouveauMontant = 0;
+      nouvelleTourneeOfferte = true;
+      typeRemiseStockee = '';
+      valeurRemiseStockee = 0;
+    } else if (typeNormalise === 'pourcentage') {
+      const pct = Number(valeurRemise);
+      if (!isFinite(pct) || pct <= 0 || pct > 100) {
+        return { success: false, error: "Veuillez entrer un pourcentage valide (0-100)." };
+      }
+      nouveauMontant = Math.max(0, prixBase * (1 - pct / 100));
+      nouvelleTourneeOfferte = false;
+      typeRemiseStockee = 'Pourcentage';
+      valeurRemiseStockee = Math.round(pct * 100) / 100;
+    } else if (typeNormalise === 'montant fixe') {
+      const montantRemise = Number(valeurRemise);
+      if (!isFinite(montantRemise) || montantRemise <= 0) {
+        return { success: false, error: "Veuillez entrer un montant de remise valide." };
+      }
+      nouveauMontant = Math.max(0, prixBase - montantRemise);
+      nouvelleTourneeOfferte = false;
+      typeRemiseStockee = 'Montant Fixe';
+      valeurRemiseStockee = Math.round(montantRemise * 100) / 100;
+    } else {
+      nouveauMontant = prixBase;
+      typeRemiseStockee = '';
+      valeurRemiseStockee = 0;
+      nouvelleTourneeOfferte = false;
+    }
+
+    nouveauMontant = Math.round(nouveauMontant * 100) / 100;
+
+    feuille.getRange(indexLigne + 1, indices.montant + 1).setValue(nouveauMontant);
+    if (indices.typeRemise !== -1) {
+      feuille.getRange(indexLigne + 1, indices.typeRemise + 1).setValue(typeRemiseStockee);
+    }
+    if (indices.valeurRemise !== -1) {
+      feuille.getRange(indexLigne + 1, indices.valeurRemise + 1).setValue(valeurRemiseStockee);
+    }
+    if (indices.tourneeOfferte !== -1) {
+      feuille.getRange(indexLigne + 1, indices.tourneeOfferte + 1).setValue(nouvelleTourneeOfferte);
+    }
+
+    if (nouvelleTourneeOfferte && !etaitTourneeOfferte && emailClient) {
+      decrementerTourneesOffertesClient(emailClient);
+    }
+
+    if (eventId) {
+      try {
+        const calendarId = getSecret('ID_CALENDRIER');
+        const ressourceEvenement = Calendar.Events.get(calendarId, eventId);
+        if (ressourceEvenement) {
+          const description = ressourceEvenement.description || '';
+          const nouvelleDescription = description
+            ? description.replace(/Total:\s*[^\n]+/i, `Total: ${nouveauMontant.toFixed(2)} EUR`)
+            : `Total: ${nouveauMontant.toFixed(2)} EUR`;
+          Calendar.Events.patch({ description: nouvelleDescription }, calendarId, eventId);
+        }
+      } catch (err) {
+        Logger.log(`Impossible de mettre à jour l'événement ${eventId} pour la remise: ${err.message}`);
+      }
+    }
+
+    const resume = nouvelleTourneeOfferte
+      ? "Tournée convertie en tournée offerte"
+      : (typeRemiseStockee
+        ? `Remise ${typeRemiseStockee} appliquée (${valeurRemiseStockee})`
+        : "Remise supprimée");
+    logActivity(idReservation, emailClient, resume, nouveauMontant, "Succès");
+
+    return { success: true, montant: nouveauMontant };
+  } catch (e) {
+    Logger.log(`Erreur dans appliquerRemiseSurTournee: ${e.stack}`);
+    return { success: false, error: e.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * Fonction principale pour générer les factures SANS les envoyer.
  */
 function genererFactures() {
