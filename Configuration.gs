@@ -154,7 +154,7 @@ const ADMIN_SLOTS_PNG_ENABLED = false;
 const RESERVATION_VERIFY_ENABLED = true;
 
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
-const RESERVATION_UI_V2_ENABLED = false;
+const RESERVATION_UI_V2_ENABLED = true;
 
 /** @const {boolean} Active la facturation directe au résident. */
 const RESIDENT_BILLING_ENABLED = true;
