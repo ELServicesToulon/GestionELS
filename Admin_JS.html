@@ -743,8 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function afficherNotification(message, type = "succes") {
         const conteneur = document.getElementById('conteneur-notifications'); if(!conteneur) return;
         const notif = document.createElement('div');
-        notif.className = 
-otification ${type}`;
+        notif.className = `notification ${type}`;
         notif.textContent = message;
         conteneur.appendChild(notif);
         setTimeout(() => notif.remove(), 5000);
