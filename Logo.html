@@ -1,4 +1,4 @@
-<? var logoUrl = getLogoPublicUrl(); var companyName = typeof NOM_ENTREPRISE !== 'undefined' ? NOM_ENTREPRISE : 'EL Services'; ?>
+<? var logoUrl = getLogoDataUrl(); var companyName = typeof NOM_ENTREPRISE !== 'undefined' ? NOM_ENTREPRISE : 'EL Services'; ?>
 <div class="app-logo-container">
   <? if (logoUrl) { ?>
     <img src="<?= logoUrl ?>" alt="Logo <?= companyName ?>" class="app-logo" loading="lazy">
