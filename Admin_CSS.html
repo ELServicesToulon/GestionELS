@@ -300,22 +300,24 @@ body.is-modal-open {
   box-shadow: 0 0 0 3px rgba(52,152,219,.35);
 }
 
-.slot-btn svg {
+.slot-btn .slot-icon {
   display: block;
-}
-
-.slot-btn .capsule {
-  --capsule-right: #ffffff;
-  width: 92px;
-  height: 38px;
+  width: 84px;
+  height: 84px;
   margin-bottom: 6px;
+  transition: transform .15s ease, opacity .15s ease;
 }
 
-.slot-btn.is-urgent .capsule {
-  --capsule-right: var(--urgent);
+.slot-btn.is-taken .slot-icon {
+  opacity: .75;
+}
+
+.slot-btn.is-urgent .slot-icon {
+  transform: scale(1.08);
 }
 
 .slot-btn .time {
+  margin-top: 6px;
   font-weight: 600;
   font-size: 14px;
   letter-spacing: .2px;
@@ -400,46 +402,6 @@ body.is-modal-open {
   outline: 2px solid #5dade2;
   outline-offset: 2px;
 }
-
-.slot-btn .thumb {
-  width: 132px;
-  height: 96px;
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  border-radius: 12px;
-}
-
-.slot-btn.is-free .thumb {
-  background-image: url('/branding/ui/capsule1x.png');
-}
-
-.slot-btn.is-taken .thumb {
-  background-image: url('/branding/ui/blister_vide1x.png');
-}
-
-.slot-btn.is-urgent .thumb {
-  background-image: url('/branding/ui/capsule1x_urgent.png');
-}
-
-.slot-btn .time {
-  margin-top: 4px;
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: .2px;
-  color: #243042;
-}
-
-.slot-btn.is-urgent .thumb.fallback::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent 50%, rgba(229,57,53,.95) 50%);
-  mix-blend-mode: multiply;
-}
-
 
 /* --- CHARGEMENT & NOTIFICATIONS --- */
 .indicateur-chargement-overlay {

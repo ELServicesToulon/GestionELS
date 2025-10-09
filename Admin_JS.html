@@ -21,6 +21,7 @@ function logError(...args) {
   console.error('[ELS]', ...args);
 }
 const ADMIN_OPTIMISTIC_CREATION_ENABLED = <?!= ADMIN_OPTIMISTIC_CREATION_ENABLED ?>;
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 function openModal() {
   document.body.classList.add('is-modal-open');
@@ -44,11 +45,6 @@ function renderSlots(slots){
   if(!row) return;
   row.innerHTML = "";
 
-  const urgentImg = new Image();
-  urgentImg.src = '/branding/ui/capsule1x_urgent.png';
-  urgentImg.onload = () => row.dataset.urgentReady = "1";
-  urgentImg.onerror = () => row.dataset.urgentReady = "0";
-
   slots.forEach(s=>{
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -56,15 +52,13 @@ function renderSlots(slots){
     btn.setAttribute('aria-pressed','false');
     btn.dataset.time = s.time;
 
-    const thumb = document.createElement('div');
-    thumb.className = 'thumb';
-    if (s.status === 'urgent' && row.dataset.urgentReady === "0") thumb.classList.add('fallback');
+    const icon = creerSlotIcon(s.status);
 
     const time = document.createElement('span');
     time.className = 'time';
     time.textContent = s.label || s.time.replace(':','h');
 
-    btn.appendChild(thumb);
+    btn.appendChild(icon);
     btn.appendChild(time);
 
     btn.addEventListener('click', ()=>{
@@ -99,6 +93,25 @@ function markUrgentSlots(delayMin = 60) {
 // Exemple : urgents dans l'heure
 // markUrgentSlots(60);
 <? } ?>
+
+function creerSlotIcon(status){
+  const iconId = status === 'taken'
+    ? 'icone-boite-scellee'
+    : status === 'urgent'
+      ? 'icone-livraison'
+      : 'icone-gelule';
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('class', 'icon slot-icon');
+  svg.setAttribute('viewBox', '0 0 48 48');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const use = document.createElementNS(SVG_NS, 'use');
+  use.setAttributeNS('http://www.w3.org/1999/xlink', 'href', `#${iconId}`);
+  use.setAttribute('href', `#${iconId}`);
+  svg.appendChild(use);
+  return svg;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Références aux éléments du DOM ---
