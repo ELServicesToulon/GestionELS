@@ -72,6 +72,9 @@
   <?!= include('GoogleChartsStub'); ?>
 </head>
 <body class="page">
+  <? if (ACCESSIBILITY_SKIP_LINK_ENABLED) { ?>
+  <a id="skip-link-reservation" class="skip-link" href="#app-conteneur">Aller directement au calendrier et au formulaire de réservation</a>
+  <? } ?>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <?!= include('icons.svg'); ?>
   </svg>
@@ -119,7 +122,7 @@
   <main id="layout" class="container two-cols">
     <section id="col-left" class="col">
       <div id="calendar-card" class="card">
-        <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
+        <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation"<? if (ACCESSIBILITY_SKIP_LINK_ENABLED) { ?> tabindex="-1"<? } ?>>
           <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
             <div class="carte-en-tete">
               <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>

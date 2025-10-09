@@ -50,6 +50,32 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+<? if (ACCESSIBILITY_SKIP_LINK_ENABLED) { ?>
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -120%);
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8e44ad, #3498db);
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(17, 38, 70, 0.35);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0;
+  z-index: 2000;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translate(-50%, 16px);
+  opacity: 1;
+  outline: 3px solid #5dade2;
+  outline-offset: 4px;
+}
+<? } ?>
 h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--txt); margin: 0 0 8px; }
 /* Supprime le bandeau dégradé de l'en-tête */
 .app-en-tete { background: transparent !important; padding: 0 !important; margin: 0 !important; height: 0 !important; overflow: hidden !important; border: 0 !important; }
