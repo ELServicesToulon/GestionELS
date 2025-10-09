@@ -38,15 +38,15 @@ const FACTURES_FOLDER_ID = (function() {
   catch (e) { return getSecret('ID_DOSSIER_ARCHIVES'); }
 })();
 
-/** @const {string|null} ID du fichier Drive utilisé comme logo sur les factures (optionnel). */
-const FACTURE_LOGO_FILE_ID = (function() {
-  try {
-    const id = getSecret('ID_LOGO_FACTURE');
-    return id || null;
-  } catch (_err) {
-    return null;
-  }
-})();
+//** @const {string|null} ID du fichier Drive utilisé comme logo sur les factures (optionnel). */
+//const FACTURE_LOGO_FILE_ID = (function() {
+ // try {
+    //const id = getSecret('ID_LOGO_FACTURE');
+    //return id || null;
+ // } catch (_err) {
+    //return null;
+  //}
+//})();
 
 // --- Bloc de facturation générique ---
 /** @const {Object} Paramètres de facturation centralisés. */
@@ -190,11 +190,11 @@ const DEBUG_MENU_ENABLED = false;
 /** @const {boolean} Sert une version de démo de la page de réservation. */
 const DEMO_RESERVATION_ENABLED = false;
 /** @const {boolean} Active l'écriture des logs de facturation. */
-const BILLING_LOG_ENABLED = false;
+const BILLING_LOG_ENABLED = true;
 /** @const {boolean} Active le mode test pour la facturation V2 (aucune écriture). */
-const BILLING_V2_DRYRUN = false;
+const BILLING_V2_DRYRUN = true;
 /** @const {boolean} Vérifie la présence de la colonne ID PDF dans l'onglet Facturation. */
-const BILLING_ID_PDF_CHECK_ENABLED = false;
+const BILLING_ID_PDF_CHECK_ENABLED = true;
 /** @const {boolean} Active la journalisation détaillée des requêtes web. */
 const REQUEST_LOGGING_ENABLED = false;
 /** @const {boolean} Active le traitement des requêtes POST. */
@@ -361,7 +361,7 @@ const CONFIG = Object.freeze({
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN,
   BILLING_ID_PDF_CHECK_ENABLED,
-  FACTURE_LOGO_FILE_ID
+  
 });
 
 /**
