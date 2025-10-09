@@ -84,3 +84,14 @@
   <rect x="16" y="20" width="16" height="8" rx="2" fill="#5dade2" />
   <rect x="8" y="30" width="32" height="8" rx="2" fill="url(#tamponGradient)" />
 </symbol>
+<symbol id="logo-els" viewBox="0 0 120 80">
+  <defs>
+    <linearGradient id="logoElsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8e44ad" />
+      <stop offset="45%" stop-color="#7a4dd9" />
+      <stop offset="100%" stop-color="#3498db" />
+    </linearGradient>
+  </defs>
+  <path d="M 18 40 L 36 40 C 36 28 50 26 60 28 C 74 32 74 48 60 52 C 50 54 42 50 42 42 L 84 42" stroke="url(#logoElsGradient)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <path d="M 84 42 L 105 30 L 114 40 L 105 50 Z" fill="url(#logoElsGradient)" />
+</symbol>
