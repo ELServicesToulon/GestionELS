@@ -1,8 +1,10 @@
-<? var logoUrl = getLogoDataUrl(); var companyName = typeof NOM_ENTREPRISE !== 'undefined' ? NOM_ENTREPRISE : 'EL Services'; ?>
+<? var logoUrl = getLogoDataUrl(); var companyName = typeof NOM_ENTREPRISE !== 'undefined' ? NOM_ENTREPRISE : 'EL Services'; var homeUrl = typeof appUrl !== 'undefined' ? appUrl : '#'; var altText = companyName + ' - Logo'; ?>
 <div class="app-logo-container">
-  <? if (logoUrl) { ?>
-    <img src="<?= logoUrl ?>" alt="Logo <?= companyName ?>" class="app-logo" loading="lazy">
-  <? } else { ?>
-    <span class="app-logo--fallback"><?= companyName ?></span>
-  <? } ?>
+  <a class="app-logo-link" href="<?= homeUrl ?>" aria-label="<?= altText ?>">
+    <? if (logoUrl) { ?>
+      <img src="<?= logoUrl ?>" alt="<?= altText ?>" class="app-logo" loading="lazy">
+    <? } else { ?>
+      <span class="app-logo--fallback"><?= companyName ?></span>
+    <? } ?>
+  </a>
 </div>

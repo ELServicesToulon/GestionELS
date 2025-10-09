@@ -184,27 +184,71 @@ function getLogoBlob() {
  */
 function getLogoDataUrl() {
   try {
-    let blob = getLogoBlob();
-    if (!blob) {
-      blob = getLogoSvgBlob();
+    const driveLogo = blobToDataUrl(getLogoBlob());
+    if (driveLogo) {
+      return driveLogo;
     }
-    if (!blob) return '';
-    if (blob.getContentType() === 'image/svg+xml') {
+
+    const bundledLogo = getBundledLogoDataUrl();
+    if (bundledLogo) {
+      return bundledLogo;
+    }
+
+    return blobToDataUrl(getLogoSvgBlob());
+  } catch (e) {
+    Logger.log('Impossible de générer la data URL du logo: ' + e.message);
+    return '';
+  }
+}
+
+/**
+ * Convertit un blob d'image en data URL.
+ * @param {GoogleAppsScript.Base.Blob} blob
+ * @returns {string}
+ */
+function blobToDataUrl(blob) {
+  if (!blob) {
+    return '';
+  }
+  try {
+    let safeBlob = blob;
+    if (safeBlob.getContentType() === 'image/svg+xml') {
       try {
-        blob = blob.getAs(MimeType.PNG);
+        safeBlob = safeBlob.getAs(MimeType.PNG);
       } catch (conversionError) {
         Logger.log('Logo: conversion SVG -> PNG échouée, utilisation du SVG brut. ' + conversionError.message);
       }
     }
-    const usableBlob = blob || getLogoSvgBlob();
-    if (!usableBlob) return '';
-    const bytes = usableBlob.getBytes();
-    if (!bytes || !bytes.length) return '';
-    const contentType = usableBlob.getContentType() || 'image/png';
+    const bytes = safeBlob.getBytes();
+    if (!bytes || !bytes.length) {
+      return '';
+    }
+    const contentType = safeBlob.getContentType() || 'image/png';
     const base64 = Utilities.base64Encode(bytes);
     return 'data:' + contentType + ';base64,' + base64;
+  } catch (error) {
+    Logger.log('Impossible de convertir le blob du logo en data URL: ' + error.message);
+    return '';
+  }
+}
+
+/**
+ * Charge la data URL du logo 3D embarqué dans le dépôt.
+ * @returns {string}
+ */
+function getBundledLogoDataUrl() {
+  try {
+    const output = HtmlService.createHtmlOutputFromFile('Logo3D_b64');
+    if (!output) {
+      return '';
+    }
+    const content = (output.getContent() || '').trim();
+    if (!content) {
+      return '';
+    }
+    return content.replace(/\s+/g, '');
   } catch (e) {
-    Logger.log('Impossible de générer la data URL du logo: ' + e.message);
+    Logger.log('Impossible de charger la data URL du logo embarqué: ' + e.message);
     return '';
   }
 }
