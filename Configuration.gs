@@ -144,6 +144,9 @@ const CALENDAR_PURGE_ENABLED = true;
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
 const CALENDAR_BAR_OPACITY_ENABLED = false;
 
+/** @const {boolean} Affiche un lien d'évitement pour aller directement au contenu principal. */
+const ACCESSIBILITY_SKIP_LINK_ENABLED = false;
+
 /** @const {boolean} Active la création optimiste des courses admin. */
 const ADMIN_OPTIMISTIC_CREATION_ENABLED = true;
 
@@ -249,6 +252,7 @@ const FLAGS = Object.freeze({
   calendarResyncEnabled: CALENDAR_RESYNC_ENABLED,
   calendarPurgeEnabled: CALENDAR_PURGE_ENABLED,
   calendarBarOpacityEnabled: CALENDAR_BAR_OPACITY_ENABLED,
+  accessibilitySkipLinkEnabled: ACCESSIBILITY_SKIP_LINK_ENABLED,
   reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
   driveAssetsEnabled: DRIVE_ASSETS_ENABLED,
   residentBillingEnabled: RESIDENT_BILLING_ENABLED,

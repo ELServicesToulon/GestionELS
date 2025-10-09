@@ -24,6 +24,7 @@ function initializeFlags(flags = {}) {
     calendarResyncEnabled: false,
     calendarPurgeEnabled: false,
     calendarBarOpacityEnabled: false,
+    accessibilitySkipLinkEnabled: false,
     reservationUiV2Enabled: false,
     residentBillingEnabled: false,
     billingModalEnabled: false,
@@ -455,6 +456,27 @@ function configurerEcouteursEvenements() {
       }
   });
   ui.btnChangerClient?.addEventListener('click', reinitialiserClient);
+
+  if (window.etat.flags.accessibilitySkipLinkEnabled && ui.skipLink && ui.conteneurPrincipal) {
+    if (!ui.skipLink.dataset.bound) {
+      ui.skipLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        const cible = ui.conteneurPrincipal;
+        if (!cible) {
+          return;
+        }
+        try {
+          cible.focus({ preventScroll: true });
+        } catch (err) {
+          cible.focus();
+        }
+        if (typeof cible.scrollIntoView === 'function') {
+          cible.scrollIntoView({ block: 'start' });
+        }
+      });
+      ui.skipLink.dataset.bound = 'true';
+    }
+  }
 }
 
 /**
