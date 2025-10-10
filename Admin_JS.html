@@ -452,7 +452,15 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="groupe-formulaire"><label for="champ-date-ajout">Date de la course</label><input type="date" id="champ-date-ajout" class="champ-formulaire" value="${escapeHTML(champDate ? champDate.value : '')}"></div>
             <div class="groupe-formulaire"><label>Arrêts totaux :</label><div style="display: flex; align-items: center; gap: 20px;"><div class="champ-compteur"><button type="button" class="btn-compteur btn-retirer">-</button><span class="valeur-compteur">1</span><button type="button" class="btn-compteur btn-ajouter">+</button></div><label><input type="checkbox" id="check-retour"> Retour pharmacie</label></div></div>
-            <div id="conteneur-creneaux-ajout" class="hidden"><label>Créneau disponible</label><div id="grille-creneaux-ajout"></div></div>
+            <div id="conteneur-creneaux-ajout" class="hidden">
+              <label>Créneau disponible</label>
+              <div id="grille-creneaux-ajout"></div>
+            </div>
+            <div class="groupe-formulaire hidden" id="conteneur-horaire-manuel">
+              <label for="champ-horaire-manuel">Horaire manuel</label>
+              <input type="time" id="champ-horaire-manuel" class="champ-formulaire" step="900">
+              <p class="champ-helper">Utilisez cette option lorsqu'aucun créneau n'est proposé (ex : forfait résident, dates passées).</p>
+            </div>
             <div class="modale-pied-de-page">
               <label><input type="checkbox" id="check-urgent"> Forcer urgent</label>
               <label><input type="checkbox" id="check-notifier"> Avertir le client</label>
@@ -484,46 +492,124 @@ document.addEventListener('DOMContentLoaded', () => {
         const reservation = toutesLesReservationsAffichees.find(r => r.id === idReservation);
         if (!reservation || !reservation.end) return afficherErreur("Réservation introuvable ou invalide.");
         const duree = (new Date(reservation.end) - new Date(reservation.start)) / 60000;
+        const horaireInitial = new Date(reservation.start).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
         if (!contenuModale) return;
         renderHTML(contenuModale, `
             <h3 id="modale-titre">Déplacer la course</h3><p><strong>Client :</strong> ${escapeHTML(reservation.clientName)}</p>
             <div class="groupe-formulaire"><label for="champ-nouvelle-date">Nouvelle date :</label><input type="date" id="champ-nouvelle-date" class="champ-formulaire" value="${escapeHTML(new Date(reservation.start).toISOString().split('T')[0])}"></div>
-            <div id="conteneur-creneaux-replanif" class="hidden"><label>Nouveau créneau :</label><div id="grille-creneaux-replanif"></div></div>
+            <div id="conteneur-creneaux-replanif" class="hidden">
+              <label>Nouveau créneau :</label>
+              <div id="grille-creneaux-replanif"></div>
+            </div>
+            <div class="groupe-formulaire hidden" id="conteneur-horaire-replanif">
+              <label for="champ-horaire-replanif">Horaire manuel</label>
+              <input type="time" id="champ-horaire-replanif" class="champ-formulaire" step="900" value="${escapeHTML(horaireInitial)}">
+              <p class="champ-helper">Renseignez un horaire si aucun créneau n'est proposé.</p>
+            </div>
             <div class="modale-pied-de-page"><button type="button" id="btn-confirmer-replanif" class="btn btn-primaire" disabled>Confirmer le déplacement</button></div>`);
         openModal();
         const champDateModale = document.getElementById('champ-nouvelle-date');
         const grilleCreneaux = document.getElementById('grille-creneaux-replanif');
         const btnConfirmer = document.getElementById('btn-confirmer-replanif');
+        const conteneurHoraireManuel = document.getElementById('conteneur-horaire-replanif');
+        const champHoraireReplanif = document.getElementById('champ-horaire-replanif');
         let creneauSelectionne = null;
+
+        const nettoyerSelectionCreneaux = () => {
+            grilleCreneaux?.querySelectorAll('.btn-creneau-replanif.selected').forEach(btn => btn.classList.remove('selected'));
+        };
+
+        const mettreAJourSelectionManuelle = () => {
+            if (!champHoraireReplanif) {
+                creneauSelectionne = null;
+                return '';
+            }
+            const valeur = (champHoraireReplanif.value || '').trim();
+            let formatted = '';
+            if (/^\d{2}:\d{2}$/.test(valeur)) {
+                const [h, m] = valeur.split(':');
+                formatted = `${h.padStart(2, '0')}h${m.padStart(2, '0')}`;
+            }
+            creneauSelectionne = formatted || null;
+            if (btnConfirmer && conteneurHoraireManuel && !conteneurHoraireManuel.classList.contains('hidden')) {
+                btnConfirmer.disabled = !formatted;
+            }
+            return formatted;
+        };
+
+        champHoraireReplanif?.addEventListener('input', () => {
+            if (conteneurHoraireManuel?.classList.contains('hidden')) return;
+            mettreAJourSelectionManuelle();
+        });
+
         function chargerCreneaux() {
             const nouvelleDate = champDateModale?.value;
-            if (!nouvelleDate) return;
+            if (!nouvelleDate) {
+                nettoyerSelectionCreneaux();
+                creneauSelectionne = null;
+                conteneurHoraireManuel?.classList.add('hidden');
+                if (btnConfirmer) btnConfirmer.disabled = true;
+                return;
+            }
             document.getElementById('conteneur-creneaux-replanif')?.classList.remove('hidden');
             if (grilleCreneaux) renderMessage(grilleCreneaux, 'Chargement...', 'i');
-            if(btnConfirmer) btnConfirmer.disabled = true;
+            nettoyerSelectionCreneaux();
+            creneauSelectionne = null;
+            if (btnConfirmer) btnConfirmer.disabled = true;
             google.script.run.withSuccessHandler(creneaux => {
                 if (grilleCreneaux) {
                     if (creneaux && creneaux.length > 0) {
                         const btns = creneaux.map(c => `<button class="btn-creneau-replanif" data-creneau="${escapeHTML(c)}">${escapeHTML(c)}</button>`).join('');
                         renderHTML(grilleCreneaux, btns);
+                        conteneurHoraireManuel?.classList.add('hidden');
                     } else {
                         renderMessage(grilleCreneaux, 'Aucun créneau disponible.');
+                        if (conteneurHoraireManuel) {
+                            conteneurHoraireManuel.classList.remove('hidden');
+                            if (champHoraireReplanif && !champHoraireReplanif.value) {
+                                champHoraireReplanif.value = horaireInitial || '08:00';
+                            }
+                            const manuel = mettreAJourSelectionManuelle();
+                            if (btnConfirmer) btnConfirmer.disabled = !manuel;
+                        }
                     }
                 }
-            }).withFailureHandler(afficherErreur).obtenirCreneauxDisponiblesPourDate(nouvelleDate, duree, reservation.eventId);
+            }).withFailureHandler(err => {
+                afficherErreur(err);
+                if (conteneurHoraireManuel) {
+                    conteneurHoraireManuel.classList.remove('hidden');
+                    if (champHoraireReplanif && !champHoraireReplanif.value) {
+                        champHoraireReplanif.value = horaireInitial || '08:00';
+                    }
+                    const manuel = mettreAJourSelectionManuelle();
+                    if (btnConfirmer) btnConfirmer.disabled = !manuel;
+                }
+            }).obtenirCreneauxDisponiblesPourDate(nouvelleDate, duree, reservation.eventId);
         }
         champDateModale?.addEventListener('change', chargerCreneaux);
         grilleCreneaux?.addEventListener('click', e => {
-            if (e.target.classList.contains('btn-creneau-replanif')) {
-                modale.querySelectorAll('.btn-creneau-replanif').forEach(btn => btn.classList.remove('selected'));
-                e.target.classList.add('selected');
-                creneauSelectionne = e.target.dataset.creneau;
-                if (btnConfirmer) btnConfirmer.disabled = false;
-            }
+            const btn = e.target.closest('.btn-creneau-replanif');
+            if (!btn) return;
+            nettoyerSelectionCreneaux();
+            btn.classList.add('selected');
+            creneauSelectionne = btn.dataset.creneau || null;
+            if (conteneurHoraireManuel) conteneurHoraireManuel.classList.add('hidden');
+            if (btnConfirmer) btnConfirmer.disabled = !creneauSelectionne;
         });
-        btnConfirmer?.addEventListener('click', () => { if (creneauSelectionne && champDateModale) gererSoumissionReplanifier(reservation.id, champDateModale.value, creneauSelectionne); });
+        btnConfirmer?.addEventListener('click', () => {
+            if (!champDateModale) return;
+            if (!creneauSelectionne && conteneurHoraireManuel && !conteneurHoraireManuel.classList.contains('hidden')) {
+                mettreAJourSelectionManuelle();
+            }
+            if (!creneauSelectionne) {
+                afficherErreur('Merci de sélectionner un créneau ou de renseigner un horaire.');
+                return;
+            }
+            gererSoumissionReplanifier(reservation.id, champDateModale.value, creneauSelectionne);
+        });
         chargerCreneaux();
     }
+
     function ouvrirModaleAppliquerRemise(idReservation) {
         const reservation = toutesLesReservationsAffichees.find(r => r.id === idReservation);
         if (!reservation) return afficherErreur("Réservation introuvable.");
@@ -680,6 +766,8 @@ function attacherEcouteursModaleAjout() {
         const selectClient = document.getElementById('select-client');
         const conteneurForfaitResident = document.getElementById('conteneur-forfait-resident');
         const selectForfaitResident = document.getElementById('select-forfait-resident');
+        const conteneurHoraireManuel = document.getElementById('conteneur-horaire-manuel');
+        const champHoraireManuel = document.getElementById('champ-horaire-manuel');
         const champsClient = {
             email: document.getElementById('champ-email-client'),
             nom: document.getElementById('champ-nom-client'),
@@ -717,6 +805,34 @@ function attacherEcouteursModaleAjout() {
                 champsClient.residentMode.value = normaliserModeResident(champsClient.residentMode.value || defaut);
             }
         };
+
+        const nettoyerSelectionCreneaux = () => {
+            if (!grilleCreneaux) return;
+            grilleCreneaux.querySelectorAll('.btn-creneau-replanif.selected').forEach(btn => btn.classList.remove('selected'));
+        };
+
+        const mettreAJourSelectionManuelle = () => {
+            if (!champHoraireManuel) {
+                creneauSelectionne = null;
+                return '';
+            }
+            const valeur = (champHoraireManuel.value || '').trim();
+            let formatted = '';
+            if (/^\d{2}:\d{2}$/.test(valeur)) {
+                const [h, m] = valeur.split(':');
+                formatted = `${h.padStart(2, '0')}h${m.padStart(2, '0')}`;
+            }
+            creneauSelectionne = formatted || null;
+            if (btnConfirmer && conteneurHoraireManuel && !conteneurHoraireManuel.classList.contains('hidden')) {
+                btnConfirmer.disabled = !formatted;
+            }
+            return formatted;
+        };
+
+        champHoraireManuel?.addEventListener('input', () => {
+            if (conteneurHoraireManuel?.classList.contains('hidden')) return;
+            mettreAJourSelectionManuelle();
+        });
 
         const remplirChampsClient = client => {
             champsClient.email.value = client ? client.email : '';
@@ -778,7 +894,14 @@ function attacherEcouteursModaleAjout() {
             const totalStops = parseInt(valeurCompteur?.textContent || '1', 10);
             const retour = checkRetour?.checked || false;
             const date = champDateAjout?.value;
-            if (!date) return;
+            if (!date) {
+                conteneurCreneaux?.classList.add('hidden');
+                conteneurHoraireManuel?.classList.add('hidden');
+                if (btnConfirmer) btnConfirmer.disabled = true;
+                nettoyerSelectionCreneaux();
+                creneauSelectionne = null;
+                return;
+            }
 
             const nbSupp = Math.max(0, totalStops - 1);
             const dureeBase = Number(ADMIN_CONFIG?.dureeBase) || 30;
@@ -788,6 +911,7 @@ function attacherEcouteursModaleAjout() {
             conteneurCreneaux?.classList.remove('hidden');
             if (grilleCreneaux) renderMessage(grilleCreneaux, 'Chargement...', 'i');
             if (btnConfirmer) btnConfirmer.disabled = true;
+            nettoyerSelectionCreneaux();
             creneauSelectionne = null;
 
             google.script.run
@@ -796,25 +920,54 @@ function attacherEcouteursModaleAjout() {
                         if (creneaux && creneaux.length > 0) {
                             const buttons = creneaux.map(c => `<button class="btn-creneau-replanif" data-creneau="${escapeHTML(c)}">${escapeHTML(c)}</button>`).join('');
                             renderHTML(grilleCreneaux, buttons);
+                            conteneurHoraireManuel?.classList.add('hidden');
                         } else {
                             renderMessage(grilleCreneaux, 'Aucun créneau disponible.');
+                            if (conteneurHoraireManuel) {
+                                conteneurHoraireManuel.classList.remove('hidden');
+                                if (champHoraireManuel && !champHoraireManuel.value) {
+                                    champHoraireManuel.value = '08:00';
+                                }
+                                const manuel = mettreAJourSelectionManuelle();
+                                if (btnConfirmer) btnConfirmer.disabled = !manuel;
+                            }
                         }
                     }
                 })
-                .withFailureHandler(afficherErreur)
+                .withFailureHandler(err => {
+                    afficherErreur(err);
+                    if (conteneurHoraireManuel) {
+                        conteneurHoraireManuel.classList.remove('hidden');
+                        if (champHoraireManuel && !champHoraireManuel.value) {
+                            champHoraireManuel.value = '08:00';
+                        }
+                        const manuel = mettreAJourSelectionManuelle();
+                        if (btnConfirmer) btnConfirmer.disabled = !manuel;
+                    }
+                })
                 .obtenirCreneauxDisponiblesPourDate(date, duree);
         }
 
         grilleCreneaux?.addEventListener('click', e => {
-            if (e.target.classList.contains('btn-creneau-replanif')) {
-                modale.querySelectorAll('.btn-creneau-replanif').forEach(btn => btn.classList.remove('selected'));
-                e.target.classList.add('selected');
-                creneauSelectionne = e.target.dataset.creneau;
-                if (btnConfirmer) btnConfirmer.disabled = false;
+            const btn = e.target.closest('.btn-creneau-replanif');
+            if (!btn) return;
+            nettoyerSelectionCreneaux();
+            btn.classList.add('selected');
+            creneauSelectionne = btn.dataset.creneau || null;
+            if (conteneurHoraireManuel) {
+                conteneurHoraireManuel.classList.add('hidden');
             }
+            if (btnConfirmer) btnConfirmer.disabled = !creneauSelectionne;
         });
 
         btnConfirmer?.addEventListener('click', () => {
+            if (!creneauSelectionne && conteneurHoraireManuel && !conteneurHoraireManuel.classList.contains('hidden')) {
+                mettreAJourSelectionManuelle();
+            }
+            if (!creneauSelectionne) {
+                afficherErreur('Merci de sélectionner un créneau ou de renseigner un horaire.');
+                return;
+            }
             const clientData = {
                 email: champsClient.email.value.trim(),
                 nom: champsClient.nom.value.trim(),

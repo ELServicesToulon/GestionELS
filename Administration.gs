@@ -369,8 +369,13 @@ function creerReservationAdmin(data) {
         prix = Math.max(0, prix - clientPourCalcul.valeurRemise);
       }
     }
+    if (!data.startTime) {
+      return { success: false, error: 'Veuillez sélectionner ou saisir un horaire.' };
+    }
+
     const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(data.date, duree);
-    if (!creneauxDisponibles.includes(data.startTime)) {
+    const bypassVerificationCreneau = estResident || creneauxDisponibles.length === 0;
+    if (!bypassVerificationCreneau && !creneauxDisponibles.includes(data.startTime)) {
       return { success: false, error: `Le créneau ${data.startTime} n'est plus disponible.` };
     }
 
