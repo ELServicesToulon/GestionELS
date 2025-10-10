@@ -680,8 +680,6 @@ function attacherEcouteursModaleAjout() {
         const selectClient = document.getElementById('select-client');
         const conteneurForfaitResident = document.getElementById('conteneur-forfait-resident');
         const selectForfaitResident = document.getElementById('select-forfait-resident');
-        const residentConfig = ADMIN_CONFIG?.forfaitResident || {};
-        const residentDurationMinutes = Number(residentConfig.durationMinutes);
         const champsClient = {
             email: document.getElementById('champ-email-client'),
             nom: document.getElementById('champ-nom-client'),
@@ -785,10 +783,7 @@ function attacherEcouteursModaleAjout() {
             const nbSupp = Math.max(0, totalStops - 1);
             const dureeBase = Number(ADMIN_CONFIG?.dureeBase) || 30;
             const dureeSupp = Number(ADMIN_CONFIG?.dureeArretSup) || 15;
-            let duree = dureeBase + (nbSupp + (retour ? 1 : 0)) * dureeSupp;
-            if (champsClient.resident?.checked && Number.isFinite(residentDurationMinutes) && residentDurationMinutes > 0) {
-                duree = residentDurationMinutes;
-            }
+            const duree = dureeBase + (nbSupp + (retour ? 1 : 0)) * dureeSupp;
 
             conteneurCreneaux?.classList.remove('hidden');
             if (grilleCreneaux) renderMessage(grilleCreneaux, 'Chargement...', 'i');

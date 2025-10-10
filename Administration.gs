@@ -356,10 +356,6 @@ function creerReservationAdmin(data) {
       libelleResident = residentMode === 'urgence'
         ? (FORFAIT_RESIDENT.URGENCE_LABEL || 'Forfait résident - Urgence <4h')
         : (FORFAIT_RESIDENT.STANDARD_LABEL || 'Forfait résident');
-      const dureeResident = Number(FORFAIT_RESIDENT.DURATION_HOURS) * 60;
-      if (isFinite(dureeResident) && dureeResident > 0) {
-        duree = dureeResident;
-      }
     }
 
     let tourneeOfferteAppliquee = false;
