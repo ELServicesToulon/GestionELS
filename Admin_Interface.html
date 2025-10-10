@@ -220,6 +220,25 @@
       document.querySelectorAll('.theme-selector, #btn-theme, #menu-theme').forEach(el => el && el.remove());
     });
   </script>
+  <script>
+    (function () {
+      const config = window.ADMIN_CONFIG || {};
+      const residentConfig = {
+        enabled: <?= FORFAIT_RESIDENT_ENABLED ? 'true' : 'false' ?>,
+        standardLabel: <?= JSON.stringify(FORFAIT_RESIDENT.STANDARD_LABEL) ?>,
+        standardPrice: <?= FORFAIT_RESIDENT.STANDARD_PRICE ?>,
+        urgenceLabel: <?= JSON.stringify(FORFAIT_RESIDENT.URGENCE_LABEL) ?>,
+        urgencePrice: <?= FORFAIT_RESIDENT.URGENCE_PRICE ?>,
+        durationHours: <?= FORFAIT_RESIDENT.DURATION_HOURS ?>
+      };
+      residentConfig.durationMinutes = Number(residentConfig.durationHours) * 60;
+      window.ADMIN_CONFIG = Object.assign({}, config, {
+        dureeBase: <?= DUREE_BASE ?>,
+        dureeArretSup: <?= DUREE_ARRET_SUP ?>,
+        forfaitResident: residentConfig
+      });
+    }());
+  </script>
   <?!= include('Render_JS'); ?>
   <?!= include('Admin_JS'); ?>
 </body>

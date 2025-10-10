@@ -22,6 +22,13 @@ function logError(...args) {
 }
 const ADMIN_OPTIMISTIC_CREATION_ENABLED = <?!= ADMIN_OPTIMISTIC_CREATION_ENABLED ?>;
 const SVG_NS = 'http://www.w3.org/2000/svg';
+const ADMIN_CONFIG = window.ADMIN_CONFIG || {};
+const EURO_FORMATTER = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+function formatEuro(value) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return '';
+  return EURO_FORMATTER.format(amount);
+}
 
 function openModal() {
   document.body.classList.add('is-modal-open');
@@ -405,6 +412,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- GESTION DES MODALES (Code complet, inchangé) ---
     function ouvrirModaleAjout() {
         const optionsClient = tousLesClients.map(c => `<option value="${escapeHTML(c.email)}">${escapeHTML(c.nom)} (${escapeHTML(c.email)})</option>`).join('');
+        const forfaitConfig = ADMIN_CONFIG?.forfaitResident || {};
+        const residentStandardLabel = forfaitConfig.standardLabel || 'Forfait résident (standard)';
+        const residentUrgenceLabel = forfaitConfig.urgenceLabel || 'Forfait résident (urgence <4h)';
+        const residentStandardPrix = formatEuro(forfaitConfig.standardPrice);
+        const residentUrgencePrix = formatEuro(forfaitConfig.urgencePrice);
+        const residentOptions = `
+                  <option value="standard">${escapeHTML(residentStandardLabel)}${residentStandardPrix ? ' — ' + escapeHTML(residentStandardPrix) : ''}</option>
+                  <option value="urgence">${escapeHTML(residentUrgenceLabel)}${residentUrgencePrix ? ' — ' + escapeHTML(residentUrgencePrix) : ''}</option>`;
+        const residentDurationHours = Number(forfaitConfig.durationHours);
+        let residentHelper = 'Tarif appliqué automatiquement.';
+        if (Number.isFinite(residentDurationHours) && residentDurationHours > 0) {
+            const helperDuration = residentDurationHours >= 1
+                ? `${residentDurationHours.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} h`
+                : `${Math.round(residentDurationHours * 60)} min`;
+            residentHelper += ` Durée bloquée: ${helperDuration}.`;
+        }
         if (!contenuModale) return;
         renderHTML(contenuModale, `
             <h3 id="modale-titre">Ajouter une nouvelle course</h3>
@@ -415,6 +438,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="groupe-formulaire"><label>Adresse</label><input type="text" id="champ-adresse-client" class="champ-formulaire"></div>
                 <div class="groupe-formulaire"><label>SIRET</label><input type="text" id="champ-siret-client" class="champ-formulaire" pattern="\\d{14}"></div>
                 <div class="groupe-formulaire"><label class="checkbox-inline"><input type="checkbox" id="check-client-resident"> Client résident</label></div>
+                <div class="groupe-formulaire hidden" id="conteneur-forfait-resident">
+                  <label for="select-forfait-resident">Forfait résident</label>
+                  <select id="select-forfait-resident" class="champ-formulaire" data-default="standard">
+                    ${residentOptions}
+                  </select>
+                  ${residentHelper ? `<p class="champ-helper" id="texte-forfait-resident">${escapeHTML(residentHelper)}</p>` : ''}
+                </div>
                 <h4>Gestion des remises (Admin seulement)</h4>
                 <div class="groupe-formulaire"><label for="type-remise">Type de Remise</label><select id="type-remise" class="champ-formulaire"><option value="">Aucune</option><option value="Pourcentage">Pourcentage</option><option value="Montant Fixe">Montant Fixe</option><option value="Tournées Offertes">Tournées Offertes</option></select></div>
                 <div class="groupe-formulaire hidden" id="conteneur-valeur-remise"><label for="valeur-remise">Valeur Remise</label><input type="number" id="valeur-remise" class="champ-formulaire" step="0.01" min="0"></div>
@@ -645,14 +675,20 @@ document.addEventListener('DOMContentLoaded', () => {
             isSubmitting = false;
         }).creerReservationAdmin(data);
     }
-    function attacherEcouteursModaleAjout() {
+    
+function attacherEcouteursModaleAjout() {
         const selectClient = document.getElementById('select-client');
+        const conteneurForfaitResident = document.getElementById('conteneur-forfait-resident');
+        const selectForfaitResident = document.getElementById('select-forfait-resident');
+        const residentConfig = ADMIN_CONFIG?.forfaitResident || {};
+        const residentDurationMinutes = Number(residentConfig.durationMinutes);
         const champsClient = {
             email: document.getElementById('champ-email-client'),
             nom: document.getElementById('champ-nom-client'),
             adresse: document.getElementById('champ-adresse-client'),
             siret: document.getElementById('champ-siret-client'),
             resident: document.getElementById('check-client-resident'),
+            residentMode: selectForfaitResident,
             typeRemise: document.getElementById('type-remise'),
             valeurRemise: document.getElementById('valeur-remise'),
             nbTourneesOffertes: document.getElementById('nb-tournees-offertes')
@@ -666,21 +702,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const grilleCreneaux = document.getElementById('grille-creneaux-ajout');
         const btnConfirmer = document.getElementById('btn-confirmer-ajout');
         let creneauSelectionne = null;
+
         const majAffichageRemise = () => {
             if (!champsClient.typeRemise || !conteneurValeurRemise || !conteneurNbTourneesOffertes) return;
             const typeSelectionne = champsClient.typeRemise.value;
             conteneurValeurRemise.classList.toggle('hidden', typeSelectionne !== 'Pourcentage' && typeSelectionne !== 'Montant Fixe');
             conteneurNbTourneesOffertes.classList.toggle('hidden', typeSelectionne !== 'Tournées Offertes');
         };
-        const remplirChampsClient = (client) => {
-            champsClient.email.value = client ? client.email : ''; champsClient.nom.value = client ? client.nom : '';
-            champsClient.adresse.value = client ? client.adresse : ''; champsClient.siret.value = client ? client.siret : '';
-            champsClient.typeRemise.value = client ? (client.typeRemise || '') : ''; champsClient.valeurRemise.value = client ? (client.valeurRemise || 0) : 0;
+
+        const normaliserModeResident = valeur => (valeur === 'urgence' ? 'urgence' : 'standard');
+        const basculerForfaitResident = afficher => {
+            if (!conteneurForfaitResident) return;
+            conteneurForfaitResident.classList.toggle('hidden', !afficher);
+            if (afficher && champsClient.residentMode) {
+                const defaut = champsClient.residentMode.dataset?.default || 'standard';
+                champsClient.residentMode.value = normaliserModeResident(champsClient.residentMode.value || defaut);
+            }
+        };
+
+        const remplirChampsClient = client => {
+            champsClient.email.value = client ? client.email : '';
+            champsClient.nom.value = client ? client.nom : '';
+            champsClient.adresse.value = client ? client.adresse : '';
+            champsClient.siret.value = client ? client.siret : '';
+            champsClient.typeRemise.value = client ? (client.typeRemise || '') : '';
+            champsClient.valeurRemise.value = client ? (client.valeurRemise || 0) : 0;
             champsClient.nbTourneesOffertes.value = client ? (client.nbTourneesOffertes || 0) : 0;
             if (champsClient.resident) champsClient.resident.checked = !!(client && client.resident);
+            basculerForfaitResident(!!(client && client.resident));
+
             const isNewClient = !client;
-            Object.values(champsClient).forEach(champ => {
-                if (!champ) return;
+            Object.entries(champsClient).forEach(([cle, champ]) => {
+                if (!champ || cle === 'residentMode') return;
                 if (champ.tagName === 'INPUT' && champ.type === 'checkbox') {
                     champ.disabled = false;
                     return;
@@ -691,35 +744,72 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             majAffichageRemise();
         };
-        selectClient?.addEventListener('change', () => { const selectedEmail = selectClient.value; remplirChampsClient(selectedEmail === 'new' ? null : tousLesClients.find(c => c.email === selectedEmail)); });
+
+        selectClient?.addEventListener('change', () => {
+            const selectedEmail = selectClient.value;
+            const client = selectedEmail === 'new' ? null : tousLesClients.find(c => c.email === selectedEmail);
+            remplirChampsClient(client);
+            mettreAJourCreneauxDisponibles();
+        });
         champsClient.typeRemise?.addEventListener('change', majAffichageRemise);
-        modale.querySelector('.btn-ajouter')?.addEventListener('click', () => { if(valeurCompteur) valeurCompteur.textContent = parseInt(valeurCompteur.textContent, 10) + 1; mettreAJourCreneauxDisponibles(); });
-        modale.querySelector('.btn-retirer')?.addEventListener('click', () => { if(valeurCompteur) { let arrets = parseInt(valeurCompteur.textContent, 10); if(arrets > 1) valeurCompteur.textContent = arrets - 1; mettreAJourCreneauxDisponibles(); } });
+        champsClient.resident?.addEventListener('change', e => {
+            basculerForfaitResident(e.target.checked);
+            mettreAJourCreneauxDisponibles();
+        });
+        champsClient.residentMode?.addEventListener('change', () => {
+            if (champsClient.resident?.checked) mettreAJourCreneauxDisponibles();
+        });
+
+        modale.querySelector('.btn-ajouter')?.addEventListener('click', () => {
+            if (valeurCompteur) {
+                valeurCompteur.textContent = (parseInt(valeurCompteur.textContent, 10) + 1).toString();
+            }
+            mettreAJourCreneauxDisponibles();
+        });
+        modale.querySelector('.btn-retirer')?.addEventListener('click', () => {
+            if (valeurCompteur) {
+                const arrets = parseInt(valeurCompteur.textContent, 10);
+                if (arrets > 1) valeurCompteur.textContent = (arrets - 1).toString();
+                mettreAJourCreneauxDisponibles();
+            }
+        });
         champDateAjout?.addEventListener('change', mettreAJourCreneauxDisponibles);
         checkRetour?.addEventListener('change', mettreAJourCreneauxDisponibles);
+
         function mettreAJourCreneauxDisponibles() {
             const totalStops = parseInt(valeurCompteur?.textContent || '1', 10);
             const retour = checkRetour?.checked || false;
             const date = champDateAjout?.value;
-            const DUREE_BASE = 30; const DUREE_ARRET_SUP = 15;
-            const nbSupp = Math.max(0, totalStops - 1);
-            const duree = DUREE_BASE + (nbSupp + (retour ? 1 : 0)) * DUREE_ARRET_SUP;
             if (!date) return;
+
+            const nbSupp = Math.max(0, totalStops - 1);
+            const dureeBase = Number(ADMIN_CONFIG?.dureeBase) || 30;
+            const dureeSupp = Number(ADMIN_CONFIG?.dureeArretSup) || 15;
+            let duree = dureeBase + (nbSupp + (retour ? 1 : 0)) * dureeSupp;
+            if (champsClient.resident?.checked && Number.isFinite(residentDurationMinutes) && residentDurationMinutes > 0) {
+                duree = residentDurationMinutes;
+            }
+
             conteneurCreneaux?.classList.remove('hidden');
             if (grilleCreneaux) renderMessage(grilleCreneaux, 'Chargement...', 'i');
             if (btnConfirmer) btnConfirmer.disabled = true;
             creneauSelectionne = null;
-            google.script.run.withSuccessHandler(creneaux => {
-                if (grilleCreneaux) {
-                    if (creneaux && creneaux.length > 0) {
-                        const buttons = creneaux.map(c => `<button class="btn-creneau-replanif" data-creneau="${escapeHTML(c)}">${escapeHTML(c)}</button>`).join('');
-                        renderHTML(grilleCreneaux, buttons);
-                    } else {
-                        renderMessage(grilleCreneaux, 'Aucun créneau disponible.');
+
+            google.script.run
+                .withSuccessHandler(creneaux => {
+                    if (grilleCreneaux) {
+                        if (creneaux && creneaux.length > 0) {
+                            const buttons = creneaux.map(c => `<button class="btn-creneau-replanif" data-creneau="${escapeHTML(c)}">${escapeHTML(c)}</button>`).join('');
+                            renderHTML(grilleCreneaux, buttons);
+                        } else {
+                            renderMessage(grilleCreneaux, 'Aucun créneau disponible.');
+                        }
                     }
-                }
-            }).withFailureHandler(afficherErreur).obtenirCreneauxDisponiblesPourDate(date, duree);
+                })
+                .withFailureHandler(afficherErreur)
+                .obtenirCreneauxDisponiblesPourDate(date, duree);
         }
+
         grilleCreneaux?.addEventListener('click', e => {
             if (e.target.classList.contains('btn-creneau-replanif')) {
                 modale.querySelectorAll('.btn-creneau-replanif').forEach(btn => btn.classList.remove('selected'));
@@ -728,6 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (btnConfirmer) btnConfirmer.disabled = false;
             }
         });
+
         btnConfirmer?.addEventListener('click', () => {
             const clientData = {
                 email: champsClient.email.value.trim(),
@@ -739,15 +830,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 nbTourneesOffertes: parseInt(champsClient.nbTourneesOffertes.value) || 0,
                 resident: !!champsClient.resident?.checked
             };
+            const residentMode = clientData.resident && champsClient.residentMode
+                ? normaliserModeResident(champsClient.residentMode.value || champsClient.residentMode.dataset?.default || 'standard')
+                : '';
+            if (clientData.resident) clientData.residentMode = residentMode;
+
             const data = {
-                client: clientData, date: champDateAjout?.value, startTime: creneauSelectionne,
-                totalStops: parseInt(valeurCompteur?.textContent || '1', 10), returnToPharmacy: checkRetour?.checked || false,
+                client: clientData,
+                date: champDateAjout?.value,
+                startTime: creneauSelectionne,
+                totalStops: parseInt(valeurCompteur?.textContent || '1', 10),
+                returnToPharmacy: checkRetour?.checked || false,
                 notifyClient: document.getElementById('check-notifier')?.checked || false,
-                forceUrgent: document.getElementById('check-urgent')?.checked || false
+                forceUrgent: document.getElementById('check-urgent')?.checked || false,
+                residentMode: residentMode
             };
             gererSoumissionCreation(data);
         }, { once: true });
+
         remplirChampsClient(null);
+        basculerForfaitResident(false);
         mettreAJourCreneauxDisponibles();
     }
 

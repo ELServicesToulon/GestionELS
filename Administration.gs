@@ -332,16 +332,35 @@ function creerReservationAdmin(data) {
     // Admin calculation: force type (Normal/Samedi) and avoid automatic Urgent pricing
     const totalStops = data.totalStops || (data.additionalStops + 1);
     const samedi = new Date(data.date + 'T00:00:00').getDay() === 6;
-    const urgent = data.forceUrgent === true;
+    const residentModeRaw = String(data.residentMode || (data.client && data.client.residentMode) || '').toLowerCase();
+    const residentMode = residentModeRaw === 'urgence' ? 'urgence' : 'standard';
+    const estResident = data.client && data.client.resident === true && typeof FORFAIT_RESIDENT !== 'undefined';
+    let urgent = data.forceUrgent === true;
+    if (estResident && residentMode === 'urgence') {
+      urgent = true;
+    }
     const tarif = computeCoursePrice({
       totalStops: totalStops,
       retour: data.returnToPharmacy,
       urgent: urgent,
       samedi: samedi
     });
-    const duree = DUREE_BASE + (tarif.nbSupp * DUREE_ARRET_SUP);
+    let duree = DUREE_BASE + (tarif.nbSupp * DUREE_ARRET_SUP);
     let prix = tarif.total;
     const typeCourse = samedi ? 'Samedi' : (urgent ? 'Urgent' : 'Normal');
+    let libelleResident = '';
+    if (estResident) {
+      prix = residentMode === 'urgence'
+        ? FORFAIT_RESIDENT.URGENCE_PRICE
+        : FORFAIT_RESIDENT.STANDARD_PRICE;
+      libelleResident = residentMode === 'urgence'
+        ? (FORFAIT_RESIDENT.URGENCE_LABEL || 'Forfait résident - Urgence <4h')
+        : (FORFAIT_RESIDENT.STANDARD_LABEL || 'Forfait résident');
+      const dureeResident = Number(FORFAIT_RESIDENT.DURATION_HOURS) * 60;
+      if (isFinite(dureeResident) && dureeResident > 0) {
+        duree = dureeResident;
+      }
+    }
 
     let tourneeOfferteAppliquee = false;
     if (clientPourCalcul) {
@@ -370,12 +389,23 @@ function creerReservationAdmin(data) {
     let descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${typeCourse}\nID Réservation: ${idReservation}\nArrêts totaux: ${totalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${prix.toFixed(2)} €\nNote: Ajouté par admin.`;
     if (data.client.resident === true) {
       descriptionEvenement += '\nResident: Oui';
+      if (libelleResident) {
+        descriptionEvenement += `\nForfait résident: ${libelleResident}`;
+      }
     }
 
     const evenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
 
     if (evenement) {
-      const detailsFacturation = formatCourseLabel_(duree, totalStops, data.returnToPharmacy);
+      let detailsFacturation = formatCourseLabel_(duree, totalStops, data.returnToPharmacy);
+      if (estResident) {
+        const labelResident = libelleResident || 'Forfait résident';
+        const resumeRetour = data.returnToPharmacy ? 'retour: oui' : 'retour: non';
+        detailsFacturation = `${labelResident} (forfait résident, ${totalStops} arrêt(s), ${resumeRetour})`;
+      }
+      const noteInterne = estResident && libelleResident
+        ? `Ajouté par admin | Forfait résident: ${libelleResident}`
+        : 'Ajouté par admin';
       enregistrerReservationPourFacturation(
         dateDebut,
         data.client.nom,
@@ -385,7 +415,7 @@ function creerReservationAdmin(data) {
         prix,
         evenement.getId(),
         idReservation,
-        "Ajouté par admin",
+        noteInterne,
         tourneeOfferteAppliquee,
         clientPourCalcul.typeRemise,
         clientPourCalcul.valeurRemise,
