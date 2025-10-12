@@ -1,10 +1,10 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Root contains Apps Script sources: server `.gs` files and UI `.html` fragments.
+- Root holds Apps Script server `.gs` modules and UI `.html` fragments.
 - Server modules: `Administration.gs`, `Reservation.gs`, `Calendrier.gs`, `Utilitaires.gs`, `Validation.gs`.
-- Config: `Configuration.gs` is the single source of truth (flags, pricing, rules). Do not duplicate config. Manifest lives in `appsscript.json`.
-- UI views: `Reservation_Interface.html`, `Reservation_JS_*.html`, `Styles.html`. Keep views modular; avoid inline styles. Assets in `branding/ui/`; legacy in `archive/`.
+- Configuration: `Configuration.gs` is the single source of truth (flags, pricing, rules). Do not duplicate config. Manifest in `appsscript.json`.
+- UI views: `Reservation_Interface.html`, `Reservation_JS_*.html`, `Styles.html`. Assets in `branding/ui/`; legacy in `archive/`.
 
 ## Build, Test, and Development Commands
 - `npm install` — install local dev tools (e.g., `@google/clasp`).
@@ -15,19 +15,19 @@
 - `npm run test:clasp` — run server-side tests (e.g., `npx clasp run test_sanity`).
 
 ## Coding Style & Naming Conventions
-- JavaScript (V8) ES2019+; prefer `const`/`let`, arrow functions; always end lines with semicolons; 2-space indentation.
+- JavaScript (V8) ES2019+; use `const`/`let`, arrow functions; always end lines with semicolons; 2-space indentation.
 - Naming: `camelCase` (vars/functions), `PascalCase` (constructors), `UPPER_SNAKE_CASE` (constants/flags).
-- UI: font Montserrat; brand colors `#8e44ad`, `#3498db`, `#5dade2`. Maintain RGAA contrast and visible focus states.
+- UI: font Montserrat; brand colors `#8e44ad`, `#3498db`, `#5dade2`. Maintain RGAA contrast and visible focus states. Keep views modular; avoid inline styles.
 
 ## Testing Guidelines
 - Prefer small server-side helpers named `test_*`; run with `npx clasp run <name>`.
-- Manual acceptance: reservation E2E, calendar week view (Mon–Sun), AM/PM split when `SLOTS_AMPM_ENABLED=true`, invoicing PDF, client space visibility.
+- Manual acceptance: reservation E2E; calendar week view (Mon–Sun); AM/PM split when `SLOTS_AMPM_ENABLED=true`; invoicing PDF; client space visibility.
 - Keep the console free of errors/warnings; CI validates pushes.
 
 ## Commit & Pull Request Guidelines
 - Commits: `feat:`, `fix:`, `chore:`, `SEO:`, `branding:`. Optional tags: `[flag:<NAME>]` `[no-structure-change]`.
-- PRs: include scope, rationale, linked issue, screenshots/GIFs for UI, affected flags in `Configuration.gs`, and rollback notes.
 - New behavior must be behind a disabled-by-default feature flag in `Configuration.gs`.
+- PRs: include scope, rationale, linked issue, UI screenshots/GIFs, affected flags in `Configuration.gs`, and rollback notes.
 
 ## Security & Configuration Tips
 - Never commit secrets; store keys in Script Properties.
@@ -36,4 +36,5 @@
 ## UI & Layout Conventions
 - Preserve widget IDs (e.g., `#calendar-panel`, `#basket-section`, `#btn-espace-client`).
 - Layout: 3‑column shell `.layout-els` — left hero, center calendar (`.els-center-grid`), right asides. ≤1280px: 2 columns; ≤992px: single column order.
-- Desktop: `.els-client-col` is sticky; avoid `overflow: hidden` on its ancestors. For FHD, let calendar container scroll (e.g., `[data-component="calendar"] { overflow: auto; }`); ensure wrappers keep `width: 100%` for `#vue-calendrier`.
+- Desktop: `.els-client-col` is sticky; avoid `overflow: hidden` on its ancestors. For FHD, let `[data-component="calendar"]` scroll; ensure wrappers keep `width: 100%` for `#vue-calendrier`.
+

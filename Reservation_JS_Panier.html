@@ -48,10 +48,7 @@ function ajouterTourneeAuPanier() {
 function afficherPanier() {
   const { ui } = window;
   const { panier } = window.etat;
-  const residentActif = typeof estForfaitResidentActif === 'function' && estForfaitResidentActif();
-  const residentMode = residentActif ? obtenirModeResident() : 'standard';
-  const residentPrix = residentActif ? obtenirPrixResident(residentMode) : null;
-  const residentLibelle = residentActif ? obtenirLibelleResident(residentMode) : '';
+  const hasResidentItems = panier.some(item => item.resident === true || item.residentMode);
 
   if (panier.length === 0) {
     ui.listePanier.textContent = '';
@@ -90,7 +87,12 @@ function afficherPanier() {
     const smallDetails = document.createElement('small');
     smallDetails.textContent = item.details;
     infosDiv.appendChild(smallDetails);
-    if (residentActif && residentLibelle) {
+
+    const isResidentItem = item.resident === true || !!item.residentMode;
+    const residentLibelle = item.residentLibelle || (isResidentItem ? obtenirLibelleResident(item.residentMode || 'standard') : '');
+    const prixAffiche = Number.isFinite(item.residentPrix) ? item.residentPrix : item.prix;
+
+    if (isResidentItem && residentLibelle) {
       const badgeResident = document.createElement('small');
       badgeResident.className = 'badge-resident';
       badgeResident.textContent = residentLibelle;
@@ -101,8 +103,7 @@ function afficherPanier() {
     actionsDiv.className = 'item-panier-actions';
     const spanPrix = document.createElement('span');
     spanPrix.className = 'item-panier-prix';
-    const prixAffiche = (residentActif && Number.isFinite(residentPrix)) ? residentPrix : item.prix;
-    spanPrix.textContent = `${item.prix.toFixed(2)} €`;
+    spanPrix.textContent = Number.isFinite(prixAffiche) ? `${prixAffiche.toFixed(2)} €` : 'Forfait';
     const btnSupprimer = document.createElement('button');
     btnSupprimer.className = 'item-panier-supprimer';
     btnSupprimer.setAttribute('aria-label', 'Supprimer cet article');
@@ -115,8 +116,12 @@ function afficherPanier() {
     ui.listePanier.appendChild(li);
   });
 
-  const total = panier.reduce((acc, item) => acc + item.prix, 0);
-  ui.panierTotalValeur.textContent = `~ ${total.toFixed(2)} €`; // Ajout de '~' car le total peut augmenter avec la récurrence
+  const total = panier.reduce((acc, item) => {
+    const prixCourant = Number.isFinite(item.residentPrix) ? item.residentPrix : item.prix;
+    return acc + (Number.isFinite(prixCourant) ? prixCourant : 0);
+  }, 0);
+  const prefix = hasResidentItems ? '' : '~ ';
+  ui.panierTotalValeur.textContent = `${prefix}${total.toFixed(2)} €`; // Ajout de '~' car le total peut augmenter avec la récurrence
   ui.panierPiedDePage.classList.remove('hidden');
 }
 

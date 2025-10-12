@@ -210,6 +210,80 @@ function envoyerDevisParEmail(donneesDevis) {
 }
 
 /**
+ * Génère un devis PDF à partir d'items fournis et retourne l'URL du fichier.
+ * @param {{client:{email:string,nom?:string,adresse?:string},items:Array<{date:string,startTime:string,details:string,prix:number}>}} donneesDevis
+ * @returns {{success:boolean,url?:string,error?:string}}
+ */
+function genererDevisPdfFromItems(donneesDevis) {
+  try {
+    const client = donneesDevis && donneesDevis.client || {};
+    const items = (donneesDevis && donneesDevis.items) || [];
+    if (!items.length) throw new Error('Aucun item pour le devis.');
+
+    let totalDevis = 0;
+    const lignes = items.map(it => {
+      const date = new Date(it.date + 'T00:00:00');
+      const dateTxt = formaterDateEnFrancais(date);
+      totalDevis += Number(it.prix) || 0;
+      return {
+        dateTxt: dateTxt,
+        heureTxt: it.startTime,
+        details: String(it.details || ''),
+        montant: Number(it.prix) || 0
+      };
+    });
+
+    const dossierArchives = DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES'));
+    const dossierDevis = obtenirOuCreerDossier(dossierArchives, 'Devis');
+    const now = new Date();
+    const libDate = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyyMMdd');
+    const nomClient = client && client.nom ? client.nom : (client && client.email ? client.email : 'Client');
+    const doc = DocumentApp.create(`DEVIS - ${nomClient} - ${libDate}`);
+    const body = doc.getBody();
+    body.setAttributes({ FONT_FAMILY: 'Montserrat' });
+
+    body.appendParagraph(NOM_ENTREPRISE).setHeading(DocumentApp.ParagraphHeading.HEADING2);
+    body.appendParagraph(ADRESSE_ENTREPRISE);
+    body.appendParagraph(EMAIL_ENTREPRISE).setSpacingAfter(14);
+    body.appendParagraph('DEVIS').setHeading(DocumentApp.ParagraphHeading.HEADING1);
+    body.appendParagraph(`Date: ${Utilities.formatDate(now, Session.getScriptTimeZone(), 'dd/MM/yyyy')}`);
+    body.appendParagraph('Valable 30 jours, sous réserve de disponibilité.').setSpacingAfter(14);
+    body.appendParagraph('Client').setHeading(DocumentApp.ParagraphHeading.HEADING3);
+    body.appendParagraph(nomClient);
+    if (client && client.adresse) body.appendParagraph(client.adresse);
+    if (client && client.email) body.appendParagraph(client.email);
+    body.appendParagraph('').setSpacingAfter(10);
+
+    const table = body.appendTable();
+    const headerRow = table.appendTableRow();
+    ['Date', 'Heure', 'Prestation', 'Montant (€)'].forEach(t => headerRow.appendTableCell(t).setBold(true));
+    lignes.forEach(l => {
+      const row = table.appendTableRow();
+      row.appendTableCell(l.dateTxt);
+      row.appendTableCell(l.heureTxt);
+      row.appendTableCell(l.details);
+      row.appendTableCell(Utilities.formatString('%.2f', l.montant));
+    });
+    const totalRow = table.appendTableRow();
+    totalRow.appendTableCell('Total').setBold(true);
+    totalRow.appendTableCell('');
+    totalRow.appendTableCell('');
+    totalRow.appendTableCell(Utilities.formatString('%.2f', totalDevis)).setBold(true);
+
+    body.appendParagraph('\u00A0');
+    body.appendParagraph("Pour confirmer: réservez via l'application ou contactez-nous.");
+
+    doc.saveAndClose();
+    const pdfBlob = DriveApp.getFileById(doc.getId()).getAs(MimeType.PDF).setName(doc.getName() + '.pdf');
+    const pdfFile = dossierDevis.createFile(pdfBlob);
+    return { success: true, url: pdfFile.getUrl() };
+  } catch (e) {
+    Logger.log('Erreur devis PDF: ' + e.stack);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
  * Envoie un email de confirmation de réservation au client.
  */
 function notifierClientConfirmation(email, nom, reservations) {
@@ -432,5 +506,4 @@ function reservationIdExiste(idReservation) {
     return false;
   }
 }
-
 

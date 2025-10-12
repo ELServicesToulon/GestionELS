@@ -1167,8 +1167,118 @@ function onOpen() {
   if (typeof archiverFacturesDuMois === 'function') {
     menu.addItem('Archiver factures (mois prec.)', 'archiverFacturesDuMois');
   }
+  // Génération de devis PDF (si activé)
+  if (typeof ADMIN_DEVIS_PDF_ENABLED !== 'undefined' && ADMIN_DEVIS_PDF_ENABLED) {
+    menu.addItem('Générer un devis (PDF) – sélection', 'genererDevisPdfDepuisSelection');
+  }
 
   menu.addToUi();
+}
+
+/**
+ * Génère un devis PDF pour la sélection courante dans l’onglet Facturation.
+ * - Regroupe les lignes sélectionnées par client et vérifie l’unicité.
+ * - Construit un Google Docs minimal et exporte en PDF dans Archives/Devis.
+ * - Affiche un lien d’ouverture du PDF.
+ */
+function genererDevisPdfDepuisSelection() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const sheet = ss.getActiveSheet();
+    if (!sheet) throw new Error("Aucune feuille active.");
+    const range = sheet.getActiveRange();
+    if (!range) throw new Error("Aucune sélection. Sélectionnez des lignes dans '" + SHEET_FACTURATION + "'.");
+
+    const values = feuilleFacturation.getRange(range.getRow(), 1, range.getNumRows(), Math.max(1, feuilleFacturation.getLastColumn())).getValues();
+    const feuilleFacturation = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
+    const header = feuilleFacturation.getRange(1, 1, 1, Math.max(1, feuilleFacturation.getLastColumn())).getValues()[0];
+    const indices = {};
+    header.forEach((h, i) => indices[String(h || '').trim()] = i);
+
+    const idxDate = indices['Date'];
+    const idxEmail = indices['Client (Email)'];
+    const idxNom = indices['Client (Raison S. Client)'];
+    const idxDetails = indices['Détails'] !== undefined ? indices['Détails'] : indices['Dtails'];
+    const idxMontant = indices['Montant'];
+    if ([idxDate, idxEmail, idxNom, idxDetails, idxMontant].some(x => typeof x !== 'number')) {
+      throw new Error("Colonnes requises manquantes (Date, Client (Email), Client (Raison S. Client), Détails, Montant).");
+    }
+
+    const emails = new Set(values.map(r => String(r[idxEmail] || '').trim()).filter(Boolean));
+    if (emails.size === 0) {
+      throw new Error("La sélection ne contient pas d'adresse e-mail client.");
+    }
+    if (emails.size > 1) {
+      throw new Error("Veuillez sélectionner des lignes pour un seul client à la fois.");
+    }
+    const emailClient = Array.from(emails)[0];
+    const nomClient = String(values[0][idxNom] || '').trim() || (obtenirInfosClientParEmail(emailClient)?.nom || 'Client');
+    const infosClient = obtenirInfosClientParEmail(emailClient);
+
+    const lignes = values.map(r => {
+      const d = r[idxDate] instanceof Date ? r[idxDate] : new Date(r[idxDate]);
+      const dateTxt = formaterDatePersonnalise(d, 'dd/MM/yyyy');
+      const heureTxt = formaterDatePersonnalise(d, "HH'h'mm");
+      const details = String(r[idxDetails] || '').trim();
+      const montant = Number(r[idxMontant]) || 0;
+      return { dateTxt, heureTxt, details, montant };
+    });
+
+    let total = 0;
+    lignes.forEach(l => total += l.montant);
+
+    const dossierArchives = DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES'));
+    const dossierDevis = obtenirOuCreerDossier(dossierArchives, 'Devis');
+    const now = new Date();
+    const libDate = formaterDatePersonnalise(now, 'yyyyMMdd');
+    const doc = DocumentApp.create(`DEVIS - ${nomClient} - ${libDate}`);
+    const body = doc.getBody();
+    body.setAttributes({ FONT_FAMILY: 'Montserrat' });
+
+    body.appendParagraph(NOM_ENTREPRISE).setHeading(DocumentApp.ParagraphHeading.HEADING2);
+    body.appendParagraph(ADRESSE_ENTREPRISE);
+    body.appendParagraph(EMAIL_ENTREPRISE).setSpacingAfter(14);
+
+    body.appendParagraph('DEVIS').setHeading(DocumentApp.ParagraphHeading.HEADING1);
+    body.appendParagraph(`Date: ${formaterDatePersonnalise(now, 'dd/MM/yyyy')}`);
+    body.appendParagraph('Valable 30 jours, sous réserve de disponibilité.').setSpacingAfter(14);
+
+    body.appendParagraph('Client').setHeading(DocumentApp.ParagraphHeading.HEADING3);
+    body.appendParagraph(`${nomClient}`);
+    if (infosClient && infosClient.adresse) body.appendParagraph(infosClient.adresse);
+    body.appendParagraph(emailClient).setSpacingAfter(10);
+
+    const table = body.appendTable();
+    const headerRow = table.appendTableRow();
+    ['Date', 'Heure', 'Prestation', 'Montant (€)'].forEach(t => headerRow.appendTableCell(t).setBold(true));
+    lignes.forEach(l => {
+      const row = table.appendTableRow();
+      row.appendTableCell(l.dateTxt);
+      row.appendTableCell(l.heureTxt);
+      row.appendTableCell(l.details);
+      row.appendTableCell(Utilities.formatString('%.2f', l.montant));
+    });
+    const totalRow = table.appendTableRow();
+    totalRow.appendTableCell('Total').setBold(true);
+    totalRow.appendTableCell('');
+    totalRow.appendTableCell('');
+    totalRow.appendTableCell(Utilities.formatString('%.2f', total)).setBold(true);
+
+    body.appendParagraph('\u00A0');
+    body.appendParagraph("Pour confirmer: réservez via l'application ou contactez-nous.");
+
+    doc.saveAndClose();
+    const docFile = DriveApp.getFileById(doc.getId());
+    dossierDevis.addFile(docFile);
+    const pdfBlob = docFile.getAs(MimeType.PDF).setName(doc.getName() + '.pdf');
+    const pdfFile = dossierDevis.createFile(pdfBlob);
+    try { logAdminAction('Génération Devis PDF', `${nomClient} <${emailClient}> - ${pdfFile.getName()}`); } catch (_e) {}
+
+    ui.alert('Devis généré', `Le devis a été créé:\n${pdfFile.getUrl()}`, ui.ButtonSet.OK);
+  } catch (e) {
+    ui.alert('Erreur Génération Devis', e.message, ui.ButtonSet.OK);
+  }
 }
 
 

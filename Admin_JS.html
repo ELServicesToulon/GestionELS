@@ -363,9 +363,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }, {});
 
         let html = '';
+        // Mémorise la structure pour actions (devis PDF par groupe)
+        window.__GROUPED_RESERVATIONS = groupeParClient;
         for (const nomClient in groupeParClient) {
             const safeNomClient = escapeHTML(nomClient);
-            html += `<div class="groupe-client"><div class="groupe-client-en-tete">${safeNomClient}</div>`;
+            html += `<div class="groupe-client"><div class="groupe-client-en-tete">${safeNomClient} <button class="btn btn-sm btn-secondaire btn-devis-pdf" data-client-key="${safeNomClient}">Devis PDF</button></div>`;
             groupeParClient[nomClient].forEach(resa => {
                 const dateDebut = new Date(resa.start);
                 const heureDebut = escapeHTML(dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
@@ -407,6 +409,27 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.btn-replanifier').forEach(b => b.addEventListener('click', e => ouvrirModaleReplanifier(e.target.dataset.idReservation)));
         document.querySelectorAll('.btn-appliquer-remise').forEach(b => b.addEventListener('click', e => ouvrirModaleAppliquerRemise(e.target.dataset.idReservation)));
         document.querySelectorAll('.btn-supprimer').forEach(b => b.addEventListener('click', e => ouvrirModaleSuppression(e.target.dataset.idReservation)));
+        document.querySelectorAll('.btn-devis-pdf').forEach(b => b.addEventListener('click', e => {
+            const key = e.currentTarget.getAttribute('data-client-key') || '';
+            const match = key.match(/\(([^)]+)\)\s*$/); // extrait l'email entre parenthèses
+            const email = match ? match[1] : '';
+            const group = (window.__GROUPED_RESERVATIONS && window.__GROUPED_RESERVATIONS[key]) || [];
+            if (!group.length) { logWarn('Aucune réservation dans ce groupe pour le devis.'); return; }
+            const items = group.map(resa => {
+                const d = new Date(resa.start);
+                const dateISO = d.toISOString().slice(0,10);
+                const startTime = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':','h');
+                return { date: dateISO, startTime: startTime, details: resa.details || '', prix: Number(resa.amount) || 0 };
+            });
+            const client = (tousLesClients && tousLesClients.find(c => c.email === email)) || { email: email, nom: key.replace(/\s*\([^)]*\)\s*$/, '') };
+            google.script.run.withSuccessHandler(res => {
+                if (res && res.success && res.url) {
+                    try { window.open(res.url, '_blank'); } catch(_e) {}
+                } else {
+                    logError(res && res.error ? res.error : 'Échec génération devis');
+                }
+            }).withFailureHandler(logError).genererDevisPdfFromItems({ client, items });
+        }));
     }
 
     // --- GESTION DES MODALES (Code complet, inchangé) ---

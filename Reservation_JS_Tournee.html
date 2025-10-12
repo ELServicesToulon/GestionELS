@@ -100,6 +100,62 @@ function mettreAJourResumeTournee() {
   ui.resumeConfigTournee.appendChild(divDuree);
   ui.resumeConfigTournee.appendChild(divPrix);
   ui.resumeConfigTournee.appendChild(divKm);
+
+  mettreAJourRecapSelectionResident();
+}
+
+function mettreAJourBoutonsResident() {
+  const { ui } = window;
+  const residentActif = estForfaitResidentActif();
+  const mode = obtenirModeResident();
+  const prixResident = obtenirPrixResident(mode);
+  const libelle = obtenirLibelleResident(mode);
+  ui.grilleSelectionCreneau?.querySelectorAll('.slot-btn').forEach(btn => {
+    const spanRate = btn.querySelector('.slot-rate-label');
+    if (!spanRate) return;
+    if (residentActif) {
+      btn.dataset.residentMode = mode;
+      btn.dataset.residentPrix = Number.isFinite(prixResident) ? String(prixResident) : '';
+      btn.dataset.residentLibelle = libelle;
+      spanRate.textContent = libelle;
+    } else {
+      spanRate.textContent = btn.dataset.tarifOriginal || btn.dataset.tarif || spanRate.textContent;
+      delete btn.dataset.residentMode;
+      delete btn.dataset.residentPrix;
+      delete btn.dataset.residentLibelle;
+    }
+  });
+}
+
+function mettreAJourRecapSelectionResident() {
+  const { ui } = window;
+  const residentActif = estForfaitResidentActif();
+  const selectedBtn = ui.grilleSelectionCreneau?.querySelector('.slot-btn.selected');
+  const mode = obtenirModeResident();
+  const prix = obtenirPrixResident(mode);
+  const libelle = obtenirLibelleResident(mode);
+
+  ui.residentNoticeCreneau?.classList.toggle('hidden', !residentActif);
+
+  if (residentActif) {
+    if (selectedBtn) {
+      selectedBtn.dataset.residentMode = mode;
+      selectedBtn.dataset.residentPrix = Number.isFinite(prix) ? String(prix) : '';
+      selectedBtn.dataset.residentLibelle = libelle;
+    }
+    if (ui.recapCreneauTarif) ui.recapCreneauTarif.textContent = libelle;
+    if (ui.recapCreneauPrix && Number.isFinite(prix)) {
+      ui.recapCreneauPrix.textContent = `${prix.toFixed(2)} €`;
+    }
+  } else if (!residentActif && selectedBtn) {
+    if (ui.recapCreneauTarif && selectedBtn.dataset.tarifOriginal) {
+      ui.recapCreneauTarif.textContent = selectedBtn.dataset.tarifOriginal;
+    }
+    if (ui.recapCreneauPrix && selectedBtn.dataset.prixOriginal) {
+      ui.recapCreneauPrix.textContent = `${Number(selectedBtn.dataset.prixOriginal).toFixed(2)} €`;
+    }
+  }
+  mettreAJourBoutonsResident();
 }
 
 /**
@@ -173,10 +229,13 @@ function afficherSelectionCreneaux(creneaux) {
       spanRate.textContent = estimation.typeCourse;
       btn.appendChild(spanTime);
       btn.appendChild(spanRate);
+      btn.dataset.prixOriginal = estimation.prix;
+      btn.dataset.tarifOriginal = estimation.typeCourse;
 
       ui.grilleSelectionCreneau.appendChild(btn);
     });
   }
+  mettreAJourBoutonsResident();
   reinitialiserRecapCreneau();
   if(ui.btnAjouterAuPanier) ui.btnAjouterAuPanier.disabled = true;
   ui.modaleSelectionCreneau.classList.remove('hidden');
@@ -191,6 +250,7 @@ function afficherSelectionCreneaux(creneaux) {
       if (ui.recapCreneauTarif) ui.recapCreneauTarif.textContent = target.dataset.tarif;
       if (ui.recapCreneauPrix) ui.recapCreneauPrix.textContent = `${parseFloat(target.dataset.prix).toFixed(2)} €`;
       if (ui.btnAjouterAuPanier) ui.btnAjouterAuPanier.disabled = false;
+      mettreAJourRecapSelectionResident();
     }
   };
 }
@@ -203,6 +263,7 @@ function reinitialiserRecapCreneau() {
     if (ui.recapCreneauHeure) ui.recapCreneauHeure.textContent = '--:--';
     if (ui.recapCreneauTarif) ui.recapCreneauTarif.textContent = '--';
     if (ui.recapCreneauPrix) ui.recapCreneauPrix.textContent = '--.-- €';
+    mettreAJourRecapSelectionResident();
 }
 
 /**
@@ -329,6 +390,11 @@ function ajouterTourneeAuPanier(isRecurrentItem = false, recurrenceData = null) 
     startTime = creneauSelectionneBtn.dataset.creneau;
     prix = parseFloat(creneauSelectionneBtn.dataset.prix);
   }
+  const residentActif = estForfaitResidentActif();
+  const residentMode = residentActif ? (creneauSelectionneBtn.dataset.residentMode || obtenirModeResident()) : null;
+  const residentPrix = residentActif ? Number(creneauSelectionneBtn.dataset.residentPrix || obtenirPrixResident(residentMode)) : null;
+  const residentLibelle = residentActif ? (creneauSelectionneBtn.dataset.residentLibelle || obtenirLibelleResident(residentMode)) : '';
+
   const nouvelleTournee = {
     id: 'tournee-' + Date.now() + Math.random(),
     date: date,
@@ -338,7 +404,11 @@ function ajouterTourneeAuPanier(isRecurrentItem = false, recurrenceData = null) 
     prix: prix,
     duree: tourneeEnCours.duree,
     details: formatCourseLabel(tourneeEnCours.duree, tourneeEnCours.totalStops, tourneeEnCours.returnToPharmacy),
-    isRecurrent: isRecurrentItem
+    isRecurrent: isRecurrentItem,
+    resident: residentActif,
+    residentMode: residentMode,
+    residentPrix: Number.isFinite(residentPrix) ? residentPrix : null,
+    residentLibelle: residentLibelle
   };
   window.etat.panier.push(nouvelleTournee);
   afficherPanier();

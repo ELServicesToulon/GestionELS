@@ -184,6 +184,8 @@ const PRO_QA_ENABLED = false;
 
 /** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
 const EXTRA_ICONS_ENABLED = false;
+/** @const {boolean} Active la génération de devis PDF côté admin (menu Sheets). */
+const ADMIN_DEVIS_PDF_ENABLED = true;
 // --- Drapeaux de Débogage et de Test ---
 /** @const {boolean} Affiche le sous-menu Debug et l'interface associée. */
 const DEBUG_MENU_ENABLED = false;

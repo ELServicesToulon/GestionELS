@@ -199,8 +199,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     afficherErreurConnexion(reponse.error);
                     afficherVueConnexion(email);
-                    basculerIndicateurChargement(false);
-                }
+        basculerIndicateurChargement(false);
+        // Ajoute un bouton Devis PDF sur la carte "Vos prochaines courses"
+        try {
+          const titre = document.querySelector('#liste-reservations h3');
+          if (titre && !document.getElementById('btn-client-devis-pdf')) {
+            const btn = document.createElement('button');
+            btn.id = 'btn-client-devis-pdf';
+            btn.className = 'btn btn-secondaire btn--client';
+            btn.textContent = 'Télécharger un devis (PDF)';
+            btn.style.marginLeft = '10px';
+            titre.insertAdjacentElement('afterend', btn);
+            btn.addEventListener('click', () => {
+              if (!toutesLesReservationsClient || toutesLesReservationsClient.length === 0) { afficherNotification('Aucune course à deviser.', 'info'); return; }
+              const items = toutesLesReservationsClient.map(resa => {
+                const d = new Date(resa.start);
+                const dateISO = d.toISOString().slice(0,10);
+                const startTime = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':','h');
+                return { date: dateISO, startTime, details: resa.details || '', prix: Number(resa.amount) || 0 };
+              });
+              const client = { email: emailClientCourant, nom: document.getElementById('message-bienvenue-client')?.textContent || '' };
+              basculerIndicateurChargement(true);
+              google.script.run.withSuccessHandler(res => {
+                basculerIndicateurChargement(false);
+                if (res && res.success && res.url) { try { window.open(res.url, '_blank'); } catch(e) {} }
+              }).withFailureHandler(err => { basculerIndicateurChargement(false); afficherErreur(err); }).genererDevisPdfFromItems({ client, items });
+            });
+          }
+        } catch(_e) {}
+    }
                 unlock && unlock();
             })
             .withFailureHandler(err => {
