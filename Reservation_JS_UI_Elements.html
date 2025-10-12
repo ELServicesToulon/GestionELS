@@ -57,14 +57,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Champs Client
     champEmailClient: document.getElementById('client-email'),
+    clientEmailHelper: document.getElementById('client-email-helper'),
     champNomClient: document.getElementById('client-nom'),
     champAdresseClient: document.getElementById('client-adresse'),
     champSiretClient: document.getElementById('client-siret'),
     champResidentClient: document.getElementById('client-resident'),
+    blocResidentDetails: document.getElementById('client-resident-details'),
+    residentModeRadios: Array.from(document.querySelectorAll('input[name="resident-mode"]')),
     champNoteReservation: document.getElementById('note-reservation'),
     banniereClientReconnu: document.getElementById('banniere-client-reconnu'),
     nomClientReconnu: document.getElementById('nom-client-reconnu'),
-    btnChangerClient: document.getElementById('btn-changer-client')
+    btnChangerClient: document.getElementById('btn-changer-client'),
+
+    // Notices spécifiques
+    residentNoticeCreneau: document.getElementById('notice-resident-creneau')
   };
 
   // Mise en page gérée en HTML/CSS uniquement (pas de DOM move ici)

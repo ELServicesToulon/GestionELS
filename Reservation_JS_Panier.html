@@ -48,6 +48,10 @@ function ajouterTourneeAuPanier() {
 function afficherPanier() {
   const { ui } = window;
   const { panier } = window.etat;
+  const residentActif = typeof estForfaitResidentActif === 'function' && estForfaitResidentActif();
+  const residentMode = residentActif ? obtenirModeResident() : 'standard';
+  const residentPrix = residentActif ? obtenirPrixResident(residentMode) : null;
+  const residentLibelle = residentActif ? obtenirLibelleResident(residentMode) : '';
 
   if (panier.length === 0) {
     ui.listePanier.textContent = '';
@@ -86,11 +90,18 @@ function afficherPanier() {
     const smallDetails = document.createElement('small');
     smallDetails.textContent = item.details;
     infosDiv.appendChild(smallDetails);
+    if (residentActif && residentLibelle) {
+      const badgeResident = document.createElement('small');
+      badgeResident.className = 'badge-resident';
+      badgeResident.textContent = residentLibelle;
+      infosDiv.appendChild(badgeResident);
+    }
 
     const actionsDiv = document.createElement('div');
     actionsDiv.className = 'item-panier-actions';
     const spanPrix = document.createElement('span');
     spanPrix.className = 'item-panier-prix';
+    const prixAffiche = (residentActif && Number.isFinite(residentPrix)) ? residentPrix : item.prix;
     spanPrix.textContent = `${item.prix.toFixed(2)} €`;
     const btnSupprimer = document.createElement('button');
     btnSupprimer.className = 'item-panier-supprimer';

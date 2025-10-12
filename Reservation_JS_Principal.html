@@ -53,6 +53,49 @@ window.etat = {
   flags: initializeFlags() // Flags d'activation issus de Configuration.gs
 };
 
+function estForfaitResidentActif() {
+  return !!(configServeur?.FORFAIT_RESIDENT_ENABLED && window.ui?.champResidentClient?.checked);
+}
+
+function obtenirModeResident() {
+  if (!estForfaitResidentActif()) return 'standard';
+  const radios = window.ui?.residentModeRadios || [];
+  const active = radios.find(radio => radio.checked);
+  return active?.value === 'urgence' ? 'urgence' : 'standard';
+}
+
+function obtenirLibelleResident(mode) {
+  return mode === 'urgence' ? 'Forfait résident - Urgence' : 'Forfait résident - Standard';
+}
+
+function obtenirPrixResident(mode) {
+  const standard = Number(configServeur?.FORFAIT_RESIDENT_STANDARD);
+  const urgence = Number(configServeur?.FORFAIT_RESIDENT_URGENCE);
+  if (mode === 'urgence' && Number.isFinite(urgence)) return urgence;
+  if (Number.isFinite(standard)) return standard;
+  return null;
+}
+
+window.estForfaitResidentActif = estForfaitResidentActif;
+window.obtenirModeResident = obtenirModeResident;
+window.obtenirPrixResident = obtenirPrixResident;
+window.obtenirLibelleResident = obtenirLibelleResident;
+
+function initialiserTarifsResident() {
+  const formatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const elStandard = document.getElementById('resident-mode-standard-prix');
+  const elUrgence = document.getElementById('resident-mode-urgence-prix');
+  const prixStandard = obtenirPrixResident('standard');
+  const prixUrgence = obtenirPrixResident('urgence');
+  if (elStandard) {
+    elStandard.textContent = Number.isFinite(prixStandard) ? `${formatter.format(prixStandard)} �` : 'Forfait standard';
+  }
+  if (elUrgence) {
+    elUrgence.textContent = Number.isFinite(prixUrgence) ? `${formatter.format(prixUrgence)} �` : 'Forfait urgence';
+  }
+}
+
+
 /**
  * Affiche une notification éphémère.
  * @param {string} message
@@ -113,8 +156,33 @@ function afficherConteneurFinalisation() {
     if (ui.champResidentClient) ui.champResidentClient.checked = false;
   }
 
+  mettreAJourEtatResident();
+
   ui.conteneurFinalisation.classList.remove('hidden');
   ui.champEmailClient.focus();
+}
+
+function mettreAJourEtatResident() {
+  const { ui } = window;
+  const actif = estForfaitResidentActif();
+  ui.blocResidentDetails?.classList.toggle('hidden', !actif);
+  ui.residentNoticeCreneau?.classList.toggle('hidden', !actif);
+  ui.clientEmailHelper?.classList.toggle('hidden', !actif);
+  if (ui.champEmailClient) {
+    ui.champEmailClient.required = !actif;
+    ui.champEmailClient.placeholder = actif ? "Email de la structure (facultatif)" : "";
+  }
+  if (!actif) {
+    (ui.residentModeRadios || []).forEach(radio => {
+      if (radio.value === 'standard') radio.checked = true;
+    });
+  }
+  if (typeof afficherPanier === 'function') {
+    afficherPanier();
+  }
+  if (typeof mettreAJourRecapSelectionResident === 'function') {
+    mettreAJourRecapSelectionResident();
+  }
 }
 
 /**
@@ -307,14 +375,25 @@ function gererSoumissionReservation(e) {
     return;
   }
 
+  const emailClient = ui.champEmailClient.value.trim();
+  const isResident = estForfaitResidentActif();
+  const residentMode = obtenirModeResident();
+  if (!isResident && !emailClient) {
+    afficherNotification('Merci de renseigner une adresse email.', 'erreur');
+    ui.champEmailClient.focus();
+    return;
+  }
+
   const donneesReservation = {
     client: {
-      email: ui.champEmailClient.value.trim(),
+      email: emailClient,
+      contactEmail: emailClient,
       nom: ui.champNomClient.value.trim(),
       adresse: ui.champAdresseClient.value.trim(),
       siret: ui.champSiretClient.value.trim(),
       note: ui.champNoteReservation.value.trim(),
-      resident: !!ui.champResidentClient?.checked
+      resident: isResident,
+      residentMode: residentMode
     },
     items: panier
   };
@@ -325,7 +404,8 @@ function gererSoumissionReservation(e) {
       .withSuccessHandler(reponse => {
         basculerIndicateurChargement(false);
         if (reponse.success) {
-          afficherNotification("Réservation confirmée ! Un email vous a été envoyé.", 'succes');
+          const messageSucces = emailClient ? "Réservation confirmée ! Un email vous a été envoyé." : "Réservation confirmée !";
+          afficherNotification(messageSucces, 'succes');
           window.etat.panier = [];
           sauvegarderPanierDansLocalStorage();
           afficherPanier();
@@ -429,6 +509,13 @@ function configurerEcouteursEvenements() {
   ui.listePanier?.addEventListener('click', gererActionsPanier);
   mettreAJourBoutonViderPanier();
 
+  ui.champResidentClient?.addEventListener('change', mettreAJourEtatResident);
+  (ui.residentModeRadios || []).forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (estForfaitResidentActif()) mettreAJourEtatResident();
+    });
+  });
+
   window.addEventListener('billing:saved', () => {
     afficherNotification('Coordonnées de facturation enregistrées.', 'succes');
   });
@@ -463,6 +550,8 @@ function configurerEcouteursEvenements() {
 document.addEventListener('DOMContentLoaded', () => {
   google.script.run.withSuccessHandler(cfg => {
     window.etat.flags = initializeFlags(cfg);
+    initialiserTarifsResident();
+    mettreAJourEtatResident();
     try {
       if (window.etat.flags && window.etat.flags.elsUiThemingEnabled) {
         document.body.classList.add('els-ui-theming');

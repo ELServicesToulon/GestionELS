@@ -401,17 +401,20 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emai
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
-      idResa: enTete.indexOf("ID Réservation"), idEvent: enTete.indexOf("Event ID"),
+      idResa: enTete.indexOf("ID R�servation"), idEvent: enTete.indexOf("Event ID"),
       email: enTete.indexOf("Client (Email)"), date: enTete.indexOf("Date"),
-      montant: enTete.indexOf("Montant"), details: enTete.indexOf("Détails")
+      montant: enTete.indexOf("Montant"), details: enTete.indexOf("D�tails"),
+      resident: enTete.indexOf("Resident")
     };
-    if (Object.values(indices).some(i => i === -1)) throw new Error("Colonnes requises introuvables.");
+    const colonnesRequises = ['idResa', 'idEvent', 'email', 'date', 'montant', 'details'];
+    if (colonnesRequises.some(cle => indices[cle] === -1)) throw new Error("Colonnes requises introuvables.");
 
     const donnees = feuille.getDataRange().getValues();
     const indexLigne = donnees.findIndex(row => String(row[indices.idResa]).trim() === idNorm);
     if (indexLigne === -1) return { success: false, error: "Réservation introuvable." };
 
     const ligneDonnees = donnees[indexLigne];
+    const estResident = indices.resident !== -1 ? ligneDonnees[indices.resident] === true : false;
     const idEvenementAncien = String(ligneDonnees[indices.idEvent]).trim();
     const emailFeuille = String(ligneDonnees[indices.email]).trim().toLowerCase();
     if (emailNorm && emailFeuille !== emailNorm) return { success: false, error: "Accès non autorisé." };
@@ -429,8 +432,12 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emai
     const dureeCalculee = DUREE_BASE + ((arrets + (retour ? 1 : 0)) * DUREE_ARRET_SUP);
 
     const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(nouvelleDate, dureeCalculee, idEvenementAncien);
-    if (!creneauxDisponibles.includes(nouvelleHeure)) {
-      return { success: false, error: "Ce créneau n'est plus disponible." };
+    const bypassVerificationCreneau = estResident || creneauxDisponibles.length === 0;
+    if (!bypassVerificationCreneau && !creneauxDisponibles.includes(nouvelleHeure)) {
+      return { success: false, error: "Ce cr�neau n'est plus disponible." };
+    }
+    if (!nouvelleHeure) {
+      return { success: false, error: "Merci d'indiquer un horaire valide." };
     }
 
     const [annee, mois, jour] = nouvelleDate.split('-').map(Number);
