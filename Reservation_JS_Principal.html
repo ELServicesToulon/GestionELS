@@ -88,10 +88,10 @@ function initialiserTarifsResident() {
   const prixStandard = obtenirPrixResident('standard');
   const prixUrgence = obtenirPrixResident('urgence');
   if (elStandard) {
-    elStandard.textContent = Number.isFinite(prixStandard) ? `${formatter.format(prixStandard)} �` : 'Forfait standard';
+    elStandard.textContent = Number.isFinite(prixStandard) ? `${formatter.format(prixStandard)} €` : 'Forfait standard';
   }
   if (elUrgence) {
-    elUrgence.textContent = Number.isFinite(prixUrgence) ? `${formatter.format(prixUrgence)} �` : 'Forfait urgence';
+    elUrgence.textContent = Number.isFinite(prixUrgence) ? `${formatter.format(prixUrgence)} €` : 'Forfait urgence';
   }
 }
 

@@ -137,9 +137,9 @@ const BILLING_MULTI_SHEET_ENABLED = false;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
 const CA_EN_COURS_ENABLED = true;
 /** @const {boolean} Précharge le loader Google Charts via proxy (peut déclencher OAuth). */
-const CHARTS_PROXY_PREFETCH_ENABLED = false;
+const CHARTS_PROXY_PREFETCH_ENABLED = true;
 /** @const {boolean} Active les graphiques côté client (nécessite autorisation UrlFetch). */
-const CLIENT_CHARTS_ENABLED = false;
+const CLIENT_CHARTS_ENABLED = true;
 /** @const {boolean} Resynchronise les événements manquants du calendrier Google. */
 const CALENDAR_RESYNC_ENABLED = true;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
@@ -152,7 +152,7 @@ const CALENDAR_BAR_OPACITY_ENABLED = false;
 const ADMIN_OPTIMISTIC_CREATION_ENABLED = true;
 
 /** @const {boolean} Active la colonne de créneaux PNG dans la modale admin. */
-const ADMIN_SLOTS_PNG_ENABLED = false;
+const ADMIN_SLOTS_PNG_ENABLED = true;
 
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = true;
@@ -189,7 +189,7 @@ const PROOF_SOCIAL_ENABLED = false;
 const PRO_QA_ENABLED = false;
 
 /** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
-const EXTRA_ICONS_ENABLED = false;
+const EXTRA_ICONS_ENABLED = true;
 /** @const {boolean} Active la génération de devis PDF côté admin (menu Sheets). */
 const ADMIN_DEVIS_PDF_ENABLED = true;
 // --- Drapeaux de Débogage et de Test ---
@@ -239,11 +239,11 @@ const DRIVE_ASSET_IDS = Object.freeze({
   ALUMINIUM_2X: ''
 });
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
-// const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
+ const THEME_SELECTION_ENABLED = true; // supprimé: sélection de thème désactivée
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
-// const THEME_DEFAULT = 'clarte'; // supprimé
+ const THEME_DEFAULT = 'clarte'; // supprimé
 /** @const {Object<string,string>} Associe les clés de thème aux chemins des fichiers CSS. */
-// const THEMES = {}; // supprimé
+ const THEMES = {}; // supprimé
 
 // Objet regroupant tous les drapeaux de fonctionnalité exposés au client
 const FLAGS = Object.freeze({
