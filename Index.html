@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="ELS – Livraison pharmacie. Réservation en ligne.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="<?= ScriptApp.getService().getUrl() ?>?asset=theme.css">
+  <?!= include('Reservation_CSS'); ?>
+  <?!= include('charte'); ?>
+  <title><?= NOM_ENTREPRISE ?> | Accueil</title>
+</head>
+<body>
+
+  <!-- Bandeau / Héros -->
+  <header id="site-header" class="container" role="banner">
+    <?!= include('Logo'); ?>
+    <section class="hero" aria-label="Présentation du service">
+      <div class="hero__brand">
+        <div class="hero__logo">
+          <div class="app-logo-container"><?!= include('Logo') ?></div>
+        </div>
+        <div class="hero__content">
+          <p class="hero__eyebrow">Livraison officinale</p>
+          <h1 class="hero__title">Votre logistique patients, réglée.</h1>
+          <p class="hero__subtitle">Tournées planifiables en quelques clics. Calendrier gélule, tarifs clairs, forfait résident.</p>
+          <div class="hero__cta">
+            <a id="btn-resa-link" class="btn btn--primary" href="#vue-calendrier">Réserver une tournée</a>
+            <a class="btn btn--ghost" href="<?= ScriptApp.getService().getUrl() ?>?page=gestion">Mon espace client</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <!-- 3 cartes intro -->
+  <section class="container intro-cards grid-3" aria-label="Présentation synthétique">
+    <article class="intro-card">
+      <img alt="ELS — TOURNÉES" src="data:image/png;base64,<?!= include('Hero_ElesTournees_b64') ?>">
+      <div><h3>ELS — TOURNÉES</h3><p>Planifiez vos créneaux, sans friction.</p></div>
+    </article>
+    <article class="intro-card">
+      <img alt="Votre logistique patients, réglée." src="data:image/png;base64,<?!= include('Hero_VotreLogistique_b64') ?>">
+      <div><h3>Votre logistique patients, réglée.</h3><p>Suivi clair, délais maîtrisés, sérénité.</p></div>
+    </article>
+    <article class="intro-card">
+      <img alt="Officines, infirmiers, résidences…" src="data:image/png;base64,<?!= include('Hero_OfficinesInfirmeries_b64') ?>">
+      <div><h3>Officines, infirmiers, résidences…</h3><p>Adapté aux besoins terrain.</p></div>
+    </article>
+  </section>
+
+  <!-- Mise en page principale -->
+  <main id="layout" class="layout">
+    <div class="main">
+
+      <!-- Colonne gauche: calendrier -->
+      <section class="section--calendar" aria-label="Sélection de créneau">
+        <div id="calendar-card" class="card">
+          <!-- Conteneur extérieur autorisé pour la mise en page -->
+          <div class="calendar-container">
+            <!-- ELS_CALENDAR_START — DO NOT EDIT ANYTHING INSIDE -->
+            <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
+              <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
+                <div class="carte-en-tete">
+                  <button id="btn-mois-precedent" class="btn-icone" aria-label="Mois précédent">&#9664;</button>
+                  <h2 id="titre-calendrier" aria-live="polite"></h2>
+                  <button id="btn-mois-suivant" class="btn-icone" aria-label="Mois suivant">&#9654;</button>
+                </div>
+                <div class="calendrier-jours-semaine" aria-hidden="true">
+                  <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+                </div>
+                <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
+              </div>
+            </div>
+            <!-- ELS_CALENDAR_END -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Colonne droite: tarifs détaillés + forfait résident -->
+      <section class="section--tarifs" aria-label="Tarification">
+        <div id="tarifs-card" class="card">
+          <section id="tarifs-detaille" class="section section--tarifs hero-card-tarifs" aria-labelledby="titre-tarifs-detaille">
+            <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
+            <div class="tarifs-cartes grid-2">
+              <article class="tarif-carte" data-tarif="tournees">
+                <h3>Tournées</h3>
+                <ul class="tarif-liste">
+                  <li class="tarif-ligne"><span class="tarif-libelle">Normal</span><span class="tarif-valeur" id="tarif-normal-base">—</span><span class="tarif-note">(base)</span></li>
+                  <li class="tarif-ligne"><span class="tarif-libelle">Samedi</span><span class="tarif-valeur" id="tarif-samedi-base">—</span><span class="tarif-note">(base)</span></li>
+                  <li class="tarif-ligne"><span class="tarif-libelle">Urgent</span><span class="tarif-valeur" id="tarif-urgent-base">—</span><span class="tarif-note">(base)</span></li>
+                  <li class="tarif-ligne tarif-ligne--wrap"><span class="tarif-libelle">Suppléments par arrêt</span><span class="tarif-valeur" id="tarif-supplements">—</span></li>
+                </ul>
+              </article>
+              <article class="tarif-carte" data-tarif="forfait-resident">
+                <h3>Forfait résident</h3>
+                <ul class="tarif-liste">
+                  <li class="tarif-ligne"><span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span><span class="tarif-valeur" id="forfait-resident-standard">—</span></li>
+                  <li class="tarif-ligne"><span class="tarif-libelle">Retrait &amp; livraison sous 4&nbsp;h</span><span class="tarif-valeur" id="forfait-resident-urgence">—</span></li>
+                  <li class="tarif-ligne"><span class="tarif-libelle">Durée facturée (planification interne)</span><span class="tarif-valeur" id="forfait-resident-duree">—</span></li>
+                  <li class="tarif-ligne tarif-ligne--note"><span class="tarif-note">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</span></li>
+                </ul>
+              </article>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- Mention TVA (discrète) -->
+      <section class="section--tarifs">
+        <div class="tva-notice">TVA&nbsp;: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</div>
+      </section>
+
+      <!-- Colonne droite: Panier -->
+      <section class="section--panier" aria-label="Panier de réservation">
+        <div id="cart-card" class="card">
+          <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
+            <div class="panier-entete">
+              <h3 id="panier-titre">Panier de réservation</h3>
+              <div id="banniere-client-reconnu" class="panier-greeting hidden" aria-live="polite">
+                Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
+                <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
+              </div>
+            </div>
+            <a id="btn-espace-client" href="<?= ScriptApp.getService().getUrl() ?>?page=gestion" class="btn btn-secondaire btn-sm" style="margin-bottom:8px;">Mon Espace Client</a>
+            <ul id="liste-panier"><p class="panier-vide">Votre panier est vide.</p></ul>
+            <div id="panier-pied-de-page" class="hidden">
+              <div class="panier-total"><span>Total estimé</span><strong id="panier-total-valeur">0 €</strong></div>
+              <div class="panier-actions-groupe">
+                <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
+                <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
+                <button id="btn-telecharger-devis" class="btn btn-secondaire">Télécharger le devis (PDF)</button>
+                <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Données et scripts -->
+  <script type="application/json" id="conf-tarifs"><?= JSON.stringify(getPublicConfig().TARIFS || {}) ?></script>
+  <script>
+    const configServeur = {
+      appUrl: "<?= ScriptApp.getService().getUrl() ?>",
+      nomService: "<?= NOM_ENTREPRISE ?>",
+      TARIFS: (function(){ try { return JSON.parse(document.getElementById('conf-tarifs').textContent); } catch(e){ return {}; } })(),
+      DUREE_BASE: <?= DUREE_BASE ?>,
+      DUREE_ARRET_SUP: <?= DUREE_ARRET_SUP ?>,
+      KM_BASE: <?= KM_BASE ?>,
+      KM_ARRET_SUP: <?= KM_ARRET_SUP ?>,
+      URGENT_THRESHOLD_MINUTES: <?= URGENT_THRESHOLD_MINUTES ?>,
+      PRICING_RULES_V2_ENABLED: <?= PRICING_RULES_V2_ENABLED ? 'true' : 'false' ?>,
+      RETURN_IMPACTS_ESTIMATES_ENABLED: <?= RETURN_IMPACTS_ESTIMATES_ENABLED ? 'true' : 'false' ?>,
+      TARIFS_DETAILLE_ENABLED: <?= TARIFS_DETAILLE_ENABLED ? 'true' : 'false' ?>,
+      FORFAIT_RESIDENT_ENABLED: <?= FORFAIT_RESIDENT_ENABLED ? 'true' : 'false' ?>,
+      FORFAIT_RESIDENT_STANDARD: <?= FORFAIT_RESIDENT.STANDARD_PRICE ?>,
+      FORFAIT_RESIDENT_URGENCE: <?= FORFAIT_RESIDENT.URGENCE_PRICE ?>,
+      FORFAIT_RESIDENT_DURATION: <?= FORFAIT_RESIDENT.DURATION_HOURS ?>,
+      RESIDENT_AFFILIATION_REQUIRED: <?= RESIDENT_AFFILIATION_REQUIRED ? 'true' : 'false' ?>
+    };
+  </script>
+
+  <?!= include('Render_JS'); ?>
+  <?!= include('Pricing_JS'); ?>
+  <?!= include('Reservation_JS_UI_Elements'); ?>
+  <?!= include('Reservation_JS_Calendrier'); ?>
+  <?!= include('Reservation_JS_Principal'); ?>
+  <?!= include('Reservation_JS_Devis'); ?>
+  <?!= include('Reservation_JS_Panier'); ?>
+  <?!= include('Reservation_JS_Client'); ?>
+  <?!= include('Reservation_JS_Tournee'); ?>
+  <script defer src="<?= ScriptApp.getService().getUrl() ?>?asset=app.js"></script>
+
+</body>
+</html>

@@ -135,6 +135,24 @@ function creerReponseHtml(titre, message) {
  */
 function doGet(e) {
   try {
+    // Route: static asset delivery (CSS/JS) via query param
+    if (e && e.parameter && e.parameter.asset) {
+      var name = String(e.parameter.asset).trim();
+      var content = '';
+      try {
+        content = HtmlService.createTemplateFromFile(name).getCode();
+      } catch (err1) {
+        try {
+          content = HtmlService.createHtmlOutputFromFile(name).getContent();
+        } catch (err2) {
+          return ContentService.createTextOutput('/* asset not found */').setMimeType(ContentService.MimeType.JAVASCRIPT);
+        }
+      }
+      var mime = ContentService.MimeType.TEXT;
+      if (/\.css$/i.test(name)) mime = ContentService.MimeType.CSS;
+      else if (/\.js$/i.test(name)) mime = ContentService.MimeType.JAVASCRIPT;
+      return ContentService.createTextOutput(content).setMimeType(mime);
+    }
     try {
       const setup = checkSetup_ELS();
       if (setup.missingProps && setup.missingProps.length > 0) {

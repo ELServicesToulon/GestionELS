@@ -117,9 +117,10 @@
     </div>
   </section>
 
-  <main id="layout" class="container two-cols">
-    <section id="col-left" class="col">
+  <main id="layout" class="layout"><div class="main">
+    <section id="col-left" class="section--calendar">
       <div id="calendar-card" class="card">
+        <!-- ELS_CALENDAR_START — DO NOT EDIT ANYTHING INSIDE -->
         <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
           <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
             <div class="carte-en-tete">
@@ -133,6 +134,7 @@
             <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
           </div>
         </div>
+        <!-- ELS_CALENDAR_END -->
       </div>
       <? if (PROOF_SOCIAL_ENABLED) { ?>
       <section id="proof-card" class="card" aria-labelledby="preuves-sociales-titre" role="region">
@@ -190,7 +192,7 @@
         </form>
       </div>
     </section>
-    <section id="col-right" class="col">
+    <section id="col-right-tarifs" class="section--tarifs">
       <div id="tarifs-card" class="card hidden">
         <section id="tarifs-detaille" class="section section--tarifs hero-card-tarifs hidden" aria-labelledby="titre-tarifs-detaille">
           <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
@@ -243,6 +245,8 @@
           <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
         </section>
       </div>
+    </section>
+    <section id="col-right-panier" class="section--panier">
       <div id="cart-card" class="card">
         <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
           <div class="panier-entete">
@@ -273,7 +277,7 @@
         </aside>
       </div>
     </section>
-  </main>
+  </div></main>
   <!-- MODALE 1: Configuration de la tournée (VERSION COMPLÈTE) -->
   <div id="modale-config-tournee" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-config-titre">
     <div class="modale-contenu">

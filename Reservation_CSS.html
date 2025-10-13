@@ -65,21 +65,24 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 }
 
 /* --- MISE EN PAGE PRINCIPALE --- */
-main.layout {
+main.layout,
+#layout.layout {
   width: 100%;
   max-width: min(1280px, 94vw);
   margin: 0 auto;
   padding: clamp(16px, 2vw, 32px);
 }
 
-main.layout > .main {
+main.layout > .main,
+#layout.layout > .main {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
   gap: clamp(24px, 3vw, 40px);
   align-items: start;
 }
 
-main.layout > .main > * {
+main.layout > .main > *,
+#layout.layout > .main > * {
   min-width: 0;
 }
 
@@ -115,7 +118,8 @@ main.layout > .main > * {
 }
 
 @media (max-width: 1080px) {
-  main.layout > .main {
+  main.layout > .main,
+  #layout.layout > .main {
     grid-template-columns: 1fr;
   }
 
@@ -198,6 +202,14 @@ main.layout > .main > * {
   border-radius: var(--radius, 20px);
   box-shadow: var(--shadow);
 }
+
+/* Hero section used in Reservation_Interface.html */
+#hero { width: 100%; max-width: min(1280px, 94vw); margin: 0 auto; padding: clamp(16px, 2vw, 24px); }
+#hero .hero-wrap { display: flex; align-items: center; gap: clamp(12px, 2.4vw, 20px); flex-wrap: wrap; }
+.hero-logo { width: clamp(140px, 22vw, 220px); height: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+.hero-cards { display: flex; flex-wrap: wrap; gap: clamp(10px, 2vw, 16px); }
+.hero-chip { width: clamp(140px, 22vw, 240px); height: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+.hero-chip--xl { width: clamp(220px, 32vw, 360px); }
 
 .hero__brand {
   display: flex;
