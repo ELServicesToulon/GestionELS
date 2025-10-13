@@ -1147,9 +1147,9 @@ function archiverFacturesDuMois() {
 // Ajoute un menu pour vérifier rapidement l'installation et le setup.
 // Les entrées n'apparaissent que si les fonctions existent.
 
-function onOpen() {
+function onOpen_AdminLegacy() {
   const ui = SpreadsheetApp.getUi();
-  const menu = ui.createMenu('EL Services');
+  const menu = ui.createMenu('ELS');
 
   if (typeof showSetupSummary_ELS === 'function') {
     menu.addItem('Vérifier l’installation', 'showSetupSummary_ELS');
@@ -1172,7 +1172,11 @@ function onOpen() {
     menu.addItem('Générer un devis (PDF) – sélection', 'genererDevisPdfDepuisSelection');
   }
 
+  // Ajouts forcés pour garantir les actions principales
+  try { menu.addItem('Generer un devis (PDF) - selection', 'genererDevisPdfDepuisSelection'); } catch (_e) {}
+  try { menu.addItem('Rafraichir le menu', 'onOpen'); } catch (_e) {}
   menu.addToUi();
+  try { SpreadsheetApp.getActive().toast('Menu ELS mis à jour', 'ELS', 5); } catch (_e) {}
 }
 
 /**
@@ -1190,7 +1194,7 @@ function genererDevisPdfDepuisSelection() {
     const range = sheet.getActiveRange();
     if (!range) throw new Error("Aucune sélection. Sélectionnez des lignes dans '" + SHEET_FACTURATION + "'.");
 
-    const values = feuilleFacturation.getRange(range.getRow(), 1, range.getNumRows(), Math.max(1, feuilleFacturation.getLastColumn())).getValues();
+    const values = sheet.getRange(range.getRow(), 1, range.getNumRows(), Math.max(1, sheet.getLastColumn())).getValues();
     const feuilleFacturation = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const header = feuilleFacturation.getRange(1, 1, 1, Math.max(1, feuilleFacturation.getLastColumn())).getValues()[0];
     const indices = {};
@@ -1252,18 +1256,38 @@ function genererDevisPdfDepuisSelection() {
     const table = body.appendTable();
     const headerRow = table.appendTableRow();
     ['Date', 'Heure', 'Prestation', 'Montant (€)'].forEach(t => headerRow.appendTableCell(t).setBold(true));
+    // Détection avantage résident
+    let colResident = -1;
+    try { colResident = obtenirIndicesEnTetes(feuilleFacturation, ["Resident"])['Resident']; } catch(_e) { colResident = -1; }
+    const structureNom = String(values[0][idxNom] || '').trim();
+    const residentDetect = colResident !== -1 ? values.some(r => r[colResident] === true) : lignes.some(l => /forfait\s*r[ée]sident/i.test(l.details));
+    const avantageMontant = residentDetect ? 5 : 0;
+    let avantageAnnote = false;
     lignes.forEach(l => {
       const row = table.appendTableRow();
       row.appendTableCell(l.dateTxt);
       row.appendTableCell(l.heureTxt);
       row.appendTableCell(l.details);
-      row.appendTableCell(Utilities.formatString('%.2f', l.montant));
+      var cellText = Utilities.formatString('%.2f', l.montant) + ' €';
+      if (residentDetect && !avantageAnnote && avantageMontant > 0) {
+        const label = structureNom ? ('Avantage ' + structureNom) : 'Avantage résident';
+        cellText += ' (' + label + ' : -' + Utilities.formatString('%.2f', avantageMontant) + ' €)';
+        avantageAnnote = true;
+      }
+      row.appendTableCell(cellText);
     });
+    if (avantageMontant > 0) {
+      const adv = table.appendTableRow();
+      adv.appendTableCell('');
+      adv.appendTableCell('');
+      adv.appendTableCell(structureNom ? ('Avantage: ' + structureNom) : 'Avantage résident');
+      adv.appendTableCell('-' + Utilities.formatString('%.2f', avantageMontant) + ' €');
+    }
     const totalRow = table.appendTableRow();
     totalRow.appendTableCell('Total').setBold(true);
     totalRow.appendTableCell('');
     totalRow.appendTableCell('');
-    totalRow.appendTableCell(Utilities.formatString('%.2f', total)).setBold(true);
+    totalRow.appendTableCell(Utilities.formatString('%.2f', Math.max(0, total - avantageMontant)) + ' €').setBold(true);
 
     body.appendParagraph('\u00A0');
     body.appendParagraph("Pour confirmer: réservez via l'application ou contactez-nous.");
@@ -1275,10 +1299,29 @@ function genererDevisPdfDepuisSelection() {
     const pdfFile = dossierDevis.createFile(pdfBlob);
     try { logAdminAction('Génération Devis PDF', `${nomClient} <${emailClient}> - ${pdfFile.getName()}`); } catch (_e) {}
 
+    // Ecrit l'ID du devis PDF dans la feuille Facturation (colonne "ID Devis").
+    try {
+      const lastColWrite = Math.max(1, feuilleFacturation.getLastColumn());
+      const headerRowWrite = feuilleFacturation.getRange(1, 1, 1, lastColWrite).getValues()[0];
+      const headerTrimmedWrite = headerRowWrite.map(h => String(h || '').trim());
+      let idxIdDevis = headerTrimmedWrite.indexOf('ID Devis');
+      if (idxIdDevis === -1) {
+        feuilleFacturation.getRange(1, headerTrimmedWrite.length + 1).setValue('ID Devis');
+        idxIdDevis = headerTrimmedWrite.length; // zero-based
+      }
+      const pdfId = pdfFile.getId();
+      for (let i = 0; i < values.length; i++) {
+        const rowIndex = range.getRow() + i;
+        feuilleFacturation.getRange(rowIndex, idxIdDevis + 1).setValue(pdfId);
+      }
+    } catch (_errId) { /* noop */ }
+
     ui.alert('Devis généré', `Le devis a été créé:\n${pdfFile.getUrl()}`, ui.ButtonSet.OK);
   } catch (e) {
     ui.alert('Erreur Génération Devis', e.message, ui.ButtonSet.OK);
   }
 }
+
+
 
 

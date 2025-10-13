@@ -13,7 +13,7 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
 
   // --- Création du menu principal ---
-  const menuPrincipal = ui.createMenu('EL Services')
+  const menuPrincipal = ui.createMenu('ELS')
     .addItem('Générer les factures sélectionnées', 'genererFactures')
     .addItem('Envoyer les factures contrôlées', 'envoyerFacturesControlees')
     .addItem('Générer lien Espace Client', 'menuGenererLienClient')
@@ -42,6 +42,9 @@ function onOpen() {
   }
 
   menuPrincipal.addSubMenu(sousMenuMaintenance);
+  // Actions devis PDF et refresh menu
+  try { menuPrincipal.addItem('Generer un devis (PDF) - selection', 'genererDevisPdfDepuisSelection'); } catch (_e) {}
+  try { menuPrincipal.addItem('Rafraichir le menu', 'onOpen'); } catch (_e) {}
 
   // --- Ajout du sous-menu Debug (s'il est activé) ---
   // CORRECTION: La création du menu Debug est maintenant entièrement contenue
@@ -55,6 +58,7 @@ function onOpen() {
   }
 
   menuPrincipal.addToUi();
+  try { SpreadsheetApp.getActive().toast('Menu ELS mis à jour', 'ELS', 5); } catch (_e) {}
 
   try {
     validerConfiguration();

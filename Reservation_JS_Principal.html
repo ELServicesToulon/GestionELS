@@ -88,10 +88,10 @@ function initialiserTarifsResident() {
   const prixStandard = obtenirPrixResident('standard');
   const prixUrgence = obtenirPrixResident('urgence');
   if (elStandard) {
-    elStandard.textContent = Number.isFinite(prixStandard) ? `${formatter.format(prixStandard)} €` : 'Forfait standard';
+    elStandard.textContent = Number.isFinite(prixStandard) ? `${formatter.format(prixStandard)} ï¿½` : 'Forfait standard';
   }
   if (elUrgence) {
-    elUrgence.textContent = Number.isFinite(prixUrgence) ? `${formatter.format(prixUrgence)} €` : 'Forfait urgence';
+    elUrgence.textContent = Number.isFinite(prixUrgence) ? `${formatter.format(prixUrgence)} ï¿½` : 'Forfait urgence';
   }
 }
 
@@ -169,8 +169,14 @@ function mettreAJourEtatResident() {
   ui.residentNoticeCreneau?.classList.toggle('hidden', !actif);
   ui.clientEmailHelper?.classList.toggle('hidden', !actif);
   if (ui.champEmailClient) {
-    ui.champEmailClient.required = !actif;
-    ui.champEmailClient.placeholder = actif ? "Email de la structure (facultatif)" : "";
+    const affiliationReq = !!(window.configServeur && window.configServeur.RESIDENT_AFFILIATION_REQUIRED);
+    const requireEmail = (!actif) || (actif && affiliationReq);
+    ui.champEmailClient.required = requireEmail;
+    if (actif) {
+      ui.champEmailClient.placeholder = affiliationReq ? "Email de la structure (requis)" : "Email de la structure (facultatif)";
+    } else {
+      ui.champEmailClient.placeholder = "";
+    }
   }
   if (!actif) {
     (ui.residentModeRadios || []).forEach(radio => {

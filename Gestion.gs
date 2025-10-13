@@ -157,6 +157,7 @@ function obtenirReservationsClient(emailClient, exp, sig) {
           details: details,
           clientName: ligne[indices["Client (Raison S. Client)"]],
           amount: parseFloat(ligne[indices["Montant"]]) || 0,
+          resident: (indices["Resident"] !== undefined && indices["Resident"] !== -1) ? (ligne[indices["Resident"]] === true) : false,
           km: km
         };
 
@@ -476,3 +477,5 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emai
     lock.releaseLock();
   }
 }
+
+

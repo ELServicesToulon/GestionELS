@@ -38,15 +38,15 @@ const FACTURES_FOLDER_ID = (function() {
   catch (e) { return getSecret('ID_DOSSIER_ARCHIVES'); }
 })();
 
-//** @const {string|null} ID du fichier Drive utilisé comme logo sur les factures (optionnel). */
-//const FACTURE_LOGO_FILE_ID = (function() {
- // try {
-    //const id = getSecret('ID_LOGO_FACTURE');
-    //return id || null;
- // } catch (_err) {
-    //return null;
-  //}
-//})();
+/** @const {string|null} ID du fichier Drive utilisé comme logo sur les factures (optionnel). */
+const FACTURE_LOGO_FILE_ID = (function() {
+  try {
+    const id = getSecret('ID_LOGO_FACTURE');
+    return id || null;
+  } catch (_err) {
+    return null;
+  }
+})();
 
 // --- Bloc de facturation générique ---
 /** @const {Object} Paramètres de facturation centralisés. */
@@ -158,6 +158,8 @@ const RESERVATION_UI_V2_ENABLED = true;
 
 /** @const {boolean} Active la facturation directe au résident. */
 const RESIDENT_BILLING_ENABLED = true;
+/** @const {boolean} Exige l'affiliation d'un résident à une structure (email requis). */
+const RESIDENT_AFFILIATION_REQUIRED = true;
 
 /** @const {boolean} Affiche le bloc "Tarifs détaillés" dans l'UI. */
 const TARIFS_DETAILLE_ENABLED = true;
@@ -280,6 +282,7 @@ const FLAGS = Object.freeze({
   adminSlotsPngEnabled: ADMIN_SLOTS_PNG_ENABLED,
   tarifsDetailleEnabled: TARIFS_DETAILLE_ENABLED,
   forfaitResidentEnabled: FORFAIT_RESIDENT_ENABLED
+  ,residentAffiliationRequired: RESIDENT_AFFILIATION_REQUIRED
 });
 
 

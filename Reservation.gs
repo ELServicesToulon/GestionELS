@@ -19,6 +19,12 @@ function reserverPanier(donneesReservation) {
     const client = donneesReservation.client;
     if (client) {
       client.resident = client.resident === true;
+      if (client.resident === true && typeof RESIDENT_AFFILIATION_REQUIRED !== 'undefined' && RESIDENT_AFFILIATION_REQUIRED) {
+        const emailStruct = String(client.email || '').trim();
+        if (!emailStruct) {
+          return { success: false, summary: "Pour un résident, l'email de la structure (EHPAD/foyer/pharmacie) est requis." };
+        }
+      }
     }
     const items = donneesReservation.items;
     let failedItemIds = [];
@@ -233,6 +239,11 @@ function genererDevisPdfFromItems(donneesDevis) {
       };
     });
 
+    // Avantage Forfait Résident: si applicable, offrir 5 € sur le retrait
+    const structureNom = client && (client.structure || client.nom) ? (client.structure || client.nom) : '';
+    const residentDetect = items.some(it => it.resident === true || /forfait\s*r[ée]sident/i.test(String(it.details || '')));
+    const avantageMontant = residentDetect ? 5 : 0;
+
     const dossierArchives = DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES'));
     const dossierDevis = obtenirOuCreerDossier(dossierArchives, 'Devis');
     const now = new Date();
@@ -257,18 +268,33 @@ function genererDevisPdfFromItems(donneesDevis) {
     const table = body.appendTable();
     const headerRow = table.appendTableRow();
     ['Date', 'Heure', 'Prestation', 'Montant (€)'].forEach(t => headerRow.appendTableCell(t).setBold(true));
+    let avantageAnnote = false;
     lignes.forEach(l => {
       const row = table.appendTableRow();
       row.appendTableCell(l.dateTxt);
       row.appendTableCell(l.heureTxt);
       row.appendTableCell(l.details);
-      row.appendTableCell(Utilities.formatString('%.2f', l.montant));
+      var cellText = Utilities.formatString('%.2f', l.montant) + ' €';
+      if (residentDetect && !avantageAnnote && avantageMontant > 0) {
+        const label = structureNom ? ('Avantage ' + structureNom) : 'Avantage résident';
+        cellText += ' (' + label + ' : -' + Utilities.formatString('%.2f', avantageMontant) + ' €)';
+        avantageAnnote = true;
+      }
+      row.appendTableCell(cellText);
     });
+    // Ligne Avantage si applicable
+    if (avantageMontant > 0) {
+      const adv = table.appendTableRow();
+      adv.appendTableCell('');
+      adv.appendTableCell('');
+      adv.appendTableCell(structureNom ? ('Avantage: ' + structureNom) : 'Avantage résident');
+      adv.appendTableCell('-' + Utilities.formatString('%.2f', avantageMontant) + ' €');
+    }
     const totalRow = table.appendTableRow();
     totalRow.appendTableCell('Total').setBold(true);
     totalRow.appendTableCell('');
     totalRow.appendTableCell('');
-    totalRow.appendTableCell(Utilities.formatString('%.2f', totalDevis)).setBold(true);
+    totalRow.appendTableCell(Utilities.formatString('%.2f', Math.max(0, totalDevis - avantageMontant)) + ' €').setBold(true);
 
     body.appendParagraph('\u00A0');
     body.appendParagraph("Pour confirmer: réservez via l'application ou contactez-nous.");
@@ -506,4 +532,3 @@ function reservationIdExiste(idReservation) {
     return false;
   }
 }
-
