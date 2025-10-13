@@ -70,7 +70,9 @@
   <style id="theme-style"></style>
   <?!= include('Client_CSS'); ?>
   <?!= include('charte'); ?>
-  <?!= include('GoogleChartsStub'); ?>
+  <? if (typeof CLIENT_CHARTS_ENABLED !== 'undefined' && CLIENT_CHARTS_ENABLED) { ?>
+    <?!= include('GoogleChartsStub'); ?>
+  <? } ?>
 </head>
 <body>
 

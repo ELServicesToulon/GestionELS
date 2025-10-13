@@ -25,8 +25,8 @@ function logError(...args) {
 }
 
 const CLE_LOCALSTORAGE_CLIENT = 'sessionClientELServices';
-const CLIENT_SESSION_OPAQUE_ID_ENABLED = <€!= CLIENT_SESSION_OPAQUE_ID_ENABLED €>;
-const CLIENT_SESSION_TTL_HOURS = <€!= CLIENT_SESSION_TTL_HOURS €>;
+const CLIENT_SESSION_OPAQUE_ID_ENABLED = <?!= CLIENT_SESSION_OPAQUE_ID_ENABLED ?>;
+const CLIENT_SESSION_TTL_HOURS = <?!= CLIENT_SESSION_TTL_HOURS ?>;
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Références aux éléments du DOM ---
@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let removeFocusTrap = () => {};
 
     function afficherVueConnexion(prefilledEmail) {
-        document.getElementById('conteneur-app')€.classList.add('hidden');
-        document.getElementById('non-connecte')€.classList.remove('hidden');
+        document.getElementById('conteneur-app').classList.add('hidden');
+        document.getElementById('non-connecte').classList.remove('hidden');
         if (prefilledEmail && emailConnexionInput) {
             emailConnexionInput.value = prefilledEmail;
         }
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnFermerModale) {
             btnFermerModale.addEventListener('click', () => {
                 removeFocusTrap();
-                modale€.classList.add('hidden');
+                modale.classList.add('hidden');
             });
         }
 
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const startTime = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false }).replace(':','h');
                 return { date: dateISO, startTime, details: resa.details || '', prix: Number(resa.amount) || 0 };
               });
-              const client = { email: emailClientCourant, nom: document.getElementById('message-bienvenue-client')€.textContent || '' };
+              const client = { email: emailClientCourant, nom: document.getElementById('message-bienvenue-client').textContent || '' };
               basculerIndicateurChargement(true);
               google.script.run.withSuccessHandler(res => {
                 basculerIndicateurChargement(false);
@@ -302,10 +302,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ul.className = 'liste-factures';
         factures.forEach(f => {
             const li = document.createElement('li');
-            const dateTxt = f.dateISO € new Date(f.dateISO).toLocaleDateString('fr-FR') : '';
+            const dateTxt = f.dateISO ? new Date(f.dateISO).toLocaleDateString('fr-FR') : '';
             const numero = escapeHTML(f.numero);
-            const datePart = dateTxt € 'du ' + escapeHTML(dateTxt) : '';
-            const montantPart = f.montant€.toFixed € escapeHTML(f.montant.toFixed(2)) + ' €' : '';
+            const datePart = dateTxt ? 'du ' + escapeHTML(dateTxt) : '';
+            const montantPart = (typeof f.montant === 'number') ? (escapeHTML(f.montant.toFixed(2)) + ' €') : '';
             const url = escapeHTML(f.url);
             renderHTML(li, `
                 <span>Facture <strong>${numero}</strong> ${datePart} — ${montantPart}</span>
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (qs && qs.length > 0) {
                     const html = qs.map(q => {
                         const repHtml = q.reponses && q.reponses.length
-                            € '<ul>' + q.reponses.map(r => `<li>${escapeHTML(r.auteur)}: ${escapeHTML(r.texte)}</li>`).join('') + '</ul>'
+                            ? '<ul>' + q.reponses.map(r => `<li>${escapeHTML(r.auteur)}: ${escapeHTML(r.texte)}</li>`).join('') + '</ul>'
                             : '';
                         return `<div class="question-item"><p><strong>${escapeHTML(q.auteur)}:</strong> ${escapeHTML(q.question)}</p>${repHtml}</div>`;
                     }).join('');
@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const matchTotal = resa.details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);
         const matchSup = resa.details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
-        const arretsActuels = matchTotal € parseInt(matchTotal[1], 10) : (matchSup € parseInt(matchSup[1], 10) + 1 : 1);
+        const arretsActuels = matchTotal ? parseInt(matchTotal[1], 10) : (matchSup ? parseInt(matchSup[1], 10) + 1 : 1);
 
         renderHTML(contenuModale, `
             <h3 id="modale-modification-titre">Modifier les arrêts</h3>
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button id="btn-valider-modif-arrets" class="btn btn-primaire btn--client">Valider</button>
             </div>
         `);
-        modale€.classList.remove('hidden');
+        modale.classList.remove('hidden');
         removeFocusTrap = trapFocus(modale);
 
         document.getElementById('btn-valider-modif-arrets').addEventListener('click', (e) => {
@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div id="grille-creneaux-deplacement" class="grille-creneaux"></div>
             </div>
         `);
-        modale€.classList.remove('hidden');
+        modale.classList.remove('hidden');
         removeFocusTrap = trapFocus(modale);
 
         const inputDate = document.getElementById('nouvelle-date');
@@ -564,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function validerModificationArrets(idReservation, totalStops, unlock) {
         basculerIndicateurChargement(true);
-        modale€.classList.add('hidden');
+        modale.classList.add('hidden');
         removeFocusTrap();
         google.script.run
             .withSuccessHandler(reponse => {
@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function validerDeplacement(idReservation, nouvelleDate, nouvelleHeure, unlock) {
         basculerIndicateurChargement(true);
-        modale€.classList.add('hidden');
+        modale.classList.add('hidden');
         removeFocusTrap();
         google.script.run
             .withSuccessHandler(reponse => {
@@ -634,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function afficherErreur(erreur) {
         basculerIndicateurChargement(false);
-        const message = typeof erreur === 'object' && erreur.message € erreur.message : String(erreur);
+        const message = (typeof erreur === 'object' && erreur && erreur.message) ? erreur.message : String(erreur);
         afficherNotification(`Erreur : ${message}`, "erreur");
         logError(erreur);
     }

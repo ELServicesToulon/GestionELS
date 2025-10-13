@@ -273,17 +273,28 @@ function buildReservationHeroImages() {
 
 function loadBase64ImageDataUri(partialName) {
   try {
+    // Lire le contenu brut du fichier d'actif.
+    // Utiliser getCode() permet d'éviter l'évaluation du template.
     const template = HtmlService.createTemplateFromFile(partialName);
-    let content = template.getCode().trim();
+    let content = template.getCode();
     if (!content) {
       return '';
     }
+    content = String(content).trim();
+    // Si déjà une Data URI complète, la retourner telle quelle.
     if (/^data:image\//i.test(content)) {
       return content;
     }
-    const normalized = content.replace(/\s+/g, '');
-    if (!/^[A-Za-z0-9+/=]+$/.test(normalized)) {
-      throw new Error('Contenu base64 invalide');
+    // Normaliser: supprimer les espaces et retours à la ligne.
+    const normalized = content.replace(/[\s\r\n]+/g, '');
+    // Valider via un décodage base64 pour être robuste aux encodages/retours.
+    try {
+      Utilities.base64Decode(normalized);
+    } catch (_e) {
+      // En dernier recours, élargir l'acceptation si le contenu semble du base64.
+      if (!/^[A-Za-z0-9+/=]+$/.test(normalized)) {
+        throw new Error('Contenu base64 invalide');
+      }
     }
     return 'data:image/png;base64,' + normalized;
   } catch (err) {

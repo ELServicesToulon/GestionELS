@@ -17,7 +17,7 @@
   "scripts": {
     "lint": "eslint --no-error-on-unmatched-pattern .",
     "fmt": "prettier -w .",
-    "clasp:login": "clasp login --no-localhost || true",
+    "clasp:login": "clasp login",
     "clasp:push": "clasp push -f",
     "clasp:version": "clasp version 'auto: CI'",
     "clasp:deploy": "clasp deploy -d 'client'",

@@ -136,6 +136,10 @@ const SEND_MAIL_SCOPE_CHECK_ENABLED = false;
 const BILLING_MULTI_SHEET_ENABLED = false;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
 const CA_EN_COURS_ENABLED = true;
+/** @const {boolean} Précharge le loader Google Charts via proxy (peut déclencher OAuth). */
+const CHARTS_PROXY_PREFETCH_ENABLED = false;
+/** @const {boolean} Active les graphiques côté client (nécessite autorisation UrlFetch). */
+const CLIENT_CHARTS_ENABLED = false;
 /** @const {boolean} Resynchronise les événements manquants du calendrier Google. */
 const CALENDAR_RESYNC_ENABLED = true;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
