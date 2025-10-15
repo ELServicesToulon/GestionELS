@@ -205,17 +205,17 @@ main.layout > .main > *,
 }
 
 /* Hero section used in Reservation_Interface.html */
-#hero { width: 100%; max-width: min(1280px, 94vw); margin: 0 auto; padding: clamp(16px, 2vw, 24px); }
-#hero .hero-wrap { display: flex; align-items: center; gap: clamp(12px, 2.4vw, 20px); flex-wrap: wrap; }
-.hero-logo { width: clamp(140px, 22vw, 220px); height: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
-.hero-cards { display: flex; flex-wrap: wrap; gap: clamp(10px, 2vw, 16px); }
-.hero-chip { width: clamp(140px, 22vw, 240px); height: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
-.hero-chip--xl { width: clamp(220px, 32vw, 360px); }
+#hero { width: 100%; max-width: min(1280px, 94vw); margin: 0 auto; padding: clamp(10px, 1.6vw, 18px); }
+#hero .hero-wrap { display: flex; align-items: center; gap: clamp(8px, 1.8vw, 14px); flex-wrap: wrap; }
+.hero-logo { width: clamp(120px, 18vw, 180px); height: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+.hero-cards { display: flex; flex-wrap: wrap; gap: clamp(8px, 1.6vw, 14px); }
+.hero-chip { width: clamp(120px, 20vw, 200px); height: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+.hero-chip--xl { width: clamp(180px, 28vw, 300px); }
 
 .hero__brand {
   display: flex;
   align-items: center;
-  gap: clamp(20px, 4vw, 56px);
+  gap: clamp(16px, 3vw, 40px);
   width: 100%;
 }
 
@@ -249,8 +249,8 @@ main.layout > .main > *,
 .hero__content {
   display: flex;
   flex-direction: column;
-  gap: clamp(12px, 2vw, 20px);
-  max-width: 640px;
+  gap: clamp(10px, 1.8vw, 16px);
+  max-width: 600px;
 }
 
 .hero__eyebrow {
@@ -264,15 +264,15 @@ main.layout > .main > *,
 
 .hero__title {
   margin: 0;
-  font-size: clamp(2.2rem, 3.6vw, 2.9rem);
-  line-height: 1.15;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  line-height: 1.1;
   color: #111827;
 }
 
 .hero__subtitle {
   margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.45;
   color: #334155;
 }
 
@@ -376,7 +376,7 @@ main.layout > .main > *,
   background: linear-gradient(135deg, var(--violet), var(--bleu));
   color: var(--txt);
   border-radius: var(--radius);
-  padding: 2rem;
+  padding: clamp(16px, 2vw, 24px);
   text-align: center;
   box-shadow: var(--shadow);
 }
@@ -391,20 +391,20 @@ main.layout > .main > *,
   color: var(--txt);
   border-radius: var(--radius, 16px);
   box-shadow: 0 8px 24px rgba(0,0,0,.08);
-  padding: 16px;
+  padding: clamp(12px, 1.6vw, 16px);
 }
-.els-col-left .tarifs-cartes { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.els-col-left .tarifs-cartes { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .hero-tarifs h1 {
   margin-top: 0;
-  font-size: 1.8em;
+  font-size: 1.5em;
 }
 .tarifs-cartes { display: block; gap: 0; }
 .tarif-carte { background: transparent; color: var(--txt); border-radius: 0; padding: 0; box-shadow: none; }
 .tarif-carte h3 { margin-top: 0; color: var(--txt); }
 .tarif-icone {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 0.5rem;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 0.4rem;
 }
 .tarif-carte ul {
   list-style: none;
@@ -414,13 +414,13 @@ main.layout > .main > *,
 #tarifs-card .tarif-liste {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   margin: 0;
 }
 #tarifs-card .tarif-ligne {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
+  gap: 8px;
   align-items: baseline;
 }
 #tarifs-card .tarif-ligne--wrap,
@@ -437,7 +437,7 @@ main.layout > .main > *,
   color: var(--violet);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 #tarifs-card .tarif-valeur.is-na {
@@ -450,9 +450,10 @@ main.layout > .main > *,
 #tarifs-card .tarif-supplement-chip {
   background: rgba(142, 68, 173, 0.12);
   color: var(--violet);
-  padding: 4px 10px;
+  padding: 2px 8px;
   border-radius: var(--radius-pill, 999px);
   font-weight: 600;
+  font-size: 0.85rem;
   white-space: nowrap;
 }
 #tarifs-card .tarif-supplement-chip::before {
@@ -462,7 +463,7 @@ main.layout > .main > *,
 }
 #tarifs-card .tarif-note {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 .hero-footnote { margin: 0; font-size: 0.75em; line-height: 1.4; }
 
@@ -950,7 +951,7 @@ input:checked + .glissiere:before { transform: translateX(22px); }
 .app-logo-container { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
 .app-logo { max-width: 200px; height: auto; }
 .app-en-tete { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 30px; }
-#hero > .app-logo-container { margin-bottom: 24px; }
+#hero > .app-logo-container { margin-bottom: 16px; }
 #hero > .app-logo-container svg,
 #hero > .app-logo-container img { max-width: 220px; width: 100%; height: auto; }
 .modale-contenu .app-logo-container { margin: 10px auto 20px; }
