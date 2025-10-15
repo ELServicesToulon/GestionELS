@@ -1,0 +1,82 @@
+[
+
+{"name":"ai-sdk-provider-codex-cli","keywords":["ai-sdk","codex","openai","cli","language-model","gpt-5","provider"],"version":"0.4.0","description":"AI SDK v5 provider for OpenAI Codex CLI with native JSON Schema support","sanitized_name":"ai-sdk-provider-codex-cli","publisher":{"email":"ben@vargas.com","username":"benvargas"},"maintainers":[{"email":"ben@vargas.com","username":"benvargas"}],"license":"MIT","date":"2025-10-06T17:50:22.520Z","links":{"homepage":"https://github.com/ben-vargas/ai-sdk-provider-codex-cli","repository":"git+https://github.com/ben-vargas/ai-sdk-provider-codex-cli.git","bugs":"https://github.com/ben-vargas/ai-sdk-provider-codex-cli/issues","npm":"https://www.npmjs.com/package/ai-sdk-provider-codex-cli"}}
+
+,
+
+{"name":"codex-mcp-server","keywords":["mcp","codex","openai","claude","ai","cli"],"version":"1.0.3","description":"MCP server wrapper for OpenAI Codex CLI","sanitized_name":"codex-mcp-server","publisher":{"email":"tuanpro.itman@gmail.com","username":"tuannvm"},"maintainers":[{"email":"tuanpro.itman@gmail.com","username":"tuannvm"}],"license":"ISC","date":"2025-09-29T18:55:58.052Z","links":{"homepage":"https://github.com/tuannvm/codex-mcp-server#readme","repository":"git+https://github.com/tuannvm/codex-mcp-server.git","bugs":"https://github.com/tuannvm/codex-mcp-server/issues","npm":"https://www.npmjs.com/package/codex-mcp-server"}}
+
+,
+
+{"name":"@lavdata/codex","keywords":[],"version":"0.42.1","description":"<h1 align=\"center\">OpenAI Codex CLI</h1>","sanitized_name":"@lavdata/codex","publisher":{"email":"vucan1892000@gmail.com","username":"lavdata"},"maintainers":[{"email":"vucan1892000@gmail.com","username":"lavdata"}],"license":"Apache-2.0","date":"2025-10-01T08:43:02.983Z","links":{"homepage":"https://github.com/openai/codex#readme","repository":"git+https://github.com/openai/codex.git","bugs":"https://github.com/openai/codex/issues","npm":"https://www.npmjs.com/package/@lavdata/codex"}}
+
+,
+
+{"name":"codex-cli-mcp-tool","keywords":["mcp","modelcontextprotocol","codex","openai","cli","ai","llm"],"version":"1.0.5","description":"MCP server for OpenAI Codex CLI integration","sanitized_name":"codex-cli-mcp-tool","publisher":{"email":"biggest_medal7b@icloud.com","username":"mr-tomahawk"},"maintainers":[{"email":"biggest_medal7b@icloud.com","username":"mr-tomahawk"}],"license":"MIT","date":"2025-08-19T07:26:38.297Z","links":{"homepage":"https://github.com/Mr-Tomahawk/codex-cli-mcp-tool#readme","repository":"git+https://github.com/Mr-Tomahawk/codex-cli-mcp-tool.git","bugs":"https://github.com/Mr-Tomahawk/codex-cli-mcp-tool/issues","npm":"https://www.npmjs.com/package/codex-cli-mcp-tool"}}
+
+,
+
+{"name":"my-codex-no-sandbox","keywords":[],"version":"0.1.2505290819","description":"<h1 align=\"center\">OpenAI Codex CLI</h1> <p align=\"center\">Lightweight coding agent that runs in your terminal</p>","sanitized_name":"my-codex-no-sandbox","publisher":{"email":"david@stackbit.com","username":"berdav"},"maintainers":[{"email":"david@stackbit.com","username":"berdav"}],"license":"Apache-2.0","date":"2025-05-29T05:24:02.914Z","links":{"homepage":"https://github.com/openai/codex#readme","repository":"git+https://github.com/openai/codex.git","bugs":"https://github.com/openai/codex/issues","npm":"https://www.npmjs.com/package/my-codex-no-sandbox"}}
+
+,
+
+{"name":"codex-ui","keywords":["codex","developer-tools","cli","express","react","vite","sse","ai"],"version":"0.2.0","description":"Minimal web interface for the OpenAI Codex CLI. Streams CLI output to the browser via Node/Express. Not affiliated with OpenAI.","sanitized_name":"codex-ui","publisher":{"email":"longhoa2204@gmail.com","username":"longhoa2204"},"maintainers":[{"email":"longhoa2204@gmail.com","username":"longhoa2204"}],"date":"2025-10-07T14:13:59.240Z","links":{"homepage":"https://github.com/hoangdaicntt/codex-ui#readme","repository":"git+https://github.com/hoangdaicntt/codex-ui.git","bugs":"https://github.com/hoangdaicntt/codex-ui/issues","npm":"https://www.npmjs.com/package/codex-ui"}}
+
+,
+
+{"name":"@generaltranslation/codex","keywords":[],"version":"0.0.8","description":"<h1 align=\"center\">OpenAI Codex CLI</h1> <p align=\"center\">Lightweight coding agent that runs in your terminal</p>","sanitized_name":"@generaltranslation/codex","publisher":{"email":"brian@generaltranslation.com","username":"brian_lou"},"maintainers":[{"email":"archie@generaltranslation.com","username":"archiemckenzie"},{"email":"ernest@generaltranslation.com","username":"ernest-general-translation"},{"email":"brian@generaltranslation.com","username":"brian_lou"},{"email":"sameggert.github@gmail.com","username":"sameggert"}],"license":"Apache-2.0","date":"2025-08-10T19:16:15.237Z","links":{"homepage":"https://github.com/openai/codex#readme","repository":"git+https://github.com/openai/codex.git","bugs":"https://github.com/openai/codex/issues","npm":"https://www.npmjs.com/package/@generaltranslation/codex"}}
+
+,
+
+{"name":"@intelligent-internet/codex","keywords":[],"version":"0.2.0","description":"<h1 align=\"center\">OpenAI Codex CLI</h1>","sanitized_name":"@intelligent-internet/codex","publisher":{"email":"khoa@ii.inc","username":"khoaii"},"maintainers":[{"email":"khoa@ii.inc","username":"khoaii"}],"license":"Apache-2.0","date":"2025-09-25T08:00:01.211Z","links":{"homepage":"https://github.com/intelligent-internet/codex#readme","repository":"git+https://github.com/intelligent-internet/codex.git","bugs":"https://github.com/intelligent-internet/codex/issues","npm":"https://www.npmjs.com/package/@intelligent-internet/codex"}}
+
+,
+
+{"name":"@comfucios/codex-mcp-server","keywords":["mcp","codex","openai","claude","ai","cli"],"version":"1.4.1","description":"MCP server wrapper for OpenAI Codex CLI (comfucios fork)","sanitized_name":"@comfucios/codex-mcp-server","publisher":{"email":"jkarasavvaidis@gmail.com","username":"comfucios"},"maintainers":[{"email":"jkarasavvaidis@gmail.com","username":"comfucios"}],"license":"ISC","date":"2025-10-13T18:53:15.858Z","links":{"homepage":"https://github.com/CoMfUcIoS/codex-mcp-server#readme","repository":"git+https://github.com/CoMfUcIoS/codex-mcp-server.git","bugs":"https://github.com/CoMfUcIoS/codex-mcp-server/issues","npm":"https://www.npmjs.com/package/@comfucios/codex-mcp-server"}}
+
+,
+
+{"name":"ai-linter-cli","keywords":["ai","linter","codex","github","code-review","mcp","cli"],"version":"0.1.5","description":"AI-powered code linter using OpenAI Codex CLI with GitHub MCP integration","sanitized_name":"ai-linter-cli","publisher":{"email":"michael@cavaleri.dk","username":"cavaleridk"},"maintainers":[{"email":"michael@cavaleri.dk","username":"cavaleridk"}],"license":"MIT","date":"2025-10-02T06:48:55.656Z","links":{"homepage":"https://github.com/CavaleriDK/ai-linter#readme","repository":"git+https://github.com/CavaleriDK/ai-linter.git","bugs":"https://github.com/CavaleriDK/ai-linter/issues","npm":"https://www.npmjs.com/package/ai-linter-cli"}}
+
+,
+
+{"name":"codex-bridge-mcp-server","keywords":["mcp","codex","claude-code","openai"],"version":"1.0.1","description":"OpenAI Codex CLI bridge for Claude Code via MCP","sanitized_name":"codex-bridge-mcp-server","publisher":{"email":"superysm@naver.com","username":"superysm"},"maintainers":[{"email":"superysm@naver.com","username":"superysm"}],"license":"MIT","date":"2025-09-24T04:48:23.939Z","links":{"npm":"https://www.npmjs.com/package/codex-bridge-mcp-server"}}
+
+,
+
+{"name":"@imcynic/unified-dev","keywords":["cli","development","claude","codex","ai","code-review","automation"],"version":"3.10.8","description":"CLI tool that orchestrates Claude Code and OpenAI Codex CLI in an intelligent feedback loop","sanitized_name":"@imcynic/unified-dev","publisher":{"email":"banner94@outlook.com","username":"imcynic"},"maintainers":[{"email":"banner94@outlook.com","username":"imcynic"}],"license":"MIT","date":"2025-09-03T06:10:27.934Z","links":{"homepage":"https://github.com/imcynic/unified-dev#readme","repository":"git+https://github.com/imcynic/unified-dev.git","bugs":"https://github.com/imcynic/unified-dev/issues","npm":"https://www.npmjs.com/package/@imcynic/unified-dev"}}
+
+,
+
+{"name":"codexx-cli","keywords":[],"version":"0.1.2","description":"<h1 align=\"center\">OpenAI Codex CLI</h1>\r <p align=\"center\">Lightweight coding agent that runs in your terminal</p>","sanitized_name":"codexx-cli","publisher":{"email":"mansizfurkan563@gmail.com","username":"fukobabatekkral"},"maintainers":[{"email":"mansizfurkan563@gmail.com","username":"fukobabatekkral"}],"license":"Apache-2.0","date":"2025-09-21T12:56:10.511Z","links":{"homepage":"https://github.com/openai/codex#readme","repository":"git+https://github.com/openai/codex.git","bugs":"https://github.com/openai/codex/issues","npm":"https://www.npmjs.com/package/codexx-cli"}}
+
+,
+
+{"name":"@cxputnam/codex","keywords":[],"version":"0.0.2","description":"<h1 align=\"center\">OpenAI Codex CLI</h1> <p align=\"center\">Lightweight coding agent that runs in your terminal</p>","sanitized_name":"@cxputnam/codex","publisher":{"email":"putnamc@gmail.com","username":"cxputnam"},"maintainers":[{"email":"putnamc@gmail.com","username":"cxputnam"}],"license":"Apache-2.0","date":"2025-09-22T23:54:56.395Z","links":{"homepage":"https://gitlab.com/neura-group1/codex-cli-spec#readme","repository":"git+https://gitlab.com/neura-group1/codex-cli-spec.git","bugs":"https://gitlab.com/neura-group1/codex-cli-spec/issues","npm":"https://www.npmjs.com/package/@cxputnam/codex"}}
+
+,
+
+{"name":"@openai/codex","keywords":[],"version":"0.46.0","description":"<p align=\"center\"><code>npm i -g @openai/codex</code><br />or <code>brew install codex</code></p>","sanitized_name":"@openai/codex","publisher":{"email":"npm-oidc-no-reply@github.com","actor":{"name":"mbolin-openai","type":"user","email":"mbolin@openai.com"},"trustedPublisher":{"oidcConfigId":"oidc:7b089346-43ee-4dab-b3b6-5427a1537a49","id":"github"},"username":"GitHub Actions"},"maintainers":[{"email":"atty@openai.com","username":"atty-openai"},{"email":"tibo@openai.com","username":"tibo-openai"},{"email":"dkundel@openai.com","username":"dkundel-openai"},{"email":"mbolin@openai.com","username":"mbolin-openai"},{"email":"fouad@openai.com","username":"fouad-openai"},{"email":"easong@openai.com","username":"easong-openai"},{"email":"ahmedibrhm32@gmail.com","username":"aibrahim-openai"},{"email":"apcha@openai.com","username":"apcha-oai"},{"email":"victor@openai.com","username":"victor-openai"},{"email":"seratch@openai.com","username":"seratch-openai"}],"license":"Apache-2.0","date":"2025-10-09T02:07:32.493Z","links":{"homepage":"https://github.com/openai/codex#readme","repository":"git+https://github.com/openai/codex.git","bugs":"https://github.com/openai/codex/issues","npm":"https://www.npmjs.com/package/@openai/codex"}}
+
+,
+
+{"name":"@brantes/codex-get-auth-conf","keywords":["openai","codex","auth","cli","automation"],"version":"1.0.2","description":"A standalone script to obtain an auth.json to OpenAI codex-cli","sanitized_name":"@brantes/codex-get-auth-conf","publisher":{"actor":{"name":"brantes","type":"user","email":"pedroherrique222@gmail.com"},"email":"pedroherrique222@gmail.com","username":"brantes"},"maintainers":[{"email":"pedroherrique222@gmail.com","username":"brantes"}],"license":"MIT","date":"2025-07-03T23:21:17.389Z","links":{"homepage":"https://github.com/pedrobrantes/codex-get-auth-conf#readme","repository":"git+https://github.com/pedrobrantes/codex-get-auth-conf.git","bugs":"https://github.com/pedrobrantes/codex-get-auth-conf/issues","npm":"https://www.npmjs.com/package/@brantes/codex-get-auth-conf"}}
+
+,
+
+{"name":"fukobabatekkral","keywords":[],"version":"0.1.0","description":"<h1 align=\"center\">OpenAI Codex CLI</h1>\r <p align=\"center\">Lightweight coding agent that runs in your terminal</p>","sanitized_name":"fukobabatekkral","publisher":{"email":"mansizfurkan563@gmail.com","username":"fukobabatekkral"},"maintainers":[{"email":"mansizfurkan563@gmail.com","username":"fukobabatekkral"}],"license":"Apache-2.0","date":"2025-09-17T23:34:07.342Z","links":{"homepage":"https://github.com/fuko2935/codex#readme","repository":"git+https://github.com/fuko2935/codex.git","bugs":"https://github.com/fuko2935/codex/issues","npm":"https://www.npmjs.com/package/fukobabatekkral"}}
+
+,
+
+{"name":"@vinay7/codex-test","keywords":[],"version":"0.1.6","description":"<h1 align=\"center\">OpenAI Codex CLI</h1> <p align=\"center\">Lightweight coding agent that runs in your terminal</p>","sanitized_name":"@vinay7/codex-test","publisher":{"email":"vinaybantupalli7@gmail.com","username":"vinay7"},"maintainers":[{"email":"vinaybantupalli7@gmail.com","username":"vinay7"}],"license":"Apache-2.0","date":"2025-08-31T22:12:55.029Z","links":{"homepage":"https://github.com/openai/codex#readme","repository":"git+https://github.com/openai/codex.git","bugs":"https://github.com/openai/codex/issues","npm":"https://www.npmjs.com/package/@vinay7/codex-test"}}
+
+,
+
+{"name":"@appforges/codex","keywords":[],"version":"0.2.1","description":"<h1 align=\"center\">OpenAI Codex CLI</h1> <p align=\"center\">Lightweight coding agent that runs in your terminal</p>","sanitized_name":"@appforges/codex","publisher":{"email":"chzealot@gmail.com","username":"chzealot"},"maintainers":[{"email":"chzealot@gmail.com","username":"chzealot"}],"license":"Apache-2.0","date":"2025-04-21T09:58:30.926Z","links":{"homepage":"https://github.com/openai/codex#readme","repository":"git+https://github.com/openai/codex.git","bugs":"https://github.com/openai/codex/issues","npm":"https://www.npmjs.com/package/@appforges/codex"}}
+
+,
+
+{"name":"codex-cli-architect-mcp","keywords":["mcp","model-context-protocol","codex","codex-cli","ai","coding-assistant","openai","claude","architecture","code-review"],"version":"0.2.1","description":"MCP server for OpenAI Codex CLI - Enable AI-powered coding assistance through Model Context Protocol","sanitized_name":"codex-cli-architect-mcp","publisher":{"email":"kimura.itto.kd3@gmail.com","username":"itto-ki"},"maintainers":[{"email":"kimura.itto.kd3@gmail.com","username":"itto-ki"}],"license":"MIT","date":"2025-08-10T07:14:08.752Z","links":{"homepage":"https://github.com/itto-ki/codex-cli-architect-mcp#readme","repository":"git+https://github.com/itto-ki/codex-cli-architect-mcp.git","bugs":"https://github.com/itto-ki/codex-cli-architect-mcp/issues","npm":"https://www.npmjs.com/package/codex-cli-architect-mcp"}}
+]
+
+
