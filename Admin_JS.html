@@ -135,9 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const missingPropsBanner = document.getElementById('missing-props-banner');
 
     // --- Variables d'état ---
-    let authorizationRequise = false;
-    let authorizationUrl = '';
-    let authorizationNotificationShown = false;
     let toutesLesReservationsAffichees = [];
     let tousLesClients = [];
     let vueActuelle = 'date'; // NOUVEAU: pour savoir quelle vue rafraîchir ('date' ou 'toutes')
@@ -149,39 +146,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     google.script.run.withSuccessHandler(res => {
-        const bannerSections = [];
-        authorizationRequise = !!(res && res.authorizationStatus === 'REQUIRED');
-        authorizationUrl = authorizationRequise ? (res.authorizationUrl || '') : '';
-
-        if (res && res.authorizationStatus === 'REQUIRED') {
-            const lienAutorisation = authorizationUrl
-                ? `<a href="${escapeHTML(authorizationUrl)}" target="_blank" rel="noopener">Ouvrir la fenetre d'autorisation Google</a>`
-                : 'Contactez un administrateur pour autoriser l\'application.';
-            bannerSections.push(`<strong>Autorisation requise</strong><p>L'application doit etre autorisee pour acceder aux services Google necessaires.</p><p>${lienAutorisation}</p><p>Une fois l'autorisation accordee, rechargez cette page.</p>`);
-        }
-
-        if (res && Array.isArray(res.missingProps) && res.missingProps.length > 0) {
+        if (res && Array.isArray(res.missingProps) && res.missingProps.length > 0 && missingPropsBanner) {
             const items = res.missingProps.map(p => `<li>${escapeHTML(p)}</li>`).join('');
-            bannerSections.push(`<strong>Configuration manquante :</strong><ul>${items}</ul>`);
-        }
-
-        if (missingPropsBanner) {
-            if (bannerSections.length > 0) {
-                renderHTML(missingPropsBanner, bannerSections.join('<hr>'));
-                missingPropsBanner.classList.remove('hidden');
-            } else {
-                missingPropsBanner.classList.add('hidden');
-            }
-        }
-
-        initialiser();
-    }).withFailureHandler(err => {
-        logError(err);
-        if (missingPropsBanner) {
-            renderHTML(missingPropsBanner, `<strong>Erreur</strong><p>Impossible de verifier la configuration initiale (${escapeHTML(err && err.message ? err.message : 'inconnue')}).</p>`);
+            renderHTML(missingPropsBanner, `<strong>Configuration manquante :</strong><ul>${items}</ul>`);
             missingPropsBanner.classList.remove('hidden');
         }
-    }).checkSetup_ELS();
+    }).withFailureHandler(logError).checkSetup_ELS();
 
     /**
      * Initialise le tableau de bord.
@@ -194,35 +164,9 @@ document.addEventListener('DOMContentLoaded', () => {
             champDate.addEventListener('change', () => chargerReservationsParDate(champDate.value));
         }
         
-        const informerAutorisation = () => {
-            if (!authorizationNotificationShown) {
-                afficherNotification("Autorisation Google requise pour effectuer cette action. Utilisez le lien d'autorisation indique dans le bandeau.", "erreur");
-                authorizationNotificationShown = true;
-            } else {
-                afficherNotification("Autorisation Google requise pour effectuer cette action.", "erreur");
-            }
-            if (authorizationUrl) {
-                try { window.open(authorizationUrl, '_blank', 'noopener'); } catch (_err) {}
-            }
-        };
-        const requireAuthorization = handler => event => {
-            if (authorizationRequise) {
-                event?.preventDefault?.();
-                informerAutorisation();
-                return;
-            }
-            handler(event);
-        };
-
-        btnToutVoir?.addEventListener('click', requireAuthorization(chargerToutesReservationsAdmin));
-        btnAjouterReservation?.addEventListener('click', requireAuthorization(ouvrirModaleAjout));
-        btnGenererLienClient?.addEventListener('click', requireAuthorization(ouvrirModaleLienClient));
-
-        if (authorizationRequise) {
-            champDate?.setAttribute('disabled', 'true');
-            afficherNotification("Autorisation requise pour charger les donnees. Merci de finaliser l'autorisation puis de recharger la page.", "erreur");
-            return;
-        }
+        btnToutVoir?.addEventListener('click', chargerToutesReservationsAdmin);
+        btnAjouterReservation?.addEventListener('click', ouvrirModaleAjout);
+        btnGenererLienClient?.addEventListener('click', ouvrirModaleLienClient);
 
         chargerClients(() => {
             chargerReservationsParDate(aujourdhui);
@@ -1097,7 +1041,8 @@ function attacherEcouteursModaleAjout() {
         logError(erreur);
     }
 
-    // --- Point de départ géré après verification de la configuration ---
+    // --- Point de départ ---
+    initialiser();
 });
 </script>
 

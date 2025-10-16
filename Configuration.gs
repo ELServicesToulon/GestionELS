@@ -152,7 +152,7 @@ const CALENDAR_BAR_OPACITY_ENABLED = false;
 const ADMIN_OPTIMISTIC_CREATION_ENABLED = true;
 
 /** @const {boolean} Active la colonne de créneaux PNG dans la modale admin. */
-const ADMIN_SLOTS_PNG_ENABLED = true;
+const ADMIN_SLOTS_PNG_ENABLED = false;
 
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = true;
@@ -189,7 +189,7 @@ const PROOF_SOCIAL_ENABLED = false;
 const PRO_QA_ENABLED = false;
 
 /** @const {boolean} Affiche les pictogrammes supplémentaires (semainier, boîte scellée, livraison). */
-const EXTRA_ICONS_ENABLED = true;
+const EXTRA_ICONS_ENABLED = false;
 /** @const {boolean} Active la génération de devis PDF côté admin (menu Sheets). */
 const ADMIN_DEVIS_PDF_ENABLED = true;
 // --- Drapeaux de Débogage et de Test ---
@@ -239,11 +239,11 @@ const DRIVE_ASSET_IDS = Object.freeze({
   ALUMINIUM_2X: ''
 });
 /** @const {boolean} Permet aux clients de choisir leur thème visuel. */
- const THEME_SELECTION_ENABLED = true; // supprimé: sélection de thème désactivée
+// const THEME_SELECTION_ENABLED = false; // supprimé: sélection de thème désactivée
 /** @const {string} Thème appliqué par défaut lorsque la sélection est active. */
- const THEME_DEFAULT = 'clarte'; // supprimé
+// const THEME_DEFAULT = 'clarte'; // supprimé
 /** @const {Object<string,string>} Associe les clés de thème aux chemins des fichiers CSS. */
- const THEMES = {}; // supprimé
+// const THEMES = {}; // supprimé
 
 // Objet regroupant tous les drapeaux de fonctionnalité exposés au client
 const FLAGS = Object.freeze({

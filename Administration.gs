@@ -319,24 +319,15 @@ function creerReservationAdmin(data) {
       return { success: false, error: "Accès non autorisé." };
     }
     
-    if (!data || typeof data !== 'object') {
-        throw new Error("Données de réservation introuvables.");
-    }
-
-    const clientPayload = data.client;
-    if (!clientPayload || typeof clientPayload !== 'object') {
-        throw new Error("Données client manquantes.");
-    }
-
-    if (!clientPayload.email || !clientPayload.nom || !data.date || !data.startTime) {
+    if (!data.client.email || !data.client.nom || !data.date || !data.startTime) {
         throw new Error("Données de réservation incomplètes.");
     }
 
-    data.client.resident = clientPayload.resident === true;
+    data.client.resident = data.client.resident === true;
 
     enregistrerOuMajClient(data.client);
 
-    const clientPourCalcul = obtenirInfosClientParEmail(clientPayload.email);
+    const clientPourCalcul = obtenirInfosClientParEmail(data.client.email);
 
     // Admin calculation: force type (Normal/Samedi) and avoid automatic Urgent pricing
     const totalStops = data.totalStops || (data.additionalStops + 1);

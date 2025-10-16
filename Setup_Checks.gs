@@ -50,20 +50,6 @@ function checkSetup_ELS() {
     slotsAmpm: typeof SLOTS_AMPM_ENABLED !== 'undefined' ? !!SLOTS_AMPM_ENABLED : false
   };
 
-  var authorizationStatus = 'UNKNOWN';
-  var authorizationUrl = '';
-  try {
-    const authInfo = ScriptApp.getAuthorizationInfo(ScriptApp.AuthMode.FULL);
-    const status = authInfo.getAuthorizationStatus();
-    authorizationStatus = String(status);
-    if (status === ScriptApp.AuthorizationStatus.REQUIRED) {
-      authorizationUrl = authInfo.getAuthorizationUrl();
-    }
-  } catch (authErr) {
-    warnings.push('Impossible de determiner le statut d\'autorisation.');
-    Logger.log('checkSetup_ELS auth error: ' + authErr.message);
-  }
-
   const ok = missing.length === 0;
 
   const result = {
@@ -71,9 +57,7 @@ function checkSetup_ELS() {
     missingProps: missing,
     flags: flags,
     info: info,
-    warnings: warnings,
-    authorizationStatus: authorizationStatus,
-    authorizationUrl: authorizationUrl
+    warnings: warnings
   };
 
   // Log résumé lisible dans l'IDE Apps Script
