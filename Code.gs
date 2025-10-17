@@ -152,8 +152,8 @@ function doGet(e) {
     }
 
     // --- Routeur de page ---
-    if (e && e.parameter && e.parameter.page) {
-      switch (e.parameter.page) {
+    if (page) {
+      switch (page) {
 
         case 'admin':
           const adminEmail = Session.getActiveUser().getEmail();
@@ -201,47 +201,16 @@ function doGet(e) {
           // CORRECTION: Ajout d'un 'break' pour éviter de tomber sur la page par défaut
           // si cette page est désactivée.
           break;
+
+        case 'accueil':
+        case 'home':
+        case 'index':
+        case 'reservation':
+          return renderReservationInterface();
       }
     }
 
-    // --- Page par défaut : Interface de réservation ---
-    if (typeof DEMO_RESERVATION_ENABLED !== 'undefined' && DEMO_RESERVATION_ENABLED) {
-      return HtmlService.createHtmlOutputFromFile('examples/Reservation_Demo')
-        .setTitle(NOM_ENTREPRISE + " | Réservation (Démo)")
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
-    }
-
-    const template = HtmlService.createTemplateFromFile('Reservation_Interface');
-    const conf = getPublicConfig();
-
-    // Assignation des variables au template
-    template.appUrl = ScriptApp.getService().getUrl();
-    template.nomService = NOM_ENTREPRISE;
-    template.EMAIL_ENTREPRISE = EMAIL_ENTREPRISE;
-    template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
-    template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
-    template.TARIFS = conf.TARIFS;
-    template.heroImages = buildReservationHeroImages();
-    template.DUREE_BASE = conf.DUREE_BASE;
-    template.DUREE_ARRET_SUP = conf.DUREE_ARRET_SUP;
-    template.KM_BASE = conf.KM_BASE;
-    template.KM_ARRET_SUP = conf.KM_ARRET_SUP;
-    template.URGENT_THRESHOLD_MINUTES = conf.URGENT_THRESHOLD_MINUTES;
-    template.dateDuJour = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
-    template.PRICING_RULES_V2_ENABLED = (typeof PRICING_RULES_V2_ENABLED !== 'undefined') ? PRICING_RULES_V2_ENABLED : false;
-    template.RETURN_IMPACTS_ESTIMATES_ENABLED = (typeof RETURN_IMPACTS_ESTIMATES_ENABLED !== 'undefined') ? RETURN_IMPACTS_ESTIMATES_ENABLED : false;
-
-    // Variables pour la bannière d'information
-    template.heureDebut = conf.HEURE_DEBUT_SERVICE;
-    template.heureFin = conf.HEURE_FIN_SERVICE;
-    template.prixBaseNormal = (conf.TARIFS && conf.TARIFS['Normal']) ? conf.TARIFS['Normal'].base : '';
-    template.prixBaseSamedi = (conf.TARIFS && conf.TARIFS['Samedi']) ? conf.TARIFS['Samedi'].base : '';
-    template.prixBaseUrgent = (conf.TARIFS && conf.TARIFS['Urgent']) ? conf.TARIFS['Urgent'].base : '';
-    template.tvaApplicable = typeof conf.TVA_APPLICABLE !== 'undefined' ? conf.TVA_APPLICABLE : false;
-
-    return template.evaluate()
-      .setTitle(NOM_ENTREPRISE + " | Réservation")
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+    return renderReservationInterface();
 
   } catch (error) {
     if (error && error.code === 403) {
@@ -254,6 +223,48 @@ function doGet(e) {
       `L'application ne peut pas démarrer. L'administrateur a été notifié.<br><pre style="color:red;">${error.message}</pre>`
     );
   }
+}
+
+
+function renderReservationInterface() {
+  // --- Page par défaut : Interface de réservation ---
+  if (typeof DEMO_RESERVATION_ENABLED !== 'undefined' && DEMO_RESERVATION_ENABLED) {
+    return HtmlService.createHtmlOutputFromFile('examples/Reservation_Demo')
+      .setTitle(NOM_ENTREPRISE + " | Réservation (Démo)")
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+  }
+
+  const template = HtmlService.createTemplateFromFile('Reservation_Interface');
+  const conf = getPublicConfig();
+
+  // Assignation des variables au template
+  template.appUrl = ScriptApp.getService().getUrl();
+  template.nomService = NOM_ENTREPRISE;
+  template.EMAIL_ENTREPRISE = EMAIL_ENTREPRISE;
+  template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
+  template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
+  template.TARIFS = conf.TARIFS;
+  template.heroImages = buildReservationHeroImages();
+  template.DUREE_BASE = conf.DUREE_BASE;
+  template.DUREE_ARRET_SUP = conf.DUREE_ARRET_SUP;
+  template.KM_BASE = conf.KM_BASE;
+  template.KM_ARRET_SUP = conf.KM_ARRET_SUP;
+  template.URGENT_THRESHOLD_MINUTES = conf.URGENT_THRESHOLD_MINUTES;
+  template.dateDuJour = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+  template.PRICING_RULES_V2_ENABLED = (typeof PRICING_RULES_V2_ENABLED !== 'undefined') ? PRICING_RULES_V2_ENABLED : false;
+  template.RETURN_IMPACTS_ESTIMATES_ENABLED = (typeof RETURN_IMPACTS_ESTIMATES_ENABLED !== 'undefined') ? RETURN_IMPACTS_ESTIMATES_ENABLED : false;
+
+  // Variables pour la bannière d'information
+  template.heureDebut = conf.HEURE_DEBUT_SERVICE;
+  template.heureFin = conf.HEURE_FIN_SERVICE;
+  template.prixBaseNormal = (conf.TARIFS && conf.TARIFS['Normal']) ? conf.TARIFS['Normal'].base : '';
+  template.prixBaseSamedi = (conf.TARIFS && conf.TARIFS['Samedi']) ? conf.TARIFS['Samedi'].base : '';
+  template.prixBaseUrgent = (conf.TARIFS && conf.TARIFS['Urgent']) ? conf.TARIFS['Urgent'].base : '';
+  template.tvaApplicable = typeof conf.TVA_APPLICABLE !== 'undefined' ? conf.TVA_APPLICABLE : false;
+
+  return template.evaluate()
+    .setTitle(NOM_ENTREPRISE + " | Réservation")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
 }
 
 
