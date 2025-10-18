@@ -244,8 +244,14 @@ function renderReservationInterface() {
   template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
   template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
   template.TARIFS = conf.TARIFS;
-  template.logoDataUrl = getLogoDataUrl();
-  template.heroImages = buildReservationHeroImages();
+  const logoDataUrl = getLogoDataUrl();
+  const heroImages = buildReservationHeroImages();
+  template.logoDataUrl = logoDataUrl;
+  template.heroImages = heroImages;
+  template.heroAssetsJson = JSON.stringify({
+    logo: logoDataUrl || null,
+    hero: heroImages || {}
+  }).replace(/</g, '\\u003c');
   template.DUREE_BASE = conf.DUREE_BASE;
   template.DUREE_ARRET_SUP = conf.DUREE_ARRET_SUP;
   template.KM_BASE = conf.KM_BASE;
