@@ -246,7 +246,14 @@ function getBundledLogoDataUrl() {
     if (!content) {
       return '';
     }
-    return content.replace(/\s+/g, '');
+    const match = content.match(/data:image\/[a-z0-9.+-]+;base64,[^'"<>\s]+/i);
+    if (match && match[0]) {
+      return match[0];
+    }
+    return content
+      .replace(/<\?!=?\s*['"]?/, '')
+      .replace(/['"]?\s*\?>/, '')
+      .replace(/\s+/g, '');
   } catch (e) {
     Logger.log('Impossible de charger la data URL du logo embarqué: ' + e.message);
     return '';
