@@ -77,6 +77,7 @@
   </svg>
 
   <script type="application/json" id="conf-tarifs"><?!= TARIFS_JSON ?></script>
+  <script type="application/json" id="hero-assets"><?!= JSON.stringify({ logo: logoDataUrl || null, hero: heroImages || {} }) ?></script>
   <script>
     // Objet de configuration injecté par le serveur
     const configServeur = {
@@ -108,11 +109,11 @@
   <section id="hero" class="container">
     <?!= include('Logo'); ?>
     <div class="hero-wrap">
-      <img class="card hero-logo" src="<?= heroImages.banner ?>" alt="ELS bannière">
+      <img class="card hero-logo" data-asset="hero-banner" src="" alt="ELS bannière">
       <div class="hero-cards">
-        <img class="card hero-chip" src="<?= heroImages.tours ?>" alt="ELS — TOURNÉES">
-        <img class="card hero-chip hero-chip--xl" src="<?= heroImages.logistics ?>" alt="Votre logistique patients, réglée.">
-        <img class="card hero-chip" src="<?= heroImages.care ?>" alt="Officines, infirmiers, résidences…">
+        <img class="card hero-chip" data-asset="hero-tours" src="" alt="ELS — TOURNÉES">
+        <img class="card hero-chip hero-chip--xl" data-asset="hero-logistics" src="" alt="Votre logistique patients, réglée.">
+        <img class="card hero-chip" data-asset="hero-care" src="" alt="Officines, infirmiers, résidences…">
       </div>
     </div>
   </section>
@@ -529,6 +530,45 @@
       }
     });
   </script>
+  <script>
+    (function() {
+      var assetNode = document.getElementById('hero-assets');
+      if (!assetNode) {
+        return;
+      }
+      var payload;
+      try {
+        payload = JSON.parse(assetNode.textContent || '{}');
+      } catch (err) {
+        console.error('Hero assets parse error', err);
+        return;
+      }
+      if (typeof assetNode.remove === 'function') {
+        assetNode.remove();
+      } else if (assetNode.parentNode) {
+        assetNode.parentNode.removeChild(assetNode);
+      }
+      var assign = function(key, dataUrl) {
+        if (!dataUrl) return;
+        var nodes = document.querySelectorAll('[data-asset="' + key + '"]');
+        Array.prototype.forEach.call(nodes, function(node) {
+          if (node && node.tagName === 'IMG') {
+            node.src = dataUrl;
+            node.removeAttribute('data-asset');
+          }
+        });
+      };
+      if (payload && typeof payload === 'object') {
+        if (payload.logo) {
+          assign('logo', payload.logo);
+        }
+        if (payload.hero && typeof payload.hero === 'object') {
+          Object.keys(payload.hero).forEach(function(key) {
+            assign('hero-' + key, payload.hero[key]);
+          });
+        }
+      }
+    })();
+  </script>
 </body>
 </html>
-

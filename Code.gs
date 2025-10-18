@@ -244,6 +244,7 @@ function renderReservationInterface() {
   template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
   template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
   template.TARIFS = conf.TARIFS;
+  template.logoDataUrl = getLogoDataUrl();
   template.heroImages = buildReservationHeroImages();
   template.DUREE_BASE = conf.DUREE_BASE;
   template.DUREE_ARRET_SUP = conf.DUREE_ARRET_SUP;
