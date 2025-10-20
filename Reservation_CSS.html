@@ -65,6 +65,46 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 }
 
 /* --- MISE EN PAGE PRINCIPALE --- */
+.layout-two-cols {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  gap: clamp(24px, 3vw, 40px);
+  align-items: start;
+  width: 100%;
+}
+
+.layout-two-cols > .col {
+  min-width: 0;
+}
+
+.col--tarifs {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 2vw, 28px);
+  align-self: start;
+}
+
+.col--content {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 3vw, 32px);
+  align-self: start;
+}
+
+@media (max-width: 1080px) {
+  .layout-two-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .col--content {
+    order: 1;
+  }
+
+  .col--tarifs {
+    order: 2;
+  }
+}
+
 main.layout {
   width: 100%;
   max-width: min(1280px, 94vw);

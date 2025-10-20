@@ -109,8 +109,8 @@
   
   
 
-  <main id="layout" class="container two-cols">
-    <section id="col-right" class="col">
+  <main id="layout" class="container layout-two-cols">
+    <section id="col-tarifs" class="col col--tarifs">
       <div id="tarifs-card" class="card hidden">
         <section id="tarifs-detaille" class="section section--tarifs hero-card-tarifs hidden" aria-labelledby="titre-tarifs-detaille">
           <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
@@ -160,7 +160,9 @@
           </div>
           <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
         </section>
-    <section id="col-left" class="col">
+      </div>
+    </section>
+    <section id="col-right" class="col col--content">
       <div id="calendar-card" class="card">
         <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
           <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
@@ -230,9 +232,6 @@
             <button type="submit" class="btn btn-primaire">Confirmer la réservation</button>
           </div>
         </form>
-      </div>
-    </section>
-    
       </div>
       <div id="cart-card" class="card">
         <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
