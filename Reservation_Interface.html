@@ -106,14 +106,21 @@
     <div class="spinner"></div>
   </div>
 
+  <? 
+    var heroCatalog = heroImages || {};
+    var heroBannerDataUrl = (heroCatalog.banner && heroCatalog.banner.trim()) ? heroCatalog.banner : 'data:image/png;base64,' + include('Hero_ElsBanner_b64').replace(/[\s\r\n]+/g, '');
+    var heroToursDataUrl = (heroCatalog.tours && heroCatalog.tours.trim()) ? heroCatalog.tours : 'data:image/png;base64,' + include('Hero_ElesTournees_b64').replace(/[\s\r\n]+/g, '');
+    var heroLogisticsDataUrl = (heroCatalog.logistics && heroCatalog.logistics.trim()) ? heroCatalog.logistics : 'data:image/png;base64,' + include('Hero_VotreLogistique_b64').replace(/[\s\r\n]+/g, '');
+    var heroCareDataUrl = (heroCatalog.care && heroCatalog.care.trim()) ? heroCatalog.care : 'data:image/png;base64,' + include('Hero_OfficinesInfirmeries_b64').replace(/[\s\r\n]+/g, '');
+  ?>
   <section id="hero" class="container">
     <?!= include('Logo'); ?>
     <div class="hero-wrap">
-      <img class="card hero-logo" data-asset="hero-banner" src="" alt="ELS bannière">
+      <img class="card hero-logo" data-asset="hero-banner" src="<?= heroBannerDataUrl ?>" alt="ELS bannière">
       <div class="hero-cards">
-        <img class="card hero-chip" data-asset="hero-tours" src="" alt="ELS — TOURNÉES">
-        <img class="card hero-chip hero-chip--xl" data-asset="hero-logistics" src="" alt="Votre logistique patients, réglée.">
-        <img class="card hero-chip" data-asset="hero-care" src="" alt="Officines, infirmiers, résidences…">
+        <img class="card hero-chip" data-asset="hero-tours" src="<?= heroToursDataUrl ?>" alt="ELS — TOURNÉES">
+        <img class="card hero-chip hero-chip--xl" data-asset="hero-logistics" src="<?= heroLogisticsDataUrl ?>" alt="Votre logistique patients, réglée.">
+        <img class="card hero-chip" data-asset="hero-care" src="<?= heroCareDataUrl ?>" alt="Officines, infirmiers, résidences…">
       </div>
     </div>
   </section>

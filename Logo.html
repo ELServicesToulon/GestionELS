@@ -1,8 +1,24 @@
-<? var logoUrl = getLogoDataUrl(); var companyName = typeof NOM_ENTREPRISE !== 'undefined' ? NOM_ENTREPRISE : 'EL Services'; var homeUrl = typeof appUrl !== 'undefined' ? appUrl : '#'; var altText = companyName + ' - Logo'; ?>
+<? 
+  var companyName = typeof NOM_ENTREPRISE !== 'undefined' ? NOM_ENTREPRISE : 'EL Services'; 
+  var homeUrl = typeof appUrl !== 'undefined' ? appUrl : '#'; 
+  var altText = companyName + ' - Logo'; 
+  var injectedLogo = (typeof logoDataUrl !== 'undefined' && logoDataUrl) ? String(logoDataUrl).trim() : '';
+  var computedLogo = injectedLogo;
+  if (!computedLogo) {
+    try {
+      computedLogo = String(getLogoDataUrl() || '').trim();
+    } catch (logoErr) {
+      computedLogo = '';
+    }
+  }
+  if (!computedLogo) {
+    computedLogo = String(include('Logo3D_b64') || '').trim();
+  }
+?>
 <div class="app-logo-container">
   <a class="app-logo-link" href="<?= homeUrl ?>" aria-label="<?= altText ?>">
-    <? if (logoUrl) { ?>
-      <img data-asset="logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="<?= altText ?>" class="app-logo" loading="lazy">
+    <? if (computedLogo) { ?>
+      <img data-asset="logo" src="<?= computedLogo ?>" alt="<?= altText ?>" class="app-logo" loading="lazy">
     <? } else { ?>
       <span class="app-logo--fallback"><?= companyName ?></span>
     <? } ?>
