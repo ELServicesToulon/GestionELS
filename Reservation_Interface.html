@@ -77,7 +77,7 @@
   </svg>
 
   <script type="application/json" id="conf-tarifs"><?!= TARIFS_JSON ?></script>
-  <script type="application/json" id="hero-assets"><?!= heroAssetsJson ?></script>
+ 
   <script>
     // Objet de configuration injecté par le serveur
     const configServeur = {
@@ -106,26 +106,60 @@
     <div class="spinner"></div>
   </div>
 
-  <? 
-    var heroCatalog = heroImages || {};
-    var heroBannerDataUrl = (heroCatalog.banner && heroCatalog.banner.trim()) ? heroCatalog.banner : 'data:image/png;base64,' + include('Hero_ElsBanner_b64').replace(/[\s\r\n]+/g, '');
-    var heroToursDataUrl = (heroCatalog.tours && heroCatalog.tours.trim()) ? heroCatalog.tours : 'data:image/png;base64,' + include('Hero_ElesTournees_b64').replace(/[\s\r\n]+/g, '');
-    var heroLogisticsDataUrl = (heroCatalog.logistics && heroCatalog.logistics.trim()) ? heroCatalog.logistics : 'data:image/png;base64,' + include('Hero_VotreLogistique_b64').replace(/[\s\r\n]+/g, '');
-    var heroCareDataUrl = (heroCatalog.care && heroCatalog.care.trim()) ? heroCatalog.care : 'data:image/png;base64,' + include('Hero_OfficinesInfirmeries_b64').replace(/[\s\r\n]+/g, '');
-  ?>
-  <section id="hero" class="container">
-    <?!= include('Logo'); ?>
-    <div class="hero-wrap">
-      <img class="card hero-logo" data-asset="hero-banner" src="<?= heroBannerDataUrl ?>" alt="ELS bannière">
-      <div class="hero-cards">
-        <img class="card hero-chip" data-asset="hero-tours" src="<?= heroToursDataUrl ?>" alt="ELS — TOURNÉES">
-        <img class="card hero-chip hero-chip--xl" data-asset="hero-logistics" src="<?= heroLogisticsDataUrl ?>" alt="Votre logistique patients, réglée.">
-        <img class="card hero-chip" data-asset="hero-care" src="<?= heroCareDataUrl ?>" alt="Officines, infirmiers, résidences…">
-      </div>
-    </div>
-  </section>
+  
+  
 
   <main id="layout" class="container two-cols">
+    <section id="col-right" class="col">
+      <div id="tarifs-card" class="card hidden">
+        <section id="tarifs-detaille" class="section section--tarifs hero-card-tarifs hidden" aria-labelledby="titre-tarifs-detaille">
+          <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
+          <div class="tarifs-cartes">
+            <article class="tarif-carte" data-tarif="tournees">
+              <h3>Tournées</h3>
+              <ul class="tarif-liste">
+                <li class="tarif-ligne">
+                  <span class="tarif-libelle">Normal</span>
+                  <span class="tarif-valeur" id="tarif-normal-base">—</span>
+                  
+                </li>
+                <li class="tarif-ligne">
+                  <span class="tarif-libelle">Samedi</span>
+                  <span class="tarif-valeur" id="tarif-samedi-base">—</span>
+                  
+                </li>
+                <li class="tarif-ligne">
+                  <span class="tarif-libelle">Urgent</span>
+                  <span class="tarif-valeur" id="tarif-urgent-base">—</span>
+                 
+                </li>
+                <li class="tarif-ligne tarif-ligne--wrap">
+                  <span class="tarif-libelle">Suppléments par arrêt</span>
+                  <span class="tarif-valeur" id="tarif-supplements">—</span>
+                </li>
+              </ul>
+            </article>
+            <article class="tarif-carte" data-tarif="forfait-resident">
+              <h3>Forfait résident</h3>
+              <ul class="tarif-liste">
+                
+                  <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
+                  <span class="tarif-valeur" id="forfait-resident-standard">—</span>
+                
+                
+                  <span class="tarif-libelle">Retrait &amp; livraison sous 4&nbsp;h</span>
+                  <span class="tarif-valeur" id="forfait-resident-urgence">—</span>
+               
+              
+                  <span class="tarif-libelle">Durée facturée (planification interne)</span>
+                  <span class="tarif-valeur" id="forfait-resident-duree">—</span>
+              
+                
+              </ul>
+            </article>
+          </div>
+          <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
+        </section>
     <section id="col-left" class="col">
       <div id="calendar-card" class="card">
         <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
@@ -198,58 +232,7 @@
         </form>
       </div>
     </section>
-    <section id="col-right" class="col">
-      <div id="tarifs-card" class="card hidden">
-        <section id="tarifs-detaille" class="section section--tarifs hero-card-tarifs hidden" aria-labelledby="titre-tarifs-detaille">
-          <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
-          <div class="tarifs-cartes">
-            <article class="tarif-carte" data-tarif="tournees">
-              <h3>Tournées</h3>
-              <ul class="tarif-liste">
-                <li class="tarif-ligne">
-                  <span class="tarif-libelle">Normal</span>
-                  <span class="tarif-valeur" id="tarif-normal-base">—</span>
-                  <span class="tarif-note">(base)</span>
-                </li>
-                <li class="tarif-ligne">
-                  <span class="tarif-libelle">Samedi</span>
-                  <span class="tarif-valeur" id="tarif-samedi-base">—</span>
-                  <span class="tarif-note">(base)</span>
-                </li>
-                <li class="tarif-ligne">
-                  <span class="tarif-libelle">Urgent</span>
-                  <span class="tarif-valeur" id="tarif-urgent-base">—</span>
-                  <span class="tarif-note">(base)</span>
-                </li>
-                <li class="tarif-ligne tarif-ligne--wrap">
-                  <span class="tarif-libelle">Suppléments par arrêt</span>
-                  <span class="tarif-valeur" id="tarif-supplements">—</span>
-                </li>
-              </ul>
-            </article>
-            <article class="tarif-carte" data-tarif="forfait-resident">
-              <h3>Forfait résident</h3>
-              <ul class="tarif-liste">
-                <li class="tarif-ligne">
-                  <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
-                  <span class="tarif-valeur" id="forfait-resident-standard">—</span>
-                </li>
-                <li class="tarif-ligne">
-                  <span class="tarif-libelle">Retrait &amp; livraison sous 4&nbsp;h</span>
-                  <span class="tarif-valeur" id="forfait-resident-urgence">—</span>
-                </li>
-                <li class="tarif-ligne">
-                  <span class="tarif-libelle">Durée facturée (planification interne)</span>
-                  <span class="tarif-valeur" id="forfait-resident-duree">—</span>
-                </li>
-                <li class="tarif-ligne tarif-ligne--note">
-                  <span class="tarif-note">Tri facilité dans la feuille « Facturation » (colonne Résident).</span>
-                </li>
-              </ul>
-            </article>
-          </div>
-          <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
-        </section>
+    
       </div>
       <div id="cart-card" class="card">
         <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
