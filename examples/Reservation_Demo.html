@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ELS | Réservation (Démo)</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap"
+    />
+    <style>
+      :root {
+        --els-primary: #8e44ad;
+        --els-secondary: #3498db;
+        --els-accent: #5dade2;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Montserrat', sans-serif;
+        color: #1f1f1f;
+        background: linear-gradient(135deg, var(--els-primary), var(--els-secondary));
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 16px;
+      }
+
+      .demo-card {
+        background: #ffffff;
+        max-width: 720px;
+        width: 100%;
+        border-radius: 16px;
+        padding: 40px 48px;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+      }
+
+      .demo-card h1 {
+        margin-bottom: 16px;
+        font-size: 28px;
+        color: var(--els-primary);
+      }
+
+      .demo-card p {
+        line-height: 1.6;
+        margin: 0 0 16px;
+        font-size: 16px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: var(--els-accent);
+        color: #ffffff;
+        border-radius: 999px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 12px;
+      }
+
+      .cta {
+        margin-top: 32px;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--els-secondary);
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .cta svg {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-card" role="presentation">
+      <div class="badge" aria-label="Mode démonstration activé">Mode démo</div>
+      <h1>Interface de réservation — aperçu</h1>
+      <p>
+        Cette version de démonstration affiche une description statique de la solution
+        de réservation ELS. Activez les données temps réel depuis la configuration
+        pour accéder à l’interface complète avec les disponibilités, les tarifs,
+        et les options client.
+      </p>
+      <p>
+        Le mode démo est utile pour partager une preview de l’expérience sans exposer
+        les informations opérationnelles. Les liens actifs et formulaires sont
+        désactivés dans cet aperçu.
+      </p>
+      <a class="cta" href="https://www.els-sante.fr" target="_blank" rel="noopener">
+        Découvrir ELS
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M5 12a1 1 0 0 1 0-2h10.586l-4.293-4.293a1 1 0 0 1 1.414-1.414l6 6a1 1 0 0 1 0 1.414l-6 6a1 1 0 1 1-1.414-1.414L15.586 12H5Z"
+          />
+        </svg>
+      </a>
+    </main>
+  </body>
+</html>

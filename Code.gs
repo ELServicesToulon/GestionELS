@@ -85,11 +85,15 @@ function menuGenererLienClient() {
     if (hoursResp.getSelectedButton() !== ui.Button.OK) return;
     const hours = parseInt(hoursResp.getResponseText() || '168', 10);
     const res = genererLienEspaceClient(email, isNaN(hours) ? 168 : hours);
+    const sanitizedUrl = res.url
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
     const html = HtmlService.createHtmlOutput(
       `<div style="font-family:Montserrat,sans-serif;line-height:1.5">
          <h3>Lien Espace Client</h3>
          <p>Ce lien expire à: ${new Date(res.exp*1000).toLocaleString()}</p>
-         <input id="l" type="text" value="${res.url.replace(/&/g,'&amp;').replace(/</g,'&lt;')}" style="width:100%" readonly />
+         <input id="l" type="text" value="${sanitizedUrl}" style="width:100%" readonly />
          <div style="margin-top:8px"><button onclick="copy()">Copier</button></div>
          <script>
            function copy(){var i=document.getElementById('l');i.select();try{document.execCommand('copy');}catch(e){} }
@@ -126,6 +130,48 @@ function creerReponseHtml(titre, message) {
   return HtmlService.createHtmlOutput(`<h1>${titre}</h1><p>${message}</p>`).setTitle(titre);
 }
 
+/**
+ * Vérifie si la requête possède les droits administrateur soit via l'utilisateur actif,
+ * soit via un lien signé associé à l'adresse email administrateur.
+ * @param {Object} e Paramètres de la requête.
+ * @returns {boolean} true si l'accès est autorisé.
+ */
+function hasAdminAccess(e) {
+  const adminEmail = (typeof ADMIN_EMAIL === 'string') ? ADMIN_EMAIL.toLowerCase() : '';
+  if (!adminEmail) {
+    return false;
+  }
+
+  try {
+    const activeUser = Session.getActiveUser();
+    if (activeUser) {
+      const email = activeUser.getEmail();
+      if (email && email.toLowerCase() === adminEmail) {
+        return true;
+      }
+    }
+  } catch (_err) {
+    // Ignorer et reposer sur les paramètres signés.
+  }
+
+  const params = (e && e.parameter) || {};
+  const emailParam = String(params.email || '').trim().toLowerCase();
+  if (!emailParam || emailParam !== adminEmail) {
+    return false;
+  }
+  const exp = params.exp || '';
+  const sig = params.sig || '';
+  if (typeof verifySignedLink === 'function' && sig && exp) {
+    try {
+      return verifySignedLink(emailParam, exp, sig);
+    } catch (_err) {
+      return false;
+    }
+  }
+
+  return false;
+}
+
 
 /**
  * S'exécute lorsqu'un utilisateur accède à l'URL de l'application web.
@@ -147,8 +193,8 @@ function doGet(e) {
     }
 
     const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : '';
-    if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
-      logRequest(e); // Assurez-vous que la fonction logRequest existe
+    if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED && typeof logRequest === 'function') {
+      logRequest(e);
     }
 
     // --- Routeur de page ---
@@ -156,13 +202,14 @@ function doGet(e) {
       switch (page) {
 
         case 'admin':
-          const adminEmail = Session.getActiveUser().getEmail();
-          // CORRECTION: L'opérateur de comparaison '===' était manquant.
-          if (adminEmail && adminEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+          if (hasAdminAccess(e)) {
             const templateAdmin = HtmlService.createTemplateFromFile('Admin_Interface');
             return templateAdmin.evaluate().setTitle("Tableau de Bord Administrateur").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
           }
-          return creerReponseHtml('Accès Refusé', 'Vous n\'avez pas les permissions nécessaires.');
+          return creerReponseHtml(
+            'Accès Refusé',
+            'Authentification administrateur requise. Utilisez un lien signé valide ou connectez-vous avec le compte administrateur.'
+          );
 
         case 'gestion':
           if (typeof CLIENT_PORTAL_ENABLED !== 'undefined' && CLIENT_PORTAL_ENABLED) {
@@ -184,11 +231,13 @@ function doGet(e) {
 
         case 'debug':
           if (typeof DEBUG_MENU_ENABLED !== 'undefined' && DEBUG_MENU_ENABLED) {
-            const debugEmail = Session.getActiveUser().getEmail();
-            if (debugEmail && debugEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+            if (hasAdminAccess(e)) {
               return HtmlService.createHtmlOutputFromFile('Debug_Interface').setTitle("Panneau de Débogage");
             }
-            return creerReponseHtml('Accès Refusé', 'Vous n\'avez pas les permissions nécessaires.');
+            return creerReponseHtml(
+              'Accès Refusé',
+              'Le panneau de débogage n’est accessible qu’avec un accès administrateur signé.'
+            );
           }
           // CORRECTION: Message clair si le debug est désactivé au niveau global.
           return creerReponseHtml('Accès Refusé', 'Le mode de débogage est désactivé.');
@@ -356,7 +405,7 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED) {
+    if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED && typeof logRequest === 'function') {
       logRequest(e);
     }
 
