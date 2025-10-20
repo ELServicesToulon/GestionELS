@@ -347,7 +347,7 @@ function loadBase64ImageDataUri(partialName) {
     if (!content) {
       return '';
     }
-    content = String(content).trim();
+    content = String(content).replace(/^\uFEFF/, '').trim();
     // Si déjà une Data URI complète, la retourner telle quelle.
     if (/^data:image\//i.test(content)) {
       return content;
