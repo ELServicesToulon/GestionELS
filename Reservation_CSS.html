@@ -892,12 +892,14 @@ body.els-ui-theming.els-aluminium {
 .btn-sm { padding: 8px 12px; font-size: 0.9em; }
 
 /* --- MODALES --- */
-.modale-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 999; }
-.modale-contenu { background-color: var(--bg); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); width: 100%; max-width: 500px; position: relative; }
+.modale-overlay { position: fixed; inset: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; padding: 48px 20px; overflow-y: auto; z-index: 999; box-sizing: border-box; }
+.modale-contenu { background-color: var(--bg); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); width: min(520px, 100%); max-height: min(90vh, 680px); position: relative; box-sizing: border-box; overflow-y: auto; }
 .btn-fermer { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.8em; cursor: pointer; color: var(--muted); }
-.modale-resume { background-color: var(--bg); border-radius: var(--radius); padding: 15px; margin-top: 20px; display: flex; justify-content: space-around; text-align: center; }
+.modale-resume { background-color: var(--bg); border-radius: var(--radius); padding: 15px; margin-top: 20px; display: flex; justify-content: center; text-align: center; gap: 12px; flex-wrap: wrap; }
 .modale-resume strong { color: var(--violet); display: block; margin-top: 4px; }
-.modale-pied-de-page { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--muted); display: flex; justify-content: flex-end; }
+.modale-resume > * { flex: 1 1 120px; }
+.modale-pied-de-page { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--muted); display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+.modale-pied-de-page .btn { min-width: 140px; }
 
 /* --- STYLES DES CRÃ‰NEAUX (NOUVELLE VERSION) --- */
 .grille-creneaux { 
@@ -1055,7 +1057,11 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   #titre-calendrier { font-size: 1.2em; }
   .jour-calendrier { padding: 5px; font-size: 0.9em; }
   .grille-creneaux { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
-  .modale-contenu { width: 95%; padding: 20px; }
+  .modale-overlay { align-items: flex-start; padding: 24px 12px; }
+  .modale-contenu { width: 100%; max-height: calc(100vh - 48px); padding: 24px 18px; }
+  .modale-pied-de-page { flex-direction: column; align-items: stretch; }
+  .modale-pied-de-page .btn { width: 100%; min-width: 0; }
+  .btn-fermer { top: 12px; right: 12px; }
   .champ-formulaire, .btn { font-size: 16px; /* Pour Ã©viter le zoom sur iOS */ }
   .item-panier { flex-direction: column; align-items: flex-start; gap: 5px; }
   .item-panier-prix { align-self: flex-end; font-weight: bold; }
