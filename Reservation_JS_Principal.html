@@ -163,33 +163,38 @@ function afficherConteneurFinalisation() {
 }
 
 function mettreAJourEtatResident() {
-  const { ui } = window;
-  const actif = estForfaitResidentActif();
-  ui.blocResidentDetails?.classList.toggle('hidden', !actif);
-  ui.residentNoticeCreneau?.classList.toggle('hidden', !actif);
-  ui.clientEmailHelper?.classList.toggle('hidden', !actif);
-  if (ui.champEmailClient) {
+    const { ui } = window;
+    const actif = estForfaitResidentActif();
     const affiliationReq = !!(window.configServeur && window.configServeur.RESIDENT_AFFILIATION_REQUIRED);
-    const requireEmail = (!actif) || (actif && affiliationReq);
-    ui.champEmailClient.required = requireEmail;
-    if (actif) {
-      ui.champEmailClient.placeholder = affiliationReq ? "Email de la structure (requis)" : "Email de la structure (facultatif)";
-    } else {
-      ui.champEmailClient.placeholder = "";
+    ui.blocResidentDetails?.classList.toggle('hidden', !actif);
+    ui.residentNoticeCreneau?.classList.toggle('hidden', !actif);
+    if (ui.champEmailClient) {
+      ui.champEmailClient.required = true;
+      ui.champEmailClient.placeholder = actif
+        ? (affiliationReq ? "Email de la structure (requis)" : "Email de la structure")
+        : "";
+    }
+    if (ui.clientEmailHelper) {
+      if (actif) {
+        ui.clientEmailHelper.textContent = affiliationReq
+          ? "Renseignez l'email de la structure : il servira à recevoir l'identifiant d'accès au portail client."
+          : "Nous utiliserons l'email de la structure pour envoyer l'identifiant d'accès client.";
+      } else {
+        ui.clientEmailHelper.textContent = "Cette adresse email est requise pour recevoir votre identifiant d'accès client.";
+      }
+    }
+    if (!actif) {
+      (ui.residentModeRadios || []).forEach(radio => {
+        if (radio.value === 'standard') radio.checked = true;
+      });
+    }
+    if (typeof afficherPanier === 'function') {
+      afficherPanier();
+    }
+    if (typeof mettreAJourRecapSelectionResident === 'function') {
+      mettreAJourRecapSelectionResident();
     }
   }
-  if (!actif) {
-    (ui.residentModeRadios || []).forEach(radio => {
-      if (radio.value === 'standard') radio.checked = true;
-    });
-  }
-  if (typeof afficherPanier === 'function') {
-    afficherPanier();
-  }
-  if (typeof mettreAJourRecapSelectionResident === 'function') {
-    mettreAJourRecapSelectionResident();
-  }
-}
 
 /**
  * Gère la demande d'envoi de devis par email.
@@ -381,13 +386,23 @@ function gererSoumissionReservation(e) {
     return;
   }
 
-  const emailClient = ui.champEmailClient.value.trim();
+  const emailSaisi = ui.champEmailClient.value.trim();
+  const emailClient = (emailSaisi || window.etat.clientReconnu?.email || '').trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isResident = estForfaitResidentActif();
   const residentMode = obtenirModeResident();
-  if (!isResident && !emailClient) {
-    afficherNotification('Merci de renseigner une adresse email.', 'erreur');
+  if (!emailClient) {
+    afficherNotification('Merci de renseigner une adresse email valide pour recevoir votre identifiant.', 'erreur');
     ui.champEmailClient.focus();
     return;
+  }
+  if (!emailRegex.test(emailClient)) {
+    afficherNotification("Veuillez fournir une adresse email valide.", 'erreur');
+    ui.champEmailClient.focus();
+    return;
+  }
+  if (!emailSaisi) {
+    ui.champEmailClient.value = emailClient;
   }
 
   const donneesReservation = {
@@ -410,8 +425,7 @@ function gererSoumissionReservation(e) {
       .withSuccessHandler(reponse => {
         basculerIndicateurChargement(false);
         if (reponse.success) {
-          const messageSucces = emailClient ? "Réservation confirmée ! Un email vous a été envoyé." : "Réservation confirmée !";
-          afficherNotification(messageSucces, 'succes');
+          afficherNotification("Réservation confirmée ! Un email vous a été envoyé.", 'succes');
           window.etat.panier = [];
           sauvegarderPanierDansLocalStorage();
           afficherPanier();

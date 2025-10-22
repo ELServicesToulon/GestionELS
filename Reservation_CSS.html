@@ -140,6 +140,13 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
   border-top: 1px solid color-mix(in oklab, var(--bleu) 14%, #ffffff 86%);
 }
 
+#tarifs-card .tarif-description {
+  margin-top: 4px;
+  font-size: clamp(0.78rem, 0.9vw, 0.88rem);
+  color: color-mix(in oklab, var(--muted) 80%, #1f2937 20%);
+  line-height: 1.4;
+}
+
 #tarifs-card .tarif-valeur {
   color: var(--violet);
 }
@@ -509,6 +516,9 @@ main.layout > .main > * {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: baseline;
+}
+#tarifs-card .tarif-description {
+  grid-column: 1 / -1;
 }
 #tarifs-card .tarif-ligne--wrap,
 #tarifs-card .tarif-ligne--note {
@@ -892,8 +902,8 @@ body.els-ui-theming.els-aluminium {
 .btn-sm { padding: 8px 12px; font-size: 0.9em; }
 
 /* --- MODALES --- */
-.modale-overlay { position: fixed; inset: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; padding: 48px 20px; overflow-y: auto; z-index: 999; box-sizing: border-box; }
-.modale-contenu { background-color: var(--bg); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); width: min(520px, 100%); max-height: min(90vh, 680px); position: relative; box-sizing: border-box; overflow-y: auto; }
+.modale-overlay { position: fixed; inset: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; padding: clamp(16px, 5vh, 48px) clamp(12px, 4vw, 28px); overflow-y: auto; z-index: 999; box-sizing: border-box; }
+.modale-contenu { background-color: var(--bg); padding: 30px; border-radius: var(--radius); box-shadow: var(--shadow); width: min(540px, 100%); max-height: calc(100vh - 2 * clamp(16px, 5vh, 48px)); position: relative; box-sizing: border-box; overflow-y: auto; }
 .btn-fermer { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.8em; cursor: pointer; color: var(--muted); }
 .modale-resume { background-color: var(--bg); border-radius: var(--radius); padding: 15px; margin-top: 20px; display: flex; justify-content: center; text-align: center; gap: 12px; flex-wrap: wrap; }
 .modale-resume strong { color: var(--violet); display: block; margin-top: 4px; }

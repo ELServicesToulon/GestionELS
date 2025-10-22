@@ -119,18 +119,22 @@
             <li class="tarif-ligne">
               <span class="tarif-libelle">Normal</span>
               <span class="tarif-valeur" id="tarif-normal-base">-</span>
+              <span class="tarif-description">Collecte et livraison réalisées en un seul trajet, sans conservation de médicaments.</span>
             </li>
             <li class="tarif-ligne">
               <span class="tarif-libelle">Samedi</span>
               <span class="tarif-valeur" id="tarif-samedi-base">-</span>
+              <span class="tarif-description">Passage assuré le samedi matin en un seul trajet, sans stockage intermédiaire de médicaments.</span>
             </li>
             <li class="tarif-ligne">
               <span class="tarif-libelle">Urgent</span>
               <span class="tarif-valeur" id="tarif-urgent-base">-</span>
+              <span class="tarif-description">Course prioritaire avec retrait et livraison sous 4&nbsp;heures en un seul trajet, sans stockage de médicaments.</span>
             </li>
             <li class="tarif-ligne tarif-ligne--wrap">
               <span class="tarif-libelle">Suppléments par arrêt</span>
               <span class="tarif-valeur" id="tarif-supplements">-</span>
+              <span class="tarif-description">Appliqué pour chaque adresse ajoutée à la tournée (collecte ou livraison supplémentaire).</span>
             </li>
           </ul>
         </article>
@@ -140,14 +144,12 @@
             <li class="tarif-ligne">
               <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
               <span class="tarif-valeur" id="forfait-resident-standard">-</span>
+              <span class="tarif-description">Organisation en deux passages pour anticiper les ordonnances des résidences partenaires.</span>
             </li>
             <li class="tarif-ligne">
               <span class="tarif-libelle">Retrait &amp; livraison sous 4&nbsp;h</span>
               <span class="tarif-valeur" id="forfait-resident-urgence">-</span>
-            </li>
-            <li class="tarif-ligne tarif-ligne--wrap">
-              <span class="tarif-libelle">Durée facturée (planification interne)</span>
-              <span class="tarif-valeur" id="forfait-resident-duree">-</span>
+              <span class="tarif-description">Solution accélérée dédiée aux situations critiques en établissement de soins.</span>
             </li>
           </ul>
         </article>
@@ -186,7 +188,7 @@
           <div class="groupe-formulaire">
             <label for="client-email">Email</label>
             <input type="email" id="client-email">
-            <small id="client-email-helper" class="muted hidden">Laissez vide si le r&eacute;sident n'a pas d'adresse email. La confirmation restera disponible dans votre panier.</small>
+            <small id="client-email-helper" class="muted">Cette adresse email est requise pour recevoir votre identifiant d'acc&egrave;s client.</small>
           </div>
           <div class="groupe-formulaire"><label for="client-nom">Raison Sociale</label><input type="text" id="client-nom" required></div>
           <div class="groupe-formulaire"><label for="client-adresse">Adresse</label><input type="text" id="client-adresse"></div>
@@ -493,7 +495,6 @@
         renderSupplements();
         setCurrency(document.getElementById('forfait-resident-standard'), configServeur?.FORFAIT_RESIDENT_STANDARD);
         setCurrency(document.getElementById('forfait-resident-urgence'), configServeur?.FORFAIT_RESIDENT_URGENCE);
-        setHours(document.getElementById('forfait-resident-duree'), configServeur?.FORFAIT_RESIDENT_DURATION);
       } catch (e) { /* no-op */ }
 
       const bloc = document.getElementById('tarifs-detaille');

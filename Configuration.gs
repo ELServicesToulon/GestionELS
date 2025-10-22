@@ -336,6 +336,8 @@ const FORFAIT_RESIDENT = Object.freeze({
 const COLONNE_TYPE_REMISE_CLIENT = "Type de Remise";
 /** @const {string} Nom de la colonne contenant la valeur de la remise. */
 const COLONNE_VALEUR_REMISE_CLIENT = "Valeur Remise";
+/** @const {string} Identifiant unique attribué au client. */
+const COLONNE_ID_CLIENT = "Client ID";
 /** @const {string} Nom de la colonne pour le nombre de tournées offertes. */
 const COLONNE_NB_TOURNEES_OFFERTES = "Nombre Tournées Offertes";
 /** @const {string} Colonne indiquant si le client est un résident. */
