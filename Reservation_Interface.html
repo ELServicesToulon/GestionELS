@@ -111,55 +111,47 @@
 
   <main id="layout" class="container layout-two-cols">
     <section id="col-tarifs" class="col col--tarifs">
-      
-        
-      <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
-          
+      <div id="tarifs-card" class="carte card">
+        <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
         <article class="tarif-carte" data-tarif="tournees">
-              <h3>Tournées</h3>
-              <ul class="tarif-liste">
-                <li class="tarif-ligne">
-                  <span class="tarif-libelle">Normal</span>
-                  <span class="tarif-valeur" id="tarif-normal-base">—</span>
-                  
-                
-                <li class="tarif-ligne">
-                  <span class="tarif-libelle">Samedi</span>
-                  <span class="tarif-valeur" id="tarif-samedi-base">—</span>
-                  
-                
-                <li class="tarif-ligne">
-                  <span class="tarif-libelle">Urgent</span>
-                  <span class="tarif-valeur" id="tarif-urgent-base">—</span>
-                 
-                
-                <li class="tarif-ligne tarif-ligne--wrap">
-                  <span class="tarif-libelle">Suppléments par arrêt</span>
-                  <span class="tarif-valeur" id="tarif-supplements">—</span>
-                
-              </ul>
-            </article>
-            <article class="tarif-carte" data-tarif="forfait-resident">
-              <h3>Forfait résident</h3>
-              <ul class="tarif-liste">
-                
-                  <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
-                  <span class="tarif-valeur" id="forfait-resident-standard">—</span>
-                
-                
-                  <span class="tarif-libelle">Retrait &amp; livraison sous 4&nbsp;h</span>
-                  <span class="tarif-valeur" id="forfait-resident-urgence">—</span>
-               
-              
-                  <span class="tarif-libelle">Durée facturée (planification interne)</span>
-                  <span class="tarif-valeur" id="forfait-resident-duree">—</span>
-              
-                
-              </ul>
-            </article>
-          
-          <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
-        
+          <h3>Tournées</h3>
+          <ul class="tarif-liste">
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Normal</span>
+              <span class="tarif-valeur" id="tarif-normal-base">-</span>
+            </li>
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Samedi</span>
+              <span class="tarif-valeur" id="tarif-samedi-base">-</span>
+            </li>
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Urgent</span>
+              <span class="tarif-valeur" id="tarif-urgent-base">-</span>
+            </li>
+            <li class="tarif-ligne tarif-ligne--wrap">
+              <span class="tarif-libelle">Suppléments par arrêt</span>
+              <span class="tarif-valeur" id="tarif-supplements">-</span>
+            </li>
+          </ul>
+        </article>
+        <article class="tarif-carte" data-tarif="forfait-resident">
+          <h3>Forfait résident</h3>
+          <ul class="tarif-liste">
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
+              <span class="tarif-valeur" id="forfait-resident-standard">-</span>
+            </li>
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Retrait &amp; livraison sous 4&nbsp;h</span>
+              <span class="tarif-valeur" id="forfait-resident-urgence">-</span>
+            </li>
+            <li class="tarif-ligne tarif-ligne--wrap">
+              <span class="tarif-libelle">Durée facturée (planification interne)</span>
+              <span class="tarif-valeur" id="forfait-resident-duree">-</span>
+            </li>
+          </ul>
+        </article>
+        <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
       </div>
     </section>
     <section id="col-right" class="col col--content">

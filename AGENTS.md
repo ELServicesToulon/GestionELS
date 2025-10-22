@@ -1,40 +1,26 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Server Apps Script modules live at the repo root (`Administration.gs`, `Reservation.gs`, `Calendrier.gs`, `Utilitaires.gs`, `Validation.gs`).
-- `Configuration.gs` is the single source of truth for flags, pricing, and business rules; do not duplicate values elsewhere.
-- UI fragments sit in `Reservation_Interface.html`, `Reservation_JS_*.html`, and `Styles.html`; shared assets belong to `branding/ui/`. Legacy samples stay in `archive/`.
+Core Apps Script services reside at the repository root: `Administration.gs`, `Reservation.gs`, `Calendrier.gs`, `Utilitaires.gs`, and `Validation.gs`. Configuration is centralized in `Configuration.gs`; reference flags and prices from there rather than duplicating values. Client UI fragments live in `Reservation_Interface.html`, `Reservation_JS_*.html`, and `Styles.html`, while shared branding assets belong under `branding/ui/`. Legacy references stay inside `archive/` to avoid polluting production logic.
 
 ## Build, Test, and Development Commands
-- `npm install` — install local tooling such as `@google/clasp`.
-- `npx clasp login` — authenticate before interacting with Apps Script.
-- `npm run clasp:open` — open the remote Apps Script project in the browser.
-- `npm run clasp:push` / `npx clasp pull` — sync local and remote sources.
-- `npm run test:clasp` — run server sanity checks (`npx clasp run test_sanity`).
+- `npm install` — install local tooling (includes `@google/clasp`).
+- `npx clasp login` — authenticate against the Apps Script project before syncing.
+- `npm run clasp:push` / `npx clasp pull` — push local changes or pull remote sources.
+- `npm run clasp:open` — open the linked Apps Script project in the browser editor.
+- `npm run test:clasp` — execute server sanity checks via `npx clasp run test_sanity`.
 
 ## Coding Style & Naming Conventions
-- Target ES2019, use `const`/`let`, arrow functions, and semicolons with 2-space indentation.
-- Naming: camelCase for variables/functions, PascalCase for constructors, UPPER_SNAKE_CASE for constants/flags.
-- UI must keep Montserrat font and brand colors `#8e44ad`, `#3498db`, `#5dade2`; avoid inline styles and read config from `Configuration.gs`.
+Target ES2019 with `const`/`let`, arrow functions, and 2-space indentation. Terminate statements with semicolons. Use camelCase for functions and variables, PascalCase for constructors, and UPPER_SNAKE_CASE for constants and feature flags. Favor configuration-first changes by reading from `Configuration.gs`. Keep added comments succinct and purposeful.
 
 ## Testing Guidelines
-- Prefer small Apps Script helpers named `test_*`; execute with `npx clasp run <name>`.
-- Manual smoke checks: reservation flow end-to-end, calendar week view (Mon–Sun), AM/PM split when `SLOTS_AMPM_ENABLED=true`, invoicing PDF, and client-space visibility.
-- Keep logs clean; pushes with console noise are rejected.
+Create lightweight Apps Script tests named `test_*` and run them with `npx clasp run <name>`. The baseline sanity suite lives behind `npm run test:clasp`. Before pushing, smoke-test the reservation flow, weekly calendar (Mon–Sun), AM/PM slot split when `SLOTS_AMPM_ENABLED=true`, invoicing PDFs, and the client space. Ensure logs remain clean—console noise blocks deployment.
 
 ## Commit & Pull Request Guidelines
-- Commit prefixes: `feat:`, `fix:`, `chore:`, `SEO:`, `branding:` with optional tags like `[flag:<NAME>]` or `[no-structure-change]`.
-- Ship new behavior behind disabled-by-default flags in `Configuration.gs`.
-- Pull requests should document scope, rationale, linked issue, screenshots or GIFs for UI, impacted flags, and rollback notes.
+Prefix commits with `feat:`, `fix:`, `chore:`, `SEO:`, or `branding:` and optionally tag flags (e.g., `feat: add new tariff [flag:NEW_PLAN]`). Ship new behaviors behind disabled-by-default flags declared in `Configuration.gs`. Pull requests must summarize scope, rationale, linked issues, UI captures for visual changes, impacted flags, and rollback notes.
 
 ## Security & Configuration Tips
-- Never commit secrets; store credentials in Script Properties.
-- The web app executes as OWNER—treat configuration changes as sensitive and review carefully.
+Never commit secrets—store credentials in Script Properties. The web app executes as the owner, so review configuration changes carefully. Preserve required DOM IDs such as `#calendar-panel`, `#basket-section`, and `#btn-espace-client`, maintain Montserrat font with palette `#8e44ad`, `#3498db`, `#5dade2`, and avoid inline styles.
 
-## UI & Layout Conventions
-- Preserve IDs such as `#calendar-panel`, `#basket-section`, `#btn-espace-client`.
-- Respect layout shell `.layout-els`: left hero, center calendar `.els-center-grid`, right asides; adapt to ≤1280 px (two columns) and ≤992 px (single column).
-- Ensure `.els-client-col` remains sticky without ancestor overflow; keep `#vue-calendrier` containers at `width: 100%` and allow `[data-component="calendar"]` to scroll on FHD.
-
-## Agent-Specific Notes
-- Scope these instructions to the entire repo, prefer configuration-first changes, keep edits minimal, and avoid unrelated refactors.
+## Agent-Specific Instructions
+Respect the layout shell (`.layout-els`, `.els-center-grid`, `.els-client-col`) and keep `[data-component="calendar"]` scrollable. Avoid broad refactors; keep edits narrowly scoped, and prefer additive updates that align with the existing structure.
