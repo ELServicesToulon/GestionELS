@@ -153,6 +153,31 @@
             </li>
           </ul>
         </article>
+        <article class="tarif-carte" data-tarif="durees-kilometrage">
+          <h3>Durées &amp; kilomètres</h3>
+          <ul class="tarif-liste">
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Durée standard</span>
+              <span class="tarif-valeur" id="tarif-duree-base">-</span>
+              <span class="tarif-description">Durée standard d&apos;une prise en charge complète.</span>
+            </li>
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Durée par arrêt</span>
+              <span class="tarif-valeur" id="tarif-duree-arret-sup">-</span>
+              <span class="tarif-description">Temps additionnel appliqué à chaque arrêt supplémentaire.</span>
+            </li>
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Distance de base</span>
+              <span class="tarif-valeur" id="tarif-km-base">-</span>
+              <span class="tarif-description">Kilométrage estimé pour une tournée complète.</span>
+            </li>
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Distance par arrêt</span>
+              <span class="tarif-valeur" id="tarif-km-arret-sup">-</span>
+              <span class="tarif-description">Kilométrage ajouté pour chaque arrêt supplémentaire.</span>
+            </li>
+          </ul>
+        </article>
         <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
       </div>
     </section>
@@ -412,6 +437,8 @@
       const tariffs = configServeur?.TARIFS || {};
       const currencyFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const hoursFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+      const minutesFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      const distanceFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
 
       const toNumber = (value) => {
         if (value === null || value === undefined) return null;
@@ -460,6 +487,28 @@
         element.classList.remove('is-na');
       };
 
+      const setMinutes = (element, rawValue) => {
+        if (!element) return;
+        const numericValue = toNumber(rawValue);
+        if (numericValue === null) {
+          setFallback(element);
+          return;
+        }
+        element.textContent = `${minutesFormatter.format(numericValue)}${NBSP}min`;
+        element.classList.remove('is-na');
+      };
+
+      const setKilometres = (element, rawValue) => {
+        if (!element) return;
+        const numericValue = toNumber(rawValue);
+        if (numericValue === null) {
+          setFallback(element);
+          return;
+        }
+        element.textContent = `${distanceFormatter.format(numericValue)}${NBSP}km`;
+        element.classList.remove('is-na');
+      };
+
       const renderSupplements = () => {
         const supplementsElement = document.getElementById('tarif-supplements');
         if (!supplementsElement) return;
@@ -495,6 +544,10 @@
         renderSupplements();
         setCurrency(document.getElementById('forfait-resident-standard'), configServeur?.FORFAIT_RESIDENT_STANDARD);
         setCurrency(document.getElementById('forfait-resident-urgence'), configServeur?.FORFAIT_RESIDENT_URGENCE);
+        setMinutes(document.getElementById('tarif-duree-base'), configServeur?.DUREE_BASE);
+        setMinutes(document.getElementById('tarif-duree-arret-sup'), configServeur?.DUREE_ARRET_SUP);
+        setKilometres(document.getElementById('tarif-km-base'), configServeur?.KM_BASE);
+        setKilometres(document.getElementById('tarif-km-arret-sup'), configServeur?.KM_ARRET_SUP);
       } catch (e) { /* no-op */ }
 
       const bloc = document.getElementById('tarifs-detaille');
