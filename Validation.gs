@@ -42,7 +42,8 @@ function validerConfiguration() {
     const messageErreur = `La validation de la configuration a échoué avec ${erreurs.length} erreur(s) :\n- ` + erreurs.join("\n- ");
     Logger.log(messageErreur);
     // Envoie un e-mail à l'administrateur pour l'alerter immédiatement.
-    GGmailApp.sendEmail
+    GmailApp.
+sendEmail
 
 (ADMIN_EMAIL, `[${NOM_ENTREPRISE}] ERREUR CRITIQUE DE CONFIGURATION`, messageErreur);
     // Stoppe l'exécution de l'application en lançant une erreur.

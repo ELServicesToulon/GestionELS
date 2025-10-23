@@ -298,7 +298,8 @@ function envoyerFactureClient(emailClient, numeroFacture, exp, sig) {
       `<p>Veuillez trouver ci-joint votre facture <strong>${String(row[idx.numero]).trim()}</strong>${montant !== null ? ` d'un montant de <strong>${montant.toFixed(2)} €</strong>` : ''}.</p>`,
       `<p>Cordiales salutations,<br>${NOM_ENTREPRISE}</p>`
     ].filter(Boolean).join('');
-    GGmailApp.sendEmail
+    GmailApp.
+sendEmail
 
 ({ to: emailNorm, subject: sujet, htmlBody: corps, attachments: [pdfBlob], replyTo: EMAIL_ENTREPRISE });
   return { success: true };

@@ -103,7 +103,8 @@ function notifyAdminWithThrottle(typeErreur, sujet, corps) {
   }
 
   try {
-    GGmailApp.sendEmail
+    GmailApp.
+sendEmail
 
 (ADMIN_EMAIL, sujet, corps);
     cache.put(cleCache, 'envoye', 3600); // Bloque pour 1 heure

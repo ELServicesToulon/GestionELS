@@ -219,7 +219,8 @@ function envoyerDevisParEmail(donneesDevis) {
       </div>
     `;
 
-    GGmailApp.sendEmail
+    GmailApp.
+sendEmail
 
 ({
       to: emailClient,
@@ -367,7 +368,8 @@ function envoyerIdentifiantAccesClient(email, nom, clientId) {
       `</div>`
     ].join('');
 
-    GGmailApp.sendEmail
+    GmailApp.
+sendEmail
 
 ({
       to: email,
@@ -400,7 +402,8 @@ function notifierClientConfirmation(email, nom, reservations) {
                 <p>L'équipe ${NOM_ENTREPRISE}</p>
             </div>
         `;
-        GGmailApp.sendEmail
+        GmailApp.
+sendEmail
 
 ({
             to: email,
