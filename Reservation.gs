@@ -16,22 +16,41 @@ function reserverPanier(donneesReservation) {
   }
 
   try {
-    const client = donneesReservation.client;
-    if (client) {
-      client.resident = client.resident === true;
-      if (client.resident === true && typeof RESIDENT_AFFILIATION_REQUIRED !== 'undefined' && RESIDENT_AFFILIATION_REQUIRED) {
-        const emailStruct = String(client.email || '').trim();
-        if (!emailStruct) {
-          return { success: false, summary: "Pour un résident, l'email de la structure (EHPAD/foyer/pharmacie) est requis." };
-        }
+    const client = donneesReservation && donneesReservation.client ? donneesReservation.client : null;
+    if (!client) {
+      return { success: false, summary: "Informations client manquantes." };
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailNormalise = String(client.email || '').trim();
+    if (!emailNormalise || !emailRegex.test(emailNormalise)) {
+      return { success: false, summary: "Une adresse email valide est requise pour créer votre accès client." };
+    }
+    client.email = emailNormalise;
+    client.contactEmail = emailNormalise;
+    client.nom = String(client.nom || '').trim();
+    client.resident = client.resident === true;
+    if (client.resident === true && typeof RESIDENT_AFFILIATION_REQUIRED !== 'undefined' && RESIDENT_AFFILIATION_REQUIRED) {
+      const emailStruct = String(client.email || '').trim();
+      if (!emailStruct) {
+        return { success: false, summary: "Pour un résident, l'email de la structure (EHPAD/foyer/pharmacie) est requis." };
       }
     }
+
     const items = donneesReservation.items;
     let failedItemIds = [];
     let successfulReservations = [];
 
-    enregistrerOuMajClient(client);
-    const clientPourCalcul = obtenirInfosClientParEmail(client.email);
+    const resultatEnregistrement = enregistrerOuMajClient(client) || { isNew: false, clientId: '' };
+    const clientPourCalcul = obtenirInfosClientParEmail(client.email) || {};
+    client.clientId = resultatEnregistrement.clientId || clientPourCalcul.clientId || calculerIdentifiantClient(client.email);
+
+    if (resultatEnregistrement.isNew) {
+      try {
+        envoyerIdentifiantAccesClient(client.email, client.nom, client.clientId);
+      } catch (notifErr) {
+        Logger.log(`Avertissement: impossible d'envoyer l'identifiant client à ${client.email}: ${notifErr}`);
+      }
+    }
 
     for (const item of items) {
       const success = creerReservationUnique(item, client, clientPourCalcul);
@@ -306,6 +325,54 @@ function genererDevisPdfFromItems(donneesDevis) {
   } catch (e) {
     Logger.log('Erreur devis PDF: ' + e.stack);
     return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Envoie l'identifiant unique et un lien d'accès à l'espace client pour un nouveau client.
+ * @param {string} email Adresse email du client.
+ * @param {string} nom Nom du client.
+ * @param {string} clientId Identifiant unique attribué.
+ */
+function envoyerIdentifiantAccesClient(email, nom, clientId) {
+  try {
+    if (!email || !clientId) return;
+    const logoBlock = getLogoEmailBlockHtml();
+    let lienGestion = ScriptApp.getService().getUrl() + '?page=gestion';
+    let expirationTexte = '';
+    try {
+      const lien = generateSignedClientLink(email);
+      if (lien && lien.url) {
+        lienGestion = lien.url;
+        if (lien.exp) {
+          const dateExpiration = new Date(lien.exp * 1000);
+          expirationTexte = ` (valable jusqu'au ${dateExpiration.toLocaleString('fr-FR')})`;
+        }
+      }
+    } catch (err) {
+      Logger.log(`Avertissement: échec de génération du lien signé pour ${email}: ${err}`);
+    }
+    const urlBase = ScriptApp.getService().getUrl();
+    const corpsHtml = [
+      `<div style="font-family: Montserrat, sans-serif; color: #333;">`,
+      logoBlock,
+      `<h1>Votre accès client est activé</h1>`,
+      `<p>Bonjour ${nom || 'cher client'},</p>`,
+      `<p>Voici votre identifiant client personnel&nbsp;: <strong>${clientId}</strong>. Conservez-le précieusement, il pourra vous être demandé lors de nos échanges.</p>`,
+      `<p>Pour accéder à votre espace client et suivre vos tournées, utilisez le lien suivant&nbsp;:<br><a href="${lienGestion}">${lienGestion}</a>${expirationTexte}</p>`,
+      `<p>Vous pouvez à tout moment vous connecter depuis <a href="${urlBase}?page=gestion">${urlBase}?page=gestion</a> en renseignant simplement votre adresse email (${email}).</p>`,
+      `<p>À très vite,<br>L'équipe ${NOM_ENTREPRISE}</p>`,
+      `</div>`
+    ].join('');
+
+    MailApp.sendEmail({
+      to: email,
+      subject: `Votre accès client - ${NOM_ENTREPRISE}`,
+      htmlBody: corpsHtml,
+      replyTo: EMAIL_ENTREPRISE
+    });
+  } catch (e) {
+    Logger.log(`Erreur lors de l'envoi de l'identifiant client à ${email}: ${e}`);
   }
 }
 

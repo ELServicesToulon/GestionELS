@@ -284,10 +284,13 @@ function obtenirTousLesClients() {
         const headerRow = feuilleClients.getRange(1, 1, 1, Math.max(1, feuilleClients.getLastColumn())).getValues()[0];
         const headerTrimmed = headerRow.map(function (h) { return String(h || '').trim(); });
         if (headerTrimmed.indexOf(COLONNE_RESIDENT_CLIENT) === -1) {
-            feuilleClients.getRange(1, headerTrimmed.length + 1).setValue(COLONNE_RESIDENT_CLIENT);
+            feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_RESIDENT_CLIENT);
+        }
+        if (headerTrimmed.indexOf(COLONNE_ID_CLIENT) === -1) {
+            feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_ID_CLIENT);
         }
 
-        const indices = obtenirIndicesEnTetes(feuilleClients, ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT]);
+        const indices = obtenirIndicesEnTetes(feuilleClients, ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT]);
         const donnees = feuilleClients.getDataRange().getValues();
         return donnees.slice(1).map(ligne => ({
             email: ligne[indices["Email"]],
@@ -297,7 +300,8 @@ function obtenirTousLesClients() {
             typeRemise: ligne[indices[COLONNE_TYPE_REMISE_CLIENT]] || '',
             valeurRemise: ligne[indices[COLONNE_VALEUR_REMISE_CLIENT]] || 0,
             nbTourneesOffertes: ligne[indices[COLONNE_NB_TOURNEES_OFFERTES]] || 0,
-            resident: ligne[indices[COLONNE_RESIDENT_CLIENT]] === true
+            resident: ligne[indices[COLONNE_RESIDENT_CLIENT]] === true,
+            clientId: ligne[indices[COLONNE_ID_CLIENT]] || ''
         }));
     } catch (e) {
         Logger.log("Erreur dans obtenirTousLesClients: " + e.toString());
@@ -319,15 +323,32 @@ function creerReservationAdmin(data) {
       return { success: false, error: "Accès non autorisé." };
     }
     
-    if (!data.client.email || !data.client.nom || !data.date || !data.startTime) {
+    if (!data.client || !data.client.nom || !data.date || !data.startTime) {
         throw new Error("Données de réservation incomplètes.");
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailClient = String(data.client.email || '').trim();
+    if (!emailClient || !emailRegex.test(emailClient)) {
+        throw new Error("Une adresse email client valide est requise pour créer l'accès utilisateur.");
+    }
+    data.client.email = emailClient;
+    data.client.contactEmail = emailClient;
+    data.client.nom = String(data.client.nom || '').trim();
     data.client.resident = data.client.resident === true;
 
-    enregistrerOuMajClient(data.client);
+    const creationClient = enregistrerOuMajClient(data.client);
 
     const clientPourCalcul = obtenirInfosClientParEmail(data.client.email);
+    data.client.clientId = creationClient && creationClient.clientId || clientPourCalcul?.clientId || '';
+
+    if (creationClient && creationClient.isNew) {
+      try {
+        envoyerIdentifiantAccesClient(data.client.email, data.client.nom, data.client.clientId);
+      } catch (notifErr) {
+        Logger.log(`Avertissement: impossible d'envoyer l'identifiant client à ${data.client.email}: ${notifErr}`);
+      }
+    }
 
     // Admin calculation: force type (Normal/Samedi) and avoid automatic Urgent pricing
     const totalStops = data.totalStops || (data.additionalStops + 1);

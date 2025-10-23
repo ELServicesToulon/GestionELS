@@ -119,7 +119,7 @@ function notifyAdminWithThrottle(typeErreur, sujet, corps) {
 function verifierStructureFeuilles() {
   const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
   const expectations = [
-    { name: 'Clients', headers: ['Email', 'Raison Sociale', 'Adresse', 'SIRET', COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES], required: true },
+    { name: 'Clients', headers: ['Email', 'Raison Sociale', 'Adresse', 'SIRET', COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT], required: true },
     { name: 'Facturation', headers: FACTURATION_HEADERS, required: true },
     { name: 'Plages_Bloquees', headers: ['Date', 'Heure_Debut', 'Heure_Fin'], required: false },
     { name: 'Logs', headers: ['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut'], required: false },
