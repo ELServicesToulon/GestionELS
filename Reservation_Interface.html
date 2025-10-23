@@ -157,6 +157,35 @@
       </div>
     </section>
     <section id="col-right" class="col col--content">
+      <div id="cart-card" class="card">
+        <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
+          <div class="panier-entete">
+            <h3 id="panier-titre">Panier de réservation</h3>
+            <div id="banniere-client-reconnu" class="panier-greeting hidden" aria-live="polite">
+              Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
+              <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
+            </div>
+          </div>
+          <? if (CLIENT_PORTAL_ENABLED) { ?>
+            <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm">Mon Espace Client</a>
+          <? } ?>
+          <ul id="liste-panier">
+            <p class="panier-vide">Votre panier est vide.</p>
+          </ul>
+          <div id="panier-pied-de-page" class="hidden">
+            <div class="panier-total">
+              <span>Total estimé</span>
+              <strong id="panier-total-valeur">0 &euro;</strong>
+            </div>
+            <div class="panier-actions-groupe">
+              <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
+              <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
+              <button id="btn-telecharger-devis" class="btn btn-secondaire">Télécharger le devis (PDF)</button>
+              <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
+            </div>
+          </div>
+        </aside>
+      </div>
       <div id="calendar-card" class="card">
         <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
           <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
@@ -226,35 +255,6 @@
             <button type="submit" class="btn btn-primaire">Confirmer la réservation</button>
           </div>
         </form>
-      </div>
-      <div id="cart-card" class="card">
-        <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
-          <div class="panier-entete">
-            <h3 id="panier-titre">Panier de réservation</h3>
-            <div id="banniere-client-reconnu" class="panier-greeting hidden" aria-live="polite">
-              Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
-              <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
-            </div>
-          </div>
-          <? if (CLIENT_PORTAL_ENABLED) { ?>
-            <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm" style="margin-bottom:8px;">Mon Espace Client</a>
-          <? } ?>
-          <ul id="liste-panier">
-            <p class="panier-vide">Votre panier est vide.</p>
-          </ul>
-          <div id="panier-pied-de-page" class="hidden">
-            <div class="panier-total">
-              <span>Total estimé</span>
-              <strong id="panier-total-valeur">0 &euro;</strong>
-            </div>
-            <div class="panier-actions-groupe">
-              <button id="btn-vider-panier" class="btn btn-secondaire" aria-label="Vider le panier">Vider le panier</button>
-              <button id="btn-envoyer-devis" class="btn btn-secondaire">Recevoir un devis</button>
-              <button id="btn-telecharger-devis" class="btn btn-secondaire">Télécharger le devis (PDF)</button>
-              <button id="btn-valider-panier" class="btn btn-primaire">Valider le panier</button>
-            </div>
-          </div>
-        </aside>
       </div>
     </section>
   </main>
