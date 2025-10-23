@@ -160,7 +160,15 @@
       <div id="cart-card" class="card">
         <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
           <div class="panier-entete">
-            <h3 id="panier-titre">Panier de réservation</h3>
+            <div class="panier-identite">
+              <img
+                src="data:image/png;base64,<?!= include('PanierLogo_b64'); ?>"
+                alt="Logo Espace Livraison Sante"
+                class="panier-logo"
+                decoding="async"
+                loading="lazy">
+              <h3 id="panier-titre">Panier de réservation</h3>
+            </div>
             <div id="banniere-client-reconnu" class="panier-greeting hidden" aria-live="polite">
               Content de vous revoir, <strong id="nom-client-reconnu"></strong> !
               <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
