@@ -473,6 +473,6 @@ function doPost(e) {
 }
 function _forceReAuth() {
   // Déclenche le consentement pour MailApp
-  Logger.log(MailApp.getRemainingDailyQuota());
+  //Logger.log(MailApp.getRemainingDailyQuota());
 }
 
