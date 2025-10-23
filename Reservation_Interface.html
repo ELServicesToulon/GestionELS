@@ -119,22 +119,22 @@
             <li class="tarif-ligne">
               <span class="tarif-libelle">Normal</span>
               <span class="tarif-valeur" id="tarif-normal-base">-</span>
-              <span class="tarif-description">Collecte et livraison réalisées en un seul trajet, sans conservation de médicaments.</span>
+              <span class="tarif-description js-meta-base"></span>
             </li>
             <li class="tarif-ligne">
               <span class="tarif-libelle">Samedi</span>
               <span class="tarif-valeur" id="tarif-samedi-base">-</span>
-              <span class="tarif-description">Passage assuré le samedi matin en un seul trajet, sans stockage intermédiaire de médicaments.</span>
+              <span class="tarif-description js-meta-base"></span>
             </li>
             <li class="tarif-ligne">
               <span class="tarif-libelle">Urgent</span>
               <span class="tarif-valeur" id="tarif-urgent-base">-</span>
-              <span class="tarif-description">Course prioritaire avec retrait et livraison sous 4&nbsp;heures en un seul trajet, sans stockage de médicaments.</span>
+              <span class="tarif-description js-meta-base"></span>
             </li>
             <li class="tarif-ligne tarif-ligne--wrap">
               <span class="tarif-libelle">Suppléments par arrêt</span>
               <span class="tarif-valeur" id="tarif-supplements">-</span>
-              <span class="tarif-description">Appliqué pour chaque adresse ajoutée à la tournée (collecte ou livraison supplémentaire).</span>
+              <span class="tarif-description js-meta-supp"></span>
             </li>
           </ul>
         </article>
@@ -150,31 +150,6 @@
               <span class="tarif-libelle">Retrait &amp; livraison sous 4&nbsp;h</span>
               <span class="tarif-valeur" id="forfait-resident-urgence">-</span>
               <span class="tarif-description">Solution accélérée dédiée aux situations critiques en établissement de soins.</span>
-            </li>
-          </ul>
-        </article>
-        <article class="tarif-carte" data-tarif="durees-kilometrage">
-          <h3>Durées &amp; kilomètres</h3>
-          <ul class="tarif-liste">
-            <li class="tarif-ligne">
-              <span class="tarif-libelle">Durée standard</span>
-              <span class="tarif-valeur" id="tarif-duree-base">-</span>
-              <span class="tarif-description">Durée standard d&apos;une prise en charge complète.</span>
-            </li>
-            <li class="tarif-ligne">
-              <span class="tarif-libelle">Durée par arrêt</span>
-              <span class="tarif-valeur" id="tarif-duree-arret-sup">-</span>
-              <span class="tarif-description">Temps additionnel appliqué à chaque arrêt supplémentaire.</span>
-            </li>
-            <li class="tarif-ligne">
-              <span class="tarif-libelle">Distance de base</span>
-              <span class="tarif-valeur" id="tarif-km-base">-</span>
-              <span class="tarif-description">Kilométrage estimé pour une tournée complète.</span>
-            </li>
-            <li class="tarif-ligne">
-              <span class="tarif-libelle">Distance par arrêt</span>
-              <span class="tarif-valeur" id="tarif-km-arret-sup">-</span>
-              <span class="tarif-description">Kilométrage ajouté pour chaque arrêt supplémentaire.</span>
             </li>
           </ul>
         </article>
@@ -436,7 +411,6 @@
       const NBSP = '\u00A0';
       const tariffs = configServeur?.TARIFS || {};
       const currencyFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const hoursFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
       const minutesFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
       const distanceFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
 
@@ -476,37 +450,35 @@
         element.classList.remove('is-na');
       };
 
-      const setHours = (element, rawValue) => {
-        if (!element) return;
+      const formatMinutes = (rawValue) => {
         const numericValue = toNumber(rawValue);
-        if (numericValue === null) {
-          setFallback(element);
-          return;
-        }
-        element.textContent = `${hoursFormatter.format(numericValue)}${NBSP}h`;
-        element.classList.remove('is-na');
+        if (numericValue === null) return null;
+        return `${minutesFormatter.format(numericValue)}${NBSP}min`;
       };
 
-      const setMinutes = (element, rawValue) => {
-        if (!element) return;
+      const formatKilometres = (rawValue) => {
         const numericValue = toNumber(rawValue);
-        if (numericValue === null) {
-          setFallback(element);
-          return;
-        }
-        element.textContent = `${minutesFormatter.format(numericValue)}${NBSP}min`;
-        element.classList.remove('is-na');
+        if (numericValue === null) return null;
+        return `${distanceFormatter.format(numericValue)}${NBSP}km`;
       };
 
-      const setKilometres = (element, rawValue) => {
-        if (!element) return;
-        const numericValue = toNumber(rawValue);
-        if (numericValue === null) {
-          setFallback(element);
+      const setMetaGroup = (selector, minutesValue, kilometresValue) => {
+        const elements = document.querySelectorAll(selector);
+        if (!elements.length) return;
+        const durationText = formatMinutes(minutesValue);
+        const distanceText = formatKilometres(kilometresValue);
+        const parts = [];
+        if (durationText) parts.push(durationText);
+        if (distanceText) parts.push(distanceText);
+        if (!parts.length) {
+          elements.forEach(element => setFallback(element));
           return;
         }
-        element.textContent = `${distanceFormatter.format(numericValue)}${NBSP}km`;
-        element.classList.remove('is-na');
+        const combined = parts.join(' • ');
+        elements.forEach(element => {
+          element.textContent = combined;
+          element.classList.remove('is-na');
+        });
       };
 
       const renderSupplements = () => {
@@ -544,10 +516,8 @@
         renderSupplements();
         setCurrency(document.getElementById('forfait-resident-standard'), configServeur?.FORFAIT_RESIDENT_STANDARD);
         setCurrency(document.getElementById('forfait-resident-urgence'), configServeur?.FORFAIT_RESIDENT_URGENCE);
-        setMinutes(document.getElementById('tarif-duree-base'), configServeur?.DUREE_BASE);
-        setMinutes(document.getElementById('tarif-duree-arret-sup'), configServeur?.DUREE_ARRET_SUP);
-        setKilometres(document.getElementById('tarif-km-base'), configServeur?.KM_BASE);
-        setKilometres(document.getElementById('tarif-km-arret-sup'), configServeur?.KM_ARRET_SUP);
+        setMetaGroup('.js-meta-base', configServeur?.DUREE_BASE, configServeur?.KM_BASE);
+        setMetaGroup('.js-meta-supp', configServeur?.DUREE_ARRET_SUP, configServeur?.KM_ARRET_SUP);
       } catch (e) { /* no-op */ }
 
       const bloc = document.getElementById('tarifs-detaille');
