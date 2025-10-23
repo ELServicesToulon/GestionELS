@@ -234,10 +234,7 @@ function creerEtEnvoyerFactureResident(res) {
 
   var status;
   if (res.RESIDENT_EMAIL) {
-    GGmailApp.
-sendEmail
-
-(res.RESIDENT_EMAIL, '[' + BILLING.INVOICE_PREFIX + '] Votre facture ' + num,
+    GmailApp.sendEmail(res.RESIDENT_EMAIL, '[' + BILLING.INVOICE_PREFIX + '] Votre facture ' + num,
       'Bonjour,\n\nVeuillez trouver votre facture en pièce jointe.\nMontant: ' + fromCents(ttcCents) + ' €.\n' + (BILLING.TVA_APPLICABLE ? '' : BILLING.TVA_MENTION) + '\n\nMerci,',
       { attachments: [pdfFile.getBlob()] }
     );

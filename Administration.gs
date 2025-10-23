@@ -1144,12 +1144,7 @@ function archiverFacturesDuMois() {
           `<p>Merci pour votre confiance.<br/>${NOM_ENTREPRISE}</p>`
         ].filter(Boolean).join('');
 
-        GGGGGmailApp.sendEmail
-
-
-
-
-({ to: email, subject: sujet, htmlBody: corps, attachments: [pdfBlob] });
+        MailApp.sendEmail({ to: email, subject: sujet, htmlBody: corps, attachments: [pdfBlob] });
 
         if (idx.aEnvoyer !== -1) feuille.getRange(r + 1, idx.aEnvoyer + 1).setValue(false);
         if (idx.statut !== -1) feuille.getRange(r + 1, idx.statut + 1).setValue('Envoyée');

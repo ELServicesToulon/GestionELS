@@ -103,10 +103,7 @@ function notifyAdminWithThrottle(typeErreur, sujet, corps) {
   }
 
   try {
-    GmailApp.
-sendEmail
-
-(ADMIN_EMAIL, sujet, corps);
+    MailApp.sendEmail(ADMIN_EMAIL, sujet, corps);
     cache.put(cleCache, 'envoye', 3600); // Bloque pour 1 heure
   } catch (e) {
     Logger.log(`Échec de l'envoi de l'e-mail de notification : ${e.toString()}`);
