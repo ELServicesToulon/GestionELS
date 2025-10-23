@@ -298,7 +298,9 @@ function envoyerFactureClient(emailClient, numeroFacture, exp, sig) {
       `<p>Veuillez trouver ci-joint votre facture <strong>${String(row[idx.numero]).trim()}</strong>${montant !== null ? ` d'un montant de <strong>${montant.toFixed(2)} €</strong>` : ''}.</p>`,
       `<p>Cordiales salutations,<br>${NOM_ENTREPRISE}</p>`
     ].filter(Boolean).join('');
-    MailApp.sendEmail({ to: emailNorm, subject: sujet, htmlBody: corps, attachments: [pdfBlob], replyTo: EMAIL_ENTREPRISE });
+    GGmailApp.sendEmail
+
+({ to: emailNorm, subject: sujet, htmlBody: corps, attachments: [pdfBlob], replyTo: EMAIL_ENTREPRISE });
   return { success: true };
   } catch (e) {
     Logger.log('Erreur dans envoyerFactureClient: ' + e.stack);

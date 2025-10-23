@@ -219,7 +219,9 @@ function envoyerDevisParEmail(donneesDevis) {
       </div>
     `;
 
-    MailApp.sendEmail({
+    GGmailApp.sendEmail
+
+({
       to: emailClient,
       subject: sujet,
       htmlBody: corpsHtml,
@@ -365,7 +367,9 @@ function envoyerIdentifiantAccesClient(email, nom, clientId) {
       `</div>`
     ].join('');
 
-    MailApp.sendEmail({
+    GGmailApp.sendEmail
+
+({
       to: email,
       subject: `Votre accès client - ${NOM_ENTREPRISE}`,
       htmlBody: corpsHtml,
@@ -396,7 +400,9 @@ function notifierClientConfirmation(email, nom, reservations) {
                 <p>L'équipe ${NOM_ENTREPRISE}</p>
             </div>
         `;
-        MailApp.sendEmail({
+        GGmailApp.sendEmail
+
+({
             to: email,
             subject: `Confirmation de votre réservation - ${NOM_ENTREPRISE}`,
             htmlBody: corpsHtml,
