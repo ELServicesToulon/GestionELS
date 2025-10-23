@@ -119,22 +119,22 @@
             <li class="tarif-ligne">
               <span class="tarif-libelle">Normal</span>
               <span class="tarif-valeur" id="tarif-normal-base">-</span>
-              <span class="tarif-description js-meta-base"></span>
+              <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
             </li>
             <li class="tarif-ligne">
               <span class="tarif-libelle">Samedi</span>
               <span class="tarif-valeur" id="tarif-samedi-base">-</span>
-              <span class="tarif-description js-meta-base"></span>
+              <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
             </li>
             <li class="tarif-ligne">
               <span class="tarif-libelle">Urgent</span>
               <span class="tarif-valeur" id="tarif-urgent-base">-</span>
-              <span class="tarif-description js-meta-base"></span>
+              <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
             </li>
             <li class="tarif-ligne tarif-ligne--wrap">
               <span class="tarif-libelle">Suppléments par arrêt</span>
               <span class="tarif-valeur" id="tarif-supplements">-</span>
-              <span class="tarif-description js-meta-supp"></span>
+              <span class="tarif-description js-meta-supp" data-meta-prefix="Par arrêt supplémentaire" data-meta-separator=" + "></span>
             </li>
           </ul>
         </article>
@@ -144,12 +144,12 @@
             <li class="tarif-ligne">
               <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
               <span class="tarif-valeur" id="forfait-resident-standard">-</span>
-              <span class="tarif-description">Organisation en deux passages pour anticiper les ordonnances des résidences partenaires.</span>
+              <span class="tarif-description">1 retrait documents sur site résident + 1 démarche &amp; retrait PUI Sainte Musse + 1 livraison sur site résident le lendemain.</span>
             </li>
             <li class="tarif-ligne">
               <span class="tarif-libelle">Retrait &amp; livraison sous 4&nbsp;h</span>
               <span class="tarif-valeur" id="forfait-resident-urgence">-</span>
-              <span class="tarif-description">Solution accélérée dédiée aux situations critiques en établissement de soins.</span>
+              <span class="tarif-description">1 retrait &amp; 1 livraison sur site résident dans les délais les plus rapides possibles.</span>
             </li>
           </ul>
         </article>
@@ -450,33 +450,51 @@
         element.classList.remove('is-na');
       };
 
-      const formatMinutes = (rawValue) => {
+      const formatMinutes = (rawValue, unit = 'mn') => {
         const numericValue = toNumber(rawValue);
         if (numericValue === null) return null;
-        return `${minutesFormatter.format(numericValue)}${NBSP}min`;
+        return `${minutesFormatter.format(numericValue)}${NBSP}${unit}`;
       };
 
-      const formatKilometres = (rawValue) => {
+      const formatKilometres = (rawValue, unit = 'km') => {
         const numericValue = toNumber(rawValue);
         if (numericValue === null) return null;
-        return `${distanceFormatter.format(numericValue)}${NBSP}km`;
+        return `${distanceFormatter.format(numericValue)}${NBSP}${unit}`;
       };
 
       const setMetaGroup = (selector, minutesValue, kilometresValue) => {
         const elements = document.querySelectorAll(selector);
         if (!elements.length) return;
-        const durationText = formatMinutes(minutesValue);
-        const distanceText = formatKilometres(kilometresValue);
-        const parts = [];
-        if (durationText) parts.push(durationText);
-        if (distanceText) parts.push(distanceText);
-        if (!parts.length) {
-          elements.forEach(element => setFallback(element));
-          return;
-        }
-        const combined = parts.join(' • ');
         elements.forEach(element => {
-          element.textContent = combined;
+          const separator = element.getAttribute('data-meta-separator') || ' • ';
+          const minuteUnit = element.getAttribute('data-meta-minutes-unit') || 'mn';
+          const kilometreUnit = element.getAttribute('data-meta-kilometres-unit') || 'km';
+          const minutesPrefix = element.getAttribute('data-meta-minutes-prefix') || '';
+          const kilometresPrefix = element.getAttribute('data-meta-kilometres-prefix') || '';
+          const prefix = element.getAttribute('data-meta-prefix') || '';
+          const suffix = element.getAttribute('data-meta-suffix') || '';
+
+          const parts = [];
+          if (prefix) parts.push(prefix);
+
+          const durationText = formatMinutes(minutesValue, minuteUnit);
+          if (durationText) {
+            parts.push(minutesPrefix ? `${minutesPrefix}${durationText}` : durationText);
+          }
+
+          const distanceText = formatKilometres(kilometresValue, kilometreUnit);
+          if (distanceText) {
+            parts.push(kilometresPrefix ? `${kilometresPrefix}${distanceText}` : distanceText);
+          }
+
+          if (suffix) parts.push(suffix);
+
+          if (!parts.length) {
+            setFallback(element);
+            return;
+          }
+
+          element.textContent = parts.join(separator);
           element.classList.remove('is-na');
         });
       };
