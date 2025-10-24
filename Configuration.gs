@@ -322,6 +322,29 @@ const TARIFS = {
   }
 };
 
+const PRICING_RULES_V2 = Object.freeze({
+  Normal: Object.freeze({
+    stopTotals: Object.freeze([20, 25, 30, 35, 40, 45]),
+    extraStopIncrement: 5,
+    returnSurcharge: 5
+  }),
+  Samedi: Object.freeze({
+    stopTotals: Object.freeze([25, 30, 35, 40, 45, 50]),
+    extraStopIncrement: 5,
+    returnSurcharge: 5
+  }),
+  Urgent: Object.freeze({
+    stopTotals: Object.freeze([25, 30, 35, 40, 45, 50]),
+    extraStopIncrement: 5,
+    returnSurcharge: 5
+  }),
+  Special: Object.freeze({
+    stopTotals: Object.freeze([30, 35, 40, 45, 50, 55]),
+    extraStopIncrement: 5,
+    returnSurcharge: 5
+  })
+});
+
 const FORFAIT_RESIDENT = Object.freeze({
   STANDARD_LABEL: 'Pré-collecte veille + livraison lendemain',
   STANDARD_PRICE: 30,
@@ -350,6 +373,9 @@ const COLONNE_RESIDENT_CLIENT = "Resident";
 
 const CONFIG = Object.freeze({
   TARIFS,
+  PRICING_RULES_V2,
+  PRICING_RULES_V2_ENABLED,
+  RETURN_IMPACTS_ESTIMATES_ENABLED,
   FORFAIT_RESIDENT,
   DUREE_BASE,
   DUREE_ARRET_SUP,
@@ -371,8 +397,7 @@ const CONFIG = Object.freeze({
   RESERVATION_VERIFY_ENABLED,
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN,
-  BILLING_ID_PDF_CHECK_ENABLED,
-  
+  BILLING_ID_PDF_CHECK_ENABLED
 });
 
 /**
@@ -386,6 +411,8 @@ function getConfig() {
 function getPublicConfig() {
   return {
     TARIFS: CONFIG.TARIFS,
+    PRICING_RULES_V2_ENABLED: CONFIG.PRICING_RULES_V2_ENABLED,
+    PRICING_RULES_V2: CONFIG.PRICING_RULES_V2,
     FORFAIT_RESIDENT: CONFIG.FORFAIT_RESIDENT,
     DUREE_BASE: CONFIG.DUREE_BASE,
     DUREE_ARRET_SUP: CONFIG.DUREE_ARRET_SUP,

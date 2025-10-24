@@ -293,6 +293,8 @@ function renderReservationInterface() {
   template.CLIENT_PORTAL_ENABLED = CLIENT_PORTAL_ENABLED;
   template.TARIFS_JSON = JSON.stringify(conf.TARIFS || {});
   template.TARIFS = conf.TARIFS;
+  template.PRICING_RULES_V2_JSON = JSON.stringify(conf.PRICING_RULES_V2 || {});
+  template.PRICING_RULES_V2 = conf.PRICING_RULES_V2;
   const logoDataUrl = getLogoDataUrl();
   const heroImages = buildReservationHeroImages();
   template.logoDataUrl = logoDataUrl;

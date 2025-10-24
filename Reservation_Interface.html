@@ -77,6 +77,7 @@
   </svg>
 
   <script type="application/json" id="conf-tarifs"><?!= TARIFS_JSON ?></script>
+  <script type="application/json" id="conf-pricing-rules-v2"><?!= PRICING_RULES_V2_JSON ?></script>
  
   <script>
     // Objet de configuration injecté par le serveur
@@ -84,6 +85,7 @@
       appUrl: "<?= appUrl ?>",
       nomService: "<?= nomService ?>",
       TARIFS: (function(){ try { return JSON.parse(document.getElementById('conf-tarifs').textContent); } catch(e){ return {}; } })(),
+      PRICING_RULES_V2: (function(){ try { return JSON.parse(document.getElementById('conf-pricing-rules-v2').textContent); } catch(e){ return {}; } })(),
       DUREE_BASE: <?= DUREE_BASE ?>,
       DUREE_ARRET_SUP: <?= DUREE_ARRET_SUP ?>,
       KM_BASE: <?= KM_BASE ?>,

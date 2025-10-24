@@ -32,6 +32,7 @@ function lancerTousLesTests() {
   testerCoherenceTarifs();
   testerComputeCoursePriceTarifVide();
   testerPricingScenario();
+  testerPricingRulesV2();
   testerUtilitaires();
   testerFeuilleCalcul();
   testerCalendrier();
@@ -219,6 +220,108 @@ function testerPricingScenario() {
   } catch (e) {
     Logger.log("FAILURE: computeCoursePrice() a levé une exception: " + e.message);
   }
+}
+
+function testerPricingRulesV2() {
+  Logger.log("\n--- Test de PRICING_RULES_V2 ---");
+  try {
+    const totalStops = 5;
+    const baseOpts = { totalStops: totalStops, retour: true };
+    const tolerance = 0.001;
+
+    const equals = function(expected, actual) {
+      return Math.abs(Number(actual) - Number(expected)) < tolerance;
+    };
+
+    const legacyExpectedNormal = (function() {
+      const nbSupp = Math.max(0, totalStops - 1);
+      const supplements = computeSupplementCost(nbSupp);
+      const retourFee = computeSupplementCost(nbSupp + 1) - supplements;
+      return (TARIFS?.Normal?.base || 0) + supplements + retourFee;
+    })();
+
+    const legacyNormal = computeCoursePrice(Object.assign({}, baseOpts, { forcePricingRulesVersion: 'v1' }));
+    if (legacyNormal && equals(legacyExpectedNormal, legacyNormal.total)) {
+      Logger.log(`SUCCESS: Legacy Normal (5 arrêts + retour) = ${legacyNormal.total}`);
+    } else {
+      Logger.log(`FAILURE: Legacy Normal attendu ${legacyExpectedNormal}, obtenu ${legacyNormal ? legacyNormal.total : 'N/A'}`);
+    }
+
+    const legacyExpectedSamedi = (function() {
+      const delta = (TARIFS?.Samedi?.base || 0) - (TARIFS?.Normal?.base || 0);
+      return legacyExpectedNormal + Math.max(0, delta);
+    })();
+
+    const legacySamedi = computeCoursePrice(Object.assign({}, baseOpts, { samedi: true, forcePricingRulesVersion: 'v1' }));
+    if (legacySamedi && equals(legacyExpectedSamedi, legacySamedi.total)) {
+      Logger.log(`SUCCESS: Legacy Samedi (5 arrêts + retour) = ${legacySamedi.total}`);
+    } else {
+      Logger.log(`FAILURE: Legacy Samedi attendu ${legacyExpectedSamedi}, obtenu ${legacySamedi ? legacySamedi.total : 'N/A'}`);
+    }
+
+    const resolveStopTotalForTest = function(rule, stops) {
+      const totals = Array.isArray(rule?.stopTotals) ? rule.stopTotals : [];
+      if (!totals.length) return NaN;
+      const idx = Math.max(1, stops) - 1;
+      if (idx < totals.length && typeof totals[idx] === 'number') {
+        return Number(totals[idx]);
+      }
+      const lastValue = Number(totals[totals.length - 1]);
+      if (!isFinite(lastValue)) return NaN;
+      const increment = typeof rule.extraStopIncrement === 'number'
+        ? rule.extraStopIncrement
+        : (totals.length > 1 ? Number(totals[totals.length - 1]) - Number(totals[totals.length - 2]) : 0);
+      if (!increment) {
+        return lastValue;
+      }
+      const extra = Math.max(0, Math.max(1, stops) - totals.length);
+      return lastValue + (extra * increment);
+    };
+
+    const resolveReturnForTest = function(rule, fallback) {
+      if (rule && typeof rule.returnSurcharge === 'number') {
+        return rule.returnSurcharge;
+      }
+      if (fallback && typeof fallback.returnSurcharge === 'number') {
+        return fallback.returnSurcharge;
+      }
+      return 0;
+    };
+
+    const expectedV2Normal = (function() {
+      const rules = PRICING_RULES_V2?.Normal;
+      const stopTotal = resolveStopTotalForTest(rules, totalStops);
+      const retourFee = resolveReturnForTest(rules, PRICING_RULES_V2?.Normal);
+      return stopTotal + retourFee;
+    })();
+
+    const expectedV2Samedi = (function() {
+      const rules = PRICING_RULES_V2?.Samedi || PRICING_RULES_V2?.Normal;
+      const stopTotal = resolveStopTotalForTest(rules, totalStops);
+      const retourFee = resolveReturnForTest(rules, PRICING_RULES_V2?.Normal);
+      return stopTotal + retourFee;
+    })();
+
+    const v2Normal = computeCoursePrice(Object.assign({}, baseOpts, { forcePricingRulesVersion: 'v2' }));
+    if (v2Normal && equals(expectedV2Normal, v2Normal.total)) {
+      Logger.log(`SUCCESS: V2 Normal (5 arrêts + retour) = ${v2Normal.total}`);
+    } else {
+      Logger.log(`FAILURE: V2 Normal attendu ${expectedV2Normal}, obtenu ${v2Normal ? v2Normal.total : 'N/A'}`);
+    }
+
+    const v2Samedi = computeCoursePrice(Object.assign({}, baseOpts, { samedi: true, forcePricingRulesVersion: 'v2' }));
+    if (v2Samedi && equals(expectedV2Samedi, v2Samedi.total)) {
+      Logger.log(`SUCCESS: V2 Samedi (5 arrêts + retour) = ${v2Samedi.total}`);
+    } else {
+      Logger.log(`FAILURE: V2 Samedi attendu ${expectedV2Samedi}, obtenu ${v2Samedi ? v2Samedi.total : 'N/A'}`);
+    }
+  } catch (e) {
+    Logger.log(`FAILURE: testerPricingRulesV2 a levé une exception: ${e.message}`);
+  }
+}
+
+function test_computeCoursePriceV2() {
+  testerPricingRulesV2();
 }
 
 function testerReservationCreationMock() {
