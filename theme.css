@@ -30,6 +30,34 @@ h2 { font-size: clamp(18px, 2vw, 22px); }
 /* Visually hidden (accessibility) */
 .visually-hidden { position: absolute !important; clip: rect(1px, 1px, 1px, 1px); padding: 0 !important; border: 0 !important; height: 1px !important; width: 1px !important; overflow: hidden; white-space: nowrap; }
 
+/* --- Logo ELS global --- */
+.els-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  text-decoration: none;
+}
+.els-logo img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+header .els-logo img {
+  height: 36px;
+}
+
+@media (max-width: 768px) {
+  header .els-logo img {
+    height: 32px;
+  }
+}
+
+/* Dans les modales */
+.modal .modal__header .els-logo img,
+.modal .modal-header .els-logo img {
+  height: 24px;
+}
+
 /* Containers */
 .container { width: 100%; max-width: min(1200px, calc(100% - 32px)); margin-inline: auto; padding: var(--space-3); }
 .layout { width: 100%; max-width: min(1200px, calc(100% - 32px)); margin-inline: auto; padding: var(--space-4); }

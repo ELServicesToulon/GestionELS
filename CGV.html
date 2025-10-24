@@ -68,9 +68,11 @@
   <?!= include('charte'); ?>
   <?!= include('GoogleChartsStub'); ?>
 </head>
-<body>
+<body data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= BRANDING_LOGO_PUBLIC_URL ?>">
   <main class="container" role="main">
-    <?!= include('Logo'); ?>
+    <div class="app-logo-container" data-logo-slot>
+      <span class="app-logo--fallback" data-logo-fallback><?= nomService ?></span>
+    </div>
     <h1>Conditions Générales de Vente (CGV) - Livraison pharmaceutique</h1>
     <p><strong>Prestataire :</strong> EI LECOURT EMMANUEL — Nom commercial « EL Services » • <strong>Adresse :</strong> 255 Bis Avenue Marcel Castie, B, 83000 TOULON • <strong>SIRET :</strong> 480 913 060 00020 • <strong>APE :</strong> 53.20Z • <strong>TVA :</strong> non applicable (art. 293 B CGI) • <strong>E-mail :</strong> <a href="mailto:elservicestoulon@gmail.com">elservicestoulon@gmail.com</a></p>
     <p><strong>Coordonnées de paiement :</strong> IBAN FR76 4061 8804 7600 0403 5757 187 — BIC BOUSFRPPXXX — Chèque à l’ordre de « EI Emmanuel LECOURT Titulaire du compte ».</p>
@@ -143,5 +145,7 @@
     <h2>Encadré « Conformité &amp; obligations » — version courte réutilisable</h2>
     <p><strong>Livraison EHPAD &amp; domicile :</strong> CSP R.5125-47 à R.5125-52 (paquet scellé, nominatif, transport adapté) ; CSP L.5126-10 (libre choix du pharmacien) ; Guides Ordre/OMéDIT/ARS. Remise en main propre, jamais en libre accès. Thermosensibles : chaîne du froid. Stupéfiants : colis séparé, sécurisé, signature pro habilité + traçabilité.</p>
   </main>
+  <?!= include('Render_JS'); ?>
+  <script src="/assets/js/els-logo.js" defer></script>
 </body>
 </html>

@@ -265,14 +265,22 @@ function getBundledLogoDataUrl() {
  * @returns {string}
  */
 function getLogoPublicUrl() {
+  let url = '';
   try {
     const fileId = getSecret('ID_LOGO');
-    if (!fileId) return '';
-    return 'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(fileId);
+    if (fileId) {
+      url = 'https://drive.google.com/uc?export=view&id=' + encodeURIComponent(fileId);
+    }
   } catch (e) {
-    Logger.log('Impossible de construire l’URL publique du logo: ' + e.message);
-    return '';
+    Logger.log('Impossible de récupérer l’ID_LOGO: ' + e.message);
   }
+  if (!url && typeof BRANDING_LOGO_PUBLIC_URL === 'string' && BRANDING_LOGO_PUBLIC_URL) {
+    url = BRANDING_LOGO_PUBLIC_URL;
+  }
+  if (!url && typeof BRANDING !== 'undefined' && BRANDING && typeof BRANDING.LOGO_URL === 'string' && BRANDING.LOGO_URL) {
+    url = BRANDING.LOGO_URL;
+  }
+  return url || '';
 }
 
 /**

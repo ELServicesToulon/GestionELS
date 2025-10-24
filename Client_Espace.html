@@ -74,7 +74,7 @@
     <?!= include('GoogleChartsStub'); ?>
   <? } ?>
 </head>
-<body>
+<body data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= BRANDING_LOGO_PUBLIC_URL ?>">
 
   <div id="indicateur-chargement" class="indicateur-chargement-overlay">
     <div class="spinner"></div>
@@ -82,7 +82,9 @@
 
   <div id="app-conteneur-principal">
     <header class="app-en-tete">
-      <?!= include('Logo'); ?>
+      <div class="app-logo-container" data-logo-slot>
+        <span class="app-logo--fallback" data-logo-fallback><?= nomService ?></span>
+      </div>
       <p id="message-bienvenue-client"></p>
     </header>
 
@@ -147,7 +149,9 @@
   <div id="modale-modification" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-modification-titre">
     <div class="modale-contenu">
       <button id="btn-fermer-modale" class="btn-fermer" aria-label="Fermer la fenêtre de modification">&times;</button>
-      <?!= include('Logo'); ?>
+      <div class="app-logo-container" data-logo-slot>
+        <span class="app-logo--fallback" data-logo-fallback><?= nomService ?></span>
+      </div>
       <div id="contenu-modale-wrapper">
         <!-- Le contenu de la modale sera injecté ici -->
       </div>
@@ -170,6 +174,7 @@
   </script>
   <?!= include('Render_JS'); ?>
   <?!= include('Client_JS'); ?>
+  <script src="/assets/js/els-logo.js" defer></script>
 </body>
 </html>
 

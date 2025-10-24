@@ -296,8 +296,10 @@ function renderReservationInterface() {
   template.PRICING_RULES_V2_JSON = JSON.stringify(conf.PRICING_RULES_V2 || {});
   template.PRICING_RULES_V2 = conf.PRICING_RULES_V2;
   const logoDataUrl = getLogoDataUrl();
+  const logoPublicUrl = getLogoPublicUrl();
   const heroImages = buildReservationHeroImages();
   template.logoDataUrl = logoDataUrl;
+  template.logoPublicUrl = logoPublicUrl;
   template.heroImages = heroImages;
   template.heroAssetsJson = JSON.stringify({
     logo: logoDataUrl || null,

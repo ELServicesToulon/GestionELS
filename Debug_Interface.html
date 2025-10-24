@@ -81,8 +81,10 @@
   <?!= include('charte'); ?>
   <?!= include('GoogleChartsStub'); ?>
 </head>
-<body>
-    <?!= include('Logo'); ?>
+<body data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= BRANDING_LOGO_PUBLIC_URL ?>">
+    <div class="app-logo-container" data-logo-slot>
+      <span class="app-logo--fallback" data-logo-fallback><?= nomService ?></span>
+    </div>
     <h1>Panneau de Débogage</h1>
 
   <div class="test-suite">
@@ -151,5 +153,7 @@
       try { document.execCommand('copy'); } catch (e) {}
     });
     </script>
+    <?!= include('Render_JS'); ?>
+  <script src="/assets/js/els-logo.js" defer></script>
 </body>
 </html>

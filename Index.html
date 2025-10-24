@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <? var appUrl = ScriptApp.getService().getUrl(); var nomService = NOM_ENTREPRISE; ?>
   <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -11,17 +12,28 @@
   <link rel="stylesheet" href="<?= ScriptApp.getService().getUrl() ?>?asset=theme.css">
   <?!= include('Reservation_CSS'); ?>
   <?!= include('charte'); ?>
-  <title><?= NOM_ENTREPRISE ?> | Accueil</title>
+  <title><?= nomService ?> | Accueil</title>
+  <script>
+    window.ELS_BRAND = Object.assign({}, window.ELS_BRAND || {}, {
+      name: <?= JSON.stringify(nomService) ?>,
+      homeUrl: <?= JSON.stringify(appUrl) ?>,
+      logoUrl: <?= JSON.stringify(BRANDING_LOGO_PUBLIC_URL) ?>
+    });
+  </script>
 </head>
-<body>
+<body data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= BRANDING_LOGO_PUBLIC_URL ?>">
 
   <!-- Bandeau / Héros -->
   <header id="site-header" class="container" role="banner">
-    <?!= include('Logo'); ?>
+    <div class="app-logo-container" data-logo-slot>
+      <span class="app-logo--fallback" data-logo-fallback><?= nomService ?></span>
+    </div>
     <section class="hero" aria-label="Présentation du service">
       <div class="hero__brand">
         <div class="hero__logo">
-          <div class="app-logo-container"><?!= include('Logo') ?></div>
+          <div class="app-logo-container" data-logo-slot>
+            <span class="app-logo--fallback" data-logo-fallback><?= nomService ?></span>
+          </div>
         </div>
         <div class="hero__content">
           <p class="hero__eyebrow">Livraison officinale</p>
@@ -177,6 +189,7 @@
   <?!= include('Reservation_JS_Client'); ?>
   <?!= include('Reservation_JS_Tournee'); ?>
   <?!= include('App_JS'); ?>
+  <script src="/assets/js/els-logo.js" defer></script>
 
 </body>
 </html>

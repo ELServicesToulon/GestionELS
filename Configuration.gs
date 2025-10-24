@@ -48,6 +48,18 @@ const FACTURE_LOGO_FILE_ID = (function() {
   }
 })();
 
+/** @const {string} ID du fichier Drive du logo principal utilisé côté interface (public). */
+const BRANDING_LOGO_FILE_ID = '1e7Dd4eeMFbO633EJOVgDA-vnvUEvAxid';
+
+/** @const {string} URL publique du logo principal, dérivée de l'ID Drive partagé. */
+const BRANDING_LOGO_PUBLIC_URL = 'https://drive.google.com/uc?export=view&id=' + BRANDING_LOGO_FILE_ID;
+
+/** @const {Object} Ressources de branding (logo principal). */
+const BRANDING = Object.freeze({
+  LOGO_FILE_ID: BRANDING_LOGO_FILE_ID,
+  LOGO_URL: BRANDING_LOGO_PUBLIC_URL
+});
+
 // --- Bloc de facturation générique ---
 /** @const {Object} Paramètres de facturation centralisés. */
 const BILLING = {
@@ -397,7 +409,8 @@ const CONFIG = Object.freeze({
   RESERVATION_VERIFY_ENABLED,
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN,
-  BILLING_ID_PDF_CHECK_ENABLED
+  BILLING_ID_PDF_CHECK_ENABLED,
+  BRANDING
 });
 
 /**
@@ -421,7 +434,8 @@ function getPublicConfig() {
     URGENT_THRESHOLD_MINUTES: CONFIG.URGENT_THRESHOLD_MINUTES,
     HEURE_DEBUT_SERVICE: CONFIG.HEURE_DEBUT_SERVICE,
     HEURE_FIN_SERVICE: CONFIG.HEURE_FIN_SERVICE,
-    TVA_APPLICABLE: CONFIG.TVA_APPLICABLE
+    TVA_APPLICABLE: CONFIG.TVA_APPLICABLE,
+    BRANDING: CONFIG.BRANDING
   };
 }
 
