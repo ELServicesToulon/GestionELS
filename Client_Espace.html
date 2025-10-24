@@ -83,7 +83,7 @@
   <div id="app-conteneur-principal">
     <header class="app-en-tete">
       <div class="app-logo-container" data-logo-slot>
-        <span class="app-logo--fallback" data-logo-fallback><?= nomService ?></span>
+        <span class="app-logo--fallback" data-logo-fallback="<?= nomService ?>"<?= nomService ?></span>
       </div>
       <p id="message-bienvenue-client"></p>
     </header>
@@ -150,7 +150,7 @@
     <div class="modale-contenu">
       <button id="btn-fermer-modale" class="btn-fermer" aria-label="Fermer la fenêtre de modification">&times;</button>
       <div class="app-logo-container" data-logo-slot>
-        <span class="app-logo--fallback" data-logo-fallback><?= nomService ?></span>
+        <span class="app-logo--fallback" data-logo-fallback="<?= nomService ?>"<?= nomService ?></span>
       </div>
       <div id="contenu-modale-wrapper">
         <!-- Le contenu de la modale sera injecté ici -->
