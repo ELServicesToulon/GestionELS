@@ -48,10 +48,10 @@ const FACTURE_LOGO_FILE_ID = (function() {
   }
 })();
 
-/** @const {string} ID du fichier Drive du logo principal utilisé côté interface (public). */
+/** @const {string|null} ID Drive du logo principal (nul si on utilise un asset local). */
 const BRANDING_LOGO_FILE_ID = '1e7Dd4eeMFbO633EJOVgDA-vnvUEvAxid';
 
-/** @const {string} URL publique du logo principal, dérivée de l'ID Drive partagé. */
+/** @const {string} Data URL du logo principal (svg local embarqué). */
 const BRANDING_LOGO_PUBLIC_URL = 'https://drive.google.com/uc?export=view&id=' + BRANDING_LOGO_FILE_ID;
 
 /** @const {Object} Ressources de branding (logo principal). */
