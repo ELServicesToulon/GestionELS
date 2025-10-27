@@ -334,28 +334,68 @@ const TARIFS = {
   }
 };
 
-const PRICING_RULES_V2 = Object.freeze({
-  Normal: Object.freeze({
-    stopTotals: Object.freeze([20, 25, 30, 35, 40, 45]),
-    extraStopIncrement: 5,
-    returnSurcharge: 5
-  }),
-  Samedi: Object.freeze({
-    stopTotals: Object.freeze([25, 30, 35, 40, 45, 50]),
-    extraStopIncrement: 5,
-    returnSurcharge: 5
-  }),
-  Urgent: Object.freeze({
-    stopTotals: Object.freeze([25, 30, 35, 40, 45, 50]),
-    extraStopIncrement: 5,
-    returnSurcharge: 5
-  }),
-  Special: Object.freeze({
-    stopTotals: Object.freeze([30, 35, 40, 45, 50, 55]),
-    extraStopIncrement: 5,
-    returnSurcharge: 5
-  })
-});
+/**
+ * Génère les règles PRICING_RULES_V2 à partir de la grille TARIFS.
+ * Assure l'unicité de la source des tarifs pour tous les calculs.
+ * - Les stopTotals[1] correspondent à TARIFS.<Type>.base
+ * - Les suppléments utilisés sont ceux de TARIFS.Normal.arrets
+ * - Le retour est modélisé par le premier supplément (ou le dernier connu)
+ * @returns {{Normal:Object,Samedi:Object,Urgent:Object,Special:Object}}
+ */
+function buildPricingRulesV2FromTarifs_() {
+  var tarifs = (typeof TARIFS !== 'undefined' && TARIFS) ? TARIFS : {};
+  var normal = tarifs.Normal || { base: 0, arrets: [] };
+  var supplements = Array.isArray(normal.arrets) ? normal.arrets.slice() : [];
+  var lastSupp = supplements.length ? Number(supplements[supplements.length - 1]) : 0;
+  if (!isFinite(lastSupp)) lastSupp = 0;
+
+  // Construit les totaux cumulés pour le type Normal à partir de TARIFS.Normal
+  // stopTotals[0] est ignoré, l'indexation logique commence à 1 pour lisibilité.
+  var buildStopTotals = function(base) {
+    base = Number(base) || 0;
+    var totals = [];
+    var acc = base;
+    // 1 arrêt
+    totals.push(acc);
+    // Arrêts suivants (2..6 par défaut) puis extrapolation via extraStopIncrement
+    for (var i = 0; i < supplements.length; i++) {
+      var inc = Number(supplements[i]);
+      if (!isFinite(inc)) inc = lastSupp;
+      acc += inc;
+      totals.push(acc);
+    }
+    return totals; // [base, base+s1, base+s1+s2, ...]
+  };
+
+  var stopTotalsNormal = buildStopTotals(normal.base);
+  var extraInc = lastSupp;
+  var returnFee = (supplements.length ? Number(supplements[0]) : lastSupp) || 0;
+
+  // Calcule les stopTotals pour un type en décalant seulement la base
+  var deriveFromNormal = function(typeBase) {
+    typeBase = Number(typeBase) || 0;
+    var delta = typeBase - (Number(normal.base) || 0);
+    var totals = stopTotalsNormal.map(function(v){ return Number(v) + delta; });
+    return Object.freeze({
+      stopTotals: Object.freeze(totals),
+      extraStopIncrement: extraInc,
+      returnSurcharge: returnFee
+    });
+  };
+
+  var samediBase = (tarifs.Samedi && isFinite(Number(tarifs.Samedi.base))) ? Number(tarifs.Samedi.base) : Number(normal.base) || 0;
+  var urgentBase = (tarifs.Urgent && isFinite(Number(tarifs.Urgent.base))) ? Number(tarifs.Urgent.base) : Number(normal.base) || 0;
+  var specialBase = (tarifs.Special && isFinite(Number(tarifs.Special.base))) ? Number(tarifs.Special.base) : Number(normal.base) || 0;
+
+  return Object.freeze({
+    Normal: deriveFromNormal(normal.base),
+    Samedi: deriveFromNormal(samediBase),
+    Urgent: deriveFromNormal(urgentBase),
+    Special: deriveFromNormal(specialBase)
+  });
+}
+
+const PRICING_RULES_V2 = buildPricingRulesV2FromTarifs_();
 
 const FORFAIT_RESIDENT = Object.freeze({
   STANDARD_LABEL: 'Pré-collecte veille + livraison lendemain',
