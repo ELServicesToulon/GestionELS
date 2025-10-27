@@ -1,6 +1,6 @@
 /**
  * Harnais minimal de test pour le calcul de tarifs.
- * Remplace computePrice(...) par la fonction réelle trouvée dans ton code.
+ * Appelle computeCoursePrice(...) pour comparer les scénarios clés.
  */
 function RunPricingAudit() {
   var cases = [
@@ -15,15 +15,14 @@ function RunPricingAudit() {
   var out = [];
 
   cases.forEach(function (scenario) {
-    // >>>>> ICI: adapte "computePrice" et la forme des paramètres <<<<<
-    var res = computePrice(
-      scenario.stops,
-      scenario.urgent,
-      scenario.samedi,
-      scenario.retour,
-      scenario.km,
-      scenario.min
-    );
+    var res = computeCoursePrice({
+      totalStops: scenario.stops,
+      urgent: scenario.urgent,
+      samedi: scenario.samedi,
+      retour: scenario.retour,
+      distanceKm: scenario.km,
+      dureeMinutes: scenario.min
+    });
 
     out.push({
       label: scenario.label,
