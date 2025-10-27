@@ -34,7 +34,19 @@ function calculerInfosTourneeClient(totalStops, returnToPharmacy, dateString, st
   const tarif = computeCoursePrice({ totalStops, retour: returnToPharmacy, urgent, samedi });
   const typeCourse = samedi ? 'Samedi' : urgent ? 'Urgent' : 'Normal';
   const details = formatCourseLabel(duree, totalStops, returnToPharmacy);
-  return { prix: tarif.total, duree: duree, km: km, details: details, typeCourse: typeCourse };
+  const prix = Number(tarif?.total) || 0;
+  const prixFormate = typeof tarif?.formattedTotal === 'string' && tarif.formattedTotal.length
+    ? tarif.formattedTotal
+    : `${prix.toFixed(2)} €`;
+  return {
+    prix: prix,
+    prixFormate: prixFormate,
+    duree: duree,
+    km: km,
+    details: details,
+    typeCourse: typeCourse,
+    tarif: tarif
+  };
 }
 
 /**
@@ -75,7 +87,7 @@ function mettreAJourResumeTournee() {
   const spanPrix = document.createElement('span');
   spanPrix.textContent = 'Prix estimé';
   const strongPrix = document.createElement('strong');
-  strongPrix.textContent = `~ ${estimation.prix.toFixed(2)} €`;
+  strongPrix.textContent = `~ ${estimation.prixFormate}`;
   divPrix.appendChild(spanPrix);
   divPrix.appendChild(strongPrix);
   // Normalisation de l'affichage du prix (euro, fallback)
@@ -84,7 +96,7 @@ function mettreAJourResumeTournee() {
       const prixStrong = divPrix.querySelector('strong');
       const prixNumber = Number(estimation.prix);
       if (prixStrong) {
-        prixStrong.textContent = Number.isFinite(prixNumber) ? `~ ${prixNumber.toFixed(2)} \u20AC` : '—';
+        prixStrong.textContent = Number.isFinite(prixNumber) ? `~ ${estimation.prixFormate.replace('€', '\u20AC')}` : '—';
       }
     } catch(e) {}
   })();
@@ -145,14 +157,20 @@ function mettreAJourRecapSelectionResident() {
     }
     if (ui.recapCreneauTarif) ui.recapCreneauTarif.textContent = libelle;
     if (ui.recapCreneauPrix && Number.isFinite(prix)) {
-      ui.recapCreneauPrix.textContent = `${prix.toFixed(2)} €`;
+      ui.recapCreneauPrix.textContent = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(prix) + ' €';
     }
   } else if (!residentActif && selectedBtn) {
     if (ui.recapCreneauTarif && selectedBtn.dataset.tarifOriginal) {
       ui.recapCreneauTarif.textContent = selectedBtn.dataset.tarifOriginal;
     }
-    if (ui.recapCreneauPrix && selectedBtn.dataset.prixOriginal) {
-      ui.recapCreneauPrix.textContent = `${Number(selectedBtn.dataset.prixOriginal).toFixed(2)} €`;
+    if (ui.recapCreneauPrix) {
+      const prixFormatte = selectedBtn.dataset.prixFormateOriginal;
+      const prixOriginal = selectedBtn.dataset.prixOriginal;
+      if (prixFormatte) {
+        ui.recapCreneauPrix.textContent = prixFormatte;
+      } else if (prixOriginal) {
+        ui.recapCreneauPrix.textContent = `${Number(prixOriginal).toFixed(2)} €`;
+      }
     }
   }
   mettreAJourBoutonsResident();
@@ -219,6 +237,7 @@ function afficherSelectionCreneaux(creneaux) {
 
       btn.dataset.creneau = slotTime;
       btn.dataset.prix = estimation.prix;
+      btn.dataset.prixFormate = estimation.prixFormate;
       btn.dataset.tarif = estimation.typeCourse;
 
       const spanTime = document.createElement('span');
@@ -230,6 +249,7 @@ function afficherSelectionCreneaux(creneaux) {
       btn.appendChild(spanTime);
       btn.appendChild(spanRate);
       btn.dataset.prixOriginal = estimation.prix;
+      btn.dataset.prixFormateOriginal = estimation.prixFormate;
       btn.dataset.tarifOriginal = estimation.typeCourse;
 
       ui.grilleSelectionCreneau.appendChild(btn);
@@ -248,7 +268,10 @@ function afficherSelectionCreneaux(creneaux) {
       target.classList.add('selected');
       if (ui.recapCreneauHeure) ui.recapCreneauHeure.textContent = target.dataset.creneau;
       if (ui.recapCreneauTarif) ui.recapCreneauTarif.textContent = target.dataset.tarif;
-      if (ui.recapCreneauPrix) ui.recapCreneauPrix.textContent = `${parseFloat(target.dataset.prix).toFixed(2)} €`;
+      if (ui.recapCreneauPrix) {
+        const prixFormate = target.dataset.prixFormate;
+        ui.recapCreneauPrix.textContent = prixFormate || `${parseFloat(target.dataset.prix || '0').toFixed(2)} €`;
+      }
       if (ui.btnAjouterAuPanier) ui.btnAjouterAuPanier.disabled = false;
       mettreAJourRecapSelectionResident();
     }

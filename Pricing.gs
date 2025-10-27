@@ -11,6 +11,49 @@ function computeSupplementCost(nSupp) {
   return sum;
 }
 
+function roundCurrency_(value) {
+  const num = Number(value);
+  if (!isFinite(num)) {
+    return 0;
+  }
+  return Math.round(num * 100) / 100;
+}
+
+function formatEuro_(value) {
+  if (!isFinite(Number(value))) {
+    return '';
+  }
+  const rounded = roundCurrency_(value);
+  return rounded.toFixed(2).replace('.', ',') + ' €';
+}
+
+function normalizeCoursePriceResult_(result) {
+  if (!result) {
+    return null;
+  }
+  const breakdown = result.breakdown || {};
+  const normalized = {
+    total: roundCurrency_(result.total),
+    nbSupp: Math.max(0, Number(result.nbSupp) || 0),
+    breakdown: {
+      base: roundCurrency_(breakdown.base),
+      supplements: roundCurrency_(breakdown.supplements),
+      retour: roundCurrency_(breakdown.retour),
+      samedi: roundCurrency_(breakdown.samedi),
+      urgent: roundCurrency_(breakdown.urgent),
+      remise: roundCurrency_(breakdown.remise)
+    }
+  };
+  normalized.formattedTotal = formatEuro_(normalized.total);
+  if (result.error) {
+    normalized.error = result.error;
+  }
+  if (result.warning) {
+    normalized.warning = result.warning;
+  }
+  return normalized;
+}
+
 function shouldApplyPricingRulesV2_(forcedVersion) {
   if (forcedVersion === 'v1') return false;
   if (forcedVersion === 'v2') return true;
@@ -158,13 +201,14 @@ function computeCoursePriceV1_(opts) {
 function computeCoursePrice(opts) {
   opts = opts || {};
   const applyV2 = shouldApplyPricingRulesV2_(opts.forcePricingRulesVersion);
+  let result = null;
   if (applyV2) {
-    const v2Result = computeCoursePriceV2_(opts);
-    if (v2Result) {
-      return v2Result;
-    }
+    result = computeCoursePriceV2_(opts);
   }
-  return computeCoursePriceV1_(opts);
+  if (!result) {
+    result = computeCoursePriceV1_(opts);
+  }
+  return normalizeCoursePriceResult_(result);
 }
 
 function formatCourseLabel_(dureeMin, totalStops, isReturn) {
@@ -174,4 +218,43 @@ function formatCourseLabel_(dureeMin, totalStops, isReturn) {
     detail += ' + retour';
   }
   return 'Tournée de ' + dureeMin + 'min (' + totalStops + ' arrêt(s) total(s) (dont ' + detail + '), retour: ' + (isReturn ? 'oui' : 'non') + ')';
+}
+
+let __pricingMatrixCache = { maxStops: 0, matrix: {} };
+
+function getClientPricingMatrix(maxStops) {
+  const max = Math.max(1, Number(maxStops) || 12);
+  if (__pricingMatrixCache && __pricingMatrixCache.maxStops >= max) {
+    return __pricingMatrixCache.matrix;
+  }
+  const matrix = {};
+  const booleanValues = [false, true];
+  for (let stops = 1; stops <= max; stops++) {
+    booleanValues.forEach(function (retour) {
+      booleanValues.forEach(function (samedi) {
+        booleanValues.forEach(function (urgentFlag) {
+          const urgent = urgentFlag && !samedi;
+          const key = buildPricingKey_(stops, retour, samedi, urgent);
+          matrix[key] = computeCoursePrice({
+            totalStops: stops,
+            retour: retour,
+            samedi: samedi,
+            urgent: urgent,
+            remise: 0
+          });
+        });
+      });
+    });
+  }
+  __pricingMatrixCache = { maxStops: max, matrix: matrix };
+  return matrix;
+}
+
+function buildPricingKey_(stops, retour, samedi, urgent) {
+  return [
+    Math.max(1, stops | 0),
+    retour ? 1 : 0,
+    samedi ? 1 : 0,
+    urgent ? 1 : 0
+  ].join('|');
 }
