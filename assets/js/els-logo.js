@@ -3,7 +3,7 @@
   var doc = typeof document !== 'undefined' ? document : null;
   if (!win || !doc) return;
 
-  var LOGO_URL = 'https://drive.google.com/uc?export=view&id=1e7Dd4eeMFbO633EJOVgDA-vnvUEvAxid';
+  var LOGO_URL = 'https://drive.google.com/uc?export=view&id=1vbZ9kTYPso7KC4WGINEvVbJwHLCV7BfD';
   var HOME_URL = '/';
   var fallbackName = 'EL Services';
   var altSuffix = ' - Logo';
