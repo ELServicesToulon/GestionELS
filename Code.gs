@@ -251,6 +251,11 @@ function doGet(e) {
           // si cette page est désactivée.
           break;
 
+        case 'cgv':
+          // Conditions Générales de Vente
+          return HtmlService.createHtmlOutputFromFile('CGV')
+            .setTitle(NOM_ENTREPRISE + " | CGV");
+
         case 'accueil':
         case 'home':
         case 'index':
