@@ -1,0 +1,1 @@
+      <section class="section--panier" aria-label="Panier de réservation">

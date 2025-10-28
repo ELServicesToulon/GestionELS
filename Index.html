@@ -26,13 +26,13 @@
   <!-- Bandeau / Héros -->
   <header id="site-header" class="container" role="banner">
     <div class="app-logo-container" data-logo-slot>
-      <span class="app-logo--fallback" data-logo-fallback="true"<?= nomService ?></span>
+      <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
     </div>
     <section class="hero" aria-label="Présentation du service">
       <div class="hero__brand">
         <div class="hero__logo">
           <div class="app-logo-container" data-logo-slot>
-            <span class="app-logo--fallback" data-logo-fallback="true"<?= nomService ?></span>
+            <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
           </div>
         </div>
         <div class="hero__content">
@@ -73,7 +73,8 @@
         <div id="calendar-card" class="card">
           <!-- Conteneur extérieur autorisé pour la mise en page -->
           <div class="calendar-container">
-            <!-- ELS_CALENDAR_START — DO NOT EDIT ANYTHING INSIDE -->
+            <div id="calendar-panel" aria-label="Calendrier de reservation" role="region">
+            <!-- ELS_CALENDAR_START - DO NOT EDIT ANYTHING INSIDE -->
             <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
               <div id="vue-calendrier" role="application" aria-roledescription="calendrier interactif" class="carte">
                 <div class="carte-en-tete">
@@ -88,6 +89,7 @@
               </div>
             </div>
             <!-- ELS_CALENDAR_END -->
+            </div>
           </div>
         </div>
       </section>
@@ -126,7 +128,7 @@
       </section>
 
       <!-- Colonne droite: Panier -->
-      <section class="section--panier" aria-label="Panier de réservation">
+      <section id="basket-section" class="section--panier" aria-label="Panier de réservation">
         <div id="cart-card" class="card">
           <aside id="vue-panier" aria-labelledby="panier-titre" class="carte">
             <div class="panier-entete">
@@ -136,7 +138,7 @@
                 <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
               </div>
             </div>
-            <a id="btn-espace-client" href="<?= ScriptApp.getService().getUrl() ?>?page=gestion" class="btn btn-secondaire btn-sm" style="margin-bottom:8px;">Mon Espace Client</a>
+            <a id="btn-espace-client" href="<?= ScriptApp.getService().getUrl() ?>?page=gestion" class="btn btn-secondaire btn-sm">Mon Espace Client</a>
             <ul id="liste-panier"><p class="panier-vide">Votre panier est vide.</p></ul>
             <div id="panier-pied-de-page" class="hidden">
               <div class="panier-total"><span>Total estimé</span><strong id="panier-total-valeur">0 €</strong></div>
