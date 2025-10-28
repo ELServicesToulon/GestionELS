@@ -37,7 +37,26 @@ function obtenirEvenementsCalendrierPourPeriode(dateDebut, dateFin) {
  */
 function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnorer = null, evenementsPrecharges = null, autresCoursesPanier = [], email, exp, sig) {
   try {
-    if (email && exp && sig) assertClient(email, exp, sig);
+    const sessionUser = Session.getActiveUser();
+    const sessionEmail = sessionUser && typeof sessionUser.getEmail === 'function' ? sessionUser.getEmail() : '';
+    const estAdmin = !!sessionEmail && sessionEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+    const tokensProvided = email !== undefined || exp !== undefined || sig !== undefined;
+    const allTokensPresent = Boolean(email) && Boolean(exp) && Boolean(sig);
+
+    if (tokensProvided && !allTokensPresent) {
+      throw new Error('Paramètres d\'authentification incomplets.');
+    }
+
+    if (typeof CLIENT_PORTAL_SIGNED_LINKS !== 'undefined' && CLIENT_PORTAL_SIGNED_LINKS && (tokensProvided || Boolean(email))) {
+      if (!allTokensPresent) {
+        throw new Error('Authentification requise pour consulter les créneaux.');
+      }
+      assertClient(email, exp, sig);
+    } else if (allTokensPresent) {
+      assertClient(email, exp, sig);
+    }
+
     const [annee, mois, jour] = dateString.split('-').map(Number);
     
     const [heureDebut, minuteDebut] = HEURE_DEBUT_SERVICE.split(':').map(Number);
@@ -46,7 +65,6 @@ function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnor
     const finJournee = new Date(annee, mois - 1, jour, heureFin, minuteFin);
 
     const maintenant = new Date();
-    const estAdmin = (Session.getActiveUser().getEmail().toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
     // CORRECTION : Pour les non-admins, on bloque les jours passés. Pour les admins, on ne bloque JAMAIS.
     if (!estAdmin && new Date(dateString + "T23:59:59") < maintenant) {

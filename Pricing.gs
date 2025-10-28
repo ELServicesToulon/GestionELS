@@ -117,14 +117,16 @@ function computeCoursePriceV2_(opts) {
   }
 
   const retourFee = retour ? resolveReturnSurcharge_(typeRules, normalRules) : 0;
-  const total = typeStopTotal + retourFee - remise;
+  const rawTotal = typeStopTotal + retourFee;
+  const appliedRemise = Math.max(0, Math.min(remise, rawTotal));
+  const total = Math.max(0, rawTotal - appliedRemise);
   const baseNormal = resolveStopTotal_(normalRules, 1) || 0;
   const supplements = Math.max(0, normalStopTotal - baseNormal);
   const difference = Math.max(0, typeStopTotal - normalStopTotal);
   const breakdownUrgent = urgent ? difference : 0;
   const breakdownSamedi = samedi ? difference : 0;
 
-  return {
+  const result = {
     total: total,
     nbSupp: Math.max(0, stops - 1),
     breakdown: {
@@ -133,9 +135,13 @@ function computeCoursePriceV2_(opts) {
       retour: retourFee,
       urgent: breakdownUrgent,
       samedi: breakdownSamedi,
-      remise: remise
+      remise: appliedRemise
     }
   };
+  if (appliedRemise !== remise) {
+    result.warning = 'Remise ajustée pour ne pas dépasser le montant.';
+  }
+  return result;
 }
 
 function computeCoursePriceV1_(opts) {
@@ -182,9 +188,11 @@ function computeCoursePriceV1_(opts) {
   }
   const surcSam = isSamedi ? (samediBase - base) : 0;
 
-  const total = base + supplements + retourFee + surcUrg + surcSam - remise;
+  const rawTotal = base + supplements + retourFee + surcUrg + surcSam;
+  const appliedRemise = Math.max(0, Math.min(remise, rawTotal));
+  const total = Math.max(0, rawTotal - appliedRemise);
 
-  return {
+  const result = {
     total: total,
     nbSupp: nbSupp,
     breakdown: {
@@ -193,9 +201,13 @@ function computeCoursePriceV1_(opts) {
       retour: retourFee,
       urgent: surcUrg,
       samedi: surcSam,
-      remise: remise
+      remise: appliedRemise
     }
   };
+  if (appliedRemise !== remise) {
+    result.warning = 'Remise ajustée pour ne pas dépasser le montant.';
+  }
+  return result;
 }
 
 function computeCoursePrice(opts) {

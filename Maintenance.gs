@@ -883,6 +883,19 @@ function verifierCoherenceCalendrier() {
       }
     }
     
+    const escapeHtml = function (value) {
+      return String(value || '').replace(/[&<>"']/g, function (c) {
+        switch (c) {
+          case '&': return '&amp;';
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '"': return '&quot;';
+          case '\'': return '&#39;';
+          default: return c;
+        }
+      });
+    };
+
     // Génération et affichage du rapport final
     let rapportHtml = `<h1>Rapport de cohérence Calendrier</h1>`;
     rapportHtml += `<p><strong>${reservationsVerifiees}</strong> réservations ont été analysées.</p>`;
@@ -891,7 +904,8 @@ function verifierCoherenceCalendrier() {
       rapportHtml += `<p style="color: #2b76c6;"><strong>Aucune incohérence trouvée.</strong> Tout est synchronisé !</p>`;
     } else {
       rapportHtml += `<p style="color: red;"><strong>${incoherences.length} incohérence(s) détectée(s) :</strong></p>`;
-      rapportHtml += `<pre>${incoherences.join('<br>')}</pre>`;
+      const incoherencesSecurisees = incoherences.map(escapeHtml).join('<br>');
+      rapportHtml += `<pre>${incoherencesSecurisees}</pre>`;
     }
     
     if (idsIntrouvables.length > 0 && (CALENDAR_RESYNC_ENABLED || CALENDAR_PURGE_ENABLED)) {
@@ -899,11 +913,11 @@ function verifierCoherenceCalendrier() {
       idsIntrouvables.forEach(r => {
         rapportHtml += `<li>`;
         if (CALENDAR_PURGE_ENABLED) {
-          rapportHtml += `<input type="checkbox" class="purgeBox" value="${r.idReservation}"> `;
+          rapportHtml += `<input type="checkbox" class="purgeBox" value="${escapeHtml(r.idReservation)}"> `;
         }
-        rapportHtml += `${r.idReservation}`;
+        rapportHtml += `${escapeHtml(r.idReservation)}`;
         if (CALENDAR_RESYNC_ENABLED) {
-          rapportHtml += ` <button class="btn-resync" data-id="${r.idReservation}">Resync</button>`;
+          rapportHtml += ` <button class="btn-resync" data-id="${escapeHtml(r.idReservation)}">Resync</button>`;
         }
         rapportHtml += `</li>`;
       });

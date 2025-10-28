@@ -17,8 +17,13 @@ function INV2_generateInvoicePdf_(data) {
   INV2_insertTotals_(body, 'TOTALS', data.totaux, data.options);
 
   doc.saveAndClose();
-  const pdf = DriveApp.getFileById(doc.getId()).getAs('application/pdf');
-  const pdfFile = parent.createFile(pdf).setName(name + '.pdf');
+  const pdfBlob = docFile.getAs('application/pdf');
+  const pdfFile = parent.createFile(pdfBlob).setName(name + '.pdf');
+  try {
+    docFile.setTrashed(true);
+  } catch (_trashErr) {
+    Logger.log(`Impossible de supprimer la copie du modèle facture ${docFile.getId()}: ${_trashErr.message}`);
+  }
   return pdfFile.getUrl();
 }
 
