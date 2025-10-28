@@ -38,20 +38,11 @@ const FACTURES_FOLDER_ID = (function() {
   catch (e) { return getSecret('ID_DOSSIER_ARCHIVES'); }
 })();
 
-/** @const {string|null} ID du fichier Drive utilisé comme logo sur les factures (optionnel). */
-const FACTURE_LOGO_FILE_ID = (function() {
-  try {
-    const id = getSecret('ID_LOGO_FACTURE');
-    return id || (typeof BRANDING_LOGO_FILE_ID !== 'undefined' ? BRANDING_LOGO_FILE_ID : null);
-  } catch (_err) {
-    return (typeof BRANDING_LOGO_FILE_ID !== 'undefined' ? BRANDING_LOGO_FILE_ID : null);
-  }
-})();
-
+// — Branding: définir avant toute utilisation pour éviter la TDZ (ReferenceError)
 /** @const {string|null} ID Drive du logo principal (nul si on utilise un asset local). */
 const BRANDING_LOGO_FILE_ID = '1vbZ9kTYPso7KC4WGINEvVbJwHLCV7BfD';
 
-/** @const {string} Data URL du logo principal (svg local embarqué). */
+/** @const {string} URL publique du logo principal (Drive). */
 const BRANDING_LOGO_PUBLIC_URL = 'https://drive.google.com/uc?export=view&id=' + BRANDING_LOGO_FILE_ID;
 
 /** @const {Object} Ressources de branding (logo principal). */
@@ -59,6 +50,16 @@ const BRANDING = Object.freeze({
   LOGO_FILE_ID: BRANDING_LOGO_FILE_ID,
   LOGO_URL: BRANDING_LOGO_PUBLIC_URL
 });
+
+/** @const {string|null} ID du fichier Drive utilisé comme logo sur les factures (optionnel). */
+const FACTURE_LOGO_FILE_ID = (function() {
+  try {
+    const id = getSecret('ID_LOGO_FACTURE');
+    return id || BRANDING_LOGO_FILE_ID || null;
+  } catch (_err) {
+    return BRANDING_LOGO_FILE_ID || null;
+  }
+})();
 
 // --- Bloc de facturation générique ---
 /** @const {Object} Paramètres de facturation centralisés. */
