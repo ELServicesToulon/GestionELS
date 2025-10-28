@@ -395,8 +395,10 @@ function creerReservationAdmin(data) {
     }
 
     const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(data.date, duree);
-    const bypassVerificationCreneau = estResident || creneauxDisponibles.length === 0;
-    if (!bypassVerificationCreneau && !creneauxDisponibles.includes(data.startTime)) {
+    if (!Array.isArray(creneauxDisponibles) || creneauxDisponibles.length === 0) {
+      return { success: false, error: 'Aucun créneau disponible pour cette journée.' };
+    }
+    if (!creneauxDisponibles.includes(data.startTime)) {
       return { success: false, error: `Le créneau ${data.startTime} n'est plus disponible.` };
     }
 

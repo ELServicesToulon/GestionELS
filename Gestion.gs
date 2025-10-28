@@ -394,34 +394,68 @@ function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, e
  */
 function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emailClient, exp, sig) {
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé." };
+  if (!lock.tryLock(30000)) return { success: false, error: "Le systeme est occupe." };
 
   try {
     const emailNorm = emailClient ? assertClient(emailClient, exp, sig) : null;
     const idNorm = assertReservationId(idReservation);
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
+    const headerValues = enTete.map(function (value) { return String(value || '').trim(); });
+    const headerIndex = headerValues.reduce(function (acc, value, idx) {
+      if (!acc.hasOwnProperty(value)) {
+        acc[value] = idx;
+      }
+      if (typeof value === 'string' && value.normalize) {
+        const asciiValue = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (!acc.hasOwnProperty(asciiValue)) {
+          acc[asciiValue] = idx;
+        }
+      }
+      return acc;
+    }, {});
+    const getIndex = function (candidates) {
+      for (var i = 0; i < candidates.length; i++) {
+        if (headerIndex.hasOwnProperty(candidates[i])) {
+          return headerIndex[candidates[i]];
+        }
+      }
+      return -1;
+    };
     const indices = {
-      idResa: enTete.indexOf("ID R�servation"), idEvent: enTete.indexOf("Event ID"),
-      email: enTete.indexOf("Client (Email)"), date: enTete.indexOf("Date"),
-      montant: enTete.indexOf("Montant"), details: enTete.indexOf("D�tails"),
-      resident: enTete.indexOf("Resident")
+      idResa: getIndex(["ID Réservation", "ID R?servation", "ID Reservation"]),
+      idEvent: getIndex(["Event ID"]),
+      email: getIndex(["Client (Email)"]),
+      date: getIndex(["Date"]),
+      montant: getIndex(["Montant"]),
+      details: getIndex(["Détails", "D?tails", "Details"]),
+      resident: getIndex(["Resident"]),
+      type: getIndex(["Type"]),
+      tourneeOfferte: getIndex(["Tournée Offerte Appliquée", "Tournée Offerte Appliqu?e", "Tournee Offerte Appliquee"]),
+      typeRemise: getIndex(["Type Remise Appliquée", "Type Remise Appliqu?e", "Type Remise Appliquee"]),
+      valeurRemise: getIndex(["Valeur Remise Appliquée", "Valeur Remise Appliqu?e", "Valeur Remise Appliquee"])
     };
     const colonnesRequises = ['idResa', 'idEvent', 'email', 'date', 'montant', 'details'];
-    if (colonnesRequises.some(cle => indices[cle] === -1)) throw new Error("Colonnes requises introuvables.");
+    if (colonnesRequises.some(function (cle) { return indices[cle] === -1; })) {
+      throw new Error("Colonnes requises introuvables.");
+    }
+    if (!nouvelleHeure) {
+      return { success: false, error: "Merci d'indiquer un horaire valide." };
+    }
 
     const donnees = feuille.getDataRange().getValues();
-    const indexLigne = donnees.findIndex(row => String(row[indices.idResa]).trim() === idNorm);
-    if (indexLigne === -1) return { success: false, error: "Réservation introuvable." };
+    const indexLigne = donnees.findIndex(function (row) {
+      return String(row[indices.idResa]).trim() === idNorm;
+    });
+    if (indexLigne === -1) return { success: false, error: "Reservation introuvable." };
 
     const ligneDonnees = donnees[indexLigne];
     const estResident = indices.resident !== -1 ? ligneDonnees[indices.resident] === true : false;
     const idEvenementAncien = String(ligneDonnees[indices.idEvent]).trim();
     const emailFeuille = String(ligneDonnees[indices.email]).trim().toLowerCase();
-    if (emailNorm && emailFeuille !== emailNorm) return { success: false, error: "Accès non autorisé." };
+    if (emailNorm && emailFeuille !== emailNorm) return { success: false, error: "Acces non autorise." };
     const details = String(ligneDonnees[indices.details]);
 
-    // Calcul de la durée depuis les détails du Sheet (source de vérité)
     const matchTotal = details.match(/(\d+)\s*arrêt\(s\)\s*total\(s\)/);
     const matchSup = matchTotal ? null : details.match(/(\d+)\s*arrêt\(s\)\s*sup/);
     const arrets = matchTotal
@@ -433,41 +467,82 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emai
     const dureeCalculee = DUREE_BASE + ((arrets + (retour ? 1 : 0)) * DUREE_ARRET_SUP);
 
     const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(nouvelleDate, dureeCalculee, idEvenementAncien);
-    const bypassVerificationCreneau = estResident || creneauxDisponibles.length === 0;
-    if (!bypassVerificationCreneau && !creneauxDisponibles.includes(nouvelleHeure)) {
-      return { success: false, error: "Ce cr�neau n'est plus disponible." };
+    if (!Array.isArray(creneauxDisponibles) || creneauxDisponibles.length === 0) {
+      return { success: false, error: "Aucun créneau disponible pour la plage demandée." };
     }
-    if (!nouvelleHeure) {
-      return { success: false, error: "Merci d'indiquer un horaire valide." };
+    if (creneauxDisponibles.indexOf(nouvelleHeure) === -1) {
+      return { success: false, error: "Ce créneau n'est plus disponible." };
     }
 
     const [annee, mois, jour] = nouvelleDate.split('-').map(Number);
     const [heure, minute] = nouvelleHeure.split('h').map(Number);
     const nouvelleDateDebut = new Date(annee, mois - 1, jour, heure, minute);
     const nouvelleDateFin = new Date(nouvelleDateDebut.getTime() + dureeCalculee * 60000);
+    const totalStops = Math.max(1, arrets + 1);
+    const infosTournee = calculerInfosTourneeBase(totalStops, retour, nouvelleDate, nouvelleHeure);
 
-    // Essayer de supprimer l'ancien événement s'il existe
+    const tourneeOfferte = indices.tourneeOfferte !== -1 ? ligneDonnees[indices.tourneeOfferte] === true : false;
+    const typeRemise = indices.typeRemise !== -1 ? String(ligneDonnees[indices.typeRemise] || '').trim() : '';
+    const valeurRemise = indices.valeurRemise !== -1 ? Number(ligneDonnees[indices.valeurRemise]) || 0 : 0;
+
+    let nouveauMontant = infosTournee.prix;
+    let nouveauType = infosTournee.typeCourse;
+    const nouveauDetails = infosTournee.details;
+
+    if (estResident && typeof FORFAIT_RESIDENT !== 'undefined') {
+      nouveauMontant = nouveauType === 'Urgent'
+        ? FORFAIT_RESIDENT.URGENCE_PRICE
+        : FORFAIT_RESIDENT.STANDARD_PRICE;
+    }
+
+    if (tourneeOfferte) {
+      nouveauMontant = 0;
+    } else if (typeRemise === 'Pourcentage' && valeurRemise > 0) {
+      nouveauMontant = Math.max(0, nouveauMontant * (1 - valeurRemise / 100));
+    } else if (typeRemise === 'Montant Fixe' && valeurRemise > 0) {
+      nouveauMontant = Math.max(0, nouveauMontant - valeurRemise);
+    }
+
     try {
       if (idEvenementAncien) Calendar.Events.remove(getSecret('ID_CALENDRIER'), idEvenementAncien);
     } catch (e) {
       Logger.log(`L'ancien événement ${idEvenementAncien} n'a pas pu être supprimé (il n'existait probablement plus).`);
     }
 
-    // Créer un nouvel événement
-    const clientInfos = obtenirInfosClientParEmail(emailNorm || emailFeuille);
-    const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${clientInfos.nom}`;
-    const descriptionEvenement = `Client: ${clientInfos.nom} (${emailNorm || emailFeuille})\nID Réservation: ${idNorm}\nDétails: ${details}\nTotal: ${ligneDonnees[indices.montant].toFixed(2)} €\nNote: Déplacé par admin.`;
-    const nouvelEvenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, nouvelleDateDebut, nouvelleDateFin, { description: descriptionEvenement });
+    const clientInfos = obtenirInfosClientParEmail(emailNorm || emailFeuille) || {};
+    const nomClient = clientInfos.nom || (emailNorm || emailFeuille);
+    const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${nomClient}`;
+    const descriptionEvenement = [
+      `Client: ${nomClient} (${emailNorm || emailFeuille})`,
+      `ID Réservation: ${idNorm}`,
+      `Détails: ${nouveauDetails}`,
+      `Total: ${Number(nouveauMontant).toFixed(2)} €`,
+      'Note: Déplacé par admin.'
+    ].join('\n');
+    const nouvelEvenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(
+      titreEvenement,
+      nouvelleDateDebut,
+      nouvelleDateFin,
+      { description: descriptionEvenement }
+    );
 
     if (!nouvelEvenement) {
       throw new Error("La création du nouvel événement dans le calendrier a échoué.");
     }
-    
-    // Mettre à jour la feuille avec la nouvelle date et le nouvel ID d'événement
+
     feuille.getRange(indexLigne + 1, indices.date + 1).setValue(nouvelleDateDebut);
     feuille.getRange(indexLigne + 1, indices.idEvent + 1).setValue(nouvelEvenement.getId());
+    if (indices.montant !== -1) {
+      feuille.getRange(indexLigne + 1, indices.montant + 1).setValue(nouveauMontant);
+    }
+    if (indices.details !== -1) {
+      feuille.getRange(indexLigne + 1, indices.details + 1).setValue(nouveauDetails);
+    }
+    if (indices.type !== -1) {
+      feuille.getRange(indexLigne + 1, indices.type + 1).setValue(nouveauType);
+    }
 
-    logActivity(idNorm, emailNorm || emailFeuille, `Déplacement au ${nouvelleDate} à ${nouvelleHeure}.`, ligneDonnees[indices.montant], "Modification");
+    logActivity(idNorm, emailNorm || emailFeuille, `Déplacement au ${nouvelleDate} à ${nouvelleHeure}.`, nouveauMontant, "Modification");
     return { success: true };
 
   } catch (e) {
@@ -477,5 +552,4 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emai
     lock.releaseLock();
   }
 }
-
 

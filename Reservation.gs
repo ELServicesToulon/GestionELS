@@ -61,18 +61,27 @@ function reserverPanier(donneesReservation) {
       }
     }
 
-    if (successfulReservations.length > 0) {
+    const hasSuccess = successfulReservations.length > 0;
+    const hasFailures = failedItemIds.length > 0;
+
+    if (hasSuccess && !hasFailures) {
       notifierClientConfirmation(client.email, client.nom, successfulReservations);
     }
     
-    if (failedItemIds.length > 0) {
-        const summary = successfulReservations.length > 0
-            ? "Certains créneaux n'étaient plus disponibles mais le reste a été réservé."
-            : "Tous les créneaux sélectionnés sont devenus indisponibles.";
-        return { success: false, summary: summary, failedItemIds: failedItemIds };
+    if (hasFailures) {
+      const summary = hasSuccess
+        ? "Certains créneaux n'étaient plus disponibles mais le reste a été réservé."
+        : "Tous les créneaux sélectionnés sont devenus indisponibles.";
+      return {
+        success: false,
+        partialSuccess: hasSuccess,
+        summary: summary,
+        failedItemIds: failedItemIds,
+        successfulReservations: successfulReservations
+      };
     }
 
-    return { success: true };
+    return { success: true, successfulReservations: successfulReservations };
 
   } catch (e) {
     Logger.log(`Erreur critique dans reserverPanier: ${e.stack}`);

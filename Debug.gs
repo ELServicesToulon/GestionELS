@@ -324,64 +324,107 @@ function test_computeCoursePriceV2() {
   testerPricingRulesV2();
 }
 
-function testerReservationCreationMock() {
-  Logger.log("\n--- Test de création de réservation (mock) ---");
-  const item = { date: '2025-01-01', startTime: '10h00', totalStops: 1, returnToPharmacy: false };
-  const originalCalendar = CalendarApp;
-  const originalCreneaux = obtenirCreneauxDisponiblesPourDate;
-  CalendarApp = { getCalendarById: () => ({ createEvent: () => ({ getId: () => 'mock', deleteEvent: () => {} }) }) };
-  obtenirCreneauxDisponiblesPourDate = () => ['10h00'];
-  try {
-    const res = creerReservationUnique(item, TEST_CLIENT, TEST_CLIENT, { skipFacturation: true });
-    if (res && res.eventId === 'mock') {
-      Logger.log("SUCCESS: creerReservationUnique() a fonctionné avec des mocks.");
-    } else {
+  function testerReservationCreationMock() {
+    Logger.log("\n--- Test de création de réservation (mock) ---");
+    const item = { date: '2025-01-01', startTime: '10h00', totalStops: 1, returnToPharmacy: false };
+    const originalGetCalendarById = CalendarApp.getCalendarById;
+    const originalCreneaux = obtenirCreneauxDisponiblesPourDate;
+    let calendrierMockApplique = false;
+    try {
+      CalendarApp.getCalendarById = function () {
+        return {
+          createEvent: function () {
+            return {
+              getId: function () { return 'mock'; },
+              deleteEvent: function () {}
+            };
+          }
+        };
+      };
+      calendrierMockApplique = true;
+    } catch (patchErr) {
+      Logger.log(`SKIP: impossible de surcharger CalendarApp pour les tests (${patchErr.message}).`);
+      return;
+    }
+    obtenirCreneauxDisponiblesPourDate = function () { return ['10h00']; };
+    try {
+      const res = creerReservationUnique(item, TEST_CLIENT, TEST_CLIENT, { skipFacturation: true });
+      if (res && res.eventId === 'mock') {
+        Logger.log("SUCCESS: creerReservationUnique() a fonctionné avec des mocks.");
+      } else {
       Logger.log("FAILURE: creerReservationUnique() n'a pas renvoyé l'événement mock.");
     }
-  } catch (e) {
-    Logger.log("FAILURE: creerReservationUnique() a levé une exception: " + e.message);
-  } finally {
-    CalendarApp = originalCalendar;
-    obtenirCreneauxDisponiblesPourDate = originalCreneaux;
-  }
-}
-
-function testerFacturePdfMock() {
-  Logger.log("\n--- Test de génération PDF (mock) ---");
-  const originalDrive = DriveApp;
-  const originalDoc = DocumentApp;
-  const originalProps = PropertiesService.getScriptProperties;
-  const mockFile = {
-    makeCopy: () => ({ getId: () => 'doc-id' }),
-    getAs: () => ({}),
-    setName: function() { return this; },
-    getUrl: () => 'mock-url'
-  };
-  const mockParent = { createFile: () => mockFile };
-  DriveApp = {
-    getFileById: () => mockFile,
-    getRootFolder: () => mockParent,
-    getFolderById: () => mockParent
-  };
-  DocumentApp = {
-    openById: () => ({ getId: () => 'doc-id', getBody: () => ({ replaceText: () => {}, findText: () => null }), saveAndClose: () => {} })
-  };
-  PropertiesService.getScriptProperties = () => ({ getProperty: () => 'dummy' });
-  try {
-    const url = INV2_generateInvoicePdf_(INV2__exampleData());
-    if (typeof url === 'string') {
-      Logger.log("SUCCESS: INV2_generateInvoicePdf_ a retourné une URL mock.");
-    } else {
-      Logger.log("FAILURE: INV2_generateInvoicePdf_ n'a pas retourné d'URL.");
+    } catch (e) {
+      Logger.log("FAILURE: creerReservationUnique() a levé une exception: " + e.message);
+    } finally {
+      if (calendrierMockApplique) {
+        CalendarApp.getCalendarById = originalGetCalendarById;
+      }
+      obtenirCreneauxDisponiblesPourDate = originalCreneaux;
     }
-  } catch (e) {
-    Logger.log("FAILURE: INV2_generateInvoicePdf_ a levé une exception: " + e.message);
-  } finally {
-    DriveApp = originalDrive;
-    DocumentApp = originalDoc;
-    PropertiesService.getScriptProperties = originalProps;
   }
-}
+
+  function testerFacturePdfMock() {
+    Logger.log("\n--- Test de génération PDF (mock) ---");
+    const mockFile = {
+      makeCopy: () => ({ getId: () => 'doc-id' }),
+      getAs: () => ({}),
+      setName: function() { return this; },
+      getUrl: () => 'mock-url'
+    };
+    const mockParent = { createFile: () => mockFile };
+    const originalDriveGetFileById = DriveApp.getFileById;
+    const originalDriveGetRootFolder = DriveApp.getRootFolder;
+    const originalDriveGetFolderById = DriveApp.getFolderById;
+    const originalDocOpenById = DocumentApp.openById;
+    const originalProps = PropertiesService.getScriptProperties;
+    let drivePatched = false;
+    let docPatched = false;
+    try {
+      DriveApp.getFileById = function () { return mockFile; };
+      DriveApp.getRootFolder = function () { return mockParent; };
+      DriveApp.getFolderById = function () { return mockParent; };
+      drivePatched = true;
+      DocumentApp.openById = function () {
+        return {
+          getId: function () { return 'doc-id'; },
+          getBody: function () { return { replaceText: function () {}, findText: function () { return null; } }; },
+          saveAndClose: function () {}
+        };
+      };
+      docPatched = true;
+    } catch (patchErr) {
+      Logger.log(`SKIP: impossible de surcharger les services Drive/Document pour les tests (${patchErr.message}).`);
+      if (drivePatched) {
+        DriveApp.getFileById = originalDriveGetFileById;
+        DriveApp.getRootFolder = originalDriveGetRootFolder;
+        DriveApp.getFolderById = originalDriveGetFolderById;
+      }
+      return;
+    }
+
+    PropertiesService.getScriptProperties = function () { return { getProperty: function () { return 'dummy'; } }; };
+    try {
+      const url = INV2_generateInvoicePdf_(INV2__exampleData());
+      if (typeof url === 'string') {
+        Logger.log("SUCCESS: INV2_generateInvoicePdf_ a retourné une URL mock.");
+      } else {
+        Logger.log("FAILURE: INV2_generateInvoicePdf_ n'a pas retourné d'URL.");
+      }
+    } catch (e) {
+      Logger.log("FAILURE: INV2_generateInvoicePdf_ a levé une exception: " + e.message);
+    } finally {
+      if (drivePatched) {
+        DriveApp.getFileById = originalDriveGetFileById;
+        DriveApp.getRootFolder = originalDriveGetRootFolder;
+        DriveApp.getFolderById = originalDriveGetFolderById;
+      }
+      if (docPatched) {
+        DocumentApp.openById = originalDocOpenById;
+      }
+      PropertiesService.getScriptProperties = originalProps;
+    }
+  }
 
 function testerGestionClient() {
   Logger.log("\n--- Test de Gestion.gs ---");

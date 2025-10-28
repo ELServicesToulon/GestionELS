@@ -19,9 +19,13 @@ function validerConfiguration() {
     erreurs.push(`Format de l'e-mail administrateur invalide : ${ADMIN_EMAIL}`);
   }
   
-  const siret = getSecret('SIRET');
-  if (!/^\d{14}$/.test(siret)) {
-    erreurs.push('Format du SIRET invalide. Il doit contenir 14 chiffres (valeur masquée).');
+  try {
+    const siret = getSecret('SIRET');
+    if (!/^\d{14}$/.test(siret)) {
+      erreurs.push('Format du SIRET invalide. Il doit contenir 14 chiffres (valeur masquée).');
+    }
+  } catch (_e) {
+    erreurs.push('La propriété Script SIRET est manquante ou inaccessible.');
   }
   
   // --- Vérification de la cohérence ---

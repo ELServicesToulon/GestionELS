@@ -244,7 +244,8 @@ function creerEtEnvoyerFactureResident(res) {
   }
 
   if (BILLING_LOG_ENABLED) {
-    var sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_FACTURATION);
+    var logSpreadsheet = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
+    var sheet = logSpreadsheet.getSheetByName(SHEET_FACTURATION);
     if (sheet) {
       sheet.appendRow([num, pdfFile.getUrl(), status]);
     }
