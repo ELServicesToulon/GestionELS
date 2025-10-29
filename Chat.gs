@@ -118,13 +118,20 @@ function getChatSalt() {
  * @param {string} authorRef
  * @returns {string}
  */
-function computeChatPseudo(authorRef) {
+function computeChatPseudo(authorRef, options) {
   const salt = getChatSalt();
   const digest = Utilities.computeDigest(
     Utilities.DigestAlgorithm.SHA_256,
     salt + String(authorRef || '')
   );
   const hex = digest.map(byte => ('0' + ((byte & 0xff).toString(16))).slice(-2)).join('').toUpperCase();
+  const opts = options || {};
+  if (opts.city) {
+    const cityLabel = formatCityLabel(opts.city);
+    if (cityLabel) {
+      return 'Pharmacie ' + cityLabel + ' · ' + hex.substring(0, 3);
+    }
+  }
   return 'Pharmacie #' + hex.substring(0, 3);
 }
 
@@ -174,6 +181,57 @@ function sanitizeEmail(value) {
   if (!email) return '';
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email) ? email : '';
+}
+
+/**
+ * Formate un libellé de ville pour affichage.
+ * @param {string} raw
+ * @returns {string}
+ */
+function formatCityLabel(raw) {
+  if (!raw) return '';
+  let normalized = String(raw);
+  if (normalized && typeof normalized.normalize === 'function') {
+    normalized = normalized.normalize('NFD');
+  }
+  const withoutAccents = normalized.replace(/[\u0300-\u036f]/g, '');
+  const cleaned = withoutAccents.replace(/[^A-Za-z\-'\s]/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  if (!cleaned) return '';
+  return cleaned
+    .split(/[\s-]+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .slice(0, 28);
+}
+
+/**
+ * Tente de déduire une ville depuis les informations client.
+ * @param {Object} clientRecord
+ * @returns {string}
+ */
+function extractCityFromClient(clientRecord) {
+  if (!clientRecord) return '';
+  const address = sanitizeScalar(clientRecord.adresse || '', 255);
+  if (address) {
+    const match = address.match(/(\d{4,5})\s+([A-Za-zÀ-ÿ' -]+)/);
+    if (match && match[2]) {
+      return match[2];
+    }
+    const parts = address.split(/[;,]/).map(function (part) { return part.trim(); }).filter(Boolean);
+    if (parts.length) {
+      return parts[parts.length - 1];
+    }
+  }
+  const name = sanitizeScalar(clientRecord.nom || '', 255);
+  if (name) {
+    const nameMatch = name.match(/pharmacie\s+(.+)/i);
+    if (nameMatch && nameMatch[1]) {
+      return nameMatch[1];
+    }
+    return name.split(/\s+/).pop();
+  }
+  return '';
 }
 
 /**
@@ -293,7 +351,8 @@ function chatPostMessage(rawPayload) {
           computedRef = 'CLIENT_' + Utilities.getUuid().replace(/-/g, '');
         }
         authorRef = computedRef;
-        authorPseudo = computeChatPseudo(authorRef);
+        const cityLabel = extractCityFromClient(clientRecord);
+        authorPseudo = computeChatPseudo(authorRef, { city: cityLabel });
       } else if (code) {
         authorRef = 'PHC_' + code;
         authorPseudo = computeChatPseudo(authorRef);
