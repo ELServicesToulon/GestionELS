@@ -34,17 +34,21 @@ function getMainSpreadsheet() {
  * @returns {GoogleAppsScript.Spreadsheet.Sheet}
  */
 function ensureSheetWithHeaders(ss, sheetName, headers) {
-  if (!ss) {
+  let spreadsheet = ss;
+  if (!spreadsheet) {
+    spreadsheet = getMainSpreadsheet();
+  }
+  if (!spreadsheet) {
     throw new Error('Spreadsheet principal manquant pour ' + sheetName);
   }
-  const existing = ss.getSheetByName(sheetName);
-  const sheet = existing || ss.insertSheet(sheetName);
-  const hasHeaders = sheet.getLastRow() > 0 && sheet.getRange(1, 1, 1, headers.length).getValues().some(row => row.some(Boolean));
+  const sheet = spreadsheet.getSheetByName(sheetName);
+  const target = sheet || spreadsheet.insertSheet(sheetName);
+  const hasHeaders = target.getLastRow() > 0 && target.getRange(1, 1, 1, headers.length).getValues().some(row => row.some(Boolean));
   if (!hasHeaders) {
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    sheet.setFrozenRows(1);
+    target.getRange(1, 1, 1, headers.length).setValues([headers]);
+    target.setFrozenRows(1);
   }
-  return sheet;
+  return target;
 }
 
 /**
