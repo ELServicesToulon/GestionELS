@@ -165,6 +165,18 @@ function sanitizePharmacyCode(code) {
 }
 
 /**
+ * Nettoie une adresse email (format simple, en minuscules).
+ * @param {string} value
+ * @returns {string}
+ */
+function sanitizeEmail(value) {
+  const email = String(value || '').trim().toLowerCase();
+  if (!email) return '';
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) ? email : '';
+}
+
+/**
  * Construit une clé anonymisée pour le rate limiting (session + IP + utilisateur).
  * @param {string} sessionId
  * @returns {string}
@@ -246,6 +258,22 @@ function chatPostMessage(rawPayload) {
     let authorRef = '';
     let authorPseudo = '';
 
+    const clientId = sanitizeScalar(payload.clientId, 64);
+    const clientEmail = sanitizeEmail(payload.clientEmail);
+    let clientRecord = null;
+
+    if (clientEmail) {
+      try {
+        clientRecord = obtenirInfosClientParEmail(clientEmail);
+        if (clientRecord && clientId && clientRecord.clientId && String(clientRecord.clientId).trim() !== clientId) {
+          clientRecord = null;
+        }
+      } catch (lookupErr) {
+        console.warn('[chatPostMessage] lookup client error', lookupErr);
+        clientRecord = null;
+      }
+    }
+
     if (requestedType === 'admin' && isAdminUser) {
       authorType = 'admin';
       visibleTo = wantsAdminVisibility ? 'admin' : 'all';
@@ -253,11 +281,25 @@ function chatPostMessage(rawPayload) {
       authorPseudo = 'Admin';
     } else {
       const code = sanitizePharmacyCode(payload.pharmacyCode);
-      if (!code) {
-        return { ok: false, reason: 'INVALID_CODE' };
+      if (clientRecord) {
+        const refId = sanitizeScalar(clientRecord.clientId || '', 64);
+        const baseEmail = sanitizeEmail(clientRecord.email || clientEmail);
+        let computedRef = '';
+        if (refId) {
+          computedRef = 'CLIENT_' + refId;
+        } else if (baseEmail) {
+          computedRef = 'CLIENT_' + calculerIdentifiantClient(baseEmail);
+        } else {
+          computedRef = 'CLIENT_' + Utilities.getUuid().replace(/-/g, '');
+        }
+        authorRef = computedRef;
+        authorPseudo = computeChatPseudo(authorRef);
+      } else if (code) {
+        authorRef = 'PHC_' + code;
+        authorPseudo = computeChatPseudo(authorRef);
+      } else {
+        return { ok: false, reason: clientEmail ? 'CLIENT_NOT_FOUND' : 'INVALID_CODE' };
       }
-      authorRef = 'PHC_' + code;
-      authorPseudo = computeChatPseudo(authorRef);
       if (!wantsAdminVisibility) {
         visibleTo = 'pharmacy';
       }

@@ -72,6 +72,19 @@
     let isLoading = false;
     const renderedKeys = new Set();
 
+    function updateCodeFieldState() {
+      if (!codeEl) return;
+      const client = window?.etat?.clientReconnu;
+      if (client && (client.clientId || client.email)) {
+        codeEl.placeholder = 'Connecté : code non requis';
+        if (codeEl.value) {
+          codeEl.value = '';
+        }
+      } else {
+        codeEl.placeholder = 'Code client pharmacie (4–8 chars)';
+      }
+    }
+
     function keyForMessage(msg) {
       const ts = String(msg.timestamp || '');
       const thread = msg.threadId || 'default';
@@ -142,6 +155,7 @@
 
     loadMessages(true);
     setInterval(() => loadMessages(false), POLL_INTERVAL_MS);
+    updateCodeFieldState();
 
     if (refreshBtn) {
       refreshBtn.addEventListener('click', () => loadMessages(true));
@@ -149,6 +163,8 @@
     if (filterPharmacy) {
       filterPharmacy.addEventListener('change', () => loadMessages(true));
     }
+    document.addEventListener('els-client-recognized', updateCodeFieldState);
+    document.addEventListener('els-client-cleared', updateCodeFieldState);
 
     form.addEventListener('submit', event => {
       event.preventDefault();
@@ -156,6 +172,7 @@
       const message = (messageEl.value || '').trim();
       if (!message.length) return;
 
+      const clientReconnu = (window?.etat && window.etat.clientReconnu) || null;
       const payload = {
         authorType: authorTypeEl.value || 'pharmacy',
         message: message,
@@ -163,6 +180,21 @@
         visibleTo: (authorTypeEl.value === 'admin') ? 'admin' : 'pharmacy',
         sessionId: sessionId
       };
+
+      if (clientReconnu) {
+        payload.clientEmail = clientReconnu.email || null;
+        payload.clientId = clientReconnu.clientId || null;
+      }
+      if (!payload.pharmacyCode) {
+        payload.pharmacyCode = null;
+      }
+
+      const hasRecognisedClient = !!(clientReconnu && (clientReconnu.clientId || clientReconnu.email));
+      if (!payload.pharmacyCode && !hasRecognisedClient) {
+        if (submitBtn) submitBtn.disabled = false;
+        alert('Merci de saisir un code client pharmacie valide (4 à 8 caractères) ou connectez-vous à votre espace client.');
+        return;
+      }
 
       if (submitBtn) submitBtn.disabled = true;
       google.script.run
@@ -175,7 +207,9 @@
           } else {
             const reason = result && result.reason;
             if (reason === 'INVALID_CODE') {
-              alert('Merci de saisir un code client pharmacie valide (4 à 8 caractères).');
+              alert('Merci de saisir un code client pharmacie valide (4 à 8 caractères) ou utilisez votre accès client.');
+            } else if (reason === 'CLIENT_NOT_FOUND') {
+              alert('Nous ne parvenons pas à reconnaître votre compte client. Vérifiez que vous êtes connecté puis réessayez.');
             } else if (reason === 'RATE_LIMIT') {
               alert('Trop de messages envoyés en peu de temps. Patientez quelques instants.');
             } else {

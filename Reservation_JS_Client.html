@@ -49,6 +49,11 @@ function preRemplirInfosClient(identifiant) {
       basculerIndicateurChargement(false);
       if (client && window.ui) {
         window.etat.clientReconnu = client;
+        try {
+          document.dispatchEvent(new CustomEvent('els-client-recognized', { detail: client }));
+        } catch (_evtErr) {
+          // ignore dispatch errors (CustomEvent unsupported)
+        }
         memoriserClientReconnu(client);
         if (window.ui.champEmailClient) window.ui.champEmailClient.value = client.email || '';
         if (window.ui.champNomClient) window.ui.champNomClient.value = client.nom || '';
@@ -111,18 +116,23 @@ function memoriserClientReconnu(client) {
  * Réinitialise la session client et vide les champs.
  */
 function reinitialiserClient() {
-    localStorage.removeItem(CLE_LOCALSTORAGE_CLIENT);
-    window.etat.clientReconnu = null;
-    if (window.ui && window.ui.formulaireReservation) {
+  localStorage.removeItem(CLE_LOCALSTORAGE_CLIENT);
+  window.etat.clientReconnu = null;
+  try {
+    document.dispatchEvent(new Event('els-client-cleared'));
+  } catch (_evtErr) {
+    // ignore dispatch errors
+  }
+  if (window.ui && window.ui.formulaireReservation) {
     window.ui.formulaireReservation.reset();
     if (window.ui.champResidentClient) {
-        window.ui.champResidentClient.checked = false;
+      window.ui.champResidentClient.checked = false;
     }
-    }
-    const banniere = document.getElementById('banniere-client-reconnu');
-    if (banniere) {
-        banniere.classList.add('hidden');
-    }
+  }
+  const banniere = document.getElementById('banniere-client-reconnu');
+  if (banniere) {
+    banniere.classList.add('hidden');
+  }
 }
 </script>
 
