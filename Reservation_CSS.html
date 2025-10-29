@@ -1080,6 +1080,27 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   .item-panier-prix { align-self: flex-end; font-weight: bold; }
 }
 
+/* Improve phone legibility */
+@media (max-width: 480px) {
+  :root { font-size: 17px; }
+  body { line-height: 1.65; }
+  #app-conteneur-principal { padding: 0 14px; }
+  #site-header .hero { padding: 24px 18px; }
+  .hero__subtitle,
+  .sidebar-info-text,
+  #tarifs-card .tarif-description,
+  .notice-resident,
+  .item-panier-infos strong,
+  .item-panier-infos small,
+  .panier-total { font-size: 1rem; }
+  .jour-calendrier { font-size: 1rem; padding: 8px; }
+  .grille-creneaux { gap: 12px; }
+  .slot-btn { padding: 14px 10px; min-height: 58px; }
+  .slot-rate-label { font-size: 0.95rem; }
+  .btn,
+  #panier-pied-de-page .btn { font-size: 1rem; padding: 14px 22px; }
+  .champ-formulaire { font-size: 1rem; }
+}
 /* --- STYLES D'IMPRESSION --- */
 @media print {
   body { background-color: var(--txt); color: var(--bg); }
@@ -1091,6 +1112,7 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   .champ-formulaire { border-color: var(--muted); }
 }
 </style>
+
 
 
 
