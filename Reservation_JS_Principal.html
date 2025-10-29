@@ -162,6 +162,90 @@ function afficherConteneurFinalisation() {
   ui.champEmailClient.focus();
 }
 
+/**
+ * Détermine si le panier peut être validé automatiquement ou nécessite des informations complémentaires.
+ * @param {Event} [ev]
+ */
+function initierValidationPanier(ev) {
+  ev?.preventDefault?.();
+  const { clientReconnu, panier } = window.etat;
+
+  if (!panier || panier.length === 0) {
+    afficherNotification("Votre panier est vide.", 'erreur');
+    return;
+  }
+
+  if (clientReconnu && clientReconnu.email) {
+    soumettreReservationClientReconnu();
+  } else {
+    afficherConteneurFinalisation();
+  }
+}
+
+/**
+ * Soumet la réservation en utilisant directement les informations du client reconnu.
+ */
+function soumettreReservationClientReconnu() {
+  const { ui } = window;
+  const { clientReconnu, panier } = window.etat;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!clientReconnu || !clientReconnu.email) {
+    afficherNotification("Identifiez-vous pour finaliser votre réservation.", 'erreur');
+    afficherConteneurFinalisation();
+    return;
+  }
+
+  if (!panier || panier.length === 0) {
+    afficherNotification("Votre panier est vide.", 'erreur');
+    return;
+  }
+
+  const email = String(clientReconnu.email).trim();
+  if (!emailRegex.test(email)) {
+    afficherNotification("Votre email enregistré nécessite une vérification. Merci de le confirmer.", 'erreur');
+    afficherConteneurFinalisation();
+    return;
+  }
+
+  if (ui.champEmailClient) {
+    ui.champEmailClient.value = email;
+    ui.champEmailClient.readOnly = true;
+  }
+  if (ui.champNomClient) {
+    ui.champNomClient.value = clientReconnu.nom || '';
+    ui.champNomClient.readOnly = true;
+  }
+  if (ui.champAdresseClient) {
+    ui.champAdresseClient.value = clientReconnu.adresse || '';
+  }
+  if (ui.champSiretClient) {
+    ui.champSiretClient.value = clientReconnu.siret || '';
+  }
+  if (ui.champResidentClient) {
+    ui.champResidentClient.checked = !!clientReconnu.resident;
+  }
+
+  const residentActif = estForfaitResidentActif() || !!clientReconnu.resident;
+  const modeResident = (typeof obtenirModeResident === 'function') ? obtenirModeResident() : 'standard';
+
+  const donneesReservation = {
+    client: {
+      email: email,
+      contactEmail: email,
+      nom: clientReconnu.nom || '',
+      adresse: clientReconnu.adresse || '',
+      siret: clientReconnu.siret || '',
+      note: ui.champNoteReservation?.value.trim() || '',
+      resident: residentActif,
+      residentMode: modeResident
+    },
+    items: panier
+  };
+
+  soumettreReservation(donneesReservation, { skipBillingModal: true });
+}
+
 function mettreAJourEtatResident() {
     const { ui } = window;
     const actif = estForfaitResidentActif();
@@ -194,7 +278,52 @@ function mettreAJourEtatResident() {
     if (typeof mettreAJourRecapSelectionResident === 'function') {
       mettreAJourRecapSelectionResident();
     }
+}
+
+/**
+ * Envoie les données de réservation au serveur, en gérant les éventuels compléments (facturation).
+ * @param {{client:Object,items:Array}} donneesReservation
+ */
+function soumettreReservation(donneesReservation, options = {}) {
+  const { ui } = window;
+  const skipBilling = options.skipBillingModal === true;
+
+  function envoyer() {
+    basculerIndicateurChargement(true);
+    google.script.run
+      .withSuccessHandler(reponse => {
+        basculerIndicateurChargement(false);
+        if (reponse.success) {
+          afficherNotification("Réservation confirmée ! Un email vous a été envoyé.", 'succes');
+          window.etat.panier = [];
+          sauvegarderPanierDansLocalStorage();
+          afficherPanier();
+          ui.conteneurFinalisation.classList.add('hidden');
+          memoriserClientReconnu(donneesReservation.client);
+        } else {
+          afficherErreur(reponse.summary || "Une erreur est survenue lors de la réservation.");
+          if (reponse.failedItemIds && reponse.failedItemIds.length > 0) {
+            window.etat.panier = window.etat.panier.filter(item => !reponse.failedItemIds.includes(item.id));
+            sauvegarderPanierDansLocalStorage();
+            afficherPanier();
+          }
+        }
+      })
+      .withFailureHandler(afficherErreur)
+      .reserverPanier(donneesReservation);
   }
+
+  if (!skipBilling && window.etat.flags.billingModalEnabled) {
+    openBillingModal({ orderId: Date.now().toString(), billTo: 'resident', mode: 'existant' });
+    const handler = () => {
+      window.removeEventListener('billing:saved', handler);
+      envoyer();
+    };
+    window.addEventListener('billing:saved', handler);
+  } else {
+    envoyer();
+  }
+}
 
 /**
  * Gère la demande d'envoi de devis par email.
@@ -419,41 +548,7 @@ function gererSoumissionReservation(e) {
     items: panier
   };
 
-  function envoyer() {
-    basculerIndicateurChargement(true);
-    google.script.run
-      .withSuccessHandler(reponse => {
-        basculerIndicateurChargement(false);
-        if (reponse.success) {
-          afficherNotification("Réservation confirmée ! Un email vous a été envoyé.", 'succes');
-          window.etat.panier = [];
-          sauvegarderPanierDansLocalStorage();
-          afficherPanier();
-          ui.conteneurFinalisation.classList.add('hidden');
-          memoriserClientReconnu(donneesReservation.client);
-        } else {
-          afficherErreur(reponse.summary || "Une erreur est survenue lors de la réservation.");
-          if (reponse.failedItemIds && reponse.failedItemIds.length > 0) {
-            window.etat.panier = window.etat.panier.filter(item => !reponse.failedItemIds.includes(item.id));
-            sauvegarderPanierDansLocalStorage();
-            afficherPanier();
-          }
-        }
-      })
-      .withFailureHandler(afficherErreur)
-      .reserverPanier(donneesReservation);
-  }
-
-  if (window.etat.flags.billingModalEnabled) {
-    openBillingModal({ orderId: Date.now().toString(), billTo: 'resident', mode: 'existant' });
-    const handler = () => {
-      window.removeEventListener('billing:saved', handler);
-      envoyer();
-    };
-    window.addEventListener('billing:saved', handler);
-  } else {
-    envoyer();
-  }
+  soumettreReservation(donneesReservation);
 }
 
 /**
@@ -522,7 +617,7 @@ function configurerEcouteursEvenements() {
   document.getElementById('btn-annuler-recurrence')?.addEventListener('click', () => modaleRecurrence.classList.add('hidden'));
 
   // Actions du panier et de la finalisation
-  ui.btnValiderPanier?.addEventListener('click', afficherConteneurFinalisation);
+  ui.btnValiderPanier?.addEventListener('click', initierValidationPanier);
   document.getElementById('btn-envoyer-devis')?.addEventListener('click', gererDemandeDevis);
   ui.formulaireReservation?.addEventListener('submit', gererSoumissionReservation);
   ui.btnAnnulerReservation?.addEventListener('click', () => ui.conteneurFinalisation.classList.add('hidden'));
@@ -562,6 +657,7 @@ function configurerEcouteursEvenements() {
       }
   });
   ui.btnChangerClient?.addEventListener('click', reinitialiserClient);
+  ui.btnConnexionClient?.addEventListener('click', demanderConnexionClient);
 }
 
 /**

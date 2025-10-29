@@ -10,6 +10,8 @@
 const CLE_LOCALSTORAGE_CLIENT = 'sessionClientELServices';
 const CLIENT_SESSION_OPAQUE_ID_ENABLED = <?!= CLIENT_SESSION_OPAQUE_ID_ENABLED ?>;
 const CLIENT_SESSION_TTL_HOURS = <?!= CLIENT_SESSION_TTL_HOURS ?>;
+const EMAIL_CLIENT_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+let portailClientLienEnCours = null;
 
 /**
  * Vérifie si une session client existe dans le localStorage.
@@ -134,6 +136,81 @@ function reinitialiserClient() {
     banniere.classList.add('hidden');
   }
 }
+
+/**
+ * Demande une connexion client via un prompt et pré-remplit les informations.
+ */
+function demanderConnexionClient() {
+  const email = window.prompt('Entrez votre adresse email pour vous connecter à votre espace client :');
+  if (!email) return;
+  const emailTrim = email.trim();
+  if (!EMAIL_CLIENT_REGEX.test(emailTrim)) {
+    alert('Merci de renseigner une adresse email valide.');
+    return;
+  }
+  preRemplirInfosClient(emailTrim);
+}
+
+/**
+ * Met à jour le lien "Mon Espace Client" selon l'état de connexion.
+ * @param {{email?:string}|null} client
+ */
+function mettreAJourLienEspaceClient(client) {
+  const lien = document.getElementById('btn-espace-client');
+  const btnConnexion = document.getElementById('btn-connecter-client');
+  const baseUrl = (window.configServeur && window.configServeur.appUrl) || '';
+  const defaultHref = baseUrl ? `${baseUrl}?page=gestion` : '#';
+
+  if (!lien) return;
+
+  if (!client || !client.email) {
+    portailClientLienEnCours = null;
+    lien.href = defaultHref;
+    btnConnexion?.classList.remove('hidden');
+    return;
+  }
+
+  btnConnexion?.classList.add('hidden');
+  portailClientLienEnCours = client.email;
+
+  const fallback = () => {
+    if (portailClientLienEnCours !== client.email) return;
+    if (!defaultHref || defaultHref === '#') {
+      lien.href = '#';
+      return;
+    }
+    const separator = defaultHref.includes('?') ? '&' : '?';
+    lien.href = `${defaultHref}${separator}email=${encodeURIComponent(client.email)}`;
+  };
+
+  fallback();
+
+  if (google && google.script && google.script.run && typeof google.script.run.client_getPortalLink === 'function') {
+    google.script.run
+      .withSuccessHandler(res => {
+        if (portailClientLienEnCours !== client.email) return;
+        if (res && res.success && res.url) {
+          lien.href = res.url;
+        } else {
+          fallback();
+        }
+      })
+      .withFailureHandler(() => fallback())
+      .client_getPortalLink(client.email);
+  } else {
+    fallback();
+  }
+}
+
+document.addEventListener('els-client-recognized', (event) => {
+  mettreAJourLienEspaceClient(event?.detail || window.etat?.clientReconnu || null);
+});
+
+document.addEventListener('els-client-cleared', () => {
+  mettreAJourLienEspaceClient(null);
+});
+
+mettreAJourLienEspaceClient(window.etat?.clientReconnu || null);
 </script>
 
 

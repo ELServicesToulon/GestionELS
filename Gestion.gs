@@ -58,6 +58,40 @@ function genererIdentifiantClient(email) {
 }
 
 /**
+ * Retourne un lien direct (signé si possible) vers l'espace client.
+ * @param {string} emailClient
+ * @returns {{success:boolean,url?:string,error?:string}}
+ */
+function client_getPortalLink(emailClient) {
+  try {
+    const email = String(emailClient || '').trim().toLowerCase();
+    if (!email) {
+      return { success: false, error: 'EMAIL_REQUIRED' };
+    }
+    try {
+      const lien = generateSignedClientLink(email);
+      if (lien && lien.url) {
+        return { success: true, url: lien.url, exp: lien.exp };
+      }
+    } catch (err) {
+      Logger.log(`client_getPortalLink: fallback pour ${email}: ${err}`);
+      // Fallback handled below.
+    }
+    const baseUrl = (typeof CLIENT_PORTAL_BASE_URL !== 'undefined' && CLIENT_PORTAL_BASE_URL)
+      ? CLIENT_PORTAL_BASE_URL
+      : (ScriptApp.getService().getUrl() || '');
+    if (!baseUrl) {
+      return { success: false, error: 'BASE_URL_UNAVAILABLE' };
+    }
+    const url = `${baseUrl}?page=gestion&email=${encodeURIComponent(email)}`;
+    return { success: true, url: url };
+  } catch (e) {
+    Logger.log(`Erreur dans client_getPortalLink pour ${emailClient}: ${e.stack}`);
+    return { success: false, error: e.message || 'INTERNAL_ERROR' };
+  }
+}
+
+/**
  * Recherche un client via son identifiant opaque.
  * @param {string} identifiant Jeton opaque du client.
  * @returns {Object|null} Informations du client si trouvé.
