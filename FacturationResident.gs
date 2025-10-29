@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Helpers de facturation résidente.
  * Génère les lignes de facture et envoie un PDF par e-mail.
  */
@@ -233,12 +233,26 @@ function creerEtEnvoyerFactureResident(res) {
   DriveApp.getFileById(tmpl.getId()).setTrashed(true);
 
   var status;
+  var props = PropertiesService.getScriptProperties();
+  var sentKey = 'INVOICE_SENT_' + num;
+  var alreadySent = props.getProperty(sentKey) === 'true';
   if (res.RESIDENT_EMAIL) {
-    GmailApp.sendEmail(res.RESIDENT_EMAIL, '[' + BILLING.INVOICE_PREFIX + '] Votre facture ' + num,
-      'Bonjour,\n\nVeuillez trouver votre facture en pièce jointe.\nMontant: ' + fromCents(ttcCents) + ' €.\n' + (BILLING.TVA_APPLICABLE ? '' : BILLING.TVA_MENTION) + '\n\nMerci,',
-      { attachments: [pdfFile.getBlob()] }
-    );
-    status = 'ENVOYEE';
+    if (alreadySent) {
+      status = 'DEJA_ENVOYEE';
+      Logger.log('[Facturation] Facture ' + num + ' déjà envoyée, email ignoré.');
+    } else {
+      try {
+        GmailApp.sendEmail(res.RESIDENT_EMAIL, '[' + BILLING.INVOICE_PREFIX + '] Votre facture ' + num,
+          'Bonjour,\n\nVeuillez trouver votre facture en pièce jointe.\nMontant: ' + fromCents(ttcCents) + ' €.\n' + (BILLING.TVA_APPLICABLE ? '' : BILLING.TVA_MENTION) + '\n\nMerci,',
+          { attachments: [pdfFile.getBlob()] }
+        );
+        status = 'ENVOYEE';
+        props.setProperty(sentKey, 'true');
+      } catch (mailErr) {
+        status = 'ERREUR_ENVOI';
+        Logger.log('Erreur envoi facture ' + num + ' : ' + mailErr);
+      }
+    }
   } else {
     status = 'EMAIL_MANQUANT';
   }
@@ -251,3 +265,4 @@ function creerEtEnvoyerFactureResident(res) {
     }
   }
 }
+

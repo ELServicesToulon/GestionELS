@@ -13,6 +13,7 @@ function RunPricingAudit() {
   ];
 
   var out = [];
+  var failures = [];
 
   cases.forEach(function (scenario) {
     var res = computeCoursePrice({
@@ -36,8 +37,24 @@ function RunPricingAudit() {
       },
       output: res
     });
+
+    if (!res || typeof res.total !== 'number' || !isFinite(res.total)) {
+      failures.push(scenario.label + ': résultat invalide (' + JSON.stringify(res) + ')');
+      return;
+    }
+
+    if (res.total < 0) {
+      failures.push(scenario.label + ': total négatif (' + res.total + ')');
+    }
+
+    if (res.warning) {
+      failures.push(scenario.label + ': ' + res.warning);
+    }
   });
 
   Logger.log(JSON.stringify(out, null, 2));
+  if (failures.length > 0) {
+    throw new Error('RunPricingAudit a détecté des anomalies :\n- ' + failures.join('\n- '));
+  }
   return out;
 }

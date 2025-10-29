@@ -451,7 +451,7 @@ function creerReservationAdmin(data) {
         decrementerTourneesOffertesClient(data.client.email);
       }
 
-      if (data.notifyClient) {
+      if (data.notifyClient && RESERVATION_CONFIRMATION_EMAILS_ENABLED) {
         notifierClientConfirmation(data.client.email, data.client.nom, [{
           date: formaterDatePersonnalise(dateDebut, 'EEEE d MMMM yyyy'),
           time: data.startTime,

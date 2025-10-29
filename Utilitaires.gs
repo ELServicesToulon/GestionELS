@@ -581,7 +581,12 @@ function generateSignedClientLink(email, ttlSeconds) {
   if (!secret) throw new Error('Secret manquant: ELS_SHARED_SECRET');
   const data = `${String(email).trim().toLowerCase()}|${exp}`;
   const sig = Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(data, secret));
-  const baseUrl = ScriptApp.getService().getUrl();
+  const baseUrl = (typeof CLIENT_PORTAL_BASE_URL !== 'undefined' && CLIENT_PORTAL_BASE_URL)
+    ? CLIENT_PORTAL_BASE_URL
+    : (ScriptApp.getService().getUrl() || '');
+  if (!baseUrl) {
+    throw new Error('URL de service indisponible : définissez CLIENT_PORTAL_BASE_URL dans Configuration.gs ou déployez le script en tant que web app.');
+  }
   const url = `${baseUrl}?page=gestion&email=${encodeURIComponent(email)}&exp=${exp}&sig=${encodeURIComponent(sig)}`;
   return { url: url, exp: exp };
 }

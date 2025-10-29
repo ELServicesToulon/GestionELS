@@ -157,6 +157,7 @@ const CLIENT_CHARTS_ENABLED = true;
 const CALENDAR_RESYNC_ENABLED = true;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
 const CALENDAR_PURGE_ENABLED = true;
+const RESERVATION_CONFIRMATION_EMAILS_ENABLED = false;
 
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
 const CALENDAR_BAR_OPACITY_ENABLED = false;
@@ -177,6 +178,7 @@ const RESERVATION_UI_V2_ENABLED = true;
 const RESIDENT_BILLING_ENABLED = true;
 /** @const {boolean} Exige l'affiliation d'un résident à une structure (email requis). */
 const RESIDENT_AFFILIATION_REQUIRED = true;
+const RESIDENT_REPLAN_ALLOW_ANY_SLOT = false;
 
 /** @const {boolean} Affiche le bloc "Tarifs détaillés" dans l'UI. */
 const TARIFS_DETAILLE_ENABLED = true;
@@ -273,6 +275,7 @@ const FLAGS = Object.freeze({
   reservationUiV2Enabled: RESERVATION_UI_V2_ENABLED,
   driveAssetsEnabled: DRIVE_ASSETS_ENABLED,
   residentBillingEnabled: RESIDENT_BILLING_ENABLED,
+  residentReplanAllowAnySlot: RESIDENT_REPLAN_ALLOW_ANY_SLOT,
   billingModalEnabled: BILLING_MODAL_ENABLED,
   cartResetEnabled: CART_RESET_ENABLED,
   devisEnabled: DEVIS_ENABLED,
@@ -446,6 +449,7 @@ const CONFIG = Object.freeze({
   BILLING,
   BILLING_MODAL_ENABLED,
   RESIDENT_BILLING_ENABLED,
+  RESERVATION_CONFIRMATION_EMAILS_ENABLED,
   BILLING_ATOMIC_NUMBERING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
   BILLING_LOG_ENABLED,
@@ -499,3 +503,4 @@ function getConfigCached() {
   cache.put('CONFIG_JSON', JSON.stringify(config), 600);
   return config;
 }
+

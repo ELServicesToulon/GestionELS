@@ -411,14 +411,17 @@ function fetchGoogleChartsLoader() {
  */
 function doPost(e) {
   try {
-    try {
+    if (CONFIG_CACHE_ENABLED) {
+      const cache = CacheService.getScriptCache();
+      const lastValidated = cache.get('CONFIG_VALIDATED_AT');
+      const now = Date.now();
+      const stale = !lastValidated || (now - Number(lastValidated)) > 300000;
+      if (stale) {
+        validerConfiguration();
+        cache.put('CONFIG_VALIDATED_AT', String(now), 600);
+      }
+    } else {
       validerConfiguration();
-    } catch (err) {
-      return ContentService.createTextOutput(JSON.stringify({
-        status: 'error',
-        message: 'Configuration invalide',
-        details: err.message
-      })).setMimeType(ContentService.MimeType.JSON);
     }
 
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED && typeof logRequest === 'function') {

@@ -19,8 +19,21 @@ function seedPublicAssets() {
   ];
   const map = {};
   assets.forEach(a => {
-    const file = folder.createFile(a.blob);
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    let file = null;
+    const existing = folder.getFilesByName(a.name);
+    if (existing.hasNext()) {
+      file = existing.next();
+    } else {
+      file = folder.createFile(a.blob);
+      if (file.getName() !== a.name) {
+        try { file.setName(a.name); } catch (_err) {}
+      }
+    }
+    try {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (_shareErr) {
+      // ignore sharing errors, we keep proceeding
+    }
     map[a.name] = file.getUrl();
   });
   PropertiesService.getScriptProperties().setProperty('PUBLIC_ASSETS_MAP', JSON.stringify(map));

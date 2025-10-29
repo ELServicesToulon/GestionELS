@@ -15,15 +15,15 @@ function checkSetup_ELS() {
   const warnings = [];
 
   // 0) Vérification des scopes OAuth requis
-  //if (typeof SEND_MAIL_SCOPE_CHECK_ENABLED !== 'undefined' && SEND_MAIL_SCOPE_CHECK_ENABLED) {
-   // const requiredScope = 'https://www.googleapis.com/auth/script.send_mail';
-   // const scopes = ScriptApp.getProjectOAuthScopes();
-    //if (!Array.isArray(scopes) || scopes.indexOf(requiredScope) === -1) {
-    //  const msg = '[ELS setup] Scope OAuth manquant: ' + requiredScope;
-     // Logger.log(msg);
-      //throw new Error(msg);
-   // }
- //}
+  if (typeof SEND_MAIL_SCOPE_CHECK_ENABLED !== 'undefined' && SEND_MAIL_SCOPE_CHECK_ENABLED) {
+    const requiredScope = 'https://www.googleapis.com/auth/script.send_mail';
+    const scopes = ScriptApp.getProjectOAuthScopes();
+    if (!Array.isArray(scopes) || scopes.indexOf(requiredScope) === -1) {
+      const msg = '[ELS setup] Scope OAuth manquant: ' + requiredScope;
+      Logger.log(msg);
+      throw new Error(msg);
+    }
+  }
 
   // 1) Propriétés requises
   const sp = PropertiesService.getScriptProperties();

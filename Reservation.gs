@@ -63,9 +63,11 @@ function reserverPanier(donneesReservation) {
 
     const hasSuccess = successfulReservations.length > 0;
     const hasFailures = failedItemIds.length > 0;
+    let confirmationEmailSent = false;
 
-    if (hasSuccess && !hasFailures) {
+    if (hasSuccess && !hasFailures && RESERVATION_CONFIRMATION_EMAILS_ENABLED) {
       notifierClientConfirmation(client.email, client.nom, successfulReservations);
+      confirmationEmailSent = true;
     }
     
     if (hasFailures) {
@@ -77,11 +79,12 @@ function reserverPanier(donneesReservation) {
         partialSuccess: hasSuccess,
         summary: summary,
         failedItemIds: failedItemIds,
-        successfulReservations: successfulReservations
+        successfulReservations: successfulReservations,
+        confirmationEmailSent: confirmationEmailSent
       };
     }
 
-    return { success: true, successfulReservations: successfulReservations };
+    return { success: true, successfulReservations: successfulReservations, confirmationEmailSent: confirmationEmailSent };
 
   } catch (e) {
     Logger.log(`Erreur critique dans reserverPanier: ${e.stack}`);

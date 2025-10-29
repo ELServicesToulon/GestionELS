@@ -1,11 +1,11 @@
 // =================================================================
-//                        MODULE QUESTIONS/RÉPONSES
+//                        MODULE QUESTIONS/REPONSES
 // =================================================================
-// Description: Gère les questions et réponses des professionnels.
+// Description: Gere les questions et reponses des professionnels.
 // =================================================================
 
 /**
- * Retourne la feuille de stockage des questions, en la créant si nécessaire.
+ * Retourne la feuille de stockage des questions, en la creant si necessaire.
  * @returns {GoogleAppsScript.Spreadsheet.Sheet} Feuille des questions.
  */
 function getQuestionsSheet_() {
@@ -14,7 +14,7 @@ function getQuestionsSheet_() {
 }
 
 /**
- * Récupère toutes les questions et leurs réponses.
+ * Recupere toutes les questions et leurs reponses.
  * @returns {Array<Object>} Liste des questions.
  */
 function getQuestions(email, exp, sig) {
@@ -27,7 +27,18 @@ function getQuestions(email, exp, sig) {
     const id = row[0];
     const question = row[1];
     const auteur = row[2];
-    const reponses = row[3] ? JSON.parse(row[3]) : [];
+    let reponses = [];
+    if (row[3]) {
+      try {
+        const parsed = JSON.parse(row[3]);
+        if (Array.isArray(parsed)) {
+          reponses = parsed;
+        }
+      } catch (err) {
+        Logger.log('Question ignoree (JSON reponses invalide, ligne ' + (i + 1) + '): ' + err);
+        continue;
+      }
+    }
     questions.push({ id: id, question: question, auteur: auteur, reponses: reponses });
   }
   return questions;
@@ -37,7 +48,7 @@ function getQuestions(email, exp, sig) {
  * Ajoute une nouvelle question.
  * @param {string} question Texte de la question.
  * @param {string} auteur Auteur de la question.
- * @returns {{success:boolean,id:number}} Résultat de l'opération.
+ * @returns {{success:boolean,id:number}} Resultat de l operation.
  */
 function addQuestion(question, auteur, email, exp, sig) {
   const emailNorm = assertClient(email, exp, sig);
@@ -48,11 +59,11 @@ function addQuestion(question, auteur, email, exp, sig) {
 }
 
 /**
- * Ajoute une réponse à une question existante.
+ * Ajoute une reponse a une question existante.
  * @param {number|string} questionId Identifiant de la question.
- * @param {string} reponse Texte de la réponse.
- * @param {string} auteur Auteur de la réponse.
- * @returns {{success:boolean}|{success:boolean,error:string}} Résultat.
+ * @param {string} reponse Texte de la reponse.
+ * @param {string} auteur Auteur de la reponse.
+ * @returns {{success:boolean}|{success:boolean,error:string}} Resultat.
  */
 function addAnswer(questionId, reponse, auteur, email, exp, sig) {
   assertClient(email, exp, sig);
@@ -60,7 +71,18 @@ function addAnswer(questionId, reponse, auteur, email, exp, sig) {
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]) === String(questionId)) {
-      const reponses = data[i][3] ? JSON.parse(data[i][3]) : [];
+      let reponses = [];
+      if (data[i][3]) {
+        try {
+          const parsed = JSON.parse(data[i][3]);
+          if (Array.isArray(parsed)) {
+            reponses = parsed;
+          }
+        } catch (err) {
+          Logger.log('Impossible de parser les reponses existantes pour la question ' + questionId + ': ' + err);
+          reponses = [];
+        }
+      }
       reponses.push({ auteur: auteur, texte: reponse });
       sheet.getRange(i + 1, 4).setValue(JSON.stringify(reponses));
       return { success: true };

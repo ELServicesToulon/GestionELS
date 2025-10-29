@@ -330,6 +330,11 @@ function test_computeCoursePriceV2() {
     const originalGetCalendarById = CalendarApp.getCalendarById;
     const originalCreneaux = obtenirCreneauxDisponiblesPourDate;
     let calendrierMockApplique = false;
+    const descriptor = Object.getOwnPropertyDescriptor(CalendarApp, 'getCalendarById');
+    if (!descriptor || descriptor.writable !== true) {
+      Logger.log('SKIP: CalendarApp.getCalendarById non surchargeable, test ignoré.');
+      return;
+    }
     try {
       CalendarApp.getCalendarById = function () {
         return {
@@ -380,6 +385,16 @@ function test_computeCoursePriceV2() {
     const originalProps = PropertiesService.getScriptProperties;
     let drivePatched = false;
     let docPatched = false;
+    const driveDescriptors = [
+      Object.getOwnPropertyDescriptor(DriveApp, 'getFileById'),
+      Object.getOwnPropertyDescriptor(DriveApp, 'getRootFolder'),
+      Object.getOwnPropertyDescriptor(DriveApp, 'getFolderById')
+    ];
+    const docDescriptor = Object.getOwnPropertyDescriptor(DocumentApp, 'openById');
+    if (driveDescriptors.some(d => !d || d.writable !== true) || !docDescriptor || docDescriptor.writable !== true) {
+      Logger.log('SKIP: DriveApp/DocumentApp non surchargeables, test ignoré.');
+      return;
+    }
     try {
       DriveApp.getFileById = function () { return mockFile; };
       DriveApp.getRootFolder = function () { return mockParent; };
