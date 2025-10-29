@@ -85,6 +85,7 @@
       <div class="app-logo-container" data-logo-slot>
         <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
       </div>
+      <h1 class="sr-only">Espace client <?= nomService ?></h1>
       <p id="message-bienvenue-client"></p>
     </header>
 
@@ -102,20 +103,20 @@
         <? } ?>
       <div id="ca-client" class="carte" tabindex="0"></div>
       <div id="liste-reservations" class="carte">
-        <h3>Vos prochaines courses</h3>
+        <h2>Vos prochaines courses</h2>
         <div id="contenu-reservations">
           <!-- Les réservations seront injectées ici par le script JS -->
         </div>
       </div>
       <div id="liste-factures" class="carte">
-        <h3>Vos factures</h3>
+        <h2>Vos factures</h2>
         <div id="contenu-factures">
           <!-- Les factures seront injectées ici par le script JS -->
         </div>
       </div>
       <? if (typeof PRO_QA_ENABLED !== 'undefined' && PRO_QA_ENABLED) { ?>
       <div id="bloc-questions" class="carte">
-        <h3>Vos questions</h3>
+        <h2>Vos questions</h2>
         <div id="liste-questions" aria-live="polite"></div>
         <form id="form-question" class="groupe-formulaire" autocomplete="off">
           <label for="question-texte">Posez votre question</label>
@@ -132,7 +133,7 @@
     </main>
 
     <div id="non-connecte" class="carte hidden">
-        <h3>Accès à l'espace client</h3>
+        <h2>Accès à l'espace client</h2>
         <p>Pour consulter vos réservations, veuillez utiliser le lien qui vous a été envoyé par e-mail ou saisissez votre adresse ci-dessous.</p>
         
         <form id="formulaire-connexion-client" class="groupe-formulaire" style="margin-top: 20px;">

@@ -155,6 +155,7 @@
       <div class="app-logo-container" data-logo-slot>
         <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
       </div>
+      <h1 class="sr-only">Tableau de bord administrateur</h1>
       <p>Gestion et supervision des courses</p>
     </header>
 
@@ -180,7 +181,7 @@
 
     <main id="conteneur-app">
       <div id="liste-reservations" class="carte">
-        <h3 id="titre-reservations">Courses du jour</h3>
+        <h2 id="titre-reservations">Courses du jour</h2>
         <div id="contenu-reservations">
           <p>Veuillez sélectionner une date pour afficher les livraisons.</p>
         </div>
@@ -195,7 +196,7 @@
         <div class="app-logo-container" data-logo-slot>
           <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
         </div>
-        <h3 id="dlg-title">Ajouter une course</h3>
+        <h2 id="dlg-title">Ajouter une course</h2>
       </div>
 
       <div class="modal__body">
@@ -205,7 +206,7 @@
           </div>
           <? if (ADMIN_SLOTS_PNG_ENABLED) { ?>
           <aside class="slots-sidebar" aria-label="Créneaux disponibles">
-            <h4>Créneaux disponibles</h4>
+            <h3>Créneaux disponibles</h3>
             <div class="slots-row" id="slotsRow"></div>
           </aside>
           <? } ?>
