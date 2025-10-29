@@ -14,7 +14,16 @@ const CHAT_RATE_LIMIT_BURST = 3;
  * @returns {GoogleAppsScript.Spreadsheet.Spreadsheet}
  */
 function getMainSpreadsheet() {
-  return SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
+  const sheetId = getSecret('ID_FEUILLE_CALCUL');
+  try {
+    const ss = SpreadsheetApp.openById(sheetId);
+    if (!ss) {
+      throw new Error('openById a renvoyé une valeur indéfinie.');
+    }
+    return ss;
+  } catch (err) {
+    throw new Error(`Impossible d'ouvrir la feuille principale (ID_FEUILLE_CALCUL=${sheetId}): ${err}`);
+  }
 }
 
 /**
@@ -25,6 +34,9 @@ function getMainSpreadsheet() {
  * @returns {GoogleAppsScript.Spreadsheet.Sheet}
  */
 function ensureSheetWithHeaders(ss, sheetName, headers) {
+  if (!ss) {
+    throw new Error('Spreadsheet principal manquant pour ' + sheetName);
+  }
   const existing = ss.getSheetByName(sheetName);
   const sheet = existing || ss.insertSheet(sheetName);
   const hasHeaders = sheet.getLastRow() > 0 && sheet.getRange(1, 1, 1, headers.length).getValues().some(row => row.some(Boolean));
