@@ -445,3 +445,17 @@ function tourneeSubmitDemande(rawData) {
     return { ok: false, reason: 'ERROR' };
   }
 }
+
+/**
+ * Provisionne explicitement les feuilles nécessaires au module chat.
+ * À exécuter manuellement si l'on veut créer les onglets avant le premier usage.
+ * @returns {{ok:boolean}}
+ */
+function chatProvisionSheets() {
+  const ss = getMainSpreadsheet();
+  getChatSheet(ss);
+  getChatMetaSheet(ss);
+  getDemandesSheet(ss);
+  getChatSalt(); // s'assure que le sel est présent.
+  return { ok: true };
+}
