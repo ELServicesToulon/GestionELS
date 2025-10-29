@@ -253,8 +253,14 @@ function doGet(e) {
 
         case 'cgv':
           // Conditions Générales de Vente
-          return HtmlService.createHtmlOutputFromFile('CGV')
-            .setTitle(NOM_ENTREPRISE + " | CGV");
+          var templateCgv = HtmlService.createTemplateFromFile('CGV');
+          templateCgv.appUrl = ScriptApp.getService().getUrl();
+          templateCgv.nomService = NOM_ENTREPRISE;
+          templateCgv.emailEntreprise = EMAIL_ENTREPRISE;
+          templateCgv.brandingLogoPublicUrl = BRANDING_LOGO_PUBLIC_URL;
+          return templateCgv.evaluate()
+            .setTitle(NOM_ENTREPRISE + " | CGV")
+            .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
 
         case 'accueil':
         case 'home':

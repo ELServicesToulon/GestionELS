@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <? var appUrl = ScriptApp.getService().getUrl(); var nomService = NOM_ENTREPRISE; ?>
+  <? 
+    var appUrl = (typeof appUrl !== 'undefined' && appUrl) ? appUrl : ScriptApp.getService().getUrl();
+    var nomService = (typeof nomService !== 'undefined' && nomService) ? nomService : NOM_ENTREPRISE;
+    var emailEntreprise = (typeof emailEntreprise !== 'undefined' && emailEntreprise) ? emailEntreprise : EMAIL_ENTREPRISE;
+    var brandingLogoPublicUrl = (typeof brandingLogoPublicUrl !== 'undefined' && brandingLogoPublicUrl) ? brandingLogoPublicUrl : BRANDING_LOGO_PUBLIC_URL;
+  ?>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="Conditions générales de vente du service de livraison pharmaceutique.">
@@ -23,7 +28,7 @@
         "name": "<?= nomService ?>",
         "description": "Livraison pharmacie à domicile et EHPAD sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol et Bandol.",
         "url": "<?= appUrl ?>",
-        "email": "<?= EMAIL_ENTREPRISE ?>",
+        "email": "<?= emailEntreprise ?>",
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Six-Fours-les-Plages",
@@ -68,13 +73,13 @@
   <?!= include('charte'); ?>
   <?!= include('GoogleChartsStub'); ?>
 </head>
-<body data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= BRANDING_LOGO_PUBLIC_URL ?>">
+<body data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= brandingLogoPublicUrl ?>">
   <main class="container" role="main">
     <div class="app-logo-container" data-logo-slot>
       <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
     </div>
     <h1>Conditions Générales de Vente (CGV) - Livraison pharmaceutique</h1>
-    <p><strong>Prestataire :</strong> EI LECOURT EMMANUEL — Nom commercial « EL Services » • <strong>Adresse :</strong> 255 Bis Avenue Marcel Castie, B, 83000 TOULON • <strong>SIRET :</strong> 480 913 060 00020 • <strong>APE :</strong> 53.20Z • <strong>TVA :</strong> non applicable (art. 293 B CGI) • <strong>E-mail :</strong> <a href="mailto:elservicestoulon@gmail.com">elservicestoulon@gmail.com</a></p>
+    <p><strong>Prestataire :</strong> EI LECOURT EMMANUEL — Nom commercial « EL Services » • <strong>Adresse :</strong> 255 Bis Avenue Marcel Castie, B, 83000 TOULON • <strong>SIRET :</strong> 480 913 060 00020 • <strong>APE :</strong> 53.20Z • <strong>TVA :</strong> non applicable (art. 293 B CGI) • <strong>E-mail :</strong> <a href="mailto:<?= emailEntreprise ?>"><?= emailEntreprise ?></a></p>
     <p><strong>Coordonnées de paiement :</strong> IBAN FR76 4061 8804 7600 0403 5757 187 — BIC BOUSFRPPXXX — Chèque à l’ordre de « EI Emmanuel LECOURT Titulaire du compte ».</p>
     <p><strong>Version :</strong> 07/09/2025</p>
 
@@ -133,7 +138,7 @@
     <p>Suspension des obligations pendant l’événement. Aucune responsabilité de la partie empêchée.</p>
 
     <h2>16. Médiation &amp; réclamations</h2>
-    <p>Réclamation : <a href="mailto:elservicestoulon@gmail.com">elservicestoulon@gmail.com</a>. Médiation consommation : [à compléter : nom/coordonnées du médiateur].</p>
+    <p>Réclamation : <a href="mailto:<?= emailEntreprise ?>"><?= emailEntreprise ?></a>. Médiation consommation : [à compléter : nom/coordonnées du médiateur].</p>
 
     <h2>17. Modifications</h2>
     <p>La version applicable est celle en vigueur à la date de commande.</p>
