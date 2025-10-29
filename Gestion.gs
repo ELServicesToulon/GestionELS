@@ -467,11 +467,15 @@ function replanifierReservation(idReservation, nouvelleDate, nouvelleHeure, emai
     const dureeCalculee = DUREE_BASE + ((arrets + (retour ? 1 : 0)) * DUREE_ARRET_SUP);
 
     const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(nouvelleDate, dureeCalculee, idEvenementAncien);
+    const residentBypass = estResident && typeof RESIDENT_REPLAN_ALLOW_ANY_SLOT !== 'undefined' && RESIDENT_REPLAN_ALLOW_ANY_SLOT === true;
     if (!Array.isArray(creneauxDisponibles) || creneauxDisponibles.length === 0) {
-      return { success: false, error: "Aucun créneau disponible pour la plage demandée." };
-    }
-    if (creneauxDisponibles.indexOf(nouvelleHeure) === -1) {
-      return { success: false, error: "Ce créneau n'est plus disponible." };
+      if (!residentBypass) {
+        return { success: false, error: "Aucun créneau disponible pour la plage demandée." };
+      }
+    } else if (creneauxDisponibles.indexOf(nouvelleHeure) === -1) {
+      if (!residentBypass) {
+        return { success: false, error: "Ce créneau n'est plus disponible." };
+      }
     }
 
     const [annee, mois, jour] = nouvelleDate.split('-').map(Number);

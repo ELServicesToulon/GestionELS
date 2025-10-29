@@ -14,15 +14,21 @@ function archiverFacturesDuMois() {
     const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     const feuille = ss.getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
-    const lastCol = feuille.getLastColumn();
-    const header = feuille.getRange(1, 1, 1, lastCol).getValues()[0].map(v => String(v).trim());
+    let lastCol = feuille.getLastColumn();
+    let header = feuille.getRange(1, 1, 1, lastCol).getValues()[0].map(v => String(v).trim());
     const idx = {
       date: header.indexOf('Date'),
       numero: header.indexOf('N° Facture'),
       idPdf: header.indexOf('ID PDF'),
       statut: header.indexOf('Statut')
     };
-    if (idx.date === -1 || idx.numero === -1 || idx.idPdf === -1) {
+    if (idx.idPdf === -1) {
+      lastCol += 1;
+      feuille.getRange(1, lastCol).setValue('ID PDF');
+      header.push('ID PDF');
+      idx.idPdf = header.length - 1;
+    }
+    if (idx.date === -1 || idx.numero === -1) {
       throw new Error("Colonnes requises manquantes (Date, N° Facture, ID PDF).");
     }
 

@@ -66,15 +66,17 @@
   }
 
   function makeLogo(anchorClass) {
-    resolveBrand();
+    var brand = resolveBrand();
     var link = doc.createElement('a');
     link.className = anchorClass || 'els-logo';
-    link.href = HOME_URL;
-    link.setAttribute('aria-label', 'EL Services – accueil');
+    var homeHref = brand.homeUrl || HOME_URL || '#';
+    var name = brand.name || fallbackName;
+    link.href = homeHref;
+    link.setAttribute('aria-label', name + altSuffix);
 
     var img = doc.createElement('img');
-    img.src = LOGO_URL;
-    img.alt = 'EL Services – logo';
+    img.src = brand.logoUrl || LOGO_URL;
+    img.alt = name + altSuffix;
     img.loading = 'eager';
     img.decoding = 'async';
     img.className = 'app-logo';

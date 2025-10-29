@@ -395,11 +395,15 @@ function creerReservationAdmin(data) {
     }
 
     const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(data.date, duree);
+    const residentBypass = data.client.resident === true && typeof RESIDENT_REPLAN_ALLOW_ANY_SLOT !== 'undefined' && RESIDENT_REPLAN_ALLOW_ANY_SLOT === true;
     if (!Array.isArray(creneauxDisponibles) || creneauxDisponibles.length === 0) {
-      return { success: false, error: 'Aucun créneau disponible pour cette journée.' };
-    }
-    if (!creneauxDisponibles.includes(data.startTime)) {
-      return { success: false, error: `Le créneau ${data.startTime} n'est plus disponible.` };
+      if (!residentBypass) {
+        return { success: false, error: 'Aucun créneau disponible pour cette journée.' };
+      }
+    } else if (!creneauxDisponibles.includes(data.startTime)) {
+      if (!residentBypass) {
+        return { success: false, error: `Le créneau ${data.startTime} n'est plus disponible.` };
+      }
     }
 
     const idReservation = 'RESA-' + Utilities.getUuid();
