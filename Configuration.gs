@@ -99,6 +99,12 @@ const SHEET_RESERVATIONS = 'Réservations';
 const SHEET_DEFAULT = 'Sheet1';
 /** @const {string} Feuille stockant les questions des professionnels. */
 const SHEET_QUESTIONS = 'Questions';
+/** @const {string} Feuille stockant les messages de chat anonyme. */
+const SHEET_CHAT = 'Chat';
+/** @const {string} Feuille stockant les métadonnées du chat (sel, etc.). */
+const SHEET_CHAT_META = 'ChatMeta';
+/** @const {string} Feuille stockant les demandes d'intégration de tournée. */
+const SHEET_DEMANDES_TOURNEE = 'DemandesTournee';
 
 // --- Horaires & Tampons ---
 /** @const {string} Heure d'ouverture du service au format HH:MM. */

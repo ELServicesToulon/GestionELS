@@ -227,6 +227,49 @@
           </div>
         </div>
       </div>
+      <section id="els-chat" class="els-card" role="region" aria-labelledby="els-chat-title">
+        <header class="els-card__head">
+          <h3 id="els-chat-title">Échanges Pharmacies (anonyme) &amp; Messages Admin</h3>
+          <div class="els-chat__filters">
+            <label>
+              <input type="checkbox" id="onlyPharmacy"> Pharmacies uniquement
+            </label>
+            <button id="refreshChat" class="els-btn" type="button">Actualiser</button>
+          </div>
+        </header>
+        <div id="chatStream" class="els-chat__stream" aria-live="polite"></div>
+        <form id="chatForm" class="els-chat__composer" autocomplete="off" novalidate>
+          <select id="authorType" required>
+            <option value="pharmacy">Je suis une pharmacie cliente</option>
+            <option value="admin">Message privé à l’admin</option>
+          </select>
+          <textarea id="chatMessage" maxlength="1000" placeholder="Écrire un message (anonyme côté pharmacie)…" required></textarea>
+          <input id="pharmacyCode" type="password" minlength="4" maxlength="8" placeholder="Code client pharmacie (4–8 chars)" aria-label="Code pharmacie">
+          <button type="submit" class="els-btn">Envoyer</button>
+        </form>
+      </section>
+
+      <section id="els-demandes" class="els-card" role="region" aria-labelledby="els-demandes-title">
+        <header class="els-card__head">
+          <h3 id="els-demandes-title">Demande d’intégration à une tournée (EHPAD / Résidence / Foyer)</h3>
+        </header>
+        <form id="demandeForm" class="els-grid" autocomplete="off" novalidate>
+          <select id="etabType" required>
+            <option value="EHPAD">EHPAD</option>
+            <option value="Résidence">Résidence</option>
+            <option value="Foyer">Foyer</option>
+          </select>
+          <input id="etabNom" placeholder="Nom de l’établissement" required>
+          <input id="email" type="email" placeholder="Email de contact" required>
+          <input id="tel" type="tel" placeholder="Téléphone (optionnel)">
+          <input id="adresse" placeholder="Adresse complète">
+          <input id="jours" placeholder="Jours souhaités (ex: Lun, Mer, Ven)">
+          <input id="plage" placeholder="Plage horaire (ex: 10h–12h)">
+          <textarea id="details" placeholder="Précisions (ordonnances, volume, contraintes…)" maxlength="1500"></textarea>
+          <button type="submit" class="els-btn">Envoyer la demande</button>
+        </form>
+        <p id="demandeOk" class="visually-hidden" role="status">Merci, votre demande est bien envoyée. Réponse sous 24–72h ouvrées.</p>
+      </section>
       <? if (PROOF_SOCIAL_ENABLED) { ?>
       <section id="proof-card" class="card" aria-labelledby="preuves-sociales-titre" role="region">
         <h2 id="preuves-sociales-titre">Ils nous font confiance</h2>
@@ -440,6 +483,7 @@
   <?!= include('Reservation_JS_Panier'); ?>
   <?!= include('Reservation_JS_Client'); ?>
   <?!= include('Reservation_JS_Tournee'); ?>
+  <?!= include('Reservation_JS_Chat'); ?>
   <? } ?>
   <script>
     document.addEventListener('DOMContentLoaded', () => {

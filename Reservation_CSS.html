@@ -1095,12 +1095,93 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   .panier-total { font-size: 1rem; }
   .jour-calendrier { font-size: 1rem; padding: 8px; }
   .grille-creneaux { gap: 12px; }
-  .slot-btn { padding: 14px 10px; min-height: 58px; }
-  .slot-rate-label { font-size: 0.95rem; }
-  .btn,
-  #panier-pied-de-page .btn { font-size: 1rem; padding: 14px 22px; }
-  .champ-formulaire { font-size: 1rem; }
+.slot-btn { padding: 14px 10px; min-height: 58px; }
+.slot-rate-label { font-size: 0.95rem; }
+.btn,
+#panier-pied-de-page .btn { font-size: 1rem; padding: 14px 22px; }
+.champ-formulaire { font-size: 1rem; }
 }
+
+/* --- Chat anonyme & demandes de tournée --- */
+.els-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 12px;
+  margin-top: 16px;
+  background: #fff;
+  box-shadow: var(--shadow, none);
+}
+.els-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.els-btn {
+  border: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--els-grad, linear-gradient(90deg, #8e44ad 0%, #3498db 100%));
+  color: #fff;
+  font-weight: 600;
+}
+.els-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.els-chat__filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.els-chat__stream {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 8px;
+  background: #fafafa;
+}
+.els-chat__msg {
+  margin: 10px 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #eef2ff;
+}
+.els-chat__msg--admin {
+  background: #ecfeff;
+}
+.els-chat__meta {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+.els-chat__body {
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.els-chat__composer {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.els-grid {
+  display: grid;
+  gap: 8px;
+}
+.visually-hidden {
+  position: absolute !important;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 /* --- STYLES D'IMPRESSION --- */
 @media print {
   body { background-color: var(--txt); color: var(--bg); }
