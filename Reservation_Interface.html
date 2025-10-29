@@ -92,8 +92,8 @@
   <script>
     // Objet de configuration injecté par le serveur
     const configServeur = {
-      appUrl: "<?= appUrl ?>",
-      nomService: "<?= nomService ?>",
+      appUrl: <?= JSON.stringify(appUrl) ?>,
+      nomService: <?= JSON.stringify(nomService) ?>,
       logoUrl: <?= JSON.stringify(brandLogoUrl) ?>,
       TARIFS: (function(){ try { return JSON.parse(document.getElementById('conf-tarifs').textContent); } catch(e){ return {}; } })(),
       PRICING_RULES_V2: (function(){ try { return JSON.parse(document.getElementById('conf-pricing-rules-v2').textContent); } catch(e){ return {}; } })(),

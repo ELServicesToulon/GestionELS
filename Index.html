@@ -162,8 +162,8 @@
   <script type="application/json" id="conf-pricing-matrix"><?= JSON.stringify(getClientPricingMatrix(30) || {}) ?></script>
   <script>
     const configServeur = {
-      appUrl: "<?= ScriptApp.getService().getUrl() ?>",
-      nomService: "<?= NOM_ENTREPRISE ?>",
+      appUrl: <?= JSON.stringify(ScriptApp.getService().getUrl()) ?>,
+      nomService: <?= JSON.stringify(NOM_ENTREPRISE) ?>,
       TARIFS: (function(){ try { return JSON.parse(document.getElementById('conf-tarifs').textContent); } catch(e){ return {}; } })(),
       PRICING_RULES_V2: (function(){ try { return JSON.parse(document.getElementById('conf-pricing-rules-v2').textContent); } catch(e){ return {}; } })(),
       PRICING_MATRIX: (function(){ try { return JSON.parse(document.getElementById('conf-pricing-matrix').textContent); } catch(e){ return {}; } })(),
