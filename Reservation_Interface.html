@@ -425,6 +425,29 @@
       </div>
   </div>
 
+  <!-- MODALE: Connexion espace client -->
+  <div id="modale-connexion-client" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modale-connexion-titre">
+      <div class="modale-contenu">
+          <button id="btn-fermer-connexion-client" class="btn-fermer" aria-label="Fermer">&times;</button>
+          <div class="app-logo-container" data-logo-slot>
+            <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
+          </div>
+          <h3 id="modale-connexion-titre">Acc&eacute;der &agrave; votre espace client</h3>
+          <p class="muted">Renseignez l'adresse e-mail utilis&eacute;e lors de vos r&eacute;servations pour retrouver votre espace personnel.</p>
+          <form id="formulaire-connexion-reservation">
+              <div class="groupe-formulaire">
+                  <label for="email-connexion-reservation">Adresse e-mail</label>
+                  <input type="email" id="email-connexion-reservation" class="champ-formulaire" required autocomplete="email">
+                  <small class="muted">Cette adresse permet de s&eacute;curiser l'acc&egrave;s &agrave; votre espace client.</small>
+              </div>
+              <div class="modale-pied-de-page">
+                  <button type="button" id="btn-annuler-connexion-client" class="btn btn-secondaire">Annuler</button>
+                  <button type="submit" class="btn btn-primaire">Continuer</button>
+              </div>
+          </form>
+      </div>
+  </div>
+
   <!-- MODALE 5: Coordonnées de facturation -->
   <div id="modale-billing" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="billing-titre">
       <div class="modale-contenu">

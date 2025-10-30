@@ -12,6 +12,7 @@ const CLIENT_SESSION_OPAQUE_ID_ENABLED = <?!= CLIENT_SESSION_OPAQUE_ID_ENABLED ?
 const CLIENT_SESSION_TTL_HOURS = <?!= CLIENT_SESSION_TTL_HOURS ?>;
 const EMAIL_CLIENT_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 let portailClientLienEnCours = null;
+let releaseConnexionFocus = () => {};
 
 /**
  * Vérifie si une session client existe dans le localStorage.
@@ -137,10 +138,93 @@ function reinitialiserClient() {
   }
 }
 
+function toggleConnexionClientModal(show, options = {}) {
+  const modal = document.getElementById('modale-connexion-client');
+  const form = document.getElementById('formulaire-connexion-reservation');
+  const input = document.getElementById('email-connexion-reservation');
+  if (!modal || !form || !input) return false;
+
+  if (show) {
+    const prefill = typeof options.prefill === 'string' ? options.prefill.trim() : '';
+    if (prefill) {
+      input.value = prefill;
+    }
+    modal.classList.remove('hidden');
+    releaseConnexionFocus = typeof trapFocus === 'function' ? trapFocus(modal) : () => {};
+    const focusInput = () => input.focus();
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(focusInput);
+    } else {
+      setTimeout(focusInput, 0);
+    }
+  } else {
+    modal.classList.add('hidden');
+    releaseConnexionFocus();
+    releaseConnexionFocus = () => {};
+    if (options.reset !== false) {
+      form.reset();
+    }
+    input.blur();
+  }
+  return true;
+}
+
+function initialiserModaleConnexionClient() {
+  const modal = document.getElementById('modale-connexion-client');
+  const form = document.getElementById('formulaire-connexion-reservation');
+  const input = document.getElementById('email-connexion-reservation');
+  const btnAnnuler = document.getElementById('btn-annuler-connexion-client');
+  const btnFermer = document.getElementById('btn-fermer-connexion-client');
+  if (!modal || !form || !input) return;
+
+  const fermer = () => toggleConnexionClientModal(false);
+
+  btnAnnuler?.addEventListener('click', fermer);
+  btnFermer?.addEventListener('click', fermer);
+  modal.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      fermer();
+    }
+  });
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      fermer();
+    }
+  });
+  input.addEventListener('input', () => input.setCustomValidity(''));
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    const emailTrim = input.value.trim();
+    if (!EMAIL_CLIENT_REGEX.test(emailTrim)) {
+      input.setCustomValidity('Merci de renseigner une adresse email valide.');
+      input.reportValidity();
+      input.setCustomValidity('');
+      return;
+    }
+    fermer();
+    preRemplirInfosClient(emailTrim);
+  });
+}
+
 /**
  * Demande une connexion client via un prompt et pré-remplit les informations.
  */
 function demanderConnexionClient() {
+  const prefill =
+    (window.ui?.champEmailClient && window.ui.champEmailClient.value) ||
+    (window.etat?.clientReconnu && window.etat.clientReconnu.email) ||
+    (window.CLIENT_PARAMS && window.CLIENT_PARAMS.email) ||
+    '';
+  if (toggleConnexionClientModal(true, { prefill })) {
+    return;
+  }
+
   const email = window.prompt('Entrez votre adresse email pour vous connecter à votre espace client :');
   if (!email) return;
   const emailTrim = email.trim();
@@ -201,6 +285,8 @@ function mettreAJourLienEspaceClient(client) {
     fallback();
   }
 }
+
+initialiserModaleConnexionClient();
 
 document.addEventListener('els-client-recognized', (event) => {
   mettreAJourLienEspaceClient(event?.detail || window.etat?.clientReconnu || null);
