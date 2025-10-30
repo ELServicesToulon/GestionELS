@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const listeQuestions = document.getElementById('liste-questions');
     const formQuestion = document.getElementById('form-question');
     const questionTexte = document.getElementById('question-texte');
+    const btnContactSupport = document.getElementById('btn-contact-support');
     const linkEmail = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.email) || '';
     const linkExp = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.exp) || '';
     const linkSig = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.sig) || '';
@@ -52,6 +53,23 @@ document.addEventListener('DOMContentLoaded', () => {
     let toutesLesFacturesClient = [];
     let emailClientCourant = linkEmail || '';
     let removeFocusTrap = () => {};
+
+    if (btnContactSupport) {
+        const supportMailto = btnContactSupport.getAttribute('href');
+        btnContactSupport.addEventListener('click', (event) => {
+            const fallbackEmail = btnContactSupport.dataset.supportEmail || '';
+            const targetMail = (supportMailto && supportMailto.startsWith('mailto:'))
+                ? supportMailto
+                : (fallbackEmail ? `mailto:${fallbackEmail}` : '');
+            if (!targetMail) return;
+            event.preventDefault();
+            try {
+                window.top.location.href = targetMail;
+            } catch (_err) {
+                window.location.href = targetMail;
+            }
+        });
+    }
 
     function afficherVueConnexion(prefilledEmail) {
         document.getElementById('conteneur-app').classList.add('hidden');
