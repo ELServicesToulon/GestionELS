@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <title>Facture <?= invoice.numero ?></title>
+    <style>
+      :root {
+        font-family: 'Montserrat', Arial, sans-serif;
+        color: #1f2f3d;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #f7f9fc;
+      }
+      body.pdf {
+        background: #ffffff;
+        width: 210mm;
+        min-height: 297mm;
+      }
+      .invoice {
+        max-width: 700px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(52, 152, 219, 0.12);
+        padding: 32px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #8e44ad;
+        margin: 0;
+      }
+      .meta {
+        text-align: right;
+        font-size: 14px;
+      }
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 24px 0 12px;
+        color: #3498db;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 24px;
+      }
+      th, td {
+        padding: 10px;
+        border-bottom: 1px solid #e1e8f0;
+        font-size: 14px;
+      }
+      th {
+        background: #f0f5ff;
+        text-align: left;
+        font-weight: 600;
+      }
+      .totals {
+        width: 300px;
+        margin-left: auto;
+      }
+      .totals td {
+        border: none;
+        padding: 6px 0;
+      }
+      .totals tr:last-child td {
+        font-weight: bold;
+        font-size: 16px;
+        color: #2c3e50;
+      }
+      .footer-note {
+        font-size: 12px;
+        color: #5dade2;
+        border-top: 1px dashed #d6e4f5;
+        padding-top: 12px;
+      }
+      .actions {
+        margin-bottom: 24px;
+        display: flex;
+        gap: 12px;
+      }
+      .actions button {
+        background: linear-gradient(135deg, #8e44ad, #3498db);
+        border: none;
+        color: #ffffff;
+        padding: 12px 18px;
+        border-radius: 24px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(142, 68, 173, 0.25);
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
+      }
+      .actions button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+        box-shadow: none;
+      }
+      .actions button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(52, 152, 219, 0.3);
+      }
+      .status {
+        padding: 12px;
+        background: #ecf5ff;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #1d5c93;
+      }
+      .status.error {
+        background: #fdecea;
+        color: #c0392b;
+      }
+      .links {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .links a {
+        color: #3498db;
+        text-decoration: none;
+      }
+      @media print {
+        body {
+          background: #ffffff;
+          padding: 0;
+        }
+        .invoice {
+          box-shadow: none;
+          border-radius: 0;
+          width: 100%;
+          padding: 0;
+        }
+        .actions, .status {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body class="<?= forPdf ? 'pdf' : 'ui' ?>">
+    <? if (!forPdf) { ?>
+      <div class="actions">
+        <button id="btn-export-facturx" data-facture-id="<?= invoice.numero ?>">
+          Exporter Factur-X
+        </button>
+        <div id="export-status" class="status" hidden>
+          Prêt à exporter la facture.
+        </div>
+      </div>
+    <? } ?>
+    <div class="invoice">
+      <div class="header">
+        <div>
+          <h1 class="title">Facture <?= invoice.numero ?></h1>
+          <p>Émise le <?= Utilities.formatDate(invoice.date, Session.getScriptTimeZone() || 'Europe/Paris', 'dd/MM/yyyy') ?></p>
+        </div>
+        <div class="meta">
+          <strong><?= invoice.vendeur.nom ?></strong><br>
+          SIRET&nbsp;<?= invoice.vendeur.siret ?><br>
+          <?= invoice.vendeur.adresse ?><br>
+          <?= invoice.vendeur.email ?>
+        </div>
+      </div>
+
+      <div class="section">
+        <p class="section-title">Client</p>
+        <p><strong><?= invoice.acheteur.nom ?></strong><br><?= invoice.acheteur.adresse ?></p>
+      </div>
+
+      <div class="section">
+        <p class="section-title">Détails</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Réf.</th>
+              <th>Description</th>
+              <th>Qté</th>
+              <th>Prix unitaire</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <? invoice.lignes.forEach(function(line) { ?>
+              <tr>
+                <td><?= line.ref ?></td>
+                <td><?= line.lib ?></td>
+                <td><?= line.qte ?></td>
+                <td><?= Utilities.formatString('%.2f €', line.pu) ?></td>
+                <td><?= Utilities.formatString('%.2f €', line.total) ?></td>
+              </tr>
+            <? }); ?>
+          </tbody>
+        </table>
+      </div>
+
+      <table class="totals">
+        <tr>
+          <td>Sous-total</td>
+          <td><?= Utilities.formatString('%.2f €', invoice.totaux.ht) ?></td>
+        </tr>
+        <tr>
+          <td>TVA (0%)</td>
+          <td><?= Utilities.formatString('%.2f €', invoice.totaux.tva) ?></td>
+        </tr>
+        <tr>
+          <td>Total TTC</td>
+          <td><?= Utilities.formatString('%.2f €', invoice.totaux.ttc) ?></td>
+        </tr>
+      </table>
+
+      <p class="footer-note"><?= invoice.totaux.conditions ?></p>
+    </div>
+
+    <? if (!forPdf) { ?>
+      <script>
+        (function() {
+          var button = document.getElementById('btn-export-facturx');
+          var statusEl = document.getElementById('export-status');
+
+          if (!button || !window.google || !google.script || !google.script.run) {
+            return;
+          }
+
+          function setStatus(message, isError) {
+            if (!statusEl) {
+              return;
+            }
+            statusEl.textContent = message;
+            statusEl.hidden = false;
+            statusEl.classList.toggle('error', Boolean(isError));
+          }
+
+          function setLoading(isLoading) {
+            button.disabled = isLoading;
+            if (isLoading) {
+              setStatus('Export en cours…', false);
+            }
+          }
+
+          button.addEventListener('click', function() {
+            var factureId = button.getAttribute('data-facture-id');
+            if (!factureId) {
+              setStatus('Identifiant de facture manquant.', true);
+              return;
+            }
+
+            setLoading(true);
+            google.script.run
+              .withSuccessHandler(function(result) {
+                setLoading(false);
+                if (!result) {
+                  setStatus('Export terminé mais aucune réponse reçue.', true);
+                  return;
+                }
+                var links = [];
+                if (result.pdfUrl) { links.push({ label: 'PDF facture', url: result.pdfUrl }); }
+                if (result.xmlUrl) { links.push({ label: 'XML CII', url: result.xmlUrl }); }
+                if (result.fxUrl) { links.push({ label: 'PDF/A-3 Factur-X', url: result.fxUrl }); }
+
+                if (!links.length) {
+                  setStatus('Export terminé mais aucun fichier enregistré.', true);
+                  return;
+                }
+
+                var container = document.createElement('div');
+                container.className = 'links';
+                links.forEach(function(item) {
+                  var anchor = document.createElement('a');
+                  anchor.href = item.url;
+                  anchor.textContent = item.label;
+                  anchor.target = '_blank';
+                  container.appendChild(anchor);
+                });
+                statusEl.innerHTML = '';
+                statusEl.appendChild(document.createTextNode('Export réussi. Téléchargez vos fichiers :'));
+                statusEl.appendChild(container);
+              })
+              .withFailureHandler(function(error) {
+                setLoading(false);
+                var message = error && error.message ? error.message : 'Erreur inconnue.';
+                setStatus('Échec de l’export : ' + message, true);
+              })
+              .exportFacturX(factureId);
+          });
+        })();
+      </script>
+    <? } ?>
+  </body>
+</html>

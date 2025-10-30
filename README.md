@@ -207,5 +207,33 @@ Pour surcharger un flag sans modifier le code : ajouter une Script Property `FL
 - Ordre des pharmaciens – livraison et dispensation
 - OMéDIT – Transport en EHPAD
 
+## Export Factur-X
+
+La génération Factur-X se fait via le bouton « Exporter Factur-X » (fichier `apps-script/Facture.html`). Le flux :
+- charge la facture depuis Sheets (`loadInvoiceData`),
+- rend le PDF HTML et le XML EN16931,
+- appelle le micro-service FastAPI (`FACTURX_URL`) pour embarquer le XML (PDF/A-3),
+- archive les artefacts dans `Drive/Factures/YYYY/MM/` puis renvoie les 3 URLs Drive.
+
+### Pré-requis Apps Script
+- Script Properties : `FACTURX_URL`, `FACTURX_TOKEN`, `ID_FEUILLE_CALCUL`, `ID_DOSSIER_FACTURES`.
+- Droits requis : Drive, Spreadsheet, UrlFetch.
+- Feuilles attendues : `Facturation` (en-têtes standard) et optionnellement `Facturation_Lignes` pour le détail.
+
+### Micro-service Python
+- Code et installation : `python-facturx/README.md`.
+- Image Docker : `python-facturx/Dockerfile`.
+- ENV obligatoire : `FACTURX_TOKEN` (Bearer validé côté FastAPI).
+
+### Tests rapides
+- `./tests/curl-embed.sh sample.pdf sample.xml` (Unix/macOS).
+- `pwsh ./tests/curl-embed.ps1 -PdfPath sample.pdf -XmlPath sample.xml` (Windows).
+- Depuis Apps Script : exécuter `exportFacturX('<NUMERO>')` et vérifier la feuille `Logs`.
+
+### Résumé du flux
+1. L’utilisateur clique sur « Exporter Factur-X » → `google.script.run.exportFacturX`.
+2. Apps Script stocke PDF + XML, tente l’embed (non bloquant).
+3. Les URLs Drive sont affichées côté client (PDF, XML, PDF/A-3 Factur-X).
+
 ## License
 Ce projet est distribué sous la licence MIT. Consultez le fichier `LICENSE` pour plus d'informations.
