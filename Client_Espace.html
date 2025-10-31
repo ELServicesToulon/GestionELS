@@ -113,6 +113,12 @@
         <div id="contenu-factures">
           <!-- Les factures seront injectées ici par le script JS -->
         </div>
+        <form id="form-facture-id" class="groupe-formulaire" autocomplete="off">
+          <label for="facture-id">Télécharger une facture via son ID PDF</label>
+          <input type="text" id="facture-id" class="champ-formulaire" required placeholder="Ex. 1AbCdEfGhIj">
+          <button type="submit" class="btn btn-secondaire btn--client">Télécharger</button>
+        </form>
+        <div id="facture-id-feedback" class="hidden" aria-live="polite"></div>
       </div>
       <? if (typeof PRO_QA_ENABLED !== 'undefined' && PRO_QA_ENABLED) { ?>
       <div id="bloc-questions" class="carte">

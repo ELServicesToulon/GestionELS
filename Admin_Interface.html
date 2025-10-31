@@ -186,6 +186,15 @@
           <p>Veuillez sélectionner une date pour afficher les livraisons.</p>
         </div>
       </div>
+      <div id="factures-par-id" class="carte">
+        <h2>Factures par ID PDF</h2>
+        <form id="form-facture-id-admin" class="groupe-formulaire" autocomplete="off">
+          <label for="facture-id-admin">ID PDF de la facture</label>
+          <input type="text" id="facture-id-admin" class="champ-formulaire" required placeholder="Ex. 1AbCdEfGhIj">
+          <button type="submit" class="btn btn-secondaire">Télécharger</button>
+        </form>
+        <div id="facture-id-admin-feedback" class="hidden" aria-live="polite"></div>
+      </div>
     </main>
 
   </div>

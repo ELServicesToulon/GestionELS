@@ -242,6 +242,70 @@ function calculerCAEnCoursClient(emailClient, exp, sig) {
 
 
 /**
+ * Recherche les métadonnées d'une facture via son identifiant de PDF Drive.
+ * @param {string} idPdf Identifiant du fichier PDF dans Drive.
+ * @returns {{numero:string,email:string,idPdf:string,url:string,dateISO:(string|null),montant:(number|null)}|null}
+ */
+function rechercherFactureParId(idPdf) {
+  const identifiant = String(idPdf || '').trim();
+  if (!identifiant) return null;
+  if (!/^[A-Za-z0-9_-]{10,}$/.test(identifiant)) {
+    throw new Error('Identifiant PDF invalide.');
+  }
+
+  const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
+  const feuilles = BILLING_MULTI_SHEET_ENABLED
+    ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
+    : [ss.getSheetByName(SHEET_FACTURATION)];
+  if (!feuilles.length || feuilles.some(f => !f)) {
+    throw new Error("La feuille 'Facturation' est introuvable.");
+  }
+
+  for (const feuille of feuilles) {
+    const header = feuille.getRange(1, 1, 1, Math.max(1, feuille.getLastColumn())).getValues()[0];
+    const idx = {
+      email: header.indexOf('Client (Email)'),
+      numero: header.indexOf('N° Facture'),
+      idPdf: header.indexOf('ID PDF'),
+      date: header.indexOf('Date'),
+      montant: header.indexOf('Montant')
+    };
+    if (Object.values(idx).some(i => i === -1)) {
+      throw new Error("Colonnes requises absentes (Date, Client (Email), N° Facture, ID PDF, Montant).");
+    }
+
+    const data = feuille.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      if (String(row[idx.idPdf] || '').trim() !== identifiant) continue;
+
+      const email = String(row[idx.email] || '').trim().toLowerCase();
+      const numero = String(row[idx.numero] || '').trim();
+      const dateVal = new Date(row[idx.date]);
+      const montant = parseFloat(row[idx.montant]);
+
+      let url;
+      try {
+        url = DriveApp.getFileById(identifiant).getUrl();
+      } catch (driveErr) {
+        throw new Error('Fichier PDF introuvable ou inaccessible.');
+      }
+
+      return {
+        numero: numero,
+        email: email,
+        idPdf: identifiant,
+        url: url,
+        dateISO: isNaN(dateVal) ? null : dateVal.toISOString(),
+        montant: Number.isFinite(montant) ? montant : null
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
  * Récupère les factures (générées) pour un client.
  * @param {string} emailClient L'e-mail du client.
  * @returns {Object} success + liste des factures { numero, dateISO, montant, url, idPdf }.
@@ -286,6 +350,34 @@ function obtenirFacturesPourClient(emailClient, exp, sig) {
     return { success: true, factures: factures };
   } catch (e) {
     Logger.log('Erreur dans obtenirFacturesPourClient: ' + e.stack);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Renvoie le lien de téléchargement d'une facture pour un client donné.
+ * @param {string} idPdf Identifiant du fichier PDF à récupérer.
+ * @param {string} emailClient Email du client demandeur.
+ */
+function obtenirLienFactureParIdClient(idPdf, emailClient, exp, sig) {
+  try {
+    const emailNorm = assertClient(emailClient, exp, sig);
+    const facture = rechercherFactureParId(idPdf);
+    if (!facture) {
+      throw new Error('Facture introuvable.');
+    }
+    if (facture.email !== emailNorm) {
+      throw new Error('Facture non associée à votre compte.');
+    }
+    return {
+      success: true,
+      url: facture.url,
+      numero: facture.numero,
+      dateISO: facture.dateISO,
+      montant: facture.montant
+    };
+  } catch (e) {
+    Logger.log('Erreur dans obtenirLienFactureParIdClient: ' + e.stack);
     return { success: false, error: e.message };
   }
 }

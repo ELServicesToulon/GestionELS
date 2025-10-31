@@ -65,6 +65,35 @@ function genererLienEspaceClient(emailClient, heuresValidite) {
 }
 
 /**
+ * Renvoie le lien de téléchargement d'une facture à partir de son identifiant PDF.
+ * @param {string} idPdf Identifiant du fichier Drive de la facture.
+ * @returns {{success:boolean,url?:string,numero?:string,clientEmail?:string,dateISO?:string,montant?:number,error?:string}}
+ */
+function obtenirLienFactureParIdAdmin(idPdf) {
+  try {
+    const userEmail = Session.getActiveUser().getEmail();
+    if (!userEmail || userEmail.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      throw new Error('Accès non autorisé.');
+    }
+    const facture = rechercherFactureParId(idPdf);
+    if (!facture) {
+      throw new Error('Facture introuvable.');
+    }
+    return {
+      success: true,
+      url: facture.url,
+      numero: facture.numero,
+      clientEmail: facture.email,
+      dateISO: facture.dateISO,
+      montant: facture.montant
+    };
+  } catch (e) {
+    Logger.log('Erreur dans obtenirLienFactureParIdAdmin: ' + e.stack);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
  * Récupère TOUTES les réservations (passées, actuelles, futures) sans aucun filtre par date/email.
  * @returns {Object} Un objet avec le statut et la liste complète des réservations.
  */

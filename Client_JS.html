@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const listeQuestions = document.getElementById('liste-questions');
     const formQuestion = document.getElementById('form-question');
     const questionTexte = document.getElementById('question-texte');
+    const formulaireFactureId = document.getElementById('form-facture-id');
+    const champFactureId = document.getElementById('facture-id');
+    const zoneFactureId = document.getElementById('facture-id-feedback');
     const btnContactSupport = document.getElementById('btn-contact-support');
     const linkEmail = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.email) || '';
     const linkExp = (window.CLIENT_PARAMS && window.CLIENT_PARAMS.exp) || '';
@@ -68,6 +71,75 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (_err) {
                 window.location.href = targetMail;
             }
+        });
+    }
+
+    if (formulaireFactureId) {
+        formulaireFactureId.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (!champFactureId) return;
+            const identifiant = champFactureId.value.trim();
+            const zone = zoneFactureId || null;
+            const afficherMessage = (texte) => {
+                if (!zone) return;
+                zone.classList.remove('hidden');
+                renderMessage(zone, texte);
+            };
+            if (!identifiant) {
+                afficherMessage('Merci de saisir un identifiant PDF.');
+                return;
+            }
+            if (!/^[A-Za-z0-9_-]{10,}$/.test(identifiant)) {
+                afficherMessage('Identifiant PDF invalide.');
+                return;
+            }
+            if (!emailClientCourant) {
+                afficherMessage('Veuillez vous connecter pour récupérer vos factures.');
+                return;
+            }
+
+            if (zone) {
+                zone.classList.remove('hidden');
+                renderMessage(zone, 'Recherche de la facture en cours…');
+            }
+
+            const boutonSoumission = formulaireFactureId.querySelector('button[type="submit"]');
+            const unlock = lockButton(boutonSoumission);
+            basculerIndicateurChargement(true);
+
+            google.script.run
+                .withSuccessHandler(reponse => {
+                    basculerIndicateurChargement(false);
+                    unlock && unlock();
+                    if (!zone) return;
+                    if (reponse && reponse.success && reponse.url) {
+                        const numeroAffiche = reponse.numero ? escapeHTML(reponse.numero) : escapeHTML(identifiant);
+                        const montantAffiche = typeof reponse.montant === 'number'
+                            ? ` — ${escapeHTML(reponse.montant.toFixed(2))} €`
+                            : '';
+                        const dateAffiche = reponse.dateISO
+                            ? ` (${escapeHTML(new Date(reponse.dateISO).toLocaleDateString('fr-FR'))})`
+                            : '';
+                        renderHTML(zone, `
+                            <p>Facture <strong>${numeroAffiche}</strong>${montantAffiche}${dateAffiche} prête au téléchargement.</p>
+                            <p><a class="btn btn-secondaire btn--client" href="${escapeHTML(reponse.url)}" target="_blank" rel="noopener">Télécharger le PDF</a></p>
+                        `);
+                        champFactureId.value = '';
+                        afficherNotification('Facture prête au téléchargement.');
+                    } else {
+                        const messageErreur = (reponse && reponse.error) ? reponse.error : 'Facture introuvable.';
+                        renderMessage(zone, messageErreur);
+                    }
+                })
+                .withFailureHandler(err => {
+                    unlock && unlock();
+                    if (zone) {
+                        zone.classList.remove('hidden');
+                        renderMessage(zone, 'Téléchargement impossible pour le moment.');
+                    }
+                    afficherErreur(err);
+                })
+                .obtenirLienFactureParIdClient(identifiant, emailClientCourant, signatureExp, signatureSig);
         });
     }
 

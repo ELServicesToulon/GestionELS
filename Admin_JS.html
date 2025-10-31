@@ -133,6 +133,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const contenuModale = document.getElementById('contenu-modale-wrapper');
     const caEnCours = document.getElementById('ca-en-cours');
     const missingPropsBanner = document.getElementById('missing-props-banner');
+    const formFactureIdAdmin = document.getElementById('form-facture-id-admin');
+    const champFactureIdAdmin = document.getElementById('facture-id-admin');
+    const zoneFactureIdAdmin = document.getElementById('facture-id-admin-feedback');
 
     // --- Variables d'état ---
     let toutesLesReservationsAffichees = [];
@@ -170,6 +173,73 @@ document.addEventListener('DOMContentLoaded', () => {
 
         chargerClients(() => {
             chargerReservationsParDate(aujourdhui);
+        });
+    }
+
+    if (formFactureIdAdmin) {
+        formFactureIdAdmin.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (!champFactureIdAdmin) return;
+            const identifiant = champFactureIdAdmin.value.trim();
+            const zone = zoneFactureIdAdmin || null;
+            const afficherMessage = (texte) => {
+                if (!zone) return;
+                zone.classList.remove('hidden');
+                renderMessage(zone, texte);
+            };
+            if (!identifiant) {
+                afficherMessage('Merci de saisir un identifiant PDF.');
+                return;
+            }
+            if (!/^[A-Za-z0-9_-]{10,}$/.test(identifiant)) {
+                afficherMessage('Identifiant PDF invalide.');
+                return;
+            }
+            if (zone) {
+                zone.classList.remove('hidden');
+                renderMessage(zone, 'Recherche de la facture en cours…');
+            }
+            const boutonSoumission = formFactureIdAdmin.querySelector('button[type="submit"]');
+            const unlock = lockButton(boutonSoumission);
+            basculerIndicateurChargement(true);
+
+            google.script.run
+                .withSuccessHandler(reponse => {
+                    basculerIndicateurChargement(false);
+                    unlock && unlock();
+                    if (!zone) return;
+                    if (reponse && reponse.success && reponse.url) {
+                        const numeroAffiche = reponse.numero ? escapeHTML(reponse.numero) : escapeHTML(identifiant);
+                        const montantAffiche = typeof reponse.montant === 'number'
+                            ? ` — ${escapeHTML(reponse.montant.toFixed(2))} €`
+                            : '';
+                        const dateAffiche = reponse.dateISO
+                            ? ` (${escapeHTML(new Date(reponse.dateISO).toLocaleDateString('fr-FR'))})`
+                            : '';
+                        const infoClientHtml = reponse.clientEmail
+                            ? `<p>Client : <strong>${escapeHTML(reponse.clientEmail)}</strong></p>`
+                            : '';
+                        renderHTML(zone, `
+                            <p>Facture <strong>${numeroAffiche}</strong>${montantAffiche}${dateAffiche}</p>
+                            ${infoClientHtml}
+                            <p><a class="btn btn-secondaire" href="${escapeHTML(reponse.url)}" target="_blank" rel="noopener">Télécharger le PDF</a></p>
+                        `);
+                        champFactureIdAdmin.value = '';
+                        afficherNotification('Lien PDF prêt.', 'succes');
+                    } else {
+                        const messageErreur = (reponse && reponse.error) ? reponse.error : 'Facture introuvable.';
+                        renderMessage(zone, messageErreur);
+                    }
+                })
+                .withFailureHandler(err => {
+                    unlock && unlock();
+                    if (zone) {
+                        zone.classList.remove('hidden');
+                        renderMessage(zone, 'Téléchargement impossible pour le moment.');
+                    }
+                    afficherErreur(err);
+                })
+                .obtenirLienFactureParIdAdmin(identifiant);
         });
     }
 
