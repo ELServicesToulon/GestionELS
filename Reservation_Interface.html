@@ -363,9 +363,10 @@
         <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
       </div>
       <h3 id="modale-config-titre"></h3>
+      <p class="modale-intro">Choisissez simplement le nombre d'arrêts (départ inclus) et précisez si la tournée doit revenir à l'officine. Nous adaptons automatiquement la durée et le tarif estimés.</p>
       <form id="formulaire-config-tournee">
         <div class="groupe-formulaire">
-            <label>Nombre total d'arrêts (livraison initiale incluse) :</label>
+            <label>Arrêts prévus (départ inclus)</label>
             <div class="champ-compteur">
                 <button type="button" id="btn-retirer-arret" class="btn-compteur" aria-label="Retirer un arrêt">-</button>
                 <span id="valeur-arrets-sup" class="valeur-compteur">1</span>
@@ -458,17 +459,16 @@
           <div class="app-logo-container" data-logo-slot>
             <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
           </div>
-          <h3 id="modale-connexion-titre">Acc&eacute;der &agrave; votre espace client</h3>
-          <p class="muted">Renseignez l'adresse e-mail utilis&eacute;e lors de vos r&eacute;servations pour retrouver votre espace personnel.</p>
+          <h3 id="modale-connexion-titre">Connexion &agrave; l'espace client</h3>
+          <p class="modale-intro">Saisissez l'adresse e-mail utilisée pour vos réservations. Nous vous envoyons un lien sécurisé pour créer ou mettre &agrave; jour votre mot de passe.</p>
           <form id="formulaire-connexion-reservation">
               <div class="groupe-formulaire">
                   <label for="email-connexion-reservation">Adresse e-mail</label>
                   <input type="email" id="email-connexion-reservation" class="champ-formulaire" required autocomplete="email">
-                  <small class="muted">Cette adresse permet de s&eacute;curiser l'acc&egrave;s &agrave; votre espace client.</small>
               </div>
               <div class="modale-pied-de-page">
                   <button type="button" id="btn-annuler-connexion-client" class="btn btn-secondaire">Annuler</button>
-                  <button type="submit" class="btn btn-primaire">Continuer</button>
+                  <button type="submit" class="btn btn-primaire">Recevoir le lien</button>
               </div>
           </form>
       </div>
