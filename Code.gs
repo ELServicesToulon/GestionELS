@@ -505,4 +505,15 @@ function _forceReAuth() {
   // Déclenche le consentement pour MailApp
   Logger.log(MailApp.getRemainingDailyQuota());
 }
+function testEnvoyerDevis() {
+    envoyerDevisParEmail({
+      client: { email: 'test@example.com', nom: 'Client Test' },
+      items: [{
+        date: '2025-05-15',
+        startTime: '10h00',
+        details: 'Essai devis',
+        prix: 120
+      }]
+    });
+  }
 
