@@ -262,7 +262,18 @@ function rechercherFactureParId(idPdf) {
   }
 
   for (const feuille of feuilles) {
-    const header = feuille.getRange(1, 1, 1, Math.max(1, feuille.getLastColumn())).getValues()[0];
+    const headerRaw = feuille.getRange(1, 1, 1, Math.max(1, feuille.getLastColumn())).getValues()[0];
+    const header = headerRaw.map(h => String(h || '').trim());
+    const headerNormalized = header.map(h => h.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
+    const dateCandidates = ['date facture', 'date facturation', 'date edition', 'date d edition', 'date emission', 'date d emission'];
+    let idxDateEdition = -1;
+    for (const candidate of dateCandidates) {
+      const pos = headerNormalized.indexOf(candidate);
+      if (pos !== -1) {
+        idxDateEdition = pos;
+        break;
+      }
+    }
     const idx = {
       email: header.indexOf('Client (Email)'),
       numero: header.indexOf('N° Facture'),
@@ -270,8 +281,8 @@ function rechercherFactureParId(idPdf) {
       date: header.indexOf('Date'),
       montant: header.indexOf('Montant')
     };
-    if (Object.values(idx).some(i => i === -1)) {
-      throw new Error("Colonnes requises absentes (Date, Client (Email), N° Facture, ID PDF, Montant).");
+    if (idx.email === -1 || idx.numero === -1 || idx.idPdf === -1 || (idx.date === -1 && idxDateEdition === -1)) {
+      throw new Error("Colonnes requises absentes (Client (Email), N° Facture, ID PDF, Date ou Date Facture).");
     }
 
     const data = feuille.getDataRange().getValues();
@@ -281,8 +292,12 @@ function rechercherFactureParId(idPdf) {
 
       const email = String(row[idx.email] || '').trim().toLowerCase();
       const numero = String(row[idx.numero] || '').trim();
-      const dateVal = new Date(row[idx.date]);
-      const montant = parseFloat(row[idx.montant]);
+      const rawDate = idxDateEdition !== -1
+        ? row[idxDateEdition]
+        : (idx.date !== -1 ? row[idx.date] : null);
+      const dateVal = rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
+      const montantVal = idx.montant !== -1 ? parseFloat(row[idx.montant]) : NaN;
+      const montant = Number.isFinite(montantVal) ? montantVal : null;
 
       let url;
       try {
@@ -296,8 +311,8 @@ function rechercherFactureParId(idPdf) {
         email: email,
         idPdf: identifiant,
         url: url,
-        dateISO: isNaN(dateVal) ? null : dateVal.toISOString(),
-        montant: Number.isFinite(montant) ? montant : null
+        dateISO: dateVal instanceof Date && !isNaN(dateVal) ? dateVal.toISOString() : null,
+        montant: montant
       };
     }
   }
@@ -321,15 +336,28 @@ function obtenirFacturesPourClient(emailClient, exp, sig) {
     const facturesParId = Object.create(null); // Garantit une facture unique par ID PDF.
     const ordreIds = [];
     feuilles.forEach(feuille => {
-      const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
+      const headerRaw = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
+      const header = headerRaw.map(h => String(h || '').trim());
+      const headerNormalized = header.map(h => h.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
+      const dateCandidates = ['date facture', 'date facturation', 'date edition', 'date d edition', 'date emission', 'date d emission'];
+      let idxDateEdition = -1;
+      for (const candidate of dateCandidates) {
+        const pos = headerNormalized.indexOf(candidate);
+        if (pos !== -1) {
+          idxDateEdition = pos;
+          break;
+        }
+      }
       const idx = {
-        date: header.indexOf('Date'),
         email: header.indexOf('Client (Email)'),
         numero: header.indexOf('N° Facture'),
         idPdf: header.indexOf('ID PDF'),
-        montant: header.indexOf('Montant')
+        montant: header.indexOf('Montant'),
+        date: header.indexOf('Date')
       };
-      if (Object.values(idx).some(i => i === -1)) throw new Error("Colonnes requises absentes (Date, Client (Email), N° Facture, ID PDF, Montant).");
+      if (idx.email === -1 || idx.numero === -1 || idx.idPdf === -1 || (idx.date === -1 && idxDateEdition === -1)) {
+        throw new Error("Colonnes requises absentes (Client (Email), N° Facture, ID PDF, Date ou Date Facture).");
+      }
       const data = feuille.getDataRange().getValues().slice(1);
       data.forEach(row => {
         try {
@@ -338,10 +366,13 @@ function obtenirFacturesPourClient(emailClient, exp, sig) {
           const numero = String(row[idx.numero] || '').trim();
           const idPdf = String(row[idx.idPdf] || '').trim();
           if (!numero || !idPdf) return;
-          const dateVal = new Date(row[idx.date]);
-          const dateISO = isNaN(dateVal) ? null : dateVal.toISOString();
-          const montantVal = parseFloat(row[idx.montant]);
-          const montant = isFinite(montantVal) ? montantVal : 0;
+          const rawDate = idxDateEdition !== -1
+            ? row[idxDateEdition]
+            : (idx.date !== -1 ? row[idx.date] : null);
+          const dateObj = rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
+          const dateISO = dateObj instanceof Date && !isNaN(dateObj) ? dateObj.toISOString() : null;
+          const montantVal = idx.montant !== -1 ? parseFloat(row[idx.montant]) : NaN;
+          const montant = Number.isFinite(montantVal) ? montantVal : 0;
           const dejaVue = facturesParId[idPdf];
           if (dejaVue) {
             if (dateISO) {

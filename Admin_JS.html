@@ -210,17 +210,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!zone) return;
                     if (reponse && reponse.success && reponse.url) {
                         const numeroAffiche = reponse.numero ? escapeHTML(reponse.numero) : escapeHTML(identifiant);
-                        const montantAffiche = typeof reponse.montant === 'number'
-                            ? ` — ${escapeHTML(reponse.montant.toFixed(2))} €`
-                            : '';
                         const dateAffiche = reponse.dateISO
-                            ? ` (${escapeHTML(new Date(reponse.dateISO).toLocaleDateString('fr-FR'))})`
+                            ? ` du ${escapeHTML(new Date(reponse.dateISO).toLocaleDateString('fr-FR'))}`
                             : '';
                         const infoClientHtml = reponse.clientEmail
                             ? `<p>Client : <strong>${escapeHTML(reponse.clientEmail)}</strong></p>`
                             : '';
                         renderHTML(zone, `
-                            <p>Facture <strong>${numeroAffiche}</strong>${montantAffiche}${dateAffiche}</p>
+                            <p>Facture <strong>${numeroAffiche}</strong>${dateAffiche}</p>
                             ${infoClientHtml}
                             <p><a class="btn btn-secondaire" href="${escapeHTML(reponse.url)}" target="_blank" rel="noopener">Télécharger le PDF</a></p>
                         `);
