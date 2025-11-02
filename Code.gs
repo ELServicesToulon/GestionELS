@@ -244,8 +244,10 @@ function doGet(e) {
 
         case 'infos':
           if (typeof PRIVACY_LINK_ENABLED !== 'undefined' && PRIVACY_LINK_ENABLED) {
-            return HtmlService.createHtmlOutputFromFile('Infos_confidentialite')
-              .setTitle("Infos & confidentialité");
+            const templateInfos = HtmlService.createTemplateFromFile('Infos_confidentialite');
+            return templateInfos.evaluate()
+              .setTitle("Infos & confidentialité")
+              .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
           }
           // CORRECTION: Ajout d'un 'break' pour éviter de tomber sur la page par défaut
           // si cette page est désactivée.
@@ -253,8 +255,10 @@ function doGet(e) {
 
         case 'mentions':
           if (typeof LEGAL_NOTICE_LINK_ENABLED !== 'undefined' && LEGAL_NOTICE_LINK_ENABLED) {
-            return HtmlService.createHtmlOutputFromFile('Mentions_Legales')
-              .setTitle("Mentions légales");
+            const templateMentions = HtmlService.createTemplateFromFile('Mentions_Legales');
+            return templateMentions.evaluate()
+              .setTitle("Mentions légales")
+              .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
           }
           break;
 

@@ -670,7 +670,7 @@ main.layout > .main > * {
   opacity: .75;
   z-index: 0;
 }
-.els-ui-theming .jour-calendrier > span { position: relative; z-index: 1; }
+.els-ui-theming .jour-calendrier > span { position: relative; z-index: 2; }
 /* NumÃ©ro du jour: top-center, gras, couleur lisible */
 .els-ui-theming .jour-calendrier > span {
   position: absolute;
@@ -679,7 +679,7 @@ main.layout > .main > * {
   transform: translateX(-50%);
   font-weight: 700;
   color: #0f172a;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
 }
 .els-ui-theming .jour-calendrier:not(.desactive):hover {
@@ -711,6 +711,34 @@ main.layout > .main > * {
   box-shadow: 0 0 0 3px rgba(52,152,219,0.25), var(--shadow);
 }
 .els-ui-theming .barre-disponibilite { display: none; }
+.els-ui-theming .jour-calendrier .capsule-progress {
+  position: absolute;
+  inset: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
+}
+.els-ui-theming .jour-calendrier .capsule-progress rect {
+  fill: none;
+}
+.els-ui-theming .jour-calendrier .capsule-progress-track {
+  stroke: rgba(255, 255, 255, 0.45);
+}
+.els-ui-theming .jour-calendrier .capsule-progress-fill {
+  stroke: #3498db;
+  stroke-dasharray: 100;
+  transition: stroke-dashoffset 0.28s ease;
+  filter: drop-shadow(0 0 4px rgba(52, 152, 219, 0.35));
+}
+.els-ui-theming .jour-calendrier[data-progress="0.000"] .capsule-progress-fill {
+  filter: none;
+}
+.els-ui-theming .jour-calendrier.desactive .capsule-progress-fill {
+  stroke: #94a3b8;
+  filter: none;
+}
 
 /* --- THEME ELS: Modale de crÃ©neaux (pills) --- */
 .els-ui-theming .slot-btn {
