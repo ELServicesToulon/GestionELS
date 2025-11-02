@@ -16,7 +16,7 @@ function checkSetup_ELS() {
 
   // 0) Vérification des scopes OAuth requis
   if (typeof SEND_MAIL_SCOPE_CHECK_ENABLED !== 'undefined' && SEND_MAIL_SCOPE_CHECK_ENABLED) {
-    const requiredScope = 'https://www.googleapis.com/auth/script.send_mail';
+    const requiredScope = 'https://www.googleapis.com/auth/gmail.send';
     const scopes = ScriptApp.getProjectOAuthScopes();
     if (!Array.isArray(scopes) || scopes.indexOf(requiredScope) === -1) {
       const msg = '[ELS setup] Scope OAuth manquant: ' + requiredScope;
