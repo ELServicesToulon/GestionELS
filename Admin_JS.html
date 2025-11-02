@@ -844,13 +844,28 @@ function attacherEcouteursModaleAjout() {
             btnConfirmer.disabled = !(peutSoumettreSlot && recurrenceOk);
         };
 
+        const proposerFinRecurrence = start => {
+            if (!start) return '';
+            const base = new Date(`${start}T00:00:00`);
+            if (Number.isNaN(base.getTime())) return '';
+            const candidate = new Date(base);
+            candidate.setDate(candidate.getDate() + 6);
+            if (candidate.getDay() === 6) {
+                candidate.setDate(candidate.getDate() + 1);
+            }
+            return candidate.toISOString().split('T')[0];
+        };
+
         const mettreAJourRecurrenceMin = () => {
             if (!champFinRecurrence) return;
             const start = champDateAjout?.value || '';
             if (start) {
                 champFinRecurrence.min = start;
-                if (checkRecurrence?.checked && champFinRecurrence.value && champFinRecurrence.value < start) {
-                    champFinRecurrence.value = start;
+                if (checkRecurrence?.checked) {
+                    const suggestion = proposerFinRecurrence(start);
+                    if (!champFinRecurrence.value || champFinRecurrence.value < start) {
+                        champFinRecurrence.value = suggestion || start;
+                    }
                 }
             } else {
                 champFinRecurrence.min = '';
@@ -870,7 +885,11 @@ function attacherEcouteursModaleAjout() {
                 if (champDateAjout?.value) {
                     champFinRecurrence.min = champDateAjout.value;
                     if (!champFinRecurrence.value) {
-                        champFinRecurrence.value = champDateAjout.value;
+                        const suggestion = proposerFinRecurrence(champDateAjout.value);
+                        champFinRecurrence.value = suggestion || champDateAjout.value;
+                    } else if (champFinRecurrence.value < champDateAjout.value) {
+                        const suggestion = proposerFinRecurrence(champDateAjout.value);
+                        champFinRecurrence.value = suggestion || champDateAjout.value;
                     }
                 }
             }
@@ -911,8 +930,9 @@ function attacherEcouteursModaleAjout() {
                 formatted = `${h.padStart(2, '0')}h${m.padStart(2, '0')}`;
             }
             creneauSelectionne = formatted || null;
-            if (btnConfirmer && conteneurHoraireManuel && !conteneurHoraireManuel.classList.contains('hidden')) {
-                btnConfirmer.disabled = !formatted;
+            if (conteneurHoraireManuel && !conteneurHoraireManuel.classList.contains('hidden')) {
+                peutSoumettreSlot = !!formatted;
+                mettreAJourEtatBouton();
             }
             return formatted;
         };
