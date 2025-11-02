@@ -244,7 +244,7 @@ function calculerCAEnCoursClient(emailClient, exp, sig) {
 /**
  * Recherche les métadonnées d'une facture via son identifiant de PDF Drive.
  * @param {string} idPdf Identifiant du fichier PDF dans Drive.
- * @returns {{numero:string,email:string,idPdf:string,url:string,dateISO:(string|null),montant:(number|null)}|null}
+ * @returns {{numero:string,email:string,idPdf:string,url:string,dateISO:(string|null),montant:(number|null),periode:string,periodeStartISO:(string|null),periodeEndISO:(string|null),dueDateISO:(string|null)}|null}
  */
 function rechercherFactureParId(idPdf) {
   const identifiant = String(idPdf || '').trim();
@@ -264,23 +264,28 @@ function rechercherFactureParId(idPdf) {
   const dateEmission = meta && meta.dateEmission instanceof Date
     ? meta.dateEmission
     : fichier.getDateCreated();
+  const dateEmissionValide = dateEmission instanceof Date && !isNaN(dateEmission.getTime());
+  const periodeDebutValide = meta && meta.periodeDebut instanceof Date && !isNaN(meta.periodeDebut.getTime());
+  const periodeFinValide = meta && meta.periodeFin instanceof Date && !isNaN(meta.periodeFin.getTime());
+  const echeanceValide = meta && meta.echeance instanceof Date && !isNaN(meta.echeance.getTime());
   return {
     numero: numero || '',
     email: meta ? meta.email : '',
     idPdf: identifiant,
     url: fichier.getUrl(),
-    dateISO: dateEmission instanceof Date && !isNaN(dateEmission)
-      ? dateEmission.toISOString()
-      : null,
+    dateISO: dateEmissionValide ? dateEmission.toISOString() : null,
     montant: meta ? meta.montant : null,
-    periode: meta ? meta.periode : ''
+    periode: meta ? meta.periode : '',
+    periodeStartISO: periodeDebutValide ? meta.periodeDebut.toISOString() : null,
+    periodeEndISO: periodeFinValide ? meta.periodeFin.toISOString() : null,
+    dueDateISO: echeanceValide ? meta.echeance.toISOString() : null
   };
 }
 
 /**
  * Récupère les factures (générées) pour un client.
  * @param {string} emailClient L'e-mail du client.
- * @returns {Object} success + liste des factures { numero, dateISO, montant, url, idPdf }.
+ * @returns {Object} success + liste des factures { numero, dateISO, montant, url, idPdf, periode, periodeStartISO, periodeEndISO, dueDateISO }.
  */
 function obtenirFacturesPourClient(emailClient, exp, sig) {
   try {
@@ -297,14 +302,21 @@ function obtenirFacturesPourClient(emailClient, exp, sig) {
         const courante = existante._dateEmissionRef || null;
         if (courante && emission && emission <= courante) return;
       }
+      const emissionValide = emission instanceof Date && !isNaN(emission.getTime());
+      const periodeDebutValide = meta.periodeDebut instanceof Date && !isNaN(meta.periodeDebut.getTime());
+      const periodeFinValide = meta.periodeFin instanceof Date && !isNaN(meta.periodeFin.getTime());
+      const echeanceValide = meta.echeance instanceof Date && !isNaN(meta.echeance.getTime());
       facturesParNumero[fichier.numero] = {
         numero: fichier.numero,
-        dateISO: emission instanceof Date && !isNaN(emission) ? emission.toISOString() : null,
+        dateISO: emissionValide ? emission.toISOString() : null,
         montant: meta.montant,
         periode: meta.periode || '',
+        periodeStartISO: periodeDebutValide ? meta.periodeDebut.toISOString() : null,
+        periodeEndISO: periodeFinValide ? meta.periodeFin.toISOString() : null,
+        dueDateISO: echeanceValide ? meta.echeance.toISOString() : null,
         url: fichier.url,
         idPdf: fichier.id,
-        _dateEmissionRef: emission instanceof Date && !isNaN(emission) ? emission : null
+        _dateEmissionRef: emissionValide ? emission : null
       };
     });
     const factures = Object.keys(facturesParNumero).map(numero => {
@@ -341,7 +353,10 @@ function obtenirLienFactureParIdClient(idPdf, emailClient, exp, sig) {
       numero: facture.numero,
       dateISO: facture.dateISO,
       montant: facture.montant,
-      periode: facture.periode || ''
+      periode: facture.periode || '',
+      periodeStartISO: facture.periodeStartISO || null,
+      periodeEndISO: facture.periodeEndISO || null,
+      dueDateISO: facture.dueDateISO || null
     };
   } catch (e) {
     Logger.log('Erreur dans obtenirLienFactureParIdClient: ' + e.stack);
@@ -370,6 +385,9 @@ function chargerMetadonneesFactures_() {
     const idxDateStd = headers.indexOf('Date');
     const idxDateEdition = trouverIndexEnteteFacture_(headersNorm, ['date facture', 'date facturation', 'date edition', 'date d edition', 'date emission', 'date d emission']);
     const idxPeriode = trouverIndexEnteteFacture_(headersNorm, ['periode facture', 'periode facturation', 'periode', 'periode de facturation']);
+    const idxPeriodeDebut = trouverIndexEnteteFacture_(headersNorm, ['date debut periode', 'debut periode', 'date debut de periode']);
+    const idxPeriodeFin = trouverIndexEnteteFacture_(headersNorm, ['date fin periode', 'fin periode', 'date fin de periode']);
+    const idxEcheance = trouverIndexEnteteFacture_(headersNorm, ['echeance', 'date echeance', 'echéance']);
     const data = feuille.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
@@ -383,7 +401,10 @@ function chargerMetadonneesFactures_() {
           email: email,
           montant: null,
           periode: '',
-          dateEmission: null
+          dateEmission: null,
+          periodeDebut: null,
+          periodeFin: null,
+          echeance: null
         };
         resultat[numero] = meta;
       } else if (!meta.email) {
@@ -401,9 +422,21 @@ function chargerMetadonneesFactures_() {
           meta.periode = periodeBrut;
         }
       }
+      if (idxPeriodeDebut !== -1) {
+        const dateDebut = convertirEnDateFacture_(row[idxPeriodeDebut]);
+        if (dateDebut) meta.periodeDebut = dateDebut;
+      }
+      if (idxPeriodeFin !== -1) {
+        const dateFin = convertirEnDateFacture_(row[idxPeriodeFin]);
+        if (dateFin) meta.periodeFin = dateFin;
+      }
+      if (idxEcheance !== -1) {
+        const due = convertirEnDateFacture_(row[idxEcheance]);
+        if (due) meta.echeance = due;
+      }
       const rawDate = idxDateEdition !== -1 ? row[idxDateEdition] : (idxDateStd !== -1 ? row[idxDateStd] : null);
-      const dateObj = rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
-      if (dateObj instanceof Date && !isNaN(dateObj)) {
+      const dateObj = convertirEnDateFacture_(rawDate);
+      if (dateObj) {
         if (!meta.dateEmission || dateObj > meta.dateEmission) {
           meta.dateEmission = dateObj;
         }
@@ -483,6 +516,17 @@ function trouverIndexEnteteFacture_(headersNorm, motifs) {
     }
   }
   return -1;
+}
+
+function convertirEnDateFacture_(valeur) {
+  if (valeur instanceof Date) {
+    return isNaN(valeur.getTime()) ? null : valeur;
+  }
+  if (valeur === null || valeur === '' || typeof valeur === 'undefined') {
+    return null;
+  }
+  const tentative = new Date(valeur);
+  return isNaN(tentative.getTime()) ? null : tentative;
 }
 
 /**

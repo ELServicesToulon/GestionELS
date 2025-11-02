@@ -356,15 +356,15 @@ function creerReservationAdmin(data) {
     if (Session.getActiveUser().getEmail().toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
       return { success: false, error: "Accès non autorisé." };
     }
-    
+
     if (!data.client || !data.client.nom || !data.date || !data.startTime) {
-        throw new Error("Données de réservation incomplètes.");
+      throw new Error("Données de réservation incomplètes.");
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const emailClient = String(data.client.email || '').trim();
     if (!emailClient || !emailRegex.test(emailClient)) {
-        throw new Error("Une adresse email client valide est requise pour créer l'accès utilisateur.");
+      throw new Error("Une adresse email client valide est requise pour créer l'accès utilisateur.");
     }
     data.client.email = emailClient;
     data.client.contactEmail = emailClient;
@@ -384,121 +384,211 @@ function creerReservationAdmin(data) {
       }
     }
 
-    // Admin calculation: force type (Normal/Samedi) and avoid automatic Urgent pricing
-    const totalStops = data.totalStops || (data.additionalStops + 1);
-    const samedi = new Date(data.date + 'T00:00:00').getDay() === 6;
-    const residentModeRaw = String(data.residentMode || (data.client && data.client.residentMode) || '').toLowerCase();
-    const residentMode = residentModeRaw === 'urgence' ? 'urgence' : 'standard';
-    const estResident = data.client && data.client.resident === true && typeof FORFAIT_RESIDENT !== 'undefined';
-    let urgent = data.forceUrgent === true;
-    if (estResident && residentMode === 'urgence') {
-      urgent = true;
-    }
-    const tarif = computeCoursePrice({
-      totalStops: totalStops,
-      retour: data.returnToPharmacy,
-      urgent: urgent,
-      samedi: samedi
-    });
-    let duree = DUREE_BASE + (tarif.nbSupp * DUREE_ARRET_SUP);
-    let prix = tarif.total;
-    const typeCourse = samedi ? 'Samedi' : (urgent ? 'Urgent' : 'Normal');
-    let libelleResident = '';
-    if (estResident) {
-      prix = residentMode === 'urgence'
-        ? FORFAIT_RESIDENT.URGENCE_PRICE
-        : FORFAIT_RESIDENT.STANDARD_PRICE;
-      libelleResident = residentMode === 'urgence'
-        ? (FORFAIT_RESIDENT.URGENCE_LABEL || 'Forfait résident - Urgence <4h')
-        : (FORFAIT_RESIDENT.STANDARD_LABEL || 'Forfait résident');
-    }
-
-    let tourneeOfferteAppliquee = false;
-    if (clientPourCalcul) {
-      if (clientPourCalcul.nbTourneesOffertes > 0) {
-        prix = 0;
-        tourneeOfferteAppliquee = true;
-      } else if (clientPourCalcul.typeRemise === 'Pourcentage' && clientPourCalcul.valeurRemise > 0) {
-        prix *= (1 - clientPourCalcul.valeurRemise / 100);
-      } else if (clientPourCalcul.typeRemise === 'Montant Fixe' && clientPourCalcul.valeurRemise > 0) {
-        prix = Math.max(0, prix - clientPourCalcul.valeurRemise);
-      }
-    }
     if (!data.startTime) {
       return { success: false, error: 'Veuillez sélectionner ou saisir un horaire.' };
     }
 
-    const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(data.date, duree);
-    const residentBypass = data.client.resident === true && typeof RESIDENT_REPLAN_ALLOW_ANY_SLOT !== 'undefined' && RESIDENT_REPLAN_ALLOW_ANY_SLOT === true;
-    if (!Array.isArray(creneauxDisponibles) || creneauxDisponibles.length === 0) {
-      if (!residentBypass) {
-        return { success: false, error: 'Aucun créneau disponible pour cette journée.' };
-      }
-    } else if (!creneauxDisponibles.includes(data.startTime)) {
-      if (!residentBypass) {
-        return { success: false, error: `Le créneau ${data.startTime} n'est plus disponible.` };
-      }
+    const totalStops = data.totalStops || (data.additionalStops + 1);
+    const residentModeRaw = String(data.residentMode || (data.client && data.client.residentMode) || '').toLowerCase();
+    const residentMode = residentModeRaw === 'urgence' ? 'urgence' : 'standard';
+    const estResident = data.client && data.client.resident === true && typeof FORFAIT_RESIDENT !== 'undefined';
+    const residentPrixStandard = estResident ? Number(FORFAIT_RESIDENT?.STANDARD_PRICE) : 0;
+    const residentPrixUrgence = estResident ? Number(FORFAIT_RESIDENT?.URGENCE_PRICE) : 0;
+    const residentLabelStandard = estResident ? (FORFAIT_RESIDENT?.STANDARD_LABEL || 'Forfait résident') : '';
+    const residentLabelUrgence = estResident ? (FORFAIT_RESIDENT?.URGENCE_LABEL || 'Forfait résident - Urgence <4h') : '';
+
+    const recurrenceInfo = data.recurrence || {};
+    const recurrenceActive = recurrenceInfo.enabled === true;
+    const skipSaturday = recurrenceInfo.skipSaturday !== false;
+    const timezone = Session.getScriptTimeZone ? Session.getScriptTimeZone() : 'Europe/Paris';
+    const parseDateFromISO = valeur => {
+      if (!valeur) return null;
+      const parts = String(valeur).split('-').map(Number);
+      if (parts.length !== 3 || parts.some(isNaN)) return null;
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    };
+
+    const dateDepart = parseDateFromISO(data.date);
+    if (!dateDepart) {
+      throw new Error("Date de départ invalide.");
     }
 
-    const idReservation = 'RESA-' + Utilities.getUuid();
+    const occurrenceDates = [];
+    if (recurrenceActive) {
+      const finStr = String(recurrenceInfo.endDate || '').trim();
+      const dateFinRecurrence = parseDateFromISO(finStr);
+      if (!dateFinRecurrence) {
+        throw new Error("Date de fin de récurrence invalide.");
+      }
+      if (dateFinRecurrence.getTime() < dateDepart.getTime()) {
+        throw new Error("La date de fin de récurrence doit être postérieure ou égale à la date de départ.");
+      }
+      const iter = new Date(dateDepart.getTime());
+      while (iter.getTime() <= dateFinRecurrence.getTime()) {
+        const day = iter.getDay();
+        if (!(skipSaturday && day === 6)) {
+          occurrenceDates.push({
+            dateObj: new Date(iter.getTime()),
+            dateStr: Utilities.formatDate(iter, timezone, 'yyyy-MM-dd')
+          });
+        }
+        iter.setDate(iter.getDate() + 1);
+      }
+      if (!occurrenceDates.length) {
+        throw new Error("Aucune occurrence à créer (toutes les dates tombent un samedi).");
+      }
+    } else {
+      occurrenceDates.push({
+        dateObj: new Date(dateDepart.getTime()),
+        dateStr: Utilities.formatDate(dateDepart, timezone, 'yyyy-MM-dd')
+      });
+    }
+
     const [heure, minute] = data.startTime.split('h').map(Number);
-    const [annee, mois, jour] = data.date.split('-').map(Number);
-    const dateDebut = new Date(annee, mois - 1, jour, heure, minute);
-    const dateFin = new Date(dateDebut.getTime() + duree * 60000);
-    // typeCourse computed above
-
-    const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${data.client.nom}`;
-    let descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${typeCourse}\nID Réservation: ${idReservation}\nArrêts totaux: ${totalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${prix.toFixed(2)} €\nNote: Ajouté par admin.`;
-    if (data.client.resident === true) {
-      descriptionEvenement += '\nResident: Oui';
-      if (libelleResident) {
-        descriptionEvenement += `\nForfait résident: ${libelleResident}`;
-      }
+    if (!Number.isFinite(heure) || !Number.isFinite(minute)) {
+      throw new Error("Horaire invalide.");
     }
 
-    const evenement = CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')).createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
+    const residentBypass = data.client.resident === true && typeof RESIDENT_REPLAN_ALLOW_ANY_SLOT !== 'undefined' && RESIDENT_REPLAN_ALLOW_ANY_SLOT === true;
+    const calendarId = getSecret('ID_CALENDRIER');
+    const calendar = CalendarApp.getCalendarById(calendarId);
+    if (!calendar) {
+      throw new Error("Calendrier introuvable.");
+    }
 
-    if (evenement) {
-      let detailsFacturation = formatCourseLabel_(duree, totalStops, data.returnToPharmacy);
+    const clientPricingState = clientPourCalcul ? {
+      nbTourneesOffertes: Math.max(0, Number(clientPourCalcul.nbTourneesOffertes) || 0),
+      typeRemise: clientPourCalcul.typeRemise,
+      valeurRemise: Number(clientPourCalcul.valeurRemise) || 0
+    } : null;
+
+    const occurrences = [];
+    occurrenceDates.forEach(occ => {
+      const samedi = occ.dateObj.getDay() === 6;
+      let urgent = data.forceUrgent === true;
+      if (estResident && residentMode === 'urgence') {
+        urgent = true;
+      }
+      const tarif = computeCoursePrice({
+        totalStops: totalStops,
+        retour: data.returnToPharmacy,
+        urgent: urgent,
+        samedi: samedi
+      });
+      if (!tarif || tarif.error) {
+        throw new Error(tarif && tarif.error ? tarif.error : "Tarification indisponible.");
+      }
+      const duree = DUREE_BASE + (tarif.nbSupp * DUREE_ARRET_SUP);
+      let prix = tarif.total;
+      let libelleResident = '';
       if (estResident) {
-        const labelResident = libelleResident || 'Forfait résident';
+        prix = residentMode === 'urgence' ? residentPrixUrgence : residentPrixStandard;
+        libelleResident = residentMode === 'urgence' ? residentLabelUrgence : residentLabelStandard;
+      }
+
+      let tourneeOfferte = false;
+      if (clientPricingState) {
+        if (clientPricingState.nbTourneesOffertes > 0) {
+          prix = 0;
+          tourneeOfferte = true;
+          clientPricingState.nbTourneesOffertes = Math.max(0, clientPricingState.nbTourneesOffertes - 1);
+        } else if (clientPricingState.typeRemise === 'Pourcentage' && clientPricingState.valeurRemise > 0) {
+          prix *= (1 - clientPricingState.valeurRemise / 100);
+        } else if (clientPricingState.typeRemise === 'Montant Fixe' && clientPricingState.valeurRemise > 0) {
+          prix = Math.max(0, prix - clientPricingState.valeurRemise);
+        }
+      }
+      prix = Math.round(prix * 100) / 100;
+
+      const creneauxDisponibles = obtenirCreneauxDisponiblesPourDate(occ.dateStr, duree);
+      if (!Array.isArray(creneauxDisponibles) || creneauxDisponibles.length === 0) {
+        if (!residentBypass) {
+          throw new Error(`Aucun créneau disponible pour le ${formaterDatePersonnalise(occ.dateObj, 'EEEE d MMMM yyyy')}.`);
+        }
+      } else if (!creneauxDisponibles.includes(data.startTime)) {
+        if (!residentBypass) {
+          throw new Error(`Le créneau ${data.startTime} n'est plus disponible pour le ${formaterDatePersonnalise(occ.dateObj, 'EEEE d MMMM yyyy')}.`);
+        }
+      }
+
+      occurrences.push({
+        dateObj: occ.dateObj,
+        dateStr: occ.dateStr,
+        samedi: samedi,
+        urgent: urgent,
+        tarif: tarif,
+        duree: duree,
+        prix: prix,
+        typeCourse: samedi ? 'Samedi' : (urgent ? 'Urgent' : 'Normal'),
+        libelleResident: libelleResident,
+        tourneeOfferte: tourneeOfferte
+      });
+    });
+
+    const notifications = [];
+    const reservationsCreees = [];
+
+    occurrences.forEach(ctx => {
+      const idReservation = 'RESA-' + Utilities.getUuid();
+      const dateDebut = new Date(ctx.dateObj.getFullYear(), ctx.dateObj.getMonth(), ctx.dateObj.getDate(), heure, minute);
+      const dateFin = new Date(dateDebut.getTime() + ctx.duree * 60000);
+
+      const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${data.client.nom}`;
+      let descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${ctx.typeCourse}\nID Réservation: ${idReservation}\nArrêts totaux: ${totalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${ctx.prix.toFixed(2)} €\nNote: Ajouté par admin.`;
+      if (data.client.resident === true) {
+        descriptionEvenement += '\nResident: Oui';
+        if (ctx.libelleResident) {
+          descriptionEvenement += `\nForfait résident: ${ctx.libelleResident}`;
+        }
+      }
+
+      const evenement = calendar.createEvent(titreEvenement, dateDebut, dateFin, { description: descriptionEvenement });
+      if (!evenement) {
+        throw new Error("La création de l'événement dans le calendrier a échoué.");
+      }
+
+      let detailsFacturation = formatCourseLabel_(ctx.duree, totalStops, data.returnToPharmacy);
+      if (estResident) {
+        const labelResident = ctx.libelleResident || 'Forfait résident';
         const resumeRetour = data.returnToPharmacy ? 'retour: oui' : 'retour: non';
         detailsFacturation = `${labelResident} (forfait résident, ${totalStops} arrêt(s), ${resumeRetour})`;
       }
-      const noteInterne = estResident && libelleResident
-        ? `Ajouté par admin | Forfait résident: ${libelleResident}`
+      const noteInterne = estResident && ctx.libelleResident
+        ? `Ajouté par admin | Forfait résident: ${ctx.libelleResident}`
         : 'Ajouté par admin';
+
       enregistrerReservationPourFacturation(
         dateDebut,
         data.client.nom,
         data.client.email,
-        typeCourse,
+        ctx.typeCourse,
         detailsFacturation,
-        prix,
+        ctx.prix,
         evenement.getId(),
         idReservation,
         noteInterne,
-        tourneeOfferteAppliquee,
-        clientPourCalcul.typeRemise,
-        clientPourCalcul.valeurRemise,
+        ctx.tourneeOfferte,
+        clientPourCalcul ? clientPourCalcul.typeRemise : '',
+        clientPourCalcul ? clientPourCalcul.valeurRemise : 0,
         data.client.resident === true
       );
-      logActivity(idReservation, data.client.email, `Réservation manuelle par admin`, prix, "Succès");
+      logActivity(idReservation, data.client.email, `Réservation manuelle par admin`, ctx.prix, "Succès");
 
-      if (tourneeOfferteAppliquee) {
+      if (ctx.tourneeOfferte) {
         decrementerTourneesOffertesClient(data.client.email);
+        if (clientPourCalcul) {
+          clientPourCalcul.nbTourneesOffertes = Math.max(0, (Number(clientPourCalcul.nbTourneesOffertes) || 0) - 1);
+        }
       }
 
-      if (data.notifyClient && RESERVATION_CONFIRMATION_EMAILS_ENABLED) {
-        notifierClientConfirmation(data.client.email, data.client.nom, [{
-          date: formaterDatePersonnalise(dateDebut, 'EEEE d MMMM yyyy'),
-          time: data.startTime,
-          price: prix
-        }]);
-      }
+      notifications.push({
+        date: formaterDatePersonnalise(dateDebut, 'EEEE d MMMM yyyy'),
+        time: data.startTime,
+        price: ctx.prix
+      });
 
-      var infoRemise = '';
-      if (tourneeOfferteAppliquee) {
+      let infoRemise = '';
+      if (ctx.tourneeOfferte) {
         infoRemise = '(Offerte)';
       } else if (clientPourCalcul && clientPourCalcul.typeRemise === 'Pourcentage' && clientPourCalcul.valeurRemise > 0) {
         infoRemise = '(-' + clientPourCalcul.valeurRemise + '%)';
@@ -506,7 +596,7 @@ function creerReservationAdmin(data) {
         infoRemise = '(-' + clientPourCalcul.valeurRemise + '€)';
       }
 
-      var reservation = {
+      reservationsCreees.push({
         id: idReservation,
         eventId: evenement.getId(),
         start: dateDebut.toISOString(),
@@ -514,15 +604,27 @@ function creerReservationAdmin(data) {
         details: detailsFacturation,
         clientName: data.client.nom,
         clientEmail: data.client.email,
-        amount: prix,
-        km: KM_BASE + ((tarif.nbSupp + (data.returnToPharmacy ? 1 : 0)) * KM_ARRET_SUP),
+        amount: ctx.prix,
+        km: KM_BASE + ((ctx.tarif.nbSupp + (data.returnToPharmacy ? 1 : 0)) * KM_ARRET_SUP),
         statut: '',
         infoRemise: infoRemise
-      };
-    } else {
-      throw new Error("La création de l'événement dans le calendrier a échoué.");
+      });
+    });
+
+    if (data.notifyClient && RESERVATION_CONFIRMATION_EMAILS_ENABLED && notifications.length > 0) {
+      try {
+        notifierClientConfirmation(data.client.email, data.client.nom, notifications);
+      } catch (notifErr) {
+        Logger.log(`Avertissement: impossible d'envoyer la confirmation de réservation: ${notifErr}`);
+      }
     }
-    return { success: true, reservation: reservation };
+
+    return {
+      success: true,
+      reservation: reservationsCreees[0],
+      reservations: reservationsCreees,
+      totalCreated: reservationsCreees.length
+    };
 
   } catch (e) {
     Logger.log(`Erreur dans creerReservationAdmin: ${e.stack}`);

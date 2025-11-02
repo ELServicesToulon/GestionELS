@@ -27,7 +27,6 @@ function logError(...args) {
 const CLE_LOCALSTORAGE_CLIENT = 'sessionClientELServices';
 const CLIENT_SESSION_OPAQUE_ID_ENABLED = <?!= CLIENT_SESSION_OPAQUE_ID_ENABLED ?>;
 const CLIENT_SESSION_TTL_HOURS = <?!= CLIENT_SESSION_TTL_HOURS ?>;
-const EURO_FORMATTER = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Références aux éléments du DOM ---
@@ -317,23 +316,49 @@ document.addEventListener('DOMContentLoaded', () => {
             renderMessage(cont, "Aucune facture disponible pour l\u2019instant.");
             return;
         }
+        const formatISODate = iso => {
+            if (!iso) return '';
+            const d = new Date(iso);
+            return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('fr-FR');
+        };
         const ul = document.createElement('ul');
         ul.className = 'liste-factures';
         factures.forEach(f => {
             const li = document.createElement('li');
-            const dateTxt = f.dateISO ? new Date(f.dateISO).toLocaleDateString('fr-FR') : '';
             const numero = escapeHTML(f.numero);
-            const datePart = dateTxt ? ` du ${escapeHTML(dateTxt)}` : '';
-            const montantPart = (typeof f.montant === 'number')
-                ? ` — ${escapeHTML(EURO_FORMATTER.format(f.montant))}`
-                : '';
-            const periodePart = f.periode ? ` · ${escapeHTML(f.periode)}` : '';
+            const dateEmission = formatISODate(f.dateISO);
+            const periodeLabel = f.periode ? escapeHTML(f.periode) : '';
+            const periodeDebut = formatISODate(f.periodeStartISO);
+            const periodeFin = formatISODate(f.periodeEndISO);
+            const dueDate = formatISODate(f.dueDateISO);
             const url = escapeHTML(f.url);
+
+            const ligneNumero = `Numéro : ${numero}${dateEmission ? ` — Date : ${escapeHTML(dateEmission)}` : ''}`;
+            let lignePeriode = '';
+            if (periodeLabel || (periodeDebut || periodeFin)) {
+                if (periodeLabel && periodeDebut && periodeFin) {
+                    lignePeriode = `Période couverte : ${periodeLabel} (${escapeHTML(periodeDebut)} → ${escapeHTML(periodeFin)})`;
+                } else if (periodeLabel) {
+                    lignePeriode = `Période couverte : ${periodeLabel}`;
+                } else {
+                    const debutTxt = periodeDebut ? escapeHTML(periodeDebut) : '—';
+                    const finTxt = periodeFin ? escapeHTML(periodeFin) : '—';
+                    lignePeriode = `Période couverte : ${debutTxt} → ${finTxt}`;
+                }
+            }
+            const ligneEcheance = dueDate ? `Échéance : ${escapeHTML(dueDate)}` : '';
+
             renderHTML(li, `
-                <span>Facture <strong>${numero}</strong>${datePart}${montantPart}${periodePart}</span>
-                <span style="flex:1"></span>
-                <a class="btn btn-secondaire btn--client" href="${url}" target="_blank" rel="noopener">Télécharger</a>
-                <button class="btn btn-primaire btn--client btn-mail-facture" data-numero="${numero}">Recevoir par e-mail</button>
+                <div class="facture-meta">
+                    <p><strong>Votre facture</strong></p>
+                    <p>${ligneNumero}</p>
+                    ${lignePeriode ? `<p>${lignePeriode}</p>` : ''}
+                    ${ligneEcheance ? `<p>${ligneEcheance}</p>` : ''}
+                </div>
+                <div class="facture-actions">
+                    <a class="btn btn-secondaire btn--client" href="${url}" target="_blank" rel="noopener">Télécharger</a>
+                    <button class="btn btn-primaire btn--client btn-mail-facture" data-numero="${numero}">Recevoir par e-mail</button>
+                </div>
             `);
             ul.appendChild(li);
         });

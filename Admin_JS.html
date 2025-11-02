@@ -475,6 +475,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="groupe-formulaire hidden" id="conteneur-nb-tournees-offertes"><label for="nb-tournees-offertes">Nombre Tournées Offertes</label><input type="number" id="nb-tournees-offertes" class="champ-formulaire" min="0" step="1"></div>
             </div>
             <div class="groupe-formulaire"><label for="champ-date-ajout">Date de la course</label><input type="date" id="champ-date-ajout" class="champ-formulaire" value="${escapeHTML(champDate ? champDate.value : '')}"></div>
+            <div class="groupe-formulaire"><label class="checkbox-inline"><input type="checkbox" id="check-recurrence"> Créer une récurrence (hors samedi)</label></div>
+            <div class="groupe-formulaire hidden" id="conteneur-recurrence">
+              <label for="champ-date-fin-recurrence">Date de fin de récurrence</label>
+              <input type="date" id="champ-date-fin-recurrence" class="champ-formulaire">
+              <p class="champ-helper">La course sera dupliquée chaque jour hors samedi jusqu'à cette date incluse.</p>
+            </div>
             <div class="groupe-formulaire"><label>Arrêts totaux :</label><div style="display: flex; align-items: center; gap: 20px;"><div class="champ-compteur"><button type="button" class="btn-compteur btn-retirer">-</button><span class="valeur-compteur">1</span><button type="button" class="btn-compteur btn-ajouter">+</button></div><label><input type="checkbox" id="check-retour"> Retour pharmacie</label></div></div>
             <div id="conteneur-creneaux-ajout" class="hidden">
               <label>Créneau disponible</label>
@@ -555,9 +561,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 formatted = `${h.padStart(2, '0')}h${m.padStart(2, '0')}`;
             }
             creneauSelectionne = formatted || null;
-            if (btnConfirmer && conteneurHoraireManuel && !conteneurHoraireManuel.classList.contains('hidden')) {
-                btnConfirmer.disabled = !formatted;
-            }
+            peutSoumettreSlot = !!formatted;
+            mettreAJourEtatBouton();
             return formatted;
         };
 
@@ -722,13 +727,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }).withFailureHandler(afficherErreur).supprimerReservation(idReservation);
     }
     function gererSoumissionCreation(data) {
-        if (!ADMIN_OPTIMISTIC_CREATION_ENABLED) {
+        const recurrenceActive = !!(data?.recurrence && data.recurrence.enabled);
+        if (!ADMIN_OPTIMISTIC_CREATION_ENABLED || recurrenceActive) {
             basculerIndicateurChargement(true);
             closeModal();
             google.script.run.withSuccessHandler(reponse => {
                 basculerIndicateurChargement(false);
                 if (reponse.success) {
-                    afficherNotification("Course ajoutée avec succès !", "succes");
+                    const total = Number(reponse.totalCreated) || 0;
+                    const message = total > 1 ? `Courses ajoutées (${total}) !` : "Course ajoutée avec succès !";
+                    afficherNotification(message, "succes");
                     rafraichirVueActuelle();
                 } else { afficherErreur(reponse.error); }
             }).withFailureHandler(afficherErreur).creerReservationAdmin(data);
@@ -768,9 +776,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (idx >= 0) {
                     toutesLesReservationsAffichees[idx] = Object.assign({}, reponse.reservation, { isDraft: false, justCreated: true });
                 }
-                afficherNotification("Course ajoutée avec succès !", "succes");
+                const total = Number(reponse.totalCreated) || 0;
+                const message = total > 1 ? `Courses ajoutées (${total}) !` : "Course ajoutée avec succès !";
+                afficherNotification(message, "succes");
                 toutesLesReservationsAffichees.sort((a, b) => new Date(a.start) - new Date(b.start));
                 afficherReservations(toutesLesReservationsAffichees, vueActuelle === 'toutes');
+                if (total > 1) {
+                    rafraichirVueActuelle();
+                }
             } else {
                 toutesLesReservationsAffichees = toutesLesReservationsAffichees.filter(r => r.id !== tempId);
                 afficherReservations(toutesLesReservationsAffichees, vueActuelle === 'toutes');
@@ -806,12 +819,63 @@ function attacherEcouteursModaleAjout() {
         const conteneurValeurRemise = document.getElementById('conteneur-valeur-remise');
         const conteneurNbTourneesOffertes = document.getElementById('conteneur-nb-tournees-offertes');
         const champDateAjout = document.getElementById('champ-date-ajout');
+        const checkRecurrence = document.getElementById('check-recurrence');
+        const conteneurRecurrence = document.getElementById('conteneur-recurrence');
+        const champFinRecurrence = document.getElementById('champ-date-fin-recurrence');
         const valeurCompteur = modale.querySelector('.valeur-compteur');
         const checkRetour = document.getElementById('check-retour');
         const conteneurCreneaux = document.getElementById('conteneur-creneaux-ajout');
         const grilleCreneaux = document.getElementById('grille-creneaux-ajout');
         const btnConfirmer = document.getElementById('btn-confirmer-ajout');
         let creneauSelectionne = null;
+        let peutSoumettreSlot = false;
+
+        const recurrenceValide = () => {
+            if (!checkRecurrence?.checked) return true;
+            const start = champDateAjout?.value || '';
+            const end = champFinRecurrence?.value || '';
+            if (!end) return false;
+            return !start || end >= start;
+        };
+
+        const mettreAJourEtatBouton = () => {
+            if (!btnConfirmer) return;
+            const recurrenceOk = recurrenceValide();
+            btnConfirmer.disabled = !(peutSoumettreSlot && recurrenceOk);
+        };
+
+        const mettreAJourRecurrenceMin = () => {
+            if (!champFinRecurrence) return;
+            const start = champDateAjout?.value || '';
+            if (start) {
+                champFinRecurrence.min = start;
+                if (checkRecurrence?.checked && champFinRecurrence.value && champFinRecurrence.value < start) {
+                    champFinRecurrence.value = start;
+                }
+            } else {
+                champFinRecurrence.min = '';
+                if (!checkRecurrence?.checked) {
+                    champFinRecurrence.value = '';
+                }
+            }
+            mettreAJourEtatBouton();
+        };
+
+        const basculerRecurrence = actif => {
+            if (!conteneurRecurrence) return;
+            conteneurRecurrence.classList.toggle('hidden', !actif);
+            if (!actif) {
+                if (champFinRecurrence) champFinRecurrence.value = '';
+            } else if (champFinRecurrence) {
+                if (champDateAjout?.value) {
+                    champFinRecurrence.min = champDateAjout.value;
+                    if (!champFinRecurrence.value) {
+                        champFinRecurrence.value = champDateAjout.value;
+                    }
+                }
+            }
+            mettreAJourEtatBouton();
+        };
 
         const majAffichageRemise = () => {
             if (!champsClient.typeRemise || !conteneurValeurRemise || !conteneurNbTourneesOffertes) return;
@@ -911,8 +975,20 @@ function attacherEcouteursModaleAjout() {
                 mettreAJourCreneauxDisponibles();
             }
         });
-        champDateAjout?.addEventListener('change', mettreAJourCreneauxDisponibles);
+        champDateAjout?.addEventListener('change', () => {
+            mettreAJourRecurrenceMin();
+            mettreAJourCreneauxDisponibles();
+        });
         checkRetour?.addEventListener('change', mettreAJourCreneauxDisponibles);
+        checkRecurrence?.addEventListener('change', () => {
+            basculerRecurrence(checkRecurrence.checked);
+            mettreAJourRecurrenceMin();
+        });
+        champFinRecurrence?.addEventListener('input', mettreAJourEtatBouton);
+        champFinRecurrence?.addEventListener('change', () => {
+            mettreAJourRecurrenceMin();
+            mettreAJourEtatBouton();
+        });
 
         function mettreAJourCreneauxDisponibles() {
             const totalStops = parseInt(valeurCompteur?.textContent || '1', 10);
@@ -921,7 +997,8 @@ function attacherEcouteursModaleAjout() {
             if (!date) {
                 conteneurCreneaux?.classList.add('hidden');
                 conteneurHoraireManuel?.classList.add('hidden');
-                if (btnConfirmer) btnConfirmer.disabled = true;
+                peutSoumettreSlot = false;
+                mettreAJourEtatBouton();
                 nettoyerSelectionCreneaux();
                 creneauSelectionne = null;
                 return;
@@ -934,7 +1011,8 @@ function attacherEcouteursModaleAjout() {
 
             conteneurCreneaux?.classList.remove('hidden');
             if (grilleCreneaux) renderMessage(grilleCreneaux, 'Chargement...', 'i');
-            if (btnConfirmer) btnConfirmer.disabled = true;
+            peutSoumettreSlot = false;
+            mettreAJourEtatBouton();
             nettoyerSelectionCreneaux();
             creneauSelectionne = null;
 
@@ -952,8 +1030,7 @@ function attacherEcouteursModaleAjout() {
                                 if (champHoraireManuel && !champHoraireManuel.value) {
                                     champHoraireManuel.value = '08:00';
                                 }
-                                const manuel = mettreAJourSelectionManuelle();
-                                if (btnConfirmer) btnConfirmer.disabled = !manuel;
+                                mettreAJourSelectionManuelle();
                             }
                         }
                     }
@@ -965,8 +1042,7 @@ function attacherEcouteursModaleAjout() {
                         if (champHoraireManuel && !champHoraireManuel.value) {
                             champHoraireManuel.value = '08:00';
                         }
-                        const manuel = mettreAJourSelectionManuelle();
-                        if (btnConfirmer) btnConfirmer.disabled = !manuel;
+                        mettreAJourSelectionManuelle();
                     }
                 })
                 .obtenirCreneauxDisponiblesPourDate(date, duree);
@@ -981,7 +1057,8 @@ function attacherEcouteursModaleAjout() {
             if (conteneurHoraireManuel) {
                 conteneurHoraireManuel.classList.add('hidden');
             }
-            if (btnConfirmer) btnConfirmer.disabled = !creneauSelectionne;
+            peutSoumettreSlot = !!creneauSelectionne;
+            mettreAJourEtatBouton();
         });
 
         btnConfirmer?.addEventListener('click', () => {
@@ -991,6 +1068,24 @@ function attacherEcouteursModaleAjout() {
             if (!creneauSelectionne) {
                 afficherErreur('Merci de sélectionner un créneau ou de renseigner un horaire.');
                 return;
+            }
+            const recurrenceActive = checkRecurrence?.checked || false;
+            let recurrenceEndDate = '';
+            if (recurrenceActive) {
+                const startDateValue = champDateAjout?.value || '';
+                recurrenceEndDate = champFinRecurrence?.value || '';
+                if (!startDateValue) {
+                    afficherErreur('Veuillez sélectionner la date de départ.');
+                    return;
+                }
+                if (!recurrenceEndDate) {
+                    afficherErreur('Merci de renseigner la date de fin de récurrence.');
+                    return;
+                }
+                if (recurrenceEndDate < startDateValue) {
+                    afficherErreur('La date de fin de récurrence doit être postérieure ou égale à la date de départ.');
+                    return;
+                }
             }
             const clientData = {
                 email: champsClient.email.value.trim(),
@@ -1015,13 +1110,21 @@ function attacherEcouteursModaleAjout() {
                 returnToPharmacy: checkRetour?.checked || false,
                 notifyClient: document.getElementById('check-notifier')?.checked || false,
                 forceUrgent: document.getElementById('check-urgent')?.checked || false,
-                residentMode: residentMode
+                residentMode: residentMode,
+                recurrence: {
+                    enabled: recurrenceActive,
+                    endDate: recurrenceActive ? recurrenceEndDate : '',
+                    skipSaturday: true
+                }
             };
             gererSoumissionCreation(data);
         }, { once: true });
 
         remplirChampsClient(null);
         basculerForfaitResident(false);
+        basculerRecurrence(false);
+        mettreAJourRecurrenceMin();
+        mettreAJourEtatBouton();
         mettreAJourCreneauxDisponibles();
     }
 
