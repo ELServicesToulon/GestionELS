@@ -724,16 +724,18 @@ main.layout > .main > * {
   fill: none;
 }
 .els-ui-theming .jour-calendrier .capsule-progress-track {
-  stroke: rgba(255, 255, 255, 0.45);
+  stroke: rgba(255, 255, 255, 0.32);
 }
 .els-ui-theming .jour-calendrier .capsule-progress-fill {
-  stroke: #3498db;
   stroke-dasharray: 100;
-  transition: stroke-dashoffset 0.28s ease;
-  filter: drop-shadow(0 0 4px rgba(52, 152, 219, 0.35));
+  transition: stroke-dashoffset 0.28s ease, opacity 0.2s ease;
+  filter: drop-shadow(0 0 6px rgba(142, 68, 173, 0.35));
 }
 .els-ui-theming .jour-calendrier[data-progress="0.000"] .capsule-progress-fill {
   filter: none;
+}
+.els-ui-theming .jour-calendrier[data-progress="1.000"] .capsule-progress-fill {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
 }
 .els-ui-theming .jour-calendrier.desactive .capsule-progress-fill {
   stroke: #94a3b8;

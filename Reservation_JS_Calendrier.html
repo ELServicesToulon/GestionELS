@@ -17,6 +17,9 @@ const CAPSULE_PROGRESS_RECT = {
   rx: '47',
   ry: '47'
 };
+const CAPSULE_PROGRESS_GRADIENT_COLORS = ['#8e44ad', '#3498db', '#5dade2'];
+const CAPSULE_PROGRESS_EASING_EXPONENT = 1.6;
+let capsuleProgressSequence = 0;
 
 /**
  * Crée au besoin l'overlay SVG qui dessine la progression autour de la gélule.
@@ -40,12 +43,35 @@ function assurerProgressionCapsule(cellule) {
   svg.setAttribute('preserveAspectRatio', 'none');
   svg.setAttribute('aria-hidden', 'true');
 
+  const defs = document.createElementNS(SVG_NS, 'defs');
+  const gradient = document.createElementNS(SVG_NS, 'linearGradient');
+  const gradientId = `capsule-progress-gradient-${++capsuleProgressSequence}`;
+  gradient.setAttribute('id', gradientId);
+  gradient.setAttribute('gradientUnits', 'objectBoundingBox');
+  gradient.setAttribute('x1', '0%');
+  gradient.setAttribute('y1', '0%');
+  gradient.setAttribute('x2', '100%');
+  gradient.setAttribute('y2', '100%');
+
+  const steps = Math.max(1, CAPSULE_PROGRESS_GRADIENT_COLORS.length - 1);
+  CAPSULE_PROGRESS_GRADIENT_COLORS.forEach((color, index) => {
+    const stop = document.createElementNS(SVG_NS, 'stop');
+    const offset = steps === 0 ? 0 : (index / steps) * 100;
+    stop.setAttribute('offset', `${offset}%`);
+    stop.setAttribute('stop-color', color);
+    gradient.appendChild(stop);
+  });
+
+  defs.appendChild(gradient);
+  svg.appendChild(defs);
+
   const track = document.createElementNS(SVG_NS, 'rect');
   track.classList.add('capsule-progress-track');
   track.setAttribute('pathLength', CAPSULE_PROGRESS_PATH_LENGTH);
   track.setAttribute('vector-effect', 'non-scaling-stroke');
   track.setAttribute('stroke-linecap', 'round');
   track.setAttribute('stroke-width', '4');
+  track.setAttribute('stroke', 'rgba(255, 255, 255, 0.4)');
 
   const fill = document.createElementNS(SVG_NS, 'rect');
   fill.classList.add('capsule-progress-fill');
@@ -55,6 +81,7 @@ function assurerProgressionCapsule(cellule) {
   fill.setAttribute('stroke-width', '4');
   fill.setAttribute('stroke-dasharray', CAPSULE_PROGRESS_PATH_LENGTH);
   fill.setAttribute('stroke-dashoffset', CAPSULE_PROGRESS_PATH_LENGTH);
+  fill.setAttribute('stroke', `url(#${gradientId})`);
 
   Object.keys(CAPSULE_PROGRESS_RECT).forEach(attr => {
     const value = CAPSULE_PROGRESS_RECT[attr];
@@ -70,20 +97,22 @@ function assurerProgressionCapsule(cellule) {
 }
 
 /**
- * Met à jour le tracé de progression autour de la gélule en fonction du taux de remplissage.
+ * Met à jour le tracé de progression autour de la gélule en fonction du taux de disponibilité.
  * @param {HTMLElement} cellule
- * @param {number} occupation Valeur entre 0 et 1
+ * @param {number} disponibilite Valeur entre 0 (complet) et 1 (tout libre)
  */
-function mettreAJourProgressionCapsule(cellule, occupation) {
-  if (!cellule || !Number.isFinite(occupation)) return;
+function mettreAJourProgressionCapsule(cellule, disponibilite) {
+  if (!cellule || !Number.isFinite(disponibilite)) return;
 
-  const progress = Math.max(0, Math.min(1, occupation));
-  cellule.dataset.progress = progress.toFixed(3);
+  const clamped = Math.max(0, Math.min(1, disponibilite));
+  const eased = Math.pow(clamped, CAPSULE_PROGRESS_EASING_EXPONENT);
+  cellule.dataset.progress = eased.toFixed(3);
+  cellule.dataset.progressLinear = clamped.toFixed(3);
 
   const result = assurerProgressionCapsule(cellule);
   if (!result || !result.fill) return;
 
-  const offset = (CAPSULE_PROGRESS_PATH_LENGTH * (1 - progress)).toFixed(2);
+  const offset = (CAPSULE_PROGRESS_PATH_LENGTH * (1 - eased)).toFixed(2);
   result.fill.setAttribute('stroke-dashoffset', offset);
 }
 
@@ -143,7 +172,6 @@ function afficherCalendrier(mois, annee) {
           const estPasse = dateISO < todayISO; // compare AAAA-MM-JJ
           const estReservable = !estPasse && !estDimanche && !estComplet;
           const ratio = (dispo.total > 0) ? (dispo.disponibles / dispo.total) : 0;
-          const occupation = dispo.total > 0 ? 1 - ratio : 0;
 
           cellule.classList.toggle('desactive', !estReservable);
           cellule.tabIndex = estReservable ? 0 : -1;
@@ -165,9 +193,10 @@ function afficherCalendrier(mois, annee) {
           }
 
           if (dispo.total > 0) {
-            mettreAJourProgressionCapsule(cellule, occupation);
+            mettreAJourProgressionCapsule(cellule, ratio);
           } else {
             delete cellule.dataset.progress;
+            delete cellule.dataset.progressLinear;
             const overlay = cellule.querySelector('.capsule-progress');
             if (overlay) overlay.remove();
           }
@@ -218,8 +247,12 @@ function ajusterDisponibiliteJour(dateISO, delta) {
     const ratio = record.total > 0 ? (record.disponibles / record.total) : 0;
     if (rempl) rempl.style.width = `${Math.min(100, Math.max(0, ratio * 100))}%`;
     if (record.total > 0) {
-      const occupation = 1 - ratio;
-      mettreAJourProgressionCapsule(cellule, occupation);
+      mettreAJourProgressionCapsule(cellule, ratio);
+    } else {
+      delete cellule.dataset.progress;
+      delete cellule.dataset.progressLinear;
+      const overlay = cellule.querySelector('.capsule-progress');
+      if (overlay) overlay.remove();
     }
 
     // Désactiver si complet

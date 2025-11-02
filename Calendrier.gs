@@ -5,6 +5,90 @@
 //              données de Google Calendar et les blocages manuels.
 // =================================================================
 
+const __CACHE_JOURS_FERIES_FRANCE = Object.create(null);
+
+/**
+ * Calcule la date du dimanche de Pâques pour une année donnée (algorithme de Butcher).
+ * @param {number} annee
+ * @returns {Date}
+ */
+function calculerDatePaques(annee) {
+  const a = annee % 19;
+  const b = Math.floor(annee / 100);
+  const c = annee % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const mois = Math.floor((h + l - 7 * m + 114) / 31); // 3 = mars, 4 = avril
+  const jour = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(annee, mois - 1, jour);
+}
+
+/**
+ * Retourne un nouvel objet Date en ajoutant un nombre de jours.
+ * @param {Date} date
+ * @param {number} jours
+ * @returns {Date}
+ */
+function ajouterJours(date, jours) {
+  const resultat = new Date(date);
+  resultat.setDate(resultat.getDate() + jours);
+  return resultat;
+}
+
+/**
+ * Génère (et met en cache) l'ensemble des jours fériés français pour une année.
+ * @param {number} annee
+ * @returns {Set<string>}
+ */
+function obtenirSetJoursFeriesFrance(annee) {
+  if (__CACHE_JOURS_FERIES_FRANCE[annee]) {
+    return __CACHE_JOURS_FERIES_FRANCE[annee];
+  }
+
+  const paques = calculerDatePaques(annee);
+  const jours = [
+    formaterDateEnYYYYMMDD(new Date(annee, 0, 1)),   // Jour de l'An
+    formaterDateEnYYYYMMDD(new Date(annee, 4, 1)),   // Fête du Travail
+    formaterDateEnYYYYMMDD(new Date(annee, 4, 8)),   // Victoire 1945
+    formaterDateEnYYYYMMDD(new Date(annee, 6, 14)),  // Fête Nationale
+    formaterDateEnYYYYMMDD(new Date(annee, 7, 15)),  // Assomption
+    formaterDateEnYYYYMMDD(new Date(annee, 10, 1)),  // Toussaint
+    formaterDateEnYYYYMMDD(new Date(annee, 10, 11)), // Armistice
+    formaterDateEnYYYYMMDD(new Date(annee, 11, 25))  // Noël
+  ];
+
+  const feriesMobiles = [
+    ajouterJours(paques, 1),   // Lundi de Pâques
+    ajouterJours(paques, 39),  // Ascension
+    ajouterJours(paques, 49),  // Pentecôte (dimanche)
+    ajouterJours(paques, 50)   // Lundi de Pentecôte
+  ];
+
+  feriesMobiles.forEach(date => jours.push(formaterDateEnYYYYMMDD(date)));
+
+  const set = new Set(jours);
+  __CACHE_JOURS_FERIES_FRANCE[annee] = set;
+  return set;
+}
+
+/**
+ * Indique si une date correspond à un jour férié français (bloqué côté public).
+ * @param {Date} dateObjet
+ * @param {string} dateString
+ * @returns {boolean}
+ */
+function estJourFerieFrancais(dateObjet, dateString) {
+  const feries = obtenirSetJoursFeriesFrance(dateObjet.getFullYear());
+  return feries.has(dateString);
+}
+
 /**
  * Récupère les événements du calendrier Google pour une période donnée via l'API avancée.
  * @param {Date} dateDebut La date de début de la période.
@@ -247,9 +331,18 @@ function obtenirDonneesCalendrierPublic(mois, annee) {
         disponibilite[dateString] = { disponibles: 0, total: 0 };
         continue;
       }
-      
+
+      const debutServiceJour = new Date(d);
+      debutServiceJour.setHours(...HEURE_DEBUT_SERVICE.split(':').map(Number));
       const finServiceJour = new Date(d);
       finServiceJour.setHours(heureFin, minuteFin, 0, 0);
+      const totalCreneauxPossiblesBrut = Math.floor(((finServiceJour - debutServiceJour) / 60000) / INTERVALLE_CRENEAUX_MINUTES);
+      const totalCreneauxPossibles = totalCreneauxPossiblesBrut > 0 ? totalCreneauxPossiblesBrut : 1;
+
+      if (estJourFerieFrancais(d, dateString)) {
+        disponibilite[dateString] = { disponibles: 0, total: totalCreneauxPossibles };
+        continue;
+      }
 
       if (dateString < dateAujourdhuiString || (dateString === dateAujourdhuiString && maintenant > finServiceJour)) {
           disponibilite[dateString] = { disponibles: 0, total: 0 };
@@ -258,11 +351,7 @@ function obtenirDonneesCalendrierPublic(mois, annee) {
 
       const creneaux = obtenirCreneauxDisponiblesPourDate(dateString, DUREE_BASE, null, evenementsDuMois);
       
-      const debutServiceJour = new Date(d);
-      debutServiceJour.setHours(...HEURE_DEBUT_SERVICE.split(':').map(Number));
-      const totalCreneauxPossibles = Math.floor(((finServiceJour - debutServiceJour) / 60000) / INTERVALLE_CRENEAUX_MINUTES);
-      
-      disponibilite[dateString] = { disponibles: creneaux.length, total: totalCreneauxPossibles > 0 ? totalCreneauxPossibles : 1 };
+      disponibilite[dateString] = { disponibles: creneaux.length, total: totalCreneauxPossibles };
     }
 
     const resultat = { disponibilite: disponibilite };
