@@ -318,7 +318,7 @@ function obtenirFacturesPourClient(emailClient, exp, sig) {
       ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
       : [ss.getSheetByName(SHEET_FACTURATION)];
     if (!feuilles.length || feuilles.some(f => !f)) throw new Error("La feuille 'Facturation' est introuvable.");
-    const factures = [];
+    const facturesMap = new Map(); // Garantit une facture unique par ID PDF.
     feuilles.forEach(feuille => {
       const header = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
       const idx = {
@@ -338,14 +338,39 @@ function obtenirFacturesPourClient(emailClient, exp, sig) {
           const idPdf = String(row[idx.idPdf] || '').trim();
           if (!numero || !idPdf) return;
           const dateVal = new Date(row[idx.date]);
-          const montant = parseFloat(row[idx.montant]) || 0;
+          const dateISO = isNaN(dateVal) ? null : dateVal.toISOString();
+          const montantVal = parseFloat(row[idx.montant]);
+          const montant = Number.isFinite(montantVal) ? montantVal : 0;
+          const dejaVue = facturesMap.get(idPdf);
+          if (dejaVue) {
+            if (dateISO) {
+              const existingDate = dejaVue.dateISO ? new Date(dejaVue.dateISO) : null;
+              if (!existingDate || new Date(dateISO) > existingDate) {
+                dejaVue.dateISO = dateISO;
+              }
+            }
+            if (montant !== 0) {
+              dejaVue.montant = montant;
+            }
+            if (numero && !dejaVue.numero) {
+              dejaVue.numero = numero;
+            }
+            return;
+          }
           const url = DriveApp.getFileById(idPdf).getUrl();
-          factures.push({ numero: numero, dateISO: isNaN(dateVal) ? null : dateVal.toISOString(), montant: montant, url: url, idPdf: idPdf });
+          facturesMap.set(idPdf, {
+            numero: numero,
+            dateISO: dateISO,
+            montant: montant,
+            url: url,
+            idPdf: idPdf
+          });
         } catch (e) {
           // ignore ligne invalide
         }
       });
     });
+    const factures = Array.from(facturesMap.values());
     factures.sort((a, b) => new Date(b.dateISO || 0) - new Date(a.dateISO || 0));
     return { success: true, factures: factures };
   } catch (e) {
