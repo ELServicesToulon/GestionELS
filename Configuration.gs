@@ -154,7 +154,7 @@ const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
 /** @const {boolean} Vérifie la présence du scope script.send_mail lors du setup. */
 const SEND_MAIL_SCOPE_CHECK_ENABLED = false;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
-const BILLING_MULTI_SHEET_ENABLED = false;
+const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
 const CA_EN_COURS_ENABLED = true;
 /** @const {boolean} Précharge le loader Google Charts via proxy (peut déclencher OAuth). */
