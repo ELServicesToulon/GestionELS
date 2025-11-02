@@ -725,10 +725,15 @@
     })();
   </script>
   <? if (PRIVACY_LINK_ENABLED || LEGAL_NOTICE_LINK_ENABLED) { ?>
-  <? var footerLinks = []; if (LEGAL_NOTICE_LINK_ENABLED) { footerLinks.push('<a href="' + appUrl + '?page=mentions">Mentions légales</a>'); } if (PRIVACY_LINK_ENABLED) { footerLinks.push('<a href="' + appUrl + '?page=infos">Infos &amp; confidentialité</a>'); } footerLinks.push('<a href="' + appUrl + '?page=cgv">CGV</a>'); ?>
   <footer class="els-footer">
     <nav aria-label="Informations légales">
-      <?= footerLinks.join(' · ') ?>
+      <? if (LEGAL_NOTICE_LINK_ENABLED) { ?>
+      <a href="<?= appUrl ?>?page=mentions">Mentions légales</a>
+      <? } ?>
+      <? if (PRIVACY_LINK_ENABLED) { ?>
+      <a href="<?= appUrl ?>?page=infos">Infos &amp; confidentialité</a>
+      <? } ?>
+      <a href="<?= appUrl ?>?page=cgv">CGV</a>
     </nav>
     <p>&copy; <?= new Date().getFullYear() ?> <?= nomService ?>. Tous droits réservés.</p>
   </footer>
