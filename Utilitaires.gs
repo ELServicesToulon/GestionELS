@@ -80,6 +80,26 @@ function formatMontantEuro(valeur) {
 }
 
 /**
+ * Normalise un code postal français saisi en entrée.
+ * @param {string|number} code Valeur saisie par l'utilisateur.
+ * @returns {string} Code postal sur 5 chiffres ou chaîne vide si invalide.
+ */
+function normaliserCodePostal(code) {
+  if (code === null || code === undefined) {
+    return '';
+  }
+  const brut = String(code).trim().toUpperCase();
+  if (!brut) {
+    return '';
+  }
+  const digits = brut.replace(/[^\d]/g, '');
+  if (digits.length !== 5) {
+    return '';
+  }
+  return digits;
+}
+
+/**
  * Remplace un placeholder par une image Drive (logo) dans un document Google Docs.
  * @param {GoogleAppsScript.Document.Body} corps
  * @param {string} placeholder Texte à remplacer (ex: {{logo}})

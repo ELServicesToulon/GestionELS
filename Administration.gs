@@ -318,14 +318,18 @@ function obtenirTousLesClients() {
         if (headerTrimmed.indexOf(COLONNE_ID_CLIENT) === -1) {
             feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_ID_CLIENT);
         }
+        if (headerTrimmed.indexOf(COLONNE_CODE_POSTAL_CLIENT) === -1) {
+            feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_CODE_POSTAL_CLIENT);
+        }
 
-        const indices = obtenirIndicesEnTetes(feuilleClients, ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT]);
+        const indices = obtenirIndicesEnTetes(feuilleClients, ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_CODE_POSTAL_CLIENT, COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT]);
         const donnees = feuilleClients.getDataRange().getValues();
         return donnees.slice(1).map(ligne => ({
             email: ligne[indices["Email"]],
             nom: ligne[indices["Raison Sociale"]] || '',
             adresse: ligne[indices["Adresse"]] || '',
             siret: ligne[indices["SIRET"]] || '',
+            codePostal: ligne[indices[COLONNE_CODE_POSTAL_CLIENT]] || '',
             typeRemise: ligne[indices[COLONNE_TYPE_REMISE_CLIENT]] || '',
             valeurRemise: ligne[indices[COLONNE_VALEUR_REMISE_CLIENT]] || 0,
             nbTourneesOffertes: ligne[indices[COLONNE_NB_TOURNEES_OFFERTES]] || 0,

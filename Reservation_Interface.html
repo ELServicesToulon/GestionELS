@@ -81,6 +81,18 @@
   </script>
 </head>
 <body class="page" data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= brandLogoUrl ?>">
+  <div id="code-postal-overlay" class="code-postal-overlay" role="dialog" aria-modal="true" aria-hidden="false" aria-labelledby="code-postal-overlay-titre">
+    <div class="code-postal-overlay__card">
+      <h2 id="code-postal-overlay-titre">Accès réservé aux officines desservies</h2>
+      <p class="muted">Indiquez le code postal de votre officine pour vérifier que nous couvrons votre secteur.</p>
+      <form id="formulaire-code-postal" class="code-postal-overlay__form">
+        <label for="code-postal-saisie">Code postal officine</label>
+        <input type="text" id="code-postal-saisie" class="champ-formulaire" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" autocomplete="postal-code" required>
+        <button type="submit" class="btn btn-primaire">Continuer</button>
+      </form>
+      <p id="code-postal-erreur" class="code-postal-overlay__message hidden" role="alert"></p>
+    </div>
+  </div>
   <h1 class="sr-only">Réserver une tournée pharmaceutique</h1>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <?!= include('icons_sprite'); ?>
@@ -289,6 +301,14 @@
             <label for="client-email">Email</label>
             <input type="email" id="client-email">
             <small id="client-email-helper" class="muted">Cette adresse email est requise pour recevoir votre identifiant d'acc&egrave;s client.</small>
+          </div>
+          <div class="groupe-formulaire">
+            <label for="client-code-postal">Code postal de l'officine</label>
+            <div class="code-postal-input-row">
+              <input type="text" id="client-code-postal" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" autocomplete="postal-code" required readonly>
+              <button type="button" id="btn-modifier-code-postal" class="btn btn-secondaire btn-sm">Modifier</button>
+            </div>
+            <small class="muted">L'accès est limité aux codes postaux desservis par ELS.</small>
           </div>
           <div class="groupe-formulaire"><label for="client-nom">Raison Sociale</label><input type="text" id="client-nom" required></div>
           <div class="groupe-formulaire"><label for="client-adresse">Adresse</label><input type="text" id="client-adresse"></div>

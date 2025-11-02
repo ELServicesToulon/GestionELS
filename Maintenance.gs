@@ -119,7 +119,8 @@ function notifyAdminWithThrottle(typeErreur, sujet, corps) {
 function verifierStructureFeuilles() {
   const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
   const expectations = [
-    { name: 'Clients', headers: ['Email', 'Raison Sociale', 'Adresse', 'SIRET', COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT], required: true },
+    { name: 'Clients', headers: ['Email', 'Raison Sociale', 'Adresse', 'SIRET', COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT, COLONNE_CODE_POSTAL_CLIENT], required: true },
+    { name: SHEET_CODES_POSTAUX_RETRAIT, headers: [COLONNE_CODE_POSTAL_CLIENT, 'Libellé'], required: true },
     { name: 'Facturation', headers: FACTURATION_HEADERS, required: true },
     { name: 'Plages_Bloquees', headers: ['Date', 'Heure_Debut', 'Heure_Fin'], required: false },
     { name: 'Logs', headers: ['Timestamp', 'Reservation ID', 'Client Email', 'Résumé', 'Montant', 'Statut'], required: false },
@@ -236,7 +237,7 @@ function sauvegarderCodeProjet() {
 function sauvegarderDonnees() {
   logAdminAction("Sauvegarde des données", "Démarré");
   try {
-    const feuillesASauvegarder = ["Clients", "Facturation", "Plages_Bloquees", "Logs", "Admin_Logs"];
+    const feuillesASauvegarder = [SHEET_CLIENTS, SHEET_FACTURATION, SHEET_CODES_POSTAUX_RETRAIT, SHEET_PLAGES_BLOQUEES, SHEET_LOGS, SHEET_ADMIN_LOGS];
     const ssOriginale = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
     
     const dossierProjet = DriveApp.getFileById(getSecret('ID_FEUILLE_CALCUL')).getParents().next();

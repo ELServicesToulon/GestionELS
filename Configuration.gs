@@ -85,6 +85,8 @@ const MOIS_RETENTION_LOGS = 12;
 const SHEET_FACTURATION = 'Facturation';
 /** @const {string} Feuille listant les clients. */
 const SHEET_CLIENTS = 'Clients';
+/** @const {string} Feuille listant les codes postaux autorisés pour les retraits. */
+const SHEET_CODES_POSTAUX_RETRAIT = 'Codes_Postaux_Retrait';
 /** @const {string} Feuille stockant les paramètres globaux. */
 const SHEET_PARAMETRES = 'Paramètres';
 /** @const {string} Feuille de journalisation pour l'administration. */
@@ -427,6 +429,8 @@ const COLONNE_ID_CLIENT = "Client ID";
 const COLONNE_NB_TOURNEES_OFFERTES = "Nombre Tournées Offertes";
 /** @const {string} Colonne indiquant si le client est un résident. */
 const COLONNE_RESIDENT_CLIENT = "Resident";
+/** @const {string} Colonne stockant le code postal de l'officine cliente. */
+const COLONNE_CODE_POSTAL_CLIENT = "Code Postal";
 
 
 // =================================================================

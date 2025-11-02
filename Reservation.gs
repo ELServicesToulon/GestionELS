@@ -5,6 +5,31 @@
 // =================================================================
 
 /**
+ * Vérifie si un code postal d'officine est autorisé pour accéder aux réservations.
+ * @param {string|number} codePostal Valeur fournie par le client.
+ * @returns {{success:boolean, codePostal?:string, message?:string}}
+ */
+function verifierCodePostalAcces(codePostal) {
+  try {
+    const normalise = normaliserCodePostal(codePostal);
+    if (!normalise) {
+      return { success: false, message: "Merci de saisir un code postal à 5 chiffres." };
+    }
+    if (!codePostalAutorise(normalise)) {
+      return {
+        success: false,
+        codePostal: normalise,
+        message: "Ce code postal n'est pas encore desservi. Contactez l'équipe ELS pour être accompagné."
+      };
+    }
+    return { success: true, codePostal: normalise };
+  } catch (err) {
+    Logger.log("verifierCodePostalAcces erreur: " + err);
+    return { success: false, message: "Une erreur interne empêche la vérification du code postal." };
+  }
+}
+
+/**
  * Traite un panier de réservations soumis par le client.
  * @param {Object} donneesReservation L'objet contenant les infos client et les articles du panier.
  * @returns {Object} Un résumé de l'opération.
@@ -27,6 +52,19 @@ function reserverPanier(donneesReservation) {
     }
     client.email = emailNormalise;
     client.contactEmail = emailNormalise;
+    const codePostalNormalise = normaliserCodePostal(
+      client.codePostal || client.code_postal || client.postalCode || client.zip || ''
+    );
+    if (!codePostalNormalise) {
+      return { success: false, summary: "Merci d'indiquer le code postal de votre officine (5 chiffres)." };
+    }
+    if (!codePostalAutorise(codePostalNormalise)) {
+      return {
+        success: false,
+        summary: "Ce code postal n'est pas encore desservi par notre service. Contactez-nous pour être accompagné."
+      };
+    }
+    client.codePostal = codePostalNormalise;
     client.nom = String(client.nom || '').trim();
     client.resident = client.resident === true;
     if (client.resident === true && typeof RESIDENT_AFFILIATION_REQUIRED !== 'undefined' && RESIDENT_AFFILIATION_REQUIRED) {

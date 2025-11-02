@@ -44,12 +44,16 @@ function initializeFlags(flags = {}) {
   return Object.assign({}, defaults, flags);
 }
 
+const CLE_LOCALSTORAGE_CODE_POSTAL = 'ELS_CODE_POSTAL_OFFICINE';
+let releaseCodePostalFocus = () => {};
+
 // État global de l'application côté client
 window.etat = {
   dateActuelle: new Date(),
   panier: [],
   tourneeEnCours: {}, // Sera peuplé lors de la configuration
   clientReconnu: null,
+  codePostalOfficine: '',
   flags: initializeFlags() // Flags d'activation issus de Configuration.gs
 };
 
@@ -80,6 +84,201 @@ window.estForfaitResidentActif = estForfaitResidentActif;
 window.obtenirModeResident = obtenirModeResident;
 window.obtenirPrixResident = obtenirPrixResident;
 window.obtenirLibelleResident = obtenirLibelleResident;
+
+function normaliserCodePostalLocal(valeur) {
+  if (valeur === null || valeur === undefined) return '';
+  const digits = String(valeur).replace(/\D/g, '');
+  return digits.length === 5 ? digits : '';
+}
+
+function lireCodePostalStocke() {
+  try {
+    return localStorage.getItem(CLE_LOCALSTORAGE_CODE_POSTAL) || '';
+  } catch (_e) {
+    return '';
+  }
+}
+
+function enregistrerCodePostalStocke(code) {
+  if (!code) return;
+  try {
+    localStorage.setItem(CLE_LOCALSTORAGE_CODE_POSTAL, code);
+  } catch (_e) {
+    // ignore storage errors (navigation privée, etc.)
+  }
+}
+
+function effacerCodePostalStocke() {
+  try {
+    localStorage.removeItem(CLE_LOCALSTORAGE_CODE_POSTAL);
+  } catch (_e) {
+    // ignore
+  }
+}
+
+function definirCodePostalCourant(code, options = {}) {
+  const normalise = normaliserCodePostalLocal(code);
+  if (!normalise) {
+    if (options.forceClear === true) {
+      window.etat.codePostalOfficine = '';
+      if (!options.skipStorage) {
+        effacerCodePostalStocke();
+      }
+      if (window.ui?.champCodePostalClient) {
+        window.ui.champCodePostalClient.value = '';
+      }
+    }
+    return '';
+  }
+  window.etat.codePostalOfficine = normalise;
+  if (!options.skipStorage) {
+    enregistrerCodePostalStocke(normalise);
+  }
+  if (window.ui?.champCodePostalClient) {
+    window.ui.champCodePostalClient.value = normalise;
+    window.ui.champCodePostalClient.readOnly = true;
+  }
+  if (window.ui?.champCodePostalOverlay) {
+    window.ui.champCodePostalOverlay.value = normalise;
+  }
+  if (window.etat?.clientReconnu) {
+    window.etat.clientReconnu.codePostal = normalise;
+  }
+  cacherErreurCodePostal();
+  return normalise;
+}
+
+function obtenirCodePostalCourant() {
+  if (window.etat.codePostalOfficine) {
+    return window.etat.codePostalOfficine;
+  }
+  const valeurChamp = window.ui?.champCodePostalClient?.value;
+  const normalise = normaliserCodePostalLocal(valeurChamp);
+  if (normalise) {
+    window.etat.codePostalOfficine = normalise;
+    enregistrerCodePostalStocke(normalise);
+  }
+  return normalise;
+}
+
+function afficherErreurCodePostal(message) {
+  const el = window.ui?.messageCodePostalErreur;
+  if (!el) return;
+  el.textContent = message || '';
+  el.classList.toggle('hidden', !message);
+}
+
+function cacherErreurCodePostal() {
+  afficherErreurCodePostal('');
+}
+
+function afficherVerrouCodePostal(message) {
+  const overlay = window.ui?.codePostalOverlay;
+  if (!overlay) return;
+  overlay.classList.remove('hidden');
+  overlay.setAttribute('aria-hidden', 'false');
+  if (typeof trapFocus === 'function') {
+    releaseCodePostalFocus = trapFocus(overlay);
+  }
+  const input = window.ui?.champCodePostalOverlay;
+  if (input) {
+    const valeur = window.etat.codePostalOfficine || lireCodePostalStocke();
+    if (valeur) {
+      input.value = valeur;
+    }
+    setTimeout(() => input.focus(), 0);
+  }
+  if (message) {
+    afficherErreurCodePostal(message);
+  } else {
+    cacherErreurCodePostal();
+  }
+}
+
+function masquerVerrouCodePostal() {
+  const overlay = window.ui?.codePostalOverlay;
+  if (!overlay) return;
+  overlay.classList.add('hidden');
+  overlay.setAttribute('aria-hidden', 'true');
+  releaseCodePostalFocus();
+  releaseCodePostalFocus = () => {};
+}
+
+function initialiserVerrouCodePostal() {
+  if (!window.ui) {
+    setTimeout(initialiserVerrouCodePostal, 0);
+    return;
+  }
+  const ui = window.ui || {};
+  const formulaire = ui.formulaireCodePostal;
+  const champ = ui.champCodePostalOverlay;
+  if (!formulaire || !champ) {
+    return;
+  }
+  if (formulaire.dataset.initialized === 'true') {
+    return;
+  }
+  formulaire.dataset.initialized = 'true';
+
+  const codeStocke = normaliserCodePostalLocal(lireCodePostalStocke());
+  if (codeStocke) {
+    masquerVerrouCodePostal();
+    basculerIndicateurChargement(true);
+    google.script.run
+      .withSuccessHandler(res => {
+        basculerIndicateurChargement(false);
+        if (res && res.success) {
+          definirCodePostalCourant(res.codePostal || codeStocke);
+          masquerVerrouCodePostal();
+        } else {
+          effacerCodePostalStocke();
+          afficherVerrouCodePostal(res && res.message ? res.message : "Ce code postal n'est pas desservi.");
+        }
+      })
+      .withFailureHandler(() => {
+        basculerIndicateurChargement(false);
+        afficherVerrouCodePostal("Impossible de vérifier le code postal pour le moment.");
+      })
+      .verifierCodePostalAcces(codeStocke);
+  } else {
+    afficherVerrouCodePostal();
+  }
+
+  formulaire.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const normalise = normaliserCodePostalLocal(champ.value);
+    if (!normalise) {
+      afficherErreurCodePostal("Merci de saisir un code postal à 5 chiffres.");
+      champ.focus();
+      return;
+    }
+    basculerIndicateurChargement(true);
+    google.script.run
+      .withSuccessHandler(res => {
+        basculerIndicateurChargement(false);
+        if (res && res.success) {
+          definirCodePostalCourant(res.codePostal || normalise);
+          masquerVerrouCodePostal();
+        } else {
+          effacerCodePostalStocke();
+          afficherErreurCodePostal(res && res.message ? res.message : "Ce code postal n'est pas desservi.");
+        }
+      })
+      .withFailureHandler(() => {
+        basculerIndicateurChargement(false);
+        afficherErreurCodePostal("Impossible de vérifier le code postal pour le moment.");
+      })
+      .verifierCodePostalAcces(normalise);
+  });
+
+  ui.btnModifierCodePostal?.addEventListener('click', () => {
+    champ.value = window.etat.codePostalOfficine || '';
+    afficherVerrouCodePostal();
+  });
+}
+
+window.definirCodePostalCourant = definirCodePostalCourant;
+window.obtenirCodePostalCourant = obtenirCodePostalCourant;
 
 function initialiserTarifsResident() {
   const formatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -146,6 +345,11 @@ function afficherConteneurFinalisation() {
     ui.champNomClient.value = clientReconnu.nom;
     ui.champAdresseClient.value = clientReconnu.adresse || '';
     ui.champSiretClient.value = clientReconnu.siret || '';
+    if (ui.champCodePostalClient) {
+      const code = clientReconnu.codePostal || window.etat.codePostalOfficine || '';
+      ui.champCodePostalClient.value = code;
+      ui.champCodePostalClient.readOnly = true;
+    }
     if (ui.champResidentClient) ui.champResidentClient.checked = !!clientReconnu.resident;
     ui.champEmailClient.readOnly = true;
     ui.champNomClient.readOnly = true;
@@ -154,6 +358,10 @@ function afficherConteneurFinalisation() {
     ui.champEmailClient.readOnly = false;
     ui.champNomClient.readOnly = false;
     if (ui.champResidentClient) ui.champResidentClient.checked = false;
+    if (ui.champCodePostalClient) {
+      ui.champCodePostalClient.value = window.etat.codePostalOfficine || '';
+      ui.champCodePostalClient.readOnly = true;
+    }
   }
 
   mettreAJourEtatResident();
@@ -169,6 +377,11 @@ function afficherConteneurFinalisation() {
 function initierValidationPanier(ev) {
   ev?.preventDefault?.();
   const { clientReconnu, panier } = window.etat;
+  if (!obtenirCodePostalCourant()) {
+    afficherNotification("Merci de valider le code postal de votre officine pour accéder à la réservation.", 'erreur');
+    afficherVerrouCodePostal();
+    return;
+  }
 
   if (!panier || panier.length === 0) {
     afficherNotification("Votre panier est vide.", 'erreur');
@@ -189,7 +402,13 @@ function soumettreReservationClientReconnu() {
   const { ui } = window;
   const { clientReconnu, panier } = window.etat;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const codePostal = obtenirCodePostalCourant();
 
+  if (!codePostal) {
+    afficherNotification("Merci de valider le code postal de votre officine avant de finaliser.", 'erreur');
+    afficherVerrouCodePostal();
+    return;
+  }
   if (!clientReconnu || !clientReconnu.email) {
     afficherNotification("Identifiez-vous pour finaliser votre réservation.", 'erreur');
     afficherConteneurFinalisation();
@@ -222,6 +441,10 @@ function soumettreReservationClientReconnu() {
   if (ui.champSiretClient) {
     ui.champSiretClient.value = clientReconnu.siret || '';
   }
+  if (ui.champCodePostalClient) {
+    ui.champCodePostalClient.value = codePostal;
+    ui.champCodePostalClient.readOnly = true;
+  }
   if (ui.champResidentClient) {
     ui.champResidentClient.checked = !!clientReconnu.resident;
   }
@@ -238,7 +461,8 @@ function soumettreReservationClientReconnu() {
       siret: clientReconnu.siret || '',
       note: ui.champNoteReservation?.value.trim() || '',
       resident: residentActif,
-      residentMode: modeResident
+      residentMode: modeResident,
+      codePostal: codePostal
     },
     items: panier
   };
@@ -287,6 +511,15 @@ function mettreAJourEtatResident() {
 function soumettreReservation(donneesReservation, options = {}) {
   const { ui } = window;
   const skipBilling = options.skipBillingModal === true;
+  const codePostalCourant = obtenirCodePostalCourant();
+  if (!codePostalCourant) {
+    afficherNotification("Merci de valider le code postal de votre officine avant de continuer.", 'erreur');
+    afficherVerrouCodePostal();
+    return;
+  }
+  if (donneesReservation && donneesReservation.client) {
+    donneesReservation.client.codePostal = codePostalCourant;
+  }
 
   function envoyer() {
     basculerIndicateurChargement(true);
@@ -509,9 +742,16 @@ function gererSoumissionReservation(e) {
   e.preventDefault();
   const { ui } = window;
   const { panier } = window.etat;
+  const codePostal = obtenirCodePostalCourant();
 
   if (panier.length === 0) {
     afficherNotification("Votre panier est vide.", 'erreur');
+    return;
+  }
+
+  if (!codePostal) {
+    afficherNotification("Merci de valider le code postal de votre officine avant de finaliser.", 'erreur');
+    afficherVerrouCodePostal();
     return;
   }
 
@@ -533,6 +773,10 @@ function gererSoumissionReservation(e) {
   if (!emailSaisi) {
     ui.champEmailClient.value = emailClient;
   }
+  if (ui.champCodePostalClient) {
+    ui.champCodePostalClient.value = codePostal;
+    ui.champCodePostalClient.readOnly = true;
+  }
 
   const donneesReservation = {
     client: {
@@ -543,7 +787,8 @@ function gererSoumissionReservation(e) {
       siret: ui.champSiretClient.value.trim(),
       note: ui.champNoteReservation.value.trim(),
       resident: isResident,
-      residentMode: residentMode
+      residentMode: residentMode,
+      codePostal: codePostal
     },
     items: panier
   };
@@ -664,6 +909,7 @@ function configurerEcouteursEvenements() {
  * Point d'entrée principal, exécuté après le chargement du DOM.
  */
 document.addEventListener('DOMContentLoaded', () => {
+  initialiserVerrouCodePostal();
   google.script.run.withSuccessHandler(cfg => {
     window.etat.flags = initializeFlags(cfg);
     initialiserTarifsResident();

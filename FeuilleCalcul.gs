@@ -45,8 +45,11 @@ function enregistrerOuMajClient(donneesClient) {
     if (headerTrimmed.indexOf(COLONNE_ID_CLIENT) === -1) {
       feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_ID_CLIENT);
     }
+    if (headerTrimmed.indexOf(COLONNE_CODE_POSTAL_CLIENT) === -1) {
+      feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_CODE_POSTAL_CLIENT);
+    }
 
-    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT];
+    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_CODE_POSTAL_CLIENT, COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT];
     const indices = obtenirIndicesEnTetes(feuilleClients, enTetesRequis);
     const donneesFeuille = feuilleClients.getDataRange().getValues();
     const indexLigneClient = donneesFeuille.findIndex(ligne => String(ligne[indices["Email"]]).toLowerCase() === emailNormalise.toLowerCase());
@@ -59,6 +62,7 @@ function enregistrerOuMajClient(donneesClient) {
       ligneAjour[indices["Raison Sociale"]] = donneesClient.nom || '';
       ligneAjour[indices["Adresse"]] = donneesClient.adresse || '';
       ligneAjour[indices["SIRET"]] = donneesClient.siret || '';
+      ligneAjour[indices[COLONNE_CODE_POSTAL_CLIENT]] = donneesClient.codePostal || '';
       ligneAjour[indices[COLONNE_TYPE_REMISE_CLIENT]] = donneesClient.typeRemise || '';
       ligneAjour[indices[COLONNE_VALEUR_REMISE_CLIENT]] = donneesClient.valeurRemise !== undefined ? donneesClient.valeurRemise : 0;
       ligneAjour[indices[COLONNE_NB_TOURNEES_OFFERTES]] = donneesClient.nbTourneesOffertes !== undefined ? donneesClient.nbTourneesOffertes : 0;
@@ -74,6 +78,7 @@ function enregistrerOuMajClient(donneesClient) {
       nouvelleLigne[indices["Raison Sociale"]] = donneesClient.nom || '';
       nouvelleLigne[indices["Adresse"]] = donneesClient.adresse || '';
       nouvelleLigne[indices["SIRET"]] = donneesClient.siret || '';
+      nouvelleLigne[indices[COLONNE_CODE_POSTAL_CLIENT]] = donneesClient.codePostal || '';
       nouvelleLigne[indices[COLONNE_TYPE_REMISE_CLIENT]] = donneesClient.typeRemise || '';
       nouvelleLigne[indices[COLONNE_VALEUR_REMISE_CLIENT]] = donneesClient.valeurRemise !== undefined ? donneesClient.valeurRemise : 0;
       nouvelleLigne[indices[COLONNE_NB_TOURNEES_OFFERTES]] = donneesClient.nbTourneesOffertes !== undefined ? donneesClient.nbTourneesOffertes : 0;
@@ -107,8 +112,11 @@ function obtenirInfosClientParEmail(email) {
     if (headerTrimmed.indexOf(COLONNE_ID_CLIENT) === -1) {
       feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_ID_CLIENT);
     }
+    if (headerTrimmed.indexOf(COLONNE_CODE_POSTAL_CLIENT) === -1) {
+      feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_CODE_POSTAL_CLIENT);
+    }
 
-    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT];
+    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_CODE_POSTAL_CLIENT, COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT];
     const indices = obtenirIndicesEnTetes(feuilleClients, enTetesRequis);
     
     const donnees = feuilleClients.getDataRange().getValues();
@@ -135,6 +143,7 @@ function obtenirInfosClientParEmail(email) {
         nom: ligneClient[indices["Raison Sociale"]] || '',
         adresse: ligneClient[indices["Adresse"]] || '',
         siret: ligneClient[indices["SIRET"]] || '',
+        codePostal: ligneClient[indices[COLONNE_CODE_POSTAL_CLIENT]] || '',
         typeRemise: String(ligneClient[indices[COLONNE_TYPE_REMISE_CLIENT]]).trim() || '',
         valeurRemise: parseFloat(ligneClient[indices[COLONNE_VALEUR_REMISE_CLIENT]]) || 0,
         nbTourneesOffertes: parseInt(ligneClient[indices[COLONNE_NB_TOURNEES_OFFERTES]]) || 0,
@@ -147,6 +156,94 @@ function obtenirInfosClientParEmail(email) {
     Logger.log(`Erreur dans obtenirInfosClientParEmail : ${e.stack}`);
     return null;
   }
+}
+
+/**
+ * Retourne la liste des codes postaux autorisés pour le retrait.
+ * @param {{forceRefresh?:boolean}=} options Permet de forcer l'actualisation du cache.
+ * @returns {string[]} Tableau de codes postaux (5 chiffres).
+ */
+function obtenirCodesPostauxRetrait(options) {
+  const forceRefresh = !!(options && options.forceRefresh);
+  const cacheKey = 'ELS_CODES_POSTAUX_RETRAIT';
+  const cache = CacheService.getScriptCache();
+  if (!forceRefresh) {
+    try {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (_err) {
+      // ignore cache parsing errors
+    }
+  }
+
+  try {
+    const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_CODES_POSTAUX_RETRAIT);
+    if (!feuille) {
+      return [];
+    }
+    if (feuille.getLastRow() <= 1 || feuille.getLastColumn() < 1) {
+      return [];
+    }
+    const donnees = feuille.getDataRange().getValues();
+    if (!donnees || donnees.length <= 1) {
+      return [];
+    }
+    const enTete = donnees[0].map(function(valeur) { return String(valeur || '').trim(); });
+    const indexCode = enTete.indexOf(COLONNE_CODE_POSTAL_CLIENT);
+    if (indexCode === -1) {
+      throw new Error('La colonne "Code Postal" est absente de la feuille des codes postaux.');
+    }
+    const indexActif = enTete.findIndex(function(nom) { return nom && nom.toString().trim().toLowerCase() === 'actif'; });
+    const codes = new Set();
+    for (let i = 1; i < donnees.length; i++) {
+      const ligne = donnees[i];
+      const codeNormalise = normaliserCodePostal(ligne[indexCode]);
+      if (!codeNormalise) {
+        continue;
+      }
+      if (indexActif !== -1) {
+        const valeurActif = ligne[indexActif];
+        const estActif = typeof valeurActif === 'boolean'
+          ? valeurActif
+          : !/^(\s*false\s*|\s*non\s*|\s*0\s*)$/i.test(String(valeurActif || '').trim());
+        if (!estActif) {
+          continue;
+        }
+      }
+      codes.add(codeNormalise);
+    }
+    const resultat = Array.from(codes.values()).sort();
+    if (!forceRefresh && resultat.length > 0) {
+      try {
+        cache.put(cacheKey, JSON.stringify(resultat), 300);
+      } catch (_cacheErr) {
+        // ignore cache errors
+      }
+    }
+    return resultat;
+  } catch (e) {
+    Logger.log(`Erreur dans obtenirCodesPostauxRetrait : ${e.stack}`);
+    return [];
+  }
+}
+
+/**
+ * Indique si un code postal est autorisé pour accéder au service.
+ * @param {string|number} codePostal Code postal fourni.
+ * @returns {boolean} true si le code est autorisé.
+ */
+function codePostalAutorise(codePostal) {
+  const normalise = normaliserCodePostal(codePostal);
+  if (!normalise) {
+    return false;
+  }
+  const codes = obtenirCodesPostauxRetrait();
+  return codes.indexOf(normalise) !== -1;
 }
 
 /**

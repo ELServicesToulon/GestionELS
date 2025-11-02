@@ -915,6 +915,69 @@ body.els-ui-theming.els-aluminium {
 .modale-pied-de-page { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--muted); display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
 .modale-pied-de-page .btn { min-width: 140px; }
 
+/* --- VERROU CODE POSTAL --- */
+.code-postal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(20px, 6vw, 48px);
+  background: rgba(15, 23, 42, 0.75);
+  z-index: 1200;
+}
+.code-postal-overlay__card {
+  width: min(460px, 100%);
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: var(--radius);
+  padding: clamp(24px, 5vw, 36px);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: #1b243a;
+  text-align: left;
+}
+.code-postal-overlay__form {
+  display: grid;
+  gap: 12px;
+}
+.code-postal-overlay__form label {
+  font-weight: 600;
+  color: #1b243a;
+}
+.code-postal-overlay__form .champ-formulaire {
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  text-align: center;
+}
+.code-postal-overlay__message {
+  margin: 0;
+  font-weight: 600;
+  color: #c0392b;
+  text-align: center;
+}
+.code-postal-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.code-postal-input-row input {
+  flex: 1;
+}
+.code-postal-input-row button {
+  flex-shrink: 0;
+}
+@media (max-width: 520px) {
+  .code-postal-input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .code-postal-input-row button {
+    width: 100%;
+  }
+}
+
 /* --- STYLES DES CRÃ‰NEAUX (NOUVELLE VERSION) --- */
 .grille-creneaux { 
   display: grid; 
