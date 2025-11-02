@@ -269,12 +269,15 @@ function envoyerDevisParEmail(donneesDevis) {
       </div>
     `;
 
-    MailApp.sendEmail({
-      to: emailClient,
-      subject: sujet,
-      htmlBody: corpsHtml,
-      replyTo: EMAIL_ENTREPRISE
-    });
+    GmailApp.sendEmail(
+      emailClient,
+      sujet,
+      'Votre devis est disponible dans la version HTML de cet e-mail.',
+      {
+        htmlBody: corpsHtml,
+        replyTo: EMAIL_ENTREPRISE
+      }
+    );
 
     return { success: true };
 
@@ -437,12 +440,15 @@ function envoyerIdentifiantAccesClient(email, nom, clientId) {
       `</div>`
     ].join('');
 
-    MailApp.sendEmail({
-      to: email,
-      subject: `Bienvenue dans votre espace client - ${NOM_ENTREPRISE}`,
-      htmlBody: corpsHtml,
-      replyTo: EMAIL_ENTREPRISE
-    });
+    GmailApp.sendEmail(
+      email,
+      `Bienvenue dans votre espace client - ${NOM_ENTREPRISE}`,
+      'Votre accès client est activé. Consultez la version HTML pour les prochaines étapes.',
+      {
+        htmlBody: corpsHtml,
+        replyTo: EMAIL_ENTREPRISE
+      }
+    );
   } catch (e) {
     Logger.log(`Erreur lors de l'envoi de l'identifiant client à ${email}: ${e}`);
   }
@@ -468,12 +474,15 @@ function notifierClientConfirmation(email, nom, reservations) {
                 <p>L'équipe ${NOM_ENTREPRISE}</p>
             </div>
         `;
-        MailApp.sendEmail({
-            to: email,
-            subject: `Confirmation de votre réservation - ${NOM_ENTREPRISE}`,
-            htmlBody: corpsHtml,
-            replyTo: EMAIL_ENTREPRISE
-        });
+        GmailApp.sendEmail(
+            email,
+            `Confirmation de votre réservation - ${NOM_ENTREPRISE}`,
+            'Votre confirmation détaillée est disponible dans la version HTML ci-dessous.',
+            {
+                htmlBody: corpsHtml,
+                replyTo: EMAIL_ENTREPRISE
+            }
+        );
     } catch (e) {
         Logger.log(`Erreur lors de l'envoi de l'email de confirmation à ${email}: ${e.toString()}`);
     }

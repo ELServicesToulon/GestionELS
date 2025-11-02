@@ -546,11 +546,14 @@ function tourneeSubmitDemande(rawData) {
           plage ? '<p>Plage horaire: ' + plage + '</p>' : '',
           details ? '<p>Détails: ' + details.replace(/\n/g, '<br>') + '</p>' : ''
         ].filter(Boolean);
-        MailApp.sendEmail({
-          to: adminEmail,
-          subject: sujet,
-          htmlBody: lignes.join('')
-        });
+        const corpsHtml = lignes.join('');
+        const corpsTexte = lignes.map(l => l.replace(/<[^>]+>/g, '')).join('\n');
+        GmailApp.sendEmail(
+          adminEmail,
+          sujet,
+          corpsTexte || 'Nouvelle demande de tournée reçue.',
+          { htmlBody: corpsHtml }
+        );
       }
     } catch (notifErr) {
       console.warn('[tourneeSubmitDemande] Mail notification failed:', notifErr);

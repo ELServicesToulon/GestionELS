@@ -1270,7 +1270,16 @@ function archiverFacturesDuMois() {
           `<p>Merci pour votre confiance.<br/>${NOM_ENTREPRISE}</p>`
         ].filter(Boolean).join('');
 
-        MailApp.sendEmail({ to: email, subject: sujet, htmlBody: corps, attachments: [pdfBlob] });
+        GmailApp.sendEmail(
+          email,
+          sujet,
+          'Votre facture est jointe à ce message.',
+          {
+            htmlBody: corps,
+            attachments: [pdfBlob],
+            replyTo: EMAIL_ENTREPRISE
+          }
+        );
 
         if (idx.aEnvoyer !== -1) feuille.getRange(r + 1, idx.aEnvoyer + 1).setValue(false);
         if (idx.statut !== -1) feuille.getRange(r + 1, idx.statut + 1).setValue('Envoyée');
