@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <? var appUrl = ScriptApp.getService().getUrl(); var nomService = NOM_ENTREPRISE; var adresseEntreprise = ADRESSE_ENTREPRISE; var emailEntreprise = EMAIL_ENTREPRISE; var siretEntreprise = (function() { try { return getSecret('SIRET'); } catch (err) { return ''; } })(); var tvaMention = TVA_APPLICABLE ? 'TVA applicable' : 'TVA non applicable (art. 293 B du CGI)'; ?>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Mentions légales et obligations réglementaires de <?= nomService ?>.">
+  <link rel="canonical" href="<?= appUrl ?>">
+  <meta property="og:title" content="<?= nomService ?> | Mentions légales">
+  <meta property="og:description" content="Retrouvez les mentions légales, informations légales françaises et obligations RGPD applicables au service <?= nomService ?>.">
+  <meta property="og:url" content="<?= appUrl ?>">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="<?= nomService ?> | Mentions légales">
+  <meta name="twitter:description" content="Mentions légales et obligations réglementaires du service <?= nomService ?>.">
+  <title><?= nomService ?> | Mentions légales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <style><?!= include('Styles'); ?></style>
+  <?!= include('charte'); ?>
+  <?!= include('GoogleChartsStub'); ?>
+</head>
+<body data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= BRANDING_LOGO_PUBLIC_URL ?>">
+  <main class="container" role="main">
+    <div class="app-logo-container" data-logo-slot>
+      <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
+    </div>
+    <h1>Mentions légales</h1>
+    <section>
+      <h2>Éditeur du site</h2>
+      <p>
+        <strong><?= nomService ?></strong><br>
+        <?= adresseEntreprise ?><br>
+        SIRET&nbsp;: <?= siretEntreprise || 'à compléter' ?><br>
+        <?= tvaMention ?><br>
+        Responsable de la publication&nbsp;: le dirigeant de <?= nomService ?>.
+      </p>
+      <p>
+        Contact&nbsp;: <a href="mailto:<?= emailEntreprise ?>"><?= emailEntreprise ?></a>
+      </p>
+    </section>
+    <section>
+      <h2>Hébergeur</h2>
+      <p>
+        Google Ireland Limited<br>
+        Gordon House, Barrow Street, Dublin 4, Irlande<br>
+        Téléphone&nbsp;: +353 1 543 1000
+      </p>
+      <p>La solution est opérée sur l'infrastructure Google Apps Script et Google Cloud Platform.</p>
+    </section>
+    <section>
+      <h2>Activité et responsabilité</h2>
+      <p>
+        <?= nomService ?> assure des prestations de logistique et de livraison pour les officines et professionnels de santé. Les informations présentées sur ce site ont un caractère informatif et peuvent être modifiées à tout moment.
+      </p>
+      <p>
+        Malgré les mises à jour régulières, des erreurs ou omissions peuvent subsister. <?= nomService ?> ne saurait être tenu responsable d'un mauvais usage des informations publiées ni de dommages directs ou indirects résultant de l'accès au site.
+      </p>
+    </section>
+    <section>
+      <h2>Propriété intellectuelle</h2>
+      <p>
+        L'ensemble des contenus, textes, visuels, logos et éléments graphiques présents sur ce site sont protégés par le droit d'auteur et les droits de propriété intellectuelle. Toute reproduction ou diffusion, totale ou partielle, sans autorisation écrite préalable est interdite.
+      </p>
+    </section>
+    <section>
+      <h2>Données personnelles</h2>
+      <p>
+        <?= nomService ?> met en œuvre des traitements de données personnelles nécessaires à la gestion des réservations, à la facturation et au suivi client. Ces traitements sont décrits en détail dans notre page <a href="<?= appUrl ?>?page=infos">Informations &amp; confidentialité</a>.
+      </p>
+      <p>
+        Pour toute demande relative à l'exercice de vos droits (accès, rectification, opposition, suppression, limitation ou portabilité), contactez <a href="mailto:<?= emailEntreprise ?>"><?= emailEntreprise ?></a>.
+      </p>
+    </section>
+    <section>
+      <h2>Liens hypertextes</h2>
+      <p>
+        Le site peut proposer des liens vers d'autres ressources externes. <?= nomService ?> décline toute responsabilité quant au contenu et au fonctionnement de ces sites tiers, sur lesquels il n'exerce aucun contrôle.
+      </p>
+    </section>
+    <section>
+      <h2>Signalement et contact</h2>
+      <p>
+        Pour signaler un contenu illicite, une difficulté d'accès ou exercer vos droits, écrivez-nous à <a href="mailto:<?= emailEntreprise ?>"><?= emailEntreprise ?></a>. Nous nous engageons à répondre dans les meilleurs délais.
+      </p>
+    </section>
+  </main>
+  <?!= include('Render_JS'); ?>
+  <?!= include('ElsLogo_Script'); ?>
+</body>
+</html>

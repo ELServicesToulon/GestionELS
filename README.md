@@ -136,7 +136,8 @@ Pour ajouter ou retirer un scope : éditer `appsscript.json`, puis exécuter `c
 | ---- | ----------- | ------ |
 | CLIENT_PORTAL_ENABLED | Active l'espace client | true |
 | CLIENT_PORTAL_SIGNED_LINKS | Exige un lien signé pour l'espace client | false |
-| PRIVACY_LINK_ENABLED | Affiche le lien vers les informations de confidentialité | false |
+| PRIVACY_LINK_ENABLED | Affiche le lien vers les informations de confidentialité | true |
+| LEGAL_NOTICE_LINK_ENABLED | Affiche le lien vers les mentions légales | true |
 | SLOTS_AMPM_ENABLED | Sépare les créneaux matin/après-midi | false |
 | CLIENT_SESSION_OPAQUE_ID_ENABLED | Stocke un identifiant client opaque | false |
 | SEND_MAIL_SCOPE_CHECK_ENABLED | Vérifie la présence du scope d'envoi d'email | false |

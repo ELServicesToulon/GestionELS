@@ -1,66 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <? var appUrl = ScriptApp.getService().getUrl(); var nomService = NOM_ENTREPRISE; ?>
+  <? var appUrl = ScriptApp.getService().getUrl(); var nomService = NOM_ENTREPRISE; var adresseEntreprise = ADRESSE_ENTREPRISE; var emailEntreprise = EMAIL_ENTREPRISE; var siretEntreprise = (function() { try { return getSecret('SIRET'); } catch (err) { return ''; } })(); var retentionFactures = (typeof ANNEES_RETENTION_FACTURES !== 'undefined') ? ANNEES_RETENTION_FACTURES : 5; var retentionLogs = (typeof MOIS_RETENTION_LOGS !== 'undefined') ? MOIS_RETENTION_LOGS : 12; ?>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Livraison pharmacie à domicile et EHPAD sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol et Bandol.">
+  <meta name="description" content="Politique de confidentialité et informations RGPD du service <?= nomService ?>.">
   <link rel="canonical" href="<?= appUrl ?>">
-  <meta property="og:title" content="<?= nomService ?> | Infos & confidentialité">
-  <meta property="og:description" content="Livraison pharmacie à domicile et EHPAD sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol et Bandol.">
+  <meta property="og:title" content="<?= nomService ?> | Informations & confidentialité">
+  <meta property="og:description" content="Découvrez comment <?= nomService ?> protège vos données personnelles et respecte le RGPD.">
   <meta property="og:url" content="<?= appUrl ?>">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="<?= nomService ?> | Infos & confidentialité">
-  <meta name="twitter:description" content="Livraison pharmacie à domicile et EHPAD sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol et Bandol.">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "LocalBusiness",
-        "@id": "<?= appUrl ?>#business",
-        "name": "<?= nomService ?>",
-        "description": "Livraison pharmacie à domicile et EHPAD sur Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol et Bandol.",
-        "url": "<?= appUrl ?>",
-        "email": "<?= EMAIL_ENTREPRISE ?>",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Six-Fours-les-Plages",
-          "addressCountry": "FR"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": 43.0842,
-          "longitude": 5.8009
-        },
-        "areaServed": [
-          { "@type": "Place", "name": "Tamaris" },
-          { "@type": "Place", "name": "Mar Vivo" },
-          { "@type": "Place", "name": "Six-Fours-les-Plages" },
-          { "@type": "Place", "name": "Sanary" },
-          { "@type": "Place", "name": "Portissol" },
-          { "@type": "Place", "name": "Bandol" }
-        ]
-      },
-      {
-        "@type": "Service",
-        "@id": "<?= appUrl ?>#service",
-        "serviceType": "Livraison de pharmacie",
-        "provider": { "@id": "<?= appUrl ?>#business" },
-        "areaServed": [
-          { "@type": "Place", "name": "Tamaris" },
-          { "@type": "Place", "name": "Mar Vivo" },
-          { "@type": "Place", "name": "Six-Fours-les-Plages" },
-          { "@type": "Place", "name": "Sanary" },
-          { "@type": "Place", "name": "Portissol" },
-          { "@type": "Place", "name": "Bandol" }
-        ]
-      }
-    ]
-  }
-  </script>
-  <title><?= nomService ?> | Infos & confidentialité</title>
+  <meta name="twitter:title" content="<?= nomService ?> | Informations & confidentialité">
+  <meta name="twitter:description" content="Politique de confidentialité, durées de conservation et droits RGPD concernant le service <?= nomService ?>.">
+  <title><?= nomService ?> | Informations & confidentialité</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
@@ -73,9 +26,97 @@
     <div class="app-logo-container" data-logo-slot>
       <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
     </div>
-    <h1>Informations & confidentialité</h1>
-    <p>Nous ne collectons que les données strictement nécessaires à la livraison et à la facturation. Aucune donnée superflue n'est conservée.</p>
-    <p>Pour exercer vos droits RGPD (accès, rectification, suppression), contactez-nous à <a href="mailto:elservicestoulon@gmail.com">elservicestoulon@gmail.com</a>.</p>
+    <h1>Informations &amp; confidentialité</h1>
+    <p>
+      <?= nomService ?> attache une importance constante à la protection des données personnelles de ses clients et partenaires professionnels. Les traitements décrits ci-dessous respectent le Règlement Général sur la Protection des Données (RGPD) et la loi Informatique et Libertés.
+    </p>
+    <section>
+      <h2>Responsable du traitement</h2>
+      <p>
+        <strong><?= nomService ?></strong><br>
+        <?= adresseEntreprise ?><br>
+        SIRET&nbsp;: <?= siretEntreprise || 'à compléter' ?><br>
+        Contact&nbsp;: <a href="mailto:<?= emailEntreprise ?>"><?= emailEntreprise ?></a>
+      </p>
+      <p>
+        Le responsable du traitement est le dirigeant de <?= nomService ?>, joignable à la même adresse e-mail pour toute question relative à la protection des données.
+      </p>
+    </section>
+    <section>
+      <h2>Données collectées</h2>
+      <ul>
+        <li><strong>Données d'identification</strong>&nbsp;: raison sociale, prénom et nom du référent, SIRET, code postal, adresse professionnelle.</li>
+        <li><strong>Coordonnées professionnelles</strong>&nbsp;: adresses e-mail, numéros de téléphone, informations de facturation.</li>
+        <li><strong>Données opérationnelles</strong>&nbsp;: historique des réservations, instructions de livraison, informations nécessaires à la logistique.</li>
+        <li><strong>Données de facturation</strong>&nbsp;: montants, délais de paiement, justificatifs et pièces jointes liées au dossier client.</li>
+        <li><strong>Données techniques</strong>&nbsp;: journaux d'activité et traces de sécurité conservés dans un but d'audit et de sécurisation des accès.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Finalités et bases légales</h2>
+      <ul>
+        <li><strong>Gestion des réservations et exécution des tournées</strong> (base légale&nbsp;: exécution du contrat et mesures précontractuelles).</li>
+        <li><strong>Facturation, gestion comptable et obligations légales</strong> (base légale&nbsp;: obligation légale applicable aux transporteurs et prestataires logistiques).</li>
+        <li><strong>Suivi de la relation client et assistance</strong> (base légale&nbsp;: intérêt légitime à assurer un service de qualité et assurer la traçabilité des échanges).</li>
+        <li><strong>Sécurité du service et prévention de la fraude</strong> (base légale&nbsp;: intérêt légitime).</li>
+        <li><strong>Communication d'informations contractuelles</strong> (base légale&nbsp;: obligation légale et exécution du contrat).</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Destinataires des données</h2>
+      <p>
+        Les données sont traitées exclusivement par les équipes internes habilitées de <?= nomService ?> et, le cas échéant, par ses partenaires logistiques tenus à une obligation contractuelle de confidentialité.
+      </p>
+      <p>
+        Les outils utilisés pour assurer la prestation peuvent impliquer des transferts hors de l'Union Européenne (notamment dans le cadre de services Google). Ces transferts sont couverts par les clauses contractuelles types approuvées par la Commission européenne et les garanties fournies par Google.
+      </p>
+    </section>
+    <section>
+      <h2>Durées de conservation</h2>
+      <ul>
+        <li><strong>Dossiers de facturation</strong>&nbsp;: conservés <?= retentionFactures ?> ans conformément aux obligations légales.</li>
+        <li><strong>Journaux techniques et traces de sécurité</strong>&nbsp;: conservés <?= retentionLogs ?> mois pour assurer la sécurité et l'audit des accès.</li>
+        <li><strong>Données opérationnelles</strong>&nbsp;: conservées pendant la relation contractuelle augmentée de la prescription légale applicable aux professionnels (5 ans, sauf disposition contraire).</li>
+        <li><strong>Pièces justificatives transmises par les clients</strong>&nbsp;: conservées pendant la durée strictement nécessaire au traitement de la demande puis archivées selon les obligations légales.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Vos droits</h2>
+      <p>
+        Vous disposez, dans les conditions prévues par la réglementation, des droits suivants&nbsp;:
+      </p>
+      <ul>
+        <li>Droit d'accès et de rectification de vos données.</li>
+        <li>Droit d'effacement, de limitation et d'opposition au traitement.</li>
+        <li>Droit à la portabilité des données que vous avez fournies.</li>
+        <li>Droit de définir des directives relatives au sort de vos données après votre décès.</li>
+      </ul>
+      <p>
+        Pour exercer vos droits, écrivez à <a href="mailto:<?= emailEntreprise ?>"><?= emailEntreprise ?></a> en précisant l'objet de votre demande et en joignant, le cas échéant, un justificatif d'identité. Une réponse vous sera apportée dans un délai maximum de 30 jours.
+      </p>
+      <p>
+        Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL (<a href="https://www.cnil.fr/" rel="noopener noreferrer" target="_blank">www.cnil.fr</a>).
+      </p>
+    </section>
+    <section>
+      <h2>Cookies et traceurs</h2>
+      <p>
+        L'application n'utilise pas de cookies publicitaires ni de traceurs tiers. Seuls des cookies ou stockages techniques strictement nécessaires au fonctionnement du service (sécurisation de session, mémorisation ponctuelle des informations de réservation) peuvent être déposés sur votre navigateur.
+      </p>
+    </section>
+    <section>
+      <h2>Sécurité et hébergement</h2>
+      <p>
+        Les données sont hébergées sur l'infrastructure Google Cloud et Google Apps Script. <?= nomService ?> met en œuvre des mesures techniques et organisationnelles adaptées&nbsp;: accès restreints, journalisation, sauvegardes cryptées, séparation des environnements et purge automatique des données obsolètes.
+      </p>
+    </section>
+    <section>
+      <h2>Contact</h2>
+      <p>
+        Pour toute question relative à cette politique ou pour exercer vos droits, contactez-nous à <a href="mailto:<?= emailEntreprise ?>"><?= emailEntreprise ?></a>.
+      </p>
+      <p>Dernière mise à jour&nbsp;: novembre 2025.</p>
+    </section>
   </main>
   <?!= include('Render_JS'); ?>
   <?!= include('ElsLogo_Script'); ?>

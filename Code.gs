@@ -251,6 +251,13 @@ function doGet(e) {
           // si cette page est désactivée.
           break;
 
+        case 'mentions':
+          if (typeof LEGAL_NOTICE_LINK_ENABLED !== 'undefined' && LEGAL_NOTICE_LINK_ENABLED) {
+            return HtmlService.createHtmlOutputFromFile('Mentions_Legales')
+              .setTitle("Mentions légales");
+          }
+          break;
+
         case 'cgv':
           // Conditions Générales de Vente
           var templateCgv = HtmlService.createTemplateFromFile('CGV');

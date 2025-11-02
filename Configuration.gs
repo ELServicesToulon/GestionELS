@@ -146,7 +146,9 @@ const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
-const PRIVACY_LINK_ENABLED = false;
+const PRIVACY_LINK_ENABLED = true;
+/** @const {boolean} Affiche le lien vers les mentions légales. */
+const LEGAL_NOTICE_LINK_ENABLED = true;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
@@ -275,6 +277,7 @@ const FLAGS = Object.freeze({
   clientPortalEnabled: CLIENT_PORTAL_ENABLED,
   clientPortalSignedLinks: CLIENT_PORTAL_SIGNED_LINKS,
   privacyLinkEnabled: PRIVACY_LINK_ENABLED,
+  legalNoticeEnabled: LEGAL_NOTICE_LINK_ENABLED,
   slotsAmpmEnabled: SLOTS_AMPM_ENABLED,
   clientSessionOpaqueIdEnabled: CLIENT_SESSION_OPAQUE_ID_ENABLED,
   billingMultiSheetEnabled: BILLING_MULTI_SHEET_ENABLED,
