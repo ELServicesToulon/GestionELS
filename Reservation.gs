@@ -403,21 +403,43 @@ function envoyerIdentifiantAccesClient(email, nom, clientId) {
       Logger.log(`Avertissement: échec de génération du lien signé pour ${email}: ${err}`);
     }
     const urlBase = ScriptApp.getService().getUrl();
+    let supportPhone = '';
+    try {
+      supportPhone = String(getSecret('TELEPHONE_ENTREPRISE') || '').trim();
+    } catch (_err) {
+      try {
+        supportPhone = String(getSecret('SUPPORT_PHONE') || '').trim();
+      } catch (_err2) {
+        supportPhone = '';
+      }
+    }
+    const supportLine = supportPhone
+      ? `Besoin d'un coup de main&nbsp;? Écrivez-nous à <a href="mailto:${EMAIL_ENTREPRISE}">${EMAIL_ENTREPRISE}</a> ou contactez le ${supportPhone}.`
+      : `Besoin d'un coup de main&nbsp;? Écrivez-nous à <a href="mailto:${EMAIL_ENTREPRISE}">${EMAIL_ENTREPRISE}</a>.`;
     const corpsHtml = [
       `<div style="font-family: Montserrat, sans-serif; color: #333;">`,
       logoBlock,
-      `<h1>Votre accès client est activé</h1>`,
+      `<h1 style="color: #8e44ad;">Bienvenue dans votre espace client ${NOM_ENTREPRISE}</h1>`,
       `<p>Bonjour ${nom || 'cher client'},</p>`,
-      `<p>Voici votre identifiant client personnel&nbsp;: <strong>${clientId}</strong>. Conservez-le précieusement, il pourra vous être demandé lors de nos échanges.</p>`,
-      `<p>Pour accéder à votre espace client et suivre vos tournées, utilisez le lien suivant&nbsp;:<br><a href="${lienGestion}">${lienGestion}</a>${expirationTexte}</p>`,
-      `<p>Vous pouvez à tout moment vous connecter depuis <a href="${urlBase}?page=gestion">${urlBase}?page=gestion</a> en renseignant simplement votre adresse email (${email}).</p>`,
-      `<p>À très vite,<br>L'équipe ${NOM_ENTREPRISE}</p>`,
+      `<p>Votre compte client vient d'être activé.</p>`,
+      `<p>Pour accéder à votre espace&nbsp;:</p>`,
+      `<ul style="padding-left: 20px; color: #333;">`,
+      `<li>connectez-vous via <a href="${lienGestion}">ce lien sécurisé</a> pour créer ou mettre à jour votre mot de passe${expirationTexte};</li>`,
+      `<li>explorez le calendrier interactif pour vérifier les disponibilités et planifier vos réservations&nbsp;;</li>`,
+      `<li>ajoutez vos prestations au panier, validez en quelques clics, puis retrouvez vos confirmations et factures dans la rubrique &laquo;&nbsp;Mes documents&nbsp;&raquo;.</li>`,
+      `</ul>`,
+      `<p>Tout est pensé pour rester clair, fluide et conforme à notre charte (palette ELS et police Montserrat) afin que vous repériez immédiatement les zones clés&nbsp;: calendrier, panier et accès à l'espace client.</p>`,
+      `<p>Votre identifiant client est&nbsp;: <strong>${clientId}</strong>. Gardez-le à portée de main pour nos échanges.</p>`,
+      `<p>${supportLine}</p>`,
+      `<p>Vous pouvez également vous connecter depuis <a href="${urlBase}?page=gestion">${urlBase}?page=gestion</a> en renseignant votre adresse email (${email}).</p>`,
+      `<p>À très vite sur la plateforme ${NOM_ENTREPRISE}&nbsp;!</p>`,
+      `<p>Bien cordialement,<br>L'équipe ${NOM_ENTREPRISE}</p>`,
       `</div>`
     ].join('');
 
     MailApp.sendEmail({
       to: email,
-      subject: `Votre accès client - ${NOM_ENTREPRISE}`,
+      subject: `Bienvenue dans votre espace client - ${NOM_ENTREPRISE}`,
       htmlBody: corpsHtml,
       replyTo: EMAIL_ENTREPRISE
     });
