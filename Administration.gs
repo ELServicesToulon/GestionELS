@@ -1297,44 +1297,6 @@ function archiverFacturesDuMois() {
     SpreadsheetApp.getUi().alert('Erreur', e.message, ui.ButtonSet.OK);
   }
 }
-// ================================================================
-//                         MENU FEUILLE (ELS)
-// ================================================================
-// Ajoute un menu pour vérifier rapidement l'installation et le setup.
-// Les entrées n'apparaissent que si les fonctions existent.
-
-function onOpen_AdminLegacy() {
-  const ui = SpreadsheetApp.getUi();
-  const menu = ui.createMenu('ELS');
-
-  if (typeof showSetupSummary_ELS === 'function') {
-    menu.addItem('Vérifier l’installation', 'showSetupSummary_ELS');
-  }
-  if (typeof checkSetup_ELS === 'function') {
-    menu.addItem('Check setup (console)', 'checkSetup_ELS');
-  }
-  // Actions de facturation (si disponibles)
-  if (typeof genererFactures === 'function') {
-    menu.addItem('Generer les factures', 'genererFactures');
-  }
-  if (typeof envoyerFacturesControlees === 'function') {
-    menu.addItem('Envoyer les factures controlees', 'envoyerFacturesControlees');
-  }
-  if (typeof archiverFacturesDuMois === 'function') {
-    menu.addItem('Archiver factures (mois prec.)', 'archiverFacturesDuMois');
-  }
-  // Génération de devis PDF (si activé)
-  if (typeof ADMIN_DEVIS_PDF_ENABLED !== 'undefined' && ADMIN_DEVIS_PDF_ENABLED) {
-    menu.addItem('Générer un devis (PDF) – sélection', 'genererDevisPdfDepuisSelection');
-  }
-
-  // Ajouts forcés pour garantir les actions principales
-  try { menu.addItem('Generer un devis (PDF) - selection', 'genererDevisPdfDepuisSelection'); } catch (_e) {}
-  try { menu.addItem('Rafraichir le menu', 'onOpen'); } catch (_e) {}
-  menu.addToUi();
-  try { SpreadsheetApp.getActive().toast('Menu ELS mis à jour', 'ELS', 5); } catch (_e) {}
-}
-
 /**
  * Génère un devis PDF pour la sélection courante dans l’onglet Facturation.
  * - Regroupe les lignes sélectionnées par client et vérifie l’unicité.

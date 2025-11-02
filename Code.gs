@@ -43,7 +43,9 @@ function onOpen() {
 
   menuPrincipal.addSubMenu(sousMenuMaintenance);
   // Actions devis PDF et refresh menu
-  try { menuPrincipal.addItem('Generer un devis (PDF) - selection', 'genererDevisPdfDepuisSelection'); } catch (_e) {}
+  if (typeof genererDevisPdfDepuisSelection === 'function') {
+    try { menuPrincipal.addItem('Generer un devis (PDF) - selection', 'genererDevisPdfDepuisSelection'); } catch (_e) {}
+  }
   try { menuPrincipal.addItem('Rafraichir le menu', 'onOpen'); } catch (_e) {}
 
   // --- Ajout du sous-menu Debug (s'il est activé) ---
@@ -65,6 +67,10 @@ function onOpen() {
   } catch (err) {
     ui.alert('Configuration invalide', err.message, ui.ButtonSet.OK);
   }
+}
+
+function onInstall(e) {
+  onOpen(e);
 }
 
 /**
@@ -502,8 +508,8 @@ function doPost(e) {
 
 }
 function _forceReAuth() {
-  // Déclenche le consentement pour MailApp
-  Logger.log(MailApp.getRemainingDailyQuota());
+  // Déclenche le consentement pour GmailApp
+  Logger.log(GmailApp.getRemainingDailyQuota());
 }
 function testEnvoyerDevis() {
     envoyerDevisParEmail({
