@@ -509,7 +509,8 @@ function doPost(e) {
 }
 function _forceReAuth() {
   // Déclenche le consentement pour GmailApp
-  Logger.log(GmailApp.getRemainingDailyQuota());
+  const dummy = GmailApp.createDraft('test@example.com', 'Test consent', 'Test consent');
+  GmailApp.getDraft(dummy.getId()).deleteDraft();
 }
 function testEnvoyerDevis() {
     envoyerDevisParEmail({
