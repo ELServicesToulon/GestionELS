@@ -509,7 +509,7 @@ function doPost(e) {
 }
 function _forceReAuth() {
   // Déclenche le consentement pour GmailApp
-  const dummy = GmailApp.createDraft('test@example.com', 'Test consent', 'Test consent');
+  const dummy = GmailApp.createDraft(Session.getActiveUser().getEmail(), 'ELS - Autorisation', 'Test d’autorisations Gmail.');
   GmailApp.getDraft(dummy.getId()).deleteDraft();
 }
 function testEnvoyerDevis() {

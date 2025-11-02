@@ -46,7 +46,24 @@ function validerConfiguration() {
     const messageErreur = `La validation de la configuration a échoué avec ${erreurs.length} erreur(s) :\n- ` + erreurs.join("\n- ");
     Logger.log(messageErreur);
     // Envoie un e-mail à l'administrateur pour l'alerter immédiatement.
-    GmailApp.sendEmail(ADMIN_EMAIL, `[${NOM_ENTREPRISE}] ERREUR CRITIQUE DE CONFIGURATION`, messageErreur);
+    if (typeof GmailApp !== 'undefined') {
+      try {
+        GmailApp.sendEmail(ADMIN_EMAIL, `[${NOM_ENTREPRISE}] ERREUR CRITIQUE DE CONFIGURATION`, messageErreur);
+      } catch (sendErr) {
+        Logger.log(`Avertissement: notification Gmail échouée (${sendErr}).`);
+        try {
+          MailApp.sendEmail(ADMIN_EMAIL, `[${NOM_ENTREPRISE}] ERREUR CRITIQUE DE CONFIGURATION`, messageErreur);
+        } catch (mailErr) {
+          Logger.log(`Avertissement: notification MailApp échouée (${mailErr}).`);
+        }
+      }
+    } else {
+      try {
+        MailApp.sendEmail(ADMIN_EMAIL, `[${NOM_ENTREPRISE}] ERREUR CRITIQUE DE CONFIGURATION`, messageErreur);
+      } catch (mailErr) {
+        Logger.log(`Avertissement: notification MailApp échouée (${mailErr}).`);
+      }
+    }
     // Stoppe l'exécution de l'application en lançant une erreur.
     throw new Error(messageErreur);
   }
