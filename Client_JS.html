@@ -55,20 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let removeFocusTrap = () => {};
 
     if (btnContactSupport) {
-        const supportMailto = btnContactSupport.getAttribute('href');
-        btnContactSupport.addEventListener('click', (event) => {
-            const fallbackEmail = btnContactSupport.dataset.supportEmail || '';
-            const targetMail = (supportMailto && supportMailto.startsWith('mailto:'))
-                ? supportMailto
-                : (fallbackEmail ? `mailto:${fallbackEmail}` : '');
-            if (!targetMail) return;
-            event.preventDefault();
-            try {
-                window.top.location.href = targetMail;
-            } catch (_err) {
-                window.location.href = targetMail;
-            }
-        });
+        const fallbackEmail = btnContactSupport.dataset.supportEmail || '';
+        if ((!btnContactSupport.getAttribute('href') || btnContactSupport.getAttribute('href') === '#') && fallbackEmail) {
+            btnContactSupport.setAttribute('href', `mailto:${fallbackEmail}`);
+        }
     }
 
     function afficherVueConnexion(prefilledEmail) {
