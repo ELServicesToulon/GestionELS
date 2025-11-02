@@ -85,7 +85,8 @@ function obtenirLienFactureParIdAdmin(idPdf) {
       numero: facture.numero,
       clientEmail: facture.email,
       dateISO: facture.dateISO,
-      montant: facture.montant
+      montant: facture.montant,
+      periode: facture.periode || ''
     };
   } catch (e) {
     Logger.log('Erreur dans obtenirLienFactureParIdAdmin: ' + e.stack);

@@ -252,72 +252,29 @@ function rechercherFactureParId(idPdf) {
   if (!/^[A-Za-z0-9_-]{10,}$/.test(identifiant)) {
     throw new Error('Identifiant PDF invalide.');
   }
-
-  const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
-  const feuilles = BILLING_MULTI_SHEET_ENABLED
-    ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
-    : [ss.getSheetByName(SHEET_FACTURATION)];
-  if (!feuilles.length || feuilles.some(f => !f)) {
-    throw new Error("La feuille 'Facturation' est introuvable.");
+  let fichier;
+  try {
+    fichier = DriveApp.getFileById(identifiant);
+  } catch (err) {
+    throw new Error('Fichier PDF introuvable ou inaccessible.');
   }
-
-  for (const feuille of feuilles) {
-    const headerRaw = feuille.getRange(1, 1, 1, Math.max(1, feuille.getLastColumn())).getValues()[0];
-    const header = headerRaw.map(h => String(h || '').trim());
-    const headerNormalized = header.map(h => h.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
-    const dateCandidates = ['date facture', 'date facturation', 'date edition', 'date d edition', 'date emission', 'date d emission'];
-    let idxDateEdition = -1;
-    for (const candidate of dateCandidates) {
-      const pos = headerNormalized.indexOf(candidate);
-      if (pos !== -1) {
-        idxDateEdition = pos;
-        break;
-      }
-    }
-    const idx = {
-      email: header.indexOf('Client (Email)'),
-      numero: header.indexOf('N° Facture'),
-      idPdf: header.indexOf('ID PDF'),
-      date: header.indexOf('Date'),
-      montant: header.indexOf('Montant')
-    };
-    if (idx.email === -1 || idx.numero === -1 || idx.idPdf === -1 || (idx.date === -1 && idxDateEdition === -1)) {
-      throw new Error("Colonnes requises absentes (Client (Email), N° Facture, ID PDF, Date ou Date Facture).");
-    }
-
-    const data = feuille.getDataRange().getValues();
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      if (String(row[idx.idPdf] || '').trim() !== identifiant) continue;
-
-      const email = String(row[idx.email] || '').trim().toLowerCase();
-      const numero = String(row[idx.numero] || '').trim();
-      const rawDate = idxDateEdition !== -1
-        ? row[idxDateEdition]
-        : (idx.date !== -1 ? row[idx.date] : null);
-      const dateVal = rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
-      const montantVal = idx.montant !== -1 ? parseFloat(row[idx.montant]) : NaN;
-      const montant = Number.isFinite(montantVal) ? montantVal : null;
-
-      let url;
-      try {
-        url = DriveApp.getFileById(identifiant).getUrl();
-      } catch (driveErr) {
-        throw new Error('Fichier PDF introuvable ou inaccessible.');
-      }
-
-      return {
-        numero: numero,
-        email: email,
-        idPdf: identifiant,
-        url: url,
-        dateISO: dateVal instanceof Date && !isNaN(dateVal) ? dateVal.toISOString() : null,
-        montant: montant
-      };
-    }
-  }
-
-  return null;
+  const numero = extraireNumeroFactureDepuisNom_(fichier.getName());
+  const metaParNumero = chargerMetadonneesFactures_();
+  const meta = numero ? metaParNumero[numero] || null : null;
+  const dateEmission = meta && meta.dateEmission instanceof Date
+    ? meta.dateEmission
+    : fichier.getDateCreated();
+  return {
+    numero: numero || '',
+    email: meta ? meta.email : '',
+    idPdf: identifiant,
+    url: fichier.getUrl(),
+    dateISO: dateEmission instanceof Date && !isNaN(dateEmission)
+      ? dateEmission.toISOString()
+      : null,
+    montant: meta ? meta.montant : null,
+    periode: meta ? meta.periode : ''
+  };
 }
 
 /**
@@ -328,76 +285,33 @@ function rechercherFactureParId(idPdf) {
 function obtenirFacturesPourClient(emailClient, exp, sig) {
   try {
     const emailNorm = assertClient(emailClient, exp, sig);
-    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
-    const feuilles = BILLING_MULTI_SHEET_ENABLED
-      ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
-      : [ss.getSheetByName(SHEET_FACTURATION)];
-    if (!feuilles.length || feuilles.some(f => !f)) throw new Error("La feuille 'Facturation' est introuvable.");
-    const facturesParId = Object.create(null); // Garantit une facture unique par ID PDF.
-    const ordreIds = [];
-    feuilles.forEach(feuille => {
-      const headerRaw = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
-      const header = headerRaw.map(h => String(h || '').trim());
-      const headerNormalized = header.map(h => h.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase());
-      const dateCandidates = ['date facture', 'date facturation', 'date edition', 'date d edition', 'date emission', 'date d emission'];
-      let idxDateEdition = -1;
-      for (const candidate of dateCandidates) {
-        const pos = headerNormalized.indexOf(candidate);
-        if (pos !== -1) {
-          idxDateEdition = pos;
-          break;
-        }
+    const metaParNumero = chargerMetadonneesFactures_();
+    const fichiers = collecterFichiersFactures_();
+    const facturesParNumero = Object.create(null);
+    fichiers.forEach(fichier => {
+      const meta = metaParNumero[fichier.numero];
+      if (!meta || meta.email !== emailNorm) return;
+      const emission = meta.dateEmission instanceof Date ? meta.dateEmission : fichier.dateEmission;
+      const existante = facturesParNumero[fichier.numero];
+      if (existante) {
+        const courante = existante._dateEmissionRef || null;
+        if (courante && emission && emission <= courante) return;
       }
-      const idx = {
-        email: header.indexOf('Client (Email)'),
-        numero: header.indexOf('N° Facture'),
-        idPdf: header.indexOf('ID PDF'),
-        montant: header.indexOf('Montant'),
-        date: header.indexOf('Date')
+      facturesParNumero[fichier.numero] = {
+        numero: fichier.numero,
+        dateISO: emission instanceof Date && !isNaN(emission) ? emission.toISOString() : null,
+        montant: meta.montant,
+        periode: meta.periode || '',
+        url: fichier.url,
+        idPdf: fichier.id,
+        _dateEmissionRef: emission instanceof Date && !isNaN(emission) ? emission : null
       };
-      if (idx.email === -1 || idx.numero === -1 || idx.idPdf === -1 || (idx.date === -1 && idxDateEdition === -1)) {
-        throw new Error("Colonnes requises absentes (Client (Email), N° Facture, ID PDF, Date ou Date Facture).");
-      }
-      const data = feuille.getDataRange().getValues().slice(1);
-      data.forEach(row => {
-        try {
-          const email = String(row[idx.email] || '').trim().toLowerCase();
-          if (email !== emailNorm) return;
-          const numero = String(row[idx.numero] || '').trim();
-          const idPdf = String(row[idx.idPdf] || '').trim();
-          if (!numero || !idPdf) return;
-          const rawDate = idxDateEdition !== -1
-            ? row[idxDateEdition]
-            : (idx.date !== -1 ? row[idx.date] : null);
-          const dateObj = rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
-          const dateISO = dateObj instanceof Date && !isNaN(dateObj) ? dateObj.toISOString() : null;
-          const montantVal = idx.montant !== -1 ? parseFloat(row[idx.montant]) : NaN;
-          const montant = Number.isFinite(montantVal) ? montantVal : 0;
-          const dejaVue = facturesParId[idPdf];
-          if (dejaVue) {
-            if (dateISO) {
-              const existingDate = dejaVue.dateISO ? new Date(dejaVue.dateISO) : null;
-              if (!existingDate || new Date(dateISO) > existingDate) dejaVue.dateISO = dateISO;
-            }
-            if (montant !== 0) dejaVue.montant = montant;
-            if (numero && !dejaVue.numero) dejaVue.numero = numero;
-            return;
-          }
-          const url = DriveApp.getFileById(idPdf).getUrl();
-          facturesParId[idPdf] = {
-            numero: numero,
-            dateISO: dateISO,
-            montant: montant,
-            url: url,
-            idPdf: idPdf
-          };
-          ordreIds.push(idPdf);
-        } catch (e) {
-          // ignore ligne invalide
-        }
-      });
     });
-    const factures = ordreIds.map(id => facturesParId[id]);
+    const factures = Object.keys(facturesParNumero).map(numero => {
+      const item = facturesParNumero[numero];
+      delete item._dateEmissionRef;
+      return item;
+    });
     factures.sort((a, b) => new Date(b.dateISO || 0) - new Date(a.dateISO || 0));
     return { success: true, factures: factures };
   } catch (e) {
@@ -418,7 +332,7 @@ function obtenirLienFactureParIdClient(idPdf, emailClient, exp, sig) {
     if (!facture) {
       throw new Error('Facture introuvable.');
     }
-    if (facture.email !== emailNorm) {
+    if (facture.email && facture.email !== emailNorm) {
       throw new Error('Facture non associée à votre compte.');
     }
     return {
@@ -426,12 +340,149 @@ function obtenirLienFactureParIdClient(idPdf, emailClient, exp, sig) {
       url: facture.url,
       numero: facture.numero,
       dateISO: facture.dateISO,
-      montant: facture.montant
+      montant: facture.montant,
+      periode: facture.periode || ''
     };
   } catch (e) {
     Logger.log('Erreur dans obtenirLienFactureParIdClient: ' + e.stack);
     return { success: false, error: e.message };
   }
+}
+
+function chargerMetadonneesFactures_() {
+  const resultat = Object.create(null);
+  const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
+  const feuilles = BILLING_MULTI_SHEET_ENABLED
+    ? ss.getSheets().filter(f => f.getName().startsWith('Facturation'))
+    : [ss.getSheetByName(SHEET_FACTURATION)];
+  if (!feuilles.length || feuilles.some(f => !f)) {
+    throw new Error("La feuille 'Facturation' est introuvable.");
+  }
+  feuilles.forEach(feuille => {
+    if (!feuille) return;
+    const headerRaw = feuille.getRange(1, 1, 1, Math.max(1, feuille.getLastColumn())).getValues()[0];
+    const headers = headerRaw.map(h => String(h || '').trim());
+    const headersNorm = headers.map(normaliserCleFacture_);
+    const idxNumero = headers.indexOf('N° Facture');
+    const idxEmail = headers.indexOf('Client (Email)');
+    if (idxNumero === -1 || idxEmail === -1) return;
+    const idxMontant = headers.indexOf('Montant');
+    const idxDateStd = headers.indexOf('Date');
+    const idxDateEdition = trouverIndexEnteteFacture_(headersNorm, ['date facture', 'date facturation', 'date edition', 'date d edition', 'date emission', 'date d emission']);
+    const idxPeriode = trouverIndexEnteteFacture_(headersNorm, ['periode facture', 'periode facturation', 'periode', 'periode de facturation']);
+    const data = feuille.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const numero = String(row[idxNumero] || '').trim();
+      const email = String(row[idxEmail] || '').trim().toLowerCase();
+      if (!numero || !email) continue;
+      let meta = resultat[numero];
+      if (!meta) {
+        meta = {
+          numero: numero,
+          email: email,
+          montant: null,
+          periode: '',
+          dateEmission: null
+        };
+        resultat[numero] = meta;
+      } else if (!meta.email) {
+        meta.email = email;
+      }
+      if (idxMontant !== -1) {
+        const montantVal = parseFloat(row[idxMontant]);
+        if (isFinite(montantVal)) {
+          meta.montant = montantVal;
+        }
+      }
+      if (idxPeriode !== -1) {
+        const periodeBrut = String(row[idxPeriode] || '').trim();
+        if (periodeBrut) {
+          meta.periode = periodeBrut;
+        }
+      }
+      const rawDate = idxDateEdition !== -1 ? row[idxDateEdition] : (idxDateStd !== -1 ? row[idxDateStd] : null);
+      const dateObj = rawDate instanceof Date ? rawDate : rawDate ? new Date(rawDate) : null;
+      if (dateObj instanceof Date && !isNaN(dateObj)) {
+        if (!meta.dateEmission || dateObj > meta.dateEmission) {
+          meta.dateEmission = dateObj;
+        }
+      }
+    }
+  });
+  return resultat;
+}
+
+function collecterFichiersFactures_() {
+  const dossierId = getSecret('ID_FACTURES_DRIVE');
+  if (!dossierId) {
+    throw new Error('Propriété Script manquante : ID_FACTURES_DRIVE.');
+  }
+  let dossier;
+  try {
+    dossier = DriveApp.getFolderById(dossierId);
+  } catch (err) {
+    throw new Error("Le dossier de factures (ID_FACTURES_DRIVE) est introuvable ou l'accès est refusé.");
+  }
+  const resultats = [];
+  collecterFichiersFacturesRecursif_(dossier, resultats);
+  return resultats;
+}
+
+function collecterFichiersFacturesRecursif_(dossier, accumulateur) {
+  const fichiers = dossier.getFiles();
+  while (fichiers.hasNext()) {
+    const fichier = fichiers.next();
+    const nom = fichier.getName();
+    if (!/\.pdf$/i.test(nom)) continue;
+    const numero = extraireNumeroFactureDepuisNom_(nom);
+    if (!numero) continue;
+    accumulateur.push({
+      id: fichier.getId(),
+      numero: numero,
+      url: fichier.getUrl(),
+      dateEmission: fichier.getDateCreated()
+    });
+  }
+  const sousDossiers = dossier.getFolders();
+  while (sousDossiers.hasNext()) {
+    collecterFichiersFacturesRecursif_(sousDossiers.next(), accumulateur);
+  }
+}
+
+function trouverFactureDriveParNumero_(numero) {
+  if (!numero) return null;
+  const fichiers = collecterFichiersFactures_();
+  for (let i = 0; i < fichiers.length; i++) {
+    if (fichiers[i].numero === numero) {
+      return fichiers[i];
+    }
+  }
+  return null;
+}
+
+function extraireNumeroFactureDepuisNom_(nomFichier) {
+  if (!nomFichier) return '';
+  const upper = String(nomFichier).toUpperCase();
+  const match = upper.match(/(FACT)[-_ ]?(\d{4})[-_ ]?(\d+)/);
+  if (!match) return '';
+  return `${match[1]}-${match[2]}-${match[3]}`;
+}
+
+function normaliserCleFacture_(valeur) {
+  return String(valeur || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function trouverIndexEnteteFacture_(headersNorm, motifs) {
+  for (const motif of motifs) {
+    for (let i = 0; i < headersNorm.length; i++) {
+      const valeur = headersNorm[i];
+      if (valeur && valeur.indexOf(motif) !== -1) {
+        return i;
+      }
+    }
+  }
+  return -1;
 }
 
 /**
@@ -458,16 +509,27 @@ function envoyerFactureClient(emailClient, numeroFacture, exp, sig) {
         idPdf: header.indexOf('ID PDF'),
         montant: header.indexOf('Montant')
       };
-      if (Object.values(idx).some(i => i === -1)) throw new Error("Colonnes requises absentes (Client (Email), N° Facture, ID PDF, Montant).");
+      if (idx.email === -1 || idx.numero === -1) {
+        throw new Error("Colonnes requises absentes (Client (Email), N° Facture).");
+      }
       const rows = feuille.getDataRange().getValues().slice(1);
       row = rows.find(r => String(r[idx.numero]).trim() === String(numeroFacture).trim() && String(r[idx.email]).trim().toLowerCase() === emailNorm);
       if (row) break;
     }
     if (!row) throw new Error('Facture introuvable pour ce client.');
-    const idPdf = String(row[idx.idPdf] || '').trim();
-    if (!idPdf) throw new Error('Aucun fichier PDF associé à cette facture.');
-    const montant = parseFloat(row[idx.montant]) || null;
-    const fichier = DriveApp.getFileById(idPdf);
+    let idPdf = idx.idPdf !== -1 ? String(row[idx.idPdf] || '').trim() : '';
+    let fichier;
+    if (idPdf) {
+      fichier = DriveApp.getFileById(idPdf);
+    } else {
+      const fichierDrive = trouverFactureDriveParNumero_(String(row[idx.numero]).trim());
+      if (!fichierDrive) {
+        throw new Error('Aucun fichier PDF associé à cette facture.');
+      }
+      idPdf = fichierDrive.id;
+      fichier = DriveApp.getFileById(fichierDrive.id);
+    }
+    const montant = idx.montant !== -1 ? (parseFloat(row[idx.montant]) || null) : null;
     const pdfBlob = fichier.getAs(MimeType.PDF).setName(`${String(row[idx.numero]).trim()}.pdf`);
     const sujet = `[${NOM_ENTREPRISE}] Facture ${String(row[idx.numero]).trim()}`;
     const logoBlock = getLogoEmailBlockHtml();

@@ -101,6 +101,7 @@ Set the following keys in the Apps Script editor (File → Project properties �
 - `ID_DOCUMENT_CGV` – document des conditions générales de vente
 - `ID_MODELE_FACTURE` – modèle Google Docs pour générer les factures
 - `ID_DOSSIER_ARCHIVES` – dossier Drive d'archivage des factures
+- `ID_FACTURES_DRIVE` – dossier Drive racine contenant l'ensemble des factures disponibles (actives + archives)
 - `ID_DOSSIER_TEMPORAIRE` – dossier Drive temporaire pour génération des PDF
 - `DOSSIER_PUBLIC_FOLDER_ID` – dossier Drive public (alias : `DOCS_PUBLIC_FOLDER_ID`)
 - `ID_FEUILLE_CALCUL` – feuille de calcul principale
