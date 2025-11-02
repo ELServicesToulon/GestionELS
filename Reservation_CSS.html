@@ -840,6 +840,45 @@ body.els-ui-theming.els-aluminium {
 .groupe-formulaire { margin-bottom: 15px; }
 .groupe-formulaire label { display: block; margin-bottom: 5px; font-weight: 500; }
 .champ-formulaire { width: 100%; padding: 12px; border: 1px solid var(--muted); border-radius: var(--radius); box-sizing: border-box; transition: border-color 0.2s; }
+.adresse-autocomplete { position: relative; }
+.adresse-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid color-mix(in oklab, var(--muted) 30%, #ffffff 70%);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 40;
+}
+.adresse-suggestion {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid color-mix(in oklab, var(--muted) 18%, #ffffff 82%);
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+.adresse-suggestion:last-child { border-bottom: none; }
+.adresse-suggestion__primary {
+  font-weight: 600;
+  color: #1f2937;
+}
+.adresse-suggestion__secondary {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.adresse-suggestion.is-active,
+.adresse-suggestion:hover {
+  background: rgba(52, 152, 219, 0.12);
+}
+.adresse-suggestion--info {
+  cursor: default;
+  color: var(--muted);
+}
 .actions-formulaire { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
 .carte--notice {
   background: rgba(141, 148, 255, 0.08);

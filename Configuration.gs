@@ -205,6 +205,8 @@ const CART_RESET_ENABLED = true;
 const RETURN_IMPACTS_ESTIMATES_ENABLED = true;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
 const PRICING_RULES_V2_ENABLED = true;
+/** @const {boolean} Active la saisie assistée des adresses clients via l'API Adresse. */
+const CLIENT_ADRESSE_AUTOCOMPLETE_ENABLED = false;
 
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
 const PROOF_SOCIAL_ENABLED = false;
@@ -306,6 +308,7 @@ const FLAGS = Object.freeze({
   elsUiThemingEnabled: ELS_UI_THEMING_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED,
+  adresseAutocompleteEnabled: CLIENT_ADRESSE_AUTOCOMPLETE_ENABLED,
   adminOptimisticCreationEnabled: ADMIN_OPTIMISTIC_CREATION_ENABLED,
   adminSlotsPngEnabled: ADMIN_SLOTS_PNG_ENABLED,
   tarifsDetailleEnabled: TARIFS_DETAILLE_ENABLED,

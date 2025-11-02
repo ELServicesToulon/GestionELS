@@ -19,6 +19,7 @@ function initializeFlags(flags = {}) {
     clientPortalSignedLinks: false,
     privacyLinkEnabled: false,
     slotsAmpmEnabled: false,
+    adresseAutocompleteEnabled: false,
     billingMultiSheetEnabled: false,
     caEnCoursEnabled: false,
     calendarResyncEnabled: false,
@@ -54,6 +55,7 @@ window.etat = {
   tourneeEnCours: {}, // Sera peuplé lors de la configuration
   clientReconnu: null,
   codePostalOfficine: '',
+  adresseSuggestion: null,
   flags: initializeFlags() // Flags d'activation issus de Configuration.gs
 };
 
@@ -84,6 +86,14 @@ window.estForfaitResidentActif = estForfaitResidentActif;
 window.obtenirModeResident = obtenirModeResident;
 window.obtenirPrixResident = obtenirPrixResident;
 window.obtenirLibelleResident = obtenirLibelleResident;
+
+function emettreEvenementCodePostal(code) {
+  try {
+    document.dispatchEvent(new CustomEvent('els-code-postal-change', { detail: code || '' }));
+  } catch (_err) {
+    // CustomEvent non supporté (IE11); on ignore simplement.
+  }
+}
 
 function normaliserCodePostalLocal(valeur) {
   if (valeur === null || valeur === undefined) return '';
@@ -127,6 +137,7 @@ function definirCodePostalCourant(code, options = {}) {
       if (window.ui?.champCodePostalClient) {
         window.ui.champCodePostalClient.value = '';
       }
+      emettreEvenementCodePostal('');
     }
     return '';
   }
@@ -145,6 +156,7 @@ function definirCodePostalCourant(code, options = {}) {
     window.etat.clientReconnu.codePostal = normalise;
   }
   cacherErreurCodePostal();
+  emettreEvenementCodePostal(normalise);
   return normalise;
 }
 
@@ -792,6 +804,12 @@ function gererSoumissionReservation(e) {
     },
     items: panier
   };
+  if (window.etat.flags.adresseAutocompleteEnabled && window.etat.adresseSuggestion) {
+    const selection = window.etat.adresseSuggestion;
+    if (selection && selection.label && selection.label === donneesReservation.client.adresse) {
+      donneesReservation.client.adresseSuggestion = selection;
+    }
+  }
 
   soumettreReservation(donneesReservation);
 }
@@ -913,6 +931,9 @@ document.addEventListener('DOMContentLoaded', () => {
   google.script.run.withSuccessHandler(cfg => {
     window.etat.flags = initializeFlags(cfg);
     initialiserTarifsResident();
+    if (typeof initialiserAdresseAutocompleteClient === 'function') {
+      initialiserAdresseAutocompleteClient();
+    }
     mettreAJourEtatResident();
     try {
       if (window.etat.flags && window.etat.flags.elsUiThemingEnabled) {

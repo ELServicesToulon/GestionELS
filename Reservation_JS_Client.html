@@ -228,6 +228,291 @@ function initialiserModaleConnexionClient() {
   });
 }
 
+function initialiserAdresseAutocompleteClient() {
+  if (!window || !window.etat || !window.etat.flags || window.etat.flags.adresseAutocompleteEnabled !== true) {
+    return;
+  }
+  if (!window.ui) return;
+  const input = window.ui.champAdresseClient;
+  const list = window.ui.adresseSuggestionsClient;
+  if (!input || !list) return;
+  if (input.dataset.autocompleteInitialized === 'true') return;
+
+  const parent = list.parentElement;
+  if (!parent) return;
+
+  input.dataset.autocompleteInitialized = 'true';
+
+  const MIN_CHARS = 3;
+  let debounceId = null;
+  let activeIndex = -1;
+  let suggestions = [];
+  let lastQuery = '';
+  let abortController = null;
+
+  const setExpanded = (expanded) => {
+    input.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  };
+
+  const clearActiveDescendant = () => {
+    input.removeAttribute('aria-activedescendant');
+  };
+
+  const hideSuggestions = () => {
+    suggestions = [];
+    activeIndex = -1;
+    list.innerHTML = '';
+    list.classList.add('hidden');
+    setExpanded(false);
+    clearActiveDescendant();
+  };
+
+  const renderMessage = (message) => {
+    suggestions = [];
+    activeIndex = -1;
+    list.innerHTML = '';
+    clearActiveDescendant();
+    if (!message) {
+      hideSuggestions();
+      return;
+    }
+    const info = document.createElement('div');
+    info.className = 'adresse-suggestion adresse-suggestion--info';
+    info.textContent = message;
+    list.appendChild(info);
+    list.classList.remove('hidden');
+    setExpanded(true);
+  };
+
+  const buildSuggestionId = (index) => 'client-adresse-suggestion-' + index;
+
+  const updateHighlight = (index) => {
+    const nodes = Array.prototype.slice.call(list.querySelectorAll('[data-adresse-index]'));
+    nodes.forEach(node => node.classList.remove('is-active'));
+    activeIndex = index;
+    if (index >= 0 && nodes[index]) {
+      const node = nodes[index];
+      const nodeId = node.id || buildSuggestionId(index);
+      node.id = nodeId;
+      node.classList.add('is-active');
+      input.setAttribute('aria-activedescendant', nodeId);
+      if (typeof node.scrollIntoView === 'function') {
+        node.scrollIntoView({ block: 'nearest' });
+      }
+    } else {
+      clearActiveDescendant();
+    }
+  };
+
+  const selectSuggestion = (index) => {
+    const feature = suggestions[index];
+    if (!feature) return;
+    const props = feature.properties || {};
+    const label = (props.label || '').trim();
+    const fallback = (props.name || '').trim();
+    let value = label || fallback;
+    if (!value) {
+      const cityParts = [];
+      if (props.postcode) cityParts.push(props.postcode);
+      if (props.city) cityParts.push(props.city);
+      value = cityParts.join(' ');
+    }
+    if (value) {
+      input.value = value;
+      lastQuery = value.trim();
+    }
+    let coords = null;
+    if (feature.geometry && Array.isArray(feature.geometry.coordinates)) {
+      coords = {
+        lon: Number(feature.geometry.coordinates[0]),
+        lat: Number(feature.geometry.coordinates[1])
+      };
+    }
+    window.etat.adresseSuggestion = {
+      label: value,
+      postcode: props.postcode || '',
+      city: props.city || '',
+      context: props.context || '',
+      coordinates: coords
+    };
+    hideSuggestions();
+  };
+
+  const renderSuggestions = (features) => {
+    suggestions = features;
+    activeIndex = -1;
+    list.innerHTML = '';
+    clearActiveDescendant();
+    if (!features.length) {
+      hideSuggestions();
+      return;
+    }
+    features.forEach((feature, index) => {
+      const props = feature.properties || {};
+      const option = document.createElement('div');
+      option.className = 'adresse-suggestion';
+      option.dataset.adresseIndex = String(index);
+      option.setAttribute('role', 'option');
+      option.id = buildSuggestionId(index);
+
+      const primary = document.createElement('div');
+      primary.className = 'adresse-suggestion__primary';
+      const primaryValue = (props.name || props.label || '') + '';
+      primary.textContent = primaryValue.trim();
+      option.appendChild(primary);
+
+      const cityParts = [];
+      if (props.postcode) cityParts.push(props.postcode);
+      if (props.city) cityParts.push(props.city);
+      let context = '';
+      if (props.context) {
+        const ctxParts = props.context.split(',');
+        if (ctxParts.length) {
+          context = ctxParts[0].trim();
+        }
+      }
+      let secondaryText = '';
+      if (cityParts.length && context) {
+        secondaryText = cityParts.join(' ') + ' · ' + context;
+      } else if (cityParts.length) {
+        secondaryText = cityParts.join(' ');
+      } else {
+        secondaryText = context;
+      }
+      if (secondaryText) {
+        const secondary = document.createElement('div');
+        secondary.className = 'adresse-suggestion__secondary';
+        secondary.textContent = secondaryText;
+        option.appendChild(secondary);
+      }
+
+      list.appendChild(option);
+    });
+    list.classList.remove('hidden');
+    setExpanded(true);
+  };
+
+  const fetchSuggestions = (query) => {
+    let codePostal = '';
+    if (typeof window.obtenirCodePostalCourant === 'function') {
+      codePostal = window.obtenirCodePostalCourant() || '';
+    } else if (window.etat && window.etat.codePostalOfficine) {
+      codePostal = window.etat.codePostalOfficine;
+    }
+    if (!codePostal) {
+      renderMessage("Validez votre code postal pour afficher des suggestions.");
+      return;
+    }
+    const url =
+      'https://api-adresse.data.gouv.fr/search/?limit=5&autocomplete=1&postcode=' +
+      encodeURIComponent(codePostal) +
+      '&q=' +
+      encodeURIComponent(query);
+    if (abortController && typeof abortController.abort === 'function') {
+      abortController.abort();
+    }
+    abortController = typeof AbortController === 'function' ? new AbortController() : null;
+    const options = abortController ? { signal: abortController.signal } : {};
+    fetch(url, options)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (!data || !Array.isArray(data.features) || !data.features.length) {
+          renderMessage("Aucune adresse trouvée pour ce code postal.");
+          return;
+        }
+        renderSuggestions(data.features.slice(0, 5));
+      })
+      .catch(err => {
+        if (err && err.name === 'AbortError') return;
+        console.warn('[ELS] Autocomplete adresse erreur', err);
+        renderMessage("Suggestions d'adresse indisponibles.");
+      });
+  };
+
+  const debouncedFetch = (query) => {
+    if (debounceId) clearTimeout(debounceId);
+    debounceId = setTimeout(() => fetchSuggestions(query), 250);
+  };
+
+  input.addEventListener('input', (event) => {
+    if (debounceId) clearTimeout(debounceId);
+    const value = (event.target.value || '').trim();
+    window.etat.adresseSuggestion = null;
+    if (!value || value.length < MIN_CHARS) {
+      hideSuggestions();
+      lastQuery = value;
+      return;
+    }
+    if (value === lastQuery) {
+      return;
+    }
+    lastQuery = value;
+    debouncedFetch(value);
+  });
+
+  input.addEventListener('keydown', (event) => {
+    if (list.classList.contains('hidden') || !suggestions.length) return;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      const next = activeIndex + 1 >= suggestions.length ? 0 : activeIndex + 1;
+      updateHighlight(next);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      const prev = activeIndex <= 0 ? suggestions.length - 1 : activeIndex - 1;
+      updateHighlight(prev);
+    } else if (event.key === 'Enter') {
+      if (activeIndex >= 0) {
+        event.preventDefault();
+        selectSuggestion(activeIndex);
+      }
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      hideSuggestions();
+    }
+  });
+
+  list.addEventListener('mousemove', (event) => {
+    const option = event.target.closest('[data-adresse-index]');
+    if (!option) return;
+    const idx = Number(option.dataset.adresseIndex);
+    if (!Number.isNaN(idx) && idx !== activeIndex) {
+      updateHighlight(idx);
+    }
+  });
+
+  list.addEventListener('mousedown', (event) => {
+    const option = event.target.closest('[data-adresse-index]');
+    if (!option) return;
+    event.preventDefault();
+    const idx = Number(option.dataset.adresseIndex);
+    if (!Number.isNaN(idx)) {
+      selectSuggestion(idx);
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!parent.contains(event.target)) {
+      hideSuggestions();
+    }
+  });
+
+  document.addEventListener('els-code-postal-change', () => {
+    window.etat.adresseSuggestion = null;
+    hideSuggestions();
+    lastQuery = '';
+  });
+
+  input.setAttribute('role', 'combobox');
+  input.setAttribute('aria-autocomplete', 'list');
+  input.setAttribute('aria-expanded', 'false');
+  input.setAttribute('aria-controls', list.id);
+}
+
 /**
  * Demande une connexion client via un prompt et pré-remplit les informations.
  */
@@ -303,12 +588,19 @@ function mettreAJourLienEspaceClient(client) {
 }
 
 initialiserModaleConnexionClient();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialiserAdresseAutocompleteClient);
+} else {
+  initialiserAdresseAutocompleteClient();
+}
 
 document.addEventListener('els-client-recognized', (event) => {
+  window.etat.adresseSuggestion = null;
   mettreAJourLienEspaceClient(event?.detail || window.etat?.clientReconnu || null);
 });
 
 document.addEventListener('els-client-cleared', () => {
+  window.etat.adresseSuggestion = null;
   mettreAJourLienEspaceClient(null);
 });
 

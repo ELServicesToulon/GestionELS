@@ -311,7 +311,13 @@
             <small class="muted">L'accès est limité aux codes postaux desservis par ELS.</small>
           </div>
           <div class="groupe-formulaire"><label for="client-nom">Raison Sociale</label><input type="text" id="client-nom" required></div>
-          <div class="groupe-formulaire"><label for="client-adresse">Adresse</label><input type="text" id="client-adresse"></div>
+          <div class="groupe-formulaire">
+            <label for="client-adresse">Adresse</label>
+            <div class="adresse-autocomplete">
+              <input type="text" id="client-adresse" autocomplete="street-address">
+              <div id="client-adresse-suggestions" class="adresse-suggestions hidden" role="listbox" aria-label="Suggestions d'adresse"></div>
+            </div>
+          </div>
           <div class="groupe-formulaire"><label for="client-siret">SIRET</label><input type="text" id="client-siret"></div>
           <div class="groupe-formulaire">
             <label class="checkbox-inline">
