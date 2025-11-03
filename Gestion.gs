@@ -66,35 +66,21 @@ function construireIdentifiantCartoonDepuisDigest_(digestBytes) {
   }
   const poolSize = pool.length;
   const bytes = digestBytes.map(function (byte) { return byte & 0xff; });
-  const used = Object.create(null);
-  const names = [];
-  let cursor = 0;
-  while (names.length < 3 && cursor < bytes.length) {
-    const idx = bytes[cursor] % poolSize;
-    cursor++;
-    if (used[idx]) continue;
-    used[idx] = true;
-    names.push(pool[idx]);
+  if (!bytes.length) {
+    return pool[0] + '000';
   }
-  if (!names.length) {
-    const firstByte = bytes.length ? bytes[0] : 0;
-    names.push(pool[firstByte % poolSize]);
+  let seed = 0;
+  for (let i = 0; i < bytes.length; i++) {
+    seed = (seed * 257 + bytes[i]) >>> 0;
   }
-  while (names.length < 3) {
-    let added = false;
-    for (let i = 0; i < poolSize; i++) {
-      if (!used[i]) {
-        used[i] = true;
-        names.push(pool[i]);
-        added = true;
-        break;
-      }
-    }
-    if (!added) {
-      names.push(pool[(names.length * 7) % poolSize]);
-    }
+  const baseName = pool[seed % poolSize];
+  let suffixSeed = 0;
+  for (let j = bytes.length - 1; j >= Math.max(0, bytes.length - 6); j--) {
+    suffixSeed = (suffixSeed * 131 + bytes[j]) >>> 0;
   }
-  return names.join('-');
+  const suffixValue = suffixSeed % 46656; // 36^3 possibilités
+  const suffix = suffixValue.toString(36).toUpperCase().padStart(3, '0');
+  return baseName + suffix;
 }
 
 /**

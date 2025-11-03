@@ -94,35 +94,21 @@ function construireIdentifiantCartoonDepuisDigest(hashArray) {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
   const poolSize = pool.length;
-  const used = new Set();
-  const names = [];
-  let cursor = 0;
-  while (names.length < 3 && cursor < hashArray.length) {
-    const idx = hashArray[cursor] % poolSize;
-    cursor++;
-    if (used.has(idx)) continue;
-    used.add(idx);
-    names.push(pool[idx]);
+  if (!hashArray.length) {
+    return pool[0] + '000';
   }
-  if (!names.length) {
-    const firstByte = hashArray.length ? hashArray[0] : 0;
-    names.push(pool[firstByte % poolSize]);
+  let seed = 0;
+  for (let i = 0; i < hashArray.length; i++) {
+    seed = (seed * 257 + hashArray[i]) >>> 0;
   }
-  while (names.length < 3) {
-    let added = false;
-    for (let i = 0; i < poolSize; i++) {
-      if (!used.has(i)) {
-        used.add(i);
-        names.push(pool[i]);
-        added = true;
-        break;
-      }
-    }
-    if (!added) {
-      names.push(pool[(names.length * 7) % poolSize]);
-    }
+  const baseName = pool[seed % poolSize];
+  let suffixSeed = 0;
+  for (let j = hashArray.length - 1; j >= Math.max(0, hashArray.length - 6); j--) {
+    suffixSeed = (suffixSeed * 131 + hashArray[j]) >>> 0;
   }
-  return names.join('-');
+  const suffixValue = suffixSeed % 46656;
+  const suffix = suffixValue.toString(36).toUpperCase().padStart(3, '0');
+  return baseName + suffix;
 }
 
 async function genererIdentifiantClient(email) {
