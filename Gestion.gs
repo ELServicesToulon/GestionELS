@@ -12,7 +12,11 @@
  */
 function validerClientParEmail(emailClient, exp, sig) {
   try {
-    const email = assertClient(emailClient, exp, sig);
+    const emailBrut = String(emailClient || '').trim();
+    if (!emailBrut) {
+      return { success: false, error: "Merci de renseigner une adresse e-mail." };
+    }
+    const email = assertClient(emailBrut, exp, sig);
     const cacheKey = `login_fail_${email}`;
     if (CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED) {
       const cache = CacheService.getScriptCache();
@@ -42,6 +46,9 @@ function validerClientParEmail(emailClient, exp, sig) {
       return { success: false, error: "Aucun client trouvé avec cette adresse e-mail." };
     }
   } catch (e) {
+    if (e && e.message === 'Email invalide.') {
+      return { success: false, error: "Adresse e-mail invalide." };
+    }
     Logger.log(`Erreur dans validerClientParEmail pour ${emailClient}: ${e.stack}`);
     return { success: false, error: e.message || "Une erreur serveur est survenue." };
   }
