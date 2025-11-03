@@ -546,7 +546,92 @@ function getSecret(name) {
   if (value === null || value === '') {
     throw new Error(`Propriété manquante: ${name}`);
   }
-  return value;
+  return normalizeSecretValue_(name, value);
+}
+
+/**
+ * Normalise les valeurs de Script Properties susceptibles de contenir une URL.
+ * Permet de supporter les liens de partage Drive/Docs/Calendar plutôt que l'ID brut.
+ * @param {string} name Nom de la propriété.
+ * @param {string} raw Valeur récupérée.
+ * @returns {string} Valeur normalisée.
+ */
+function normalizeSecretValue_(name, raw) {
+  if (typeof raw !== 'string') {
+    return raw;
+  }
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return trimmed;
+  }
+
+  // Extraction de l'ID depuis une URL de partage si nécessaire.
+  let candidate = trimmed;
+  if (/^https?:\/\//i.test(trimmed)) {
+    const extracted = extractIdFromUrl_(trimmed);
+    if (extracted) {
+      candidate = extracted;
+    }
+  }
+
+  if (name === 'ID_CALENDRIER') {
+    return normalizeCalendarId_(candidate);
+  }
+  return candidate;
+}
+
+/**
+ * Extrait un identifiant Google depuis une URL.
+ * Gère Drive (folders/file), Docs, Sheets ainsi que les paramètres ?id= / ?cid=.
+ * @param {string} url URL potentielle.
+ * @returns {string|null} Identifiant détecté ou null.
+ */
+function extractIdFromUrl_(url) {
+  const patterns = [
+    /\/d\/([a-zA-Z0-9_-]+)/i,
+    /\/folders\/([a-zA-Z0-9_-]+)/i,
+    /[?&]id=([a-zA-Z0-9_-]+)/i,
+    /[?&]cid=([^&]+)/i,
+    /[?&]src=([^&]+)/i
+  ];
+  for (var i = 0; i < patterns.length; i++) {
+    var match = patterns[i].exec(url);
+    if (match && match[1]) {
+      var value = match[1];
+      try {
+        value = decodeURIComponent(value);
+      } catch (e) {
+        // ignore decode errors and return raw match
+      }
+      return value;
+    }
+  }
+  return null;
+}
+
+/**
+ * Normalise un identifiant de calendrier (gère les URL encodées et mailto:).
+ * @param {string} rawId Identifiant tel que saisi.
+ * @returns {string} Identifiant utilisable par CalendarApp.
+ */
+function normalizeCalendarId_(rawId) {
+  if (!rawId) {
+    return rawId;
+  }
+  var id = rawId;
+  if (/^https?:\/\//i.test(id)) {
+    var fromUrl = extractIdFromUrl_(id);
+    if (fromUrl) {
+      id = fromUrl;
+    }
+  }
+  id = id.replace(/^mailto:/i, '');
+  try {
+    id = decodeURIComponent(id);
+  } catch (e) {
+    // ignore decode errors, keep original value
+  }
+  return id.trim();
 }
 
 /**
