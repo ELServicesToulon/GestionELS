@@ -146,7 +146,7 @@ const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
-const PRIVACY_LINK_ENABLED = true;
+const PRIVACY_LINK_ENABLED = false;
 /** @const {boolean} Affiche le lien vers les mentions légales. */
 const LEGAL_NOTICE_LINK_ENABLED = true;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
@@ -154,7 +154,7 @@ const SLOTS_AMPM_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
 const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
 /** @const {boolean} Vérifie la présence du scope script.send_mail lors du setup. */
-const SEND_MAIL_SCOPE_CHECK_ENABLED = false;
+const SEND_MAIL_SCOPE_CHECK_ENABLED = true;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
 const BILLING_MULTI_SHEET_ENABLED = true;
 /** @const {boolean} Affiche le chiffre d'affaires en cours dans l'interface admin. */
@@ -167,7 +167,7 @@ const CLIENT_CHARTS_ENABLED = true;
 const CALENDAR_RESYNC_ENABLED = true;
 /** @const {boolean} Supprime les identifiants d'événements introuvables pour garder la base propre. */
 const CALENDAR_PURGE_ENABLED = true;
-const RESERVATION_CONFIRMATION_EMAILS_ENABLED = false;
+const RESERVATION_CONFIRMATION_EMAILS_ENABLED = true;
 
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
 const CALENDAR_BAR_OPACITY_ENABLED = false;
@@ -208,7 +208,7 @@ const RETURN_IMPACTS_ESTIMATES_ENABLED = true;
 /** @const {boolean} Apply pricing rules V2 (Saturday overrides urgent; no stacking). */
 const PRICING_RULES_V2_ENABLED = true;
 /** @const {boolean} Active la saisie assistée des adresses clients via l'API Adresse. */
-const CLIENT_ADRESSE_AUTOCOMPLETE_ENABLED = false;
+const CLIENT_ADRESSE_AUTOCOMPLETE_ENABLED = true;
 
 /** @const {boolean} Affiche le bloc de preuves sociales (avis/partenaires). */
 const PROOF_SOCIAL_ENABLED = false;
