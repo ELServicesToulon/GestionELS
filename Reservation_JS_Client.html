@@ -10,6 +10,7 @@
 const CLE_LOCALSTORAGE_CLIENT = 'sessionClientELServices';
 const CLIENT_SESSION_OPAQUE_ID_ENABLED = <?!= CLIENT_SESSION_OPAQUE_ID_ENABLED ?>;
 const CLIENT_SESSION_TTL_HOURS = <?!= CLIENT_SESSION_TTL_HOURS ?>;
+const CLIENT_ID_CARTOON_NAMES = <?!= JSON.stringify(CLIENT_ID_CARTOON_NAMES) ?>;
 const EMAIL_CLIENT_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 let portailClientLienEnCours = null;
 let releaseConnexionFocus = () => {};
@@ -87,11 +88,48 @@ function preRemplirInfosClient(identifiant) {
   }
 }
 
+function construireIdentifiantCartoonDepuisDigest(hashArray) {
+  const pool = Array.isArray(CLIENT_ID_CARTOON_NAMES) ? CLIENT_ID_CARTOON_NAMES : [];
+  if (!pool.length) {
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  const poolSize = pool.length;
+  const used = new Set();
+  const names = [];
+  let cursor = 0;
+  while (names.length < 3 && cursor < hashArray.length) {
+    const idx = hashArray[cursor] % poolSize;
+    cursor++;
+    if (used.has(idx)) continue;
+    used.add(idx);
+    names.push(pool[idx]);
+  }
+  if (!names.length) {
+    const firstByte = hashArray.length ? hashArray[0] : 0;
+    names.push(pool[firstByte % poolSize]);
+  }
+  while (names.length < 3) {
+    let added = false;
+    for (let i = 0; i < poolSize; i++) {
+      if (!used.has(i)) {
+        used.add(i);
+        names.push(pool[i]);
+        added = true;
+        break;
+      }
+    }
+    if (!added) {
+      names.push(pool[(names.length * 7) % poolSize]);
+    }
+  }
+  return names.join('-');
+}
+
 async function genererIdentifiantClient(email) {
   const data = new TextEncoder().encode(String(email).trim().toLowerCase());
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return construireIdentifiantCartoonDepuisDigest(hashArray);
 }
 
 async function sauvegarderSessionClient(email) {

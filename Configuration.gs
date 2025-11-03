@@ -133,6 +133,23 @@ const KM_ARRET_SUP = 3;
 // --- Sessions client ---
 /** @const {number} Durée de validité d'une session client en heures. */
 const CLIENT_SESSION_TTL_HOURS = 24;
+/** @const {!Array<string>} Pool d'identifiants inspirés de dessins animés. */
+const CLIENT_ID_CARTOON_NAMES = Object.freeze([
+  'Aang', 'Abu', 'Aladdin', 'Alice', 'Ariel', 'AstroBoy', 'Aurora', 'Baloo', 'Bambi',
+  'BartSimpson', 'Baymax', 'Belle', 'Bender', 'BettyBoop', 'Bloom', 'BuzzLightyear',
+  'Casper', 'CharlieBrown', 'Chihiro', 'Cinderella', 'CortoMaltese', 'CourageDog',
+  'Dexter', 'DonaldDuck', 'DoraExplorer', 'Doraemon', 'Droopy', 'EdnaMode', 'ElmerFudd',
+  'Elsa', 'Fievel', 'FinnHuman', 'FredFlintstone', 'Fry', 'Gadget', 'Garfield', 'Gaston',
+  'Goku', 'Goofy', 'HarleyQuinn', 'HeMan', 'HelloKitty', 'HomerSimpson', 'JackSkellington',
+  'Jasmine', 'JerryMouse', 'JimmyNeutron', 'JohnnyBravo', 'KimPossible', 'Kirby', 'Kuzco',
+  'LadyBug', 'Lilo', 'LolaBunny', 'LuckyLuke', 'Marceline', 'MargeSimpson', 'Megara',
+  'Merida', 'MickeyMouse', 'MikeWazowski', 'MinnieMouse', 'Miraculous', 'Moana',
+  'MortySmith', 'Mowgli', 'Mulan', 'Nemo', 'Olaf', 'PerryPlatypus', 'PeterPan', 'Phineas',
+  'Pikachu', 'Popeye', 'Rapunzel', 'RickSanchez', 'RobinHood', 'SailorMoon', 'ScoobyDoo',
+  'Shrek', 'Simba', 'Smurfette', 'Snoopy', 'SpikeDragon', 'Spirou', 'Squidward', 'Stitch',
+  'Tiana', 'Tintin', 'TomCat', 'Totoro', 'Trixie', 'Velma', 'WendyDarling', 'WinniePooh',
+  'Woody', 'Yugi', 'Zorro'
+]);
 
 // =================================================================
 //              DRAPEAUX D'ACTIVATION (FEATURE FLAGS)

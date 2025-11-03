@@ -55,13 +55,58 @@ function validerClientParEmail(emailClient, exp, sig) {
 }
 
 /**
- * Génère un identifiant opaque à partir de l'email.
+ * Construit un identifiant thématique (dessins animés) à partir d'un digest.
+ * @param {!Array<number>} digestBytes Tableau d'octets du digest.
+ * @returns {string} Identifiant lisible.
+ */
+function construireIdentifiantCartoonDepuisDigest_(digestBytes) {
+  const pool = Array.isArray(CLIENT_ID_CARTOON_NAMES) ? CLIENT_ID_CARTOON_NAMES : [];
+  if (!pool.length) {
+    return digestBytes.map(function (b) { return ("0" + (b & 0xff).toString(16)).slice(-2); }).join("");
+  }
+  const poolSize = pool.length;
+  const bytes = digestBytes.map(function (byte) { return byte & 0xff; });
+  const used = Object.create(null);
+  const names = [];
+  let cursor = 0;
+  while (names.length < 3 && cursor < bytes.length) {
+    const idx = bytes[cursor] % poolSize;
+    cursor++;
+    if (used[idx]) continue;
+    used[idx] = true;
+    names.push(pool[idx]);
+  }
+  if (!names.length) {
+    const firstByte = bytes.length ? bytes[0] : 0;
+    names.push(pool[firstByte % poolSize]);
+  }
+  while (names.length < 3) {
+    let added = false;
+    for (let i = 0; i < poolSize; i++) {
+      if (!used[i]) {
+        used[i] = true;
+        names.push(pool[i]);
+        added = true;
+        break;
+      }
+    }
+    if (!added) {
+      names.push(pool[(names.length * 7) % poolSize]);
+    }
+  }
+  return names.join('-');
+}
+
+/**
+ * Génère un identifiant à partir de l'email.
  * @param {string} email Email du client.
- * @returns {string} Identifiant hexadécimal.
+ * @returns {string} Identifiant lisible.
  */
 function genererIdentifiantClient(email) {
-  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(email).trim().toLowerCase());
-  return digest.map(b => ("0" + (b & 0xff).toString(16)).slice(-2)).join("");
+  const emailNorm = String(email || '').trim().toLowerCase();
+  if (!emailNorm) return '';
+  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, emailNorm);
+  return construireIdentifiantCartoonDepuisDigest_(digest);
 }
 
 /**

@@ -20,7 +20,7 @@ function calculerIdentifiantClient(email) {
     Logger.log(`Avertissement: génération d'identifiant via fallback pour ${emailNorm} (${err})`);
   }
   const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, emailNorm.toLowerCase());
-  return digest.map(b => ("0" + (b & 0xff).toString(16)).slice(-2)).join("");
+  return construireIdentifiantCartoonDepuisDigest_(digest);
 }
 
 function enregistrerOuMajClient(donneesClient) {
