@@ -84,9 +84,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnContactSupport) {
         const fallbackEmail = btnContactSupport.dataset.supportEmail || '';
-        if ((!btnContactSupport.getAttribute('href') || btnContactSupport.getAttribute('href') === '#') && fallbackEmail) {
-            btnContactSupport.setAttribute('href', `mailto:${fallbackEmail}`);
-        }
+        const ensureMailtoHref = () => {
+            const currentHref = btnContactSupport.getAttribute('href') || '';
+            if ((!currentHref || currentHref === '#') && fallbackEmail) {
+                const mailto = `mailto:${fallbackEmail}`;
+                btnContactSupport.setAttribute('href', mailto);
+                return mailto;
+            }
+            return currentHref;
+        };
+
+        ensureMailtoHref();
+
+        btnContactSupport.addEventListener('click', (event) => {
+            const href = ensureMailtoHref();
+            const supportEmail = fallbackEmail || href.replace(/^mailto:/i, '').trim();
+            if (!supportEmail) {
+                event.preventDefault();
+                if (typeof afficherNotification === 'function') {
+                    afficherNotification("Adresse du support indisponible pour le moment.", "erreur");
+                }
+                return;
+            }
+
+            const hasNavigator = typeof navigator !== 'undefined';
+            const clipboardSupported = Boolean(window.isSecureContext && hasNavigator && navigator.clipboard && typeof navigator.clipboard.writeText === 'function');
+            if (clipboardSupported) {
+                navigator.clipboard.writeText(supportEmail)
+                    .then(() => {
+                        if (typeof afficherNotification === 'function') {
+                            afficherNotification('Adresse du support copiée dans le presse-papiers.', 'info');
+                        }
+                    })
+                    .catch((err) => {
+                        logWarn('Impossible de copier l’adresse du support', err);
+                        if (typeof afficherNotification === 'function') {
+                            afficherNotification(`Vous pouvez nous écrire à ${supportEmail}.`, 'info');
+                        }
+                    });
+            } else if (typeof afficherNotification === 'function') {
+                afficherNotification(`Vous pouvez nous écrire à ${supportEmail}.`, 'info');
+            }
+        });
     }
 
     function afficherVueConnexion(prefilledEmail) {
