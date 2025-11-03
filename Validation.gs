@@ -34,13 +34,60 @@ function validerConfiguration() {
   }
 
   // --- Test d'accès aux IDs des services Google ---
-  try { DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES')); } catch (e) { erreurs.push("L'ID du dossier d'archives (ID_DOSSIER_ARCHIVES) est invalide ou l'accès est refusé." + describeConfigAccessError_(e)); }
-  try { DriveApp.getFolderById(getSecret('ID_DOSSIER_TEMPORAIRE')); } catch (e) { erreurs.push("L'ID du dossier temporaire (ID_DOSSIER_TEMPORAIRE) est invalide ou l'accès est refusé." + describeConfigAccessError_(e)); }
-  try { DocumentApp.openById(getSecret('ID_MODELE_FACTURE')); } catch (e) { erreurs.push("L'ID du modèle de facture (ID_MODELE_FACTURE) est invalide ou l'accès est refusé." + describeConfigAccessError_(e)); }
-  try { SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')); } catch (e) { erreurs.push("L'ID de la feuille de calcul (ID_FEUILLE_CALCUL) est invalide ou l'accès est refusé." + describeConfigAccessError_(e)); }
-  try { DocumentApp.openById(getSecret('ID_DOCUMENT_CGV')); } catch (e) { erreurs.push("L'ID du document des CGV (ID_DOCUMENT_CGV) est invalide ou l'accès est refusé." + describeConfigAccessError_(e)); }
-  try { CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')); } catch (e) { erreurs.push("L'ID du calendrier (ID_CALENDRIER) est invalide ou l'accès est refusé." + describeConfigAccessError_(e)); }
+  const accessChecks = [
+    {
+      message: "L'ID du dossier d'archives (ID_DOSSIER_ARCHIVES) est invalide ou l'accès est refusé.",
+      test: function () { DriveApp.getFolderById(getSecret('ID_DOSSIER_ARCHIVES')); },
+      scope: 'https://www.googleapis.com/auth/drive'
+    },
+    {
+      message: "L'ID du dossier temporaire (ID_DOSSIER_TEMPORAIRE) est invalide ou l'accès est refusé.",
+      test: function () { DriveApp.getFolderById(getSecret('ID_DOSSIER_TEMPORAIRE')); },
+      scope: 'https://www.googleapis.com/auth/drive'
+    },
+    {
+      message: "L'ID du modèle de facture (ID_MODELE_FACTURE) est invalide ou l'accès est refusé.",
+      test: function () { DocumentApp.openById(getSecret('ID_MODELE_FACTURE')); },
+      scope: 'https://www.googleapis.com/auth/documents'
+    },
+    {
+      message: "L'ID de la feuille de calcul (ID_FEUILLE_CALCUL) est invalide ou l'accès est refusé.",
+      test: function () { SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')); },
+      scope: 'https://www.googleapis.com/auth/spreadsheets'
+    },
+    {
+      message: "L'ID du document des CGV (ID_DOCUMENT_CGV) est invalide ou l'accès est refusé.",
+      test: function () { DocumentApp.openById(getSecret('ID_DOCUMENT_CGV')); },
+      scope: 'https://www.googleapis.com/auth/documents'
+    },
+    {
+      message: "L'ID du calendrier (ID_CALENDRIER) est invalide ou l'accès est refusé.",
+      test: function () { CalendarApp.getCalendarById(getSecret('ID_CALENDRIER')); },
+      scope: 'https://www.googleapis.com/auth/calendar'
+    }
+  ];
 
+  const missingScopes = new Set();
+  accessChecks.forEach(function (check) {
+    try {
+      check.test();
+    } catch (e) {
+      if (isInsufficientPermissionError_(e)) {
+        if (check.scope) {
+          missingScopes.add(check.scope);
+        }
+      } else {
+        erreurs.push(check.message + describeConfigAccessError_(e));
+      }
+    }
+  });
+
+  if (missingScopes.size > 0) {
+    const scopeMessage = buildMissingScopeMessage_(Array.from(missingScopes));
+    if (scopeMessage) {
+      erreurs.push(scopeMessage);
+    }
+  }
   // --- Gestion centralisée des erreurs ---
   if (erreurs.length > 0) {
     const messageErreur = `La validation de la configuration a échoué avec ${erreurs.length} erreur(s) :\n- ` + erreurs.join("\n- ");
@@ -72,11 +119,61 @@ function validerConfiguration() {
   return true; // Retourne true si tout est correct.
 }
 
+const SCOPE_LABELS = {
+  'https://www.googleapis.com/auth/drive': 'Drive',
+  'https://www.googleapis.com/auth/spreadsheets': 'Google Sheets',
+  'https://www.googleapis.com/auth/documents': 'Google Docs',
+  'https://www.googleapis.com/auth/calendar': 'Google Calendar'
+};
+
+function isInsufficientPermissionError_(error) {
+  if (!error) {
+    return false;
+  }
+  let message = '';
+  if (typeof error === 'string') {
+    message = error;
+  } else if (error && typeof error.message === 'string') {
+    message = error.message;
+  } else {
+    try {
+      message = String(error);
+    } catch (_err) {
+      message = '';
+    }
+  }
+  if (!message) {
+    return false;
+  }
+  const lower = message.toLowerCase();
+  return lower.indexOf('les autorisations spécifiées ne sont pas suffisantes') !== -1 ||
+    lower.indexOf('specified permissions are not sufficient') !== -1;
+}
+
+function buildMissingScopeMessage_(scopes) {
+  if (!Array.isArray(scopes) || scopes.length === 0) {
+    return '';
+  }
+  const uniqueScopes = [];
+  scopes.forEach(function (scope) {
+    if (uniqueScopes.indexOf(scope) === -1) {
+      uniqueScopes.push(scope);
+    }
+  });
+  const humanReadable = uniqueScopes.map(function (scope) {
+    return SCOPE_LABELS[scope] || scope;
+  });
+  return "Autorisations Apps Script insuffisantes pour valider la configuration. Veuillez réautoriser l'application afin d'accéder aux services : " +
+    humanReadable.join(', ') +
+    ". Ouvrez le projet dans l'éditeur Apps Script, exécutez une fonction (par exemple checkSetup_ELS) et acceptez les nouvelles autorisations, puis relancez la validation.";
+}
+
 /**
  * Retourne un résumé lisible de l'erreur rencontrée lors d'un accès Drive/Docs.
  * @param {*} error Erreur retournée par les services Google.
  * @returns {string} Détails entre parenthèses ou chaîne vide.
  */
+
 function describeConfigAccessError_(error) {
   if (!error) {
     return '';
