@@ -163,13 +163,13 @@ const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
-const PRIVACY_LINK_ENABLED = false;
+const PRIVACY_LINK_ENABLED = true;
 /** @const {boolean} Affiche le lien vers les mentions légales. */
 const LEGAL_NOTICE_LINK_ENABLED = true;
 /** @const {boolean} Sépare l'affichage des créneaux en matin et après-midi. */
 const SLOTS_AMPM_ENABLED = false;
 /** @const {boolean} Stocke l'identifiant client sous forme de jeton opaque. */
-const CLIENT_SESSION_OPAQUE_ID_ENABLED = false;
+const CLIENT_SESSION_OPAQUE_ID_ENABLED = true;
 /** @const {boolean} Vérifie la présence du scope script.send_mail lors du setup. */
 const SEND_MAIL_SCOPE_CHECK_ENABLED = true;
 /** @const {boolean} Agrège toutes les feuilles "Facturation*" lors du calcul des factures. */
@@ -248,9 +248,9 @@ const BILLING_V2_DRYRUN = true;
 /** @const {boolean} Vérifie la présence de la colonne ID PDF dans l'onglet Facturation. */
 const BILLING_ID_PDF_CHECK_ENABLED = true;
 /** @const {boolean} Active la journalisation détaillée des requêtes web. */
-const REQUEST_LOGGING_ENABLED = false;
+const REQUEST_LOGGING_ENABLED = true;
 /** @const {boolean} Active le traitement des requêtes POST. */
-const POST_ENDPOINT_ENABLED = false;
+const POST_ENDPOINT_ENABLED = true;
 /** @const {boolean} Limite le nombre de tentatives de connexion au portail client. */
 const CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED = false;
 /** @const {number} Nombre maximum de tentatives avant blocage. */
