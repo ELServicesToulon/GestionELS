@@ -6,6 +6,7 @@
 // =================================================================
 
 const __CACHE_JOURS_FERIES_FRANCE = Object.create(null);
+const __ID_SUFFIX_SEPARATOR = '@';
 
 /**
  * Calcule la date du dimanche de Pâques pour une année donnée (algorithme de Butcher).
@@ -90,6 +91,38 @@ function estJourFerieFrancais(dateObjet, dateString) {
 }
 
 /**
+ * Transforme une liste d'événements Google Calendar en intervalles normalisés et les
+ * filtre sur la plage fournie.
+ * @param {Array} evenements
+ * @param {Date} debutPlage
+ * @param {Date} finPlage
+ * @returns {Array<{id: string, start: Date, end: Date}>}
+ */
+function normaliserEvenementsPourPlage(evenements, debutPlage, finPlage) {
+  if (!Array.isArray(evenements) || !debutPlage || !finPlage) {
+    return [];
+  }
+
+  return evenements.map(event => {
+    if (!event || !event.start || !event.end) return null;
+
+    const startRaw = event.start.dateTime || event.start.date;
+    const endRaw = event.end.dateTime || event.end.date;
+    if (!startRaw || !endRaw) return null;
+
+    const start = new Date(startRaw);
+    const end = new Date(endRaw);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+
+    const id = typeof event.id === 'string'
+      ? event.id.split(__ID_SUFFIX_SEPARATOR)[0]
+      : '';
+
+    return { id, start, end };
+  }).filter(intervalle => intervalle && intervalle.start < finPlage && intervalle.end > debutPlage);
+}
+
+/**
  * Récupère les événements du calendrier Google pour une période donnée via l'API avancée.
  * @param {Date} dateDebut La date de début de la période.
  * @param {Date} dateFin La date de fin de la période.
@@ -155,9 +188,10 @@ function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnor
         return [];
     }
 
-    const evenementsCalendrier = evenementsPrecharges 
-        ? evenementsPrecharges.filter(e => formaterDateEnYYYYMMDD(new Date(e.start.dateTime || e.start.date)) === dateString) 
-        : obtenirEvenementsCalendrierPourPeriode(debutJournee, finJournee);
+    const evenementsBruts = Array.isArray(evenementsPrecharges)
+      ? evenementsPrecharges
+      : obtenirEvenementsCalendrierPourPeriode(debutJournee, finJournee);
+    const evenementsCalendrier = normaliserEvenementsPourPlage(evenementsBruts, debutJournee, finJournee);
     
     const plagesManuellementBloquees = obtenirPlagesBloqueesPourDate(debutJournee);
     
@@ -167,28 +201,28 @@ function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnor
         const debut = new Date(annee, mois - 1, jour, itemHeureDebut, itemMinuteDebut);
         if (isNaN(debut.getTime()) || isNaN(dureeNumerique)) { return null; }
         const fin = new Date(debut.getTime() + dureeNumerique * 60000);
-        return { start: { dateTime: debut.toISOString() }, end: { dateTime: fin.toISOString() }, id: `panier-${item.id}` };
+        return { id: `panier-${item.id}`, start: debut, end: fin };
     }).filter(Boolean);
 
     const indisponibilitesNormalisees = [
-      ...evenementsCalendrier.map(e => ({ id: e.id, start: new Date(e.start.dateTime || e.start.date), end: new Date(e.end.dateTime || e.end.date) })),
-      ...reservationsPanier.map(e => ({ id: e.id, start: new Date(e.start.dateTime), end: new Date(e.end.dateTime) })),
+      ...evenementsCalendrier,
+      ...reservationsPanier,
       ...plagesManuellementBloquees.map((e, i) => ({ id: `manuel-${i}`, start: e.start, end: e.end }))
     ].filter(indispo => !isNaN(indispo.start.getTime()) && !isNaN(indispo.end.getTime()));
 
     const creneauxPotentiels = [];
     let heureActuelle = new Date(debutJournee);
-    const idPropreAIgnorer = idEvenementAIgnorer ? idEvenementAIgnorer.split('@')[0] : null;
+    const idPropreAIgnorer = idEvenementAIgnorer ? idEvenementAIgnorer.split(__ID_SUFFIX_SEPARATOR)[0] : null;
 
     // CORRECTION : Pour les non-admins, si on est aujourd'hui, on ne propose pas de créneaux déjà passés.
     // Pour les admins, on commence toujours au début du service.
     if (!estAdmin && formaterDateEnYYYYMMDD(debutJournee) === formaterDateEnYYYYMMDD(maintenant) && heureActuelle < maintenant) {
-      heureActuelle = maintenant;
+      heureActuelle = new Date(maintenant);
+      heureActuelle.setSeconds(0, 0);
       const minutes = heureActuelle.getMinutes();
       const remainder = minutes % INTERVALLE_CRENEAUX_MINUTES;
       if (remainder !== 0) {
         heureActuelle.setMinutes(minutes + (INTERVALLE_CRENEAUX_MINUTES - remainder));
-        heureActuelle.setSeconds(0, 0);
       }
     }
 
@@ -244,9 +278,10 @@ function obtenirEtatCreneauxPourDate(dateString, duree, idEvenementAIgnorer = nu
     const maintenant = new Date();
     const estAujourdHui = formaterDateEnYYYYMMDD(maintenant) === dateString;
 
-    const evenementsCalendrier = evenementsPrecharges
-      ? evenementsPrecharges.filter(e => formaterDateEnYYYYMMDD(new Date(e.start.dateTime || e.start.date)) === dateString)
+    const evenementsBruts = Array.isArray(evenementsPrecharges)
+      ? evenementsPrecharges
       : obtenirEvenementsCalendrierPourPeriode(debutJournee, finJournee);
+    const evenementsCalendrier = normaliserEvenementsPourPlage(evenementsBruts, debutJournee, finJournee);
 
     const plagesManuellementBloquees = obtenirPlagesBloqueesPourDate(debutJournee);
 
@@ -256,18 +291,18 @@ function obtenirEtatCreneauxPourDate(dateString, duree, idEvenementAIgnorer = nu
       const debut = new Date(annee, mois - 1, jour, itemHeureDebut, itemMinuteDebut);
       if (isNaN(debut.getTime()) || isNaN(dureeNumerique)) { return null; }
       const fin = new Date(debut.getTime() + dureeNumerique * 60000);
-      return { start: { dateTime: debut.toISOString() }, end: { dateTime: fin.toISOString() }, id: `panier-${item.id}` };
+      return { id: `panier-${item.id}`, start: debut, end: fin };
     }).filter(Boolean);
 
     const indisponibilitesNormalisees = [
-      ...evenementsCalendrier.map(e => ({ id: e.id, start: new Date(e.start.dateTime || e.start.date), end: new Date(e.end.dateTime || e.end.date) })),
-      ...reservationsPanier.map(e => ({ id: e.id, start: new Date(e.start.dateTime), end: new Date(e.end.dateTime) })),
+      ...evenementsCalendrier,
+      ...reservationsPanier,
       ...plagesManuellementBloquees.map((e, i) => ({ id: `manuel-${i}`, start: e.start, end: e.end }))
     ].filter(indispo => !isNaN(indispo.start.getTime()) && !isNaN(indispo.end.getTime()));
 
     const creneaux = [];
     let heureActuelle = new Date(debutJournee);
-    const idPropreAIgnorer = idEvenementAIgnorer ? idEvenementAIgnorer.split('@')[0] : null;
+    const idPropreAIgnorer = idEvenementAIgnorer ? idEvenementAIgnorer.split(__ID_SUFFIX_SEPARATOR)[0] : null;
 
     while (heureActuelle < finJournee) {
       const debutCreneau = new Date(heureActuelle);
