@@ -148,6 +148,7 @@ function rechercherClientParIdentifiant(identifiant) {
     const idxNom = enTetes.indexOf('Raison Sociale');
     const idxAdresse = enTetes.indexOf('Adresse');
     const idxSiret = enTetes.indexOf('SIRET');
+    const idxTelephone = enTetes.indexOf(COLONNE_TELEPHONE_CLIENT);
     for (let i = 1; i < donnees.length; i++) {
       const email = String(donnees[i][idxEmail]).trim();
       if (genererIdentifiantClient(email) === identifiant) {
@@ -155,7 +156,8 @@ function rechercherClientParIdentifiant(identifiant) {
           email: email,
           nom: donnees[i][idxNom] || '',
           adresse: donnees[i][idxAdresse] || '',
-          siret: donnees[i][idxSiret] || ''
+          siret: donnees[i][idxSiret] || '',
+          telephone: idxTelephone !== -1 ? String(donnees[i][idxTelephone] || '').trim() : ''
         };
       }
     }

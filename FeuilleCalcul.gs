@@ -33,6 +33,8 @@ function enregistrerOuMajClient(donneesClient) {
       return { isNew: false, clientId: '' };
     }
     donneesClient.email = emailNormalise;
+    const telephoneNormalise = String(donneesClient.telephone || '').replace(/\s+/g, ' ').trim();
+    donneesClient.telephone = telephoneNormalise;
 
     const feuilleClients = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_CLIENTS);
     if (!feuilleClients) throw new Error("La feuille 'Clients' est introuvable.");
@@ -48,8 +50,11 @@ function enregistrerOuMajClient(donneesClient) {
     if (headerTrimmed.indexOf(COLONNE_CODE_POSTAL_CLIENT) === -1) {
       feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_CODE_POSTAL_CLIENT);
     }
+    if (headerTrimmed.indexOf(COLONNE_TELEPHONE_CLIENT) === -1) {
+      feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_TELEPHONE_CLIENT);
+    }
 
-    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_CODE_POSTAL_CLIENT, COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT];
+    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", COLONNE_TELEPHONE_CLIENT, "SIRET", COLONNE_CODE_POSTAL_CLIENT, COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT];
     const indices = obtenirIndicesEnTetes(feuilleClients, enTetesRequis);
     const donneesFeuille = feuilleClients.getDataRange().getValues();
     const indexLigneClient = donneesFeuille.findIndex(ligne => String(ligne[indices["Email"]]).toLowerCase() === emailNormalise.toLowerCase());
@@ -61,6 +66,7 @@ function enregistrerOuMajClient(donneesClient) {
       ligneAjour[indices["Email"]] = emailNormalise;
       ligneAjour[indices["Raison Sociale"]] = donneesClient.nom || '';
       ligneAjour[indices["Adresse"]] = donneesClient.adresse || '';
+      ligneAjour[indices[COLONNE_TELEPHONE_CLIENT]] = donneesClient.telephone || '';
       ligneAjour[indices["SIRET"]] = donneesClient.siret || '';
       ligneAjour[indices[COLONNE_CODE_POSTAL_CLIENT]] = donneesClient.codePostal || '';
       ligneAjour[indices[COLONNE_TYPE_REMISE_CLIENT]] = donneesClient.typeRemise || '';
@@ -77,6 +83,7 @@ function enregistrerOuMajClient(donneesClient) {
       nouvelleLigne[indices["Email"]] = emailNormalise;
       nouvelleLigne[indices["Raison Sociale"]] = donneesClient.nom || '';
       nouvelleLigne[indices["Adresse"]] = donneesClient.adresse || '';
+      nouvelleLigne[indices[COLONNE_TELEPHONE_CLIENT]] = donneesClient.telephone || '';
       nouvelleLigne[indices["SIRET"]] = donneesClient.siret || '';
       nouvelleLigne[indices[COLONNE_CODE_POSTAL_CLIENT]] = donneesClient.codePostal || '';
       nouvelleLigne[indices[COLONNE_TYPE_REMISE_CLIENT]] = donneesClient.typeRemise || '';
@@ -115,8 +122,11 @@ function obtenirInfosClientParEmail(email) {
     if (headerTrimmed.indexOf(COLONNE_CODE_POSTAL_CLIENT) === -1) {
       feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_CODE_POSTAL_CLIENT);
     }
+    if (headerTrimmed.indexOf(COLONNE_TELEPHONE_CLIENT) === -1) {
+      feuilleClients.getRange(1, feuilleClients.getLastColumn() + 1).setValue(COLONNE_TELEPHONE_CLIENT);
+    }
 
-    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", "SIRET", COLONNE_CODE_POSTAL_CLIENT, COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT];
+    const enTetesRequis = ["Email", "Raison Sociale", "Adresse", COLONNE_TELEPHONE_CLIENT, "SIRET", COLONNE_CODE_POSTAL_CLIENT, COLONNE_TYPE_REMISE_CLIENT, COLONNE_VALEUR_REMISE_CLIENT, COLONNE_NB_TOURNEES_OFFERTES, COLONNE_RESIDENT_CLIENT, COLONNE_ID_CLIENT];
     const indices = obtenirIndicesEnTetes(feuilleClients, enTetesRequis);
     
     const donnees = feuilleClients.getDataRange().getValues();
@@ -142,6 +152,7 @@ function obtenirInfosClientParEmail(email) {
         email: ligneClient[indices["Email"]],
         nom: ligneClient[indices["Raison Sociale"]] || '',
         adresse: ligneClient[indices["Adresse"]] || '',
+        telephone: String(ligneClient[indices[COLONNE_TELEPHONE_CLIENT]] || '').trim(),
         siret: ligneClient[indices["SIRET"]] || '',
         codePostal: ligneClient[indices[COLONNE_CODE_POSTAL_CLIENT]] || '',
         typeRemise: String(ligneClient[indices[COLONNE_TYPE_REMISE_CLIENT]]).trim() || '',

@@ -102,6 +102,16 @@ function normaliserCodePostalLocal(valeur) {
   return digits.length === 5 ? digits : '';
 }
 
+function normaliserTelephoneLocal(valeur) {
+  if (valeur === null || valeur === undefined) return '';
+  return String(valeur).replace(/\s+/g, ' ').trim();
+}
+
+function telephoneValideLocal(valeur) {
+  const digits = String(valeur || '').replace(/\D/g, '');
+  return digits.length >= 10;
+}
+
 function lireCodePostalStocke() {
   try {
     return localStorage.getItem(CLE_LOCALSTORAGE_CODE_POSTAL) || '';
@@ -357,6 +367,10 @@ function afficherConteneurFinalisation() {
     ui.champEmailClient.value = clientReconnu.email;
     ui.champNomClient.value = clientReconnu.nom;
     ui.champAdresseClient.value = clientReconnu.adresse || '';
+    if (ui.champTelephoneClient) {
+      ui.champTelephoneClient.value = normaliserTelephoneLocal(clientReconnu.telephone || '');
+      ui.champTelephoneClient.readOnly = false;
+    }
     ui.champSiretClient.value = clientReconnu.siret || '';
     if (ui.champCodePostalClient) {
       const code = clientReconnu.codePostal || window.etat.codePostalOfficine || '';
@@ -370,6 +384,10 @@ function afficherConteneurFinalisation() {
     if (ui.formulaireReservation) ui.formulaireReservation.reset();
     ui.champEmailClient.readOnly = false;
     ui.champNomClient.readOnly = false;
+    if (ui.champTelephoneClient) {
+      ui.champTelephoneClient.value = '';
+      ui.champTelephoneClient.readOnly = false;
+    }
     if (ui.champResidentClient) ui.champResidentClient.checked = false;
     if (ui.champCodePostalClient) {
       ui.champCodePostalClient.value = window.etat.codePostalOfficine || '';
@@ -461,6 +479,28 @@ function soumettreReservationClientReconnu() {
   if (ui.champResidentClient) {
     ui.champResidentClient.checked = !!clientReconnu.resident;
   }
+  const telephoneChamp = ui.champTelephoneClient
+    ? ui.champTelephoneClient.value
+    : (clientReconnu.telephone || '');
+  let telephoneNormalise = normaliserTelephoneLocal(telephoneChamp || clientReconnu.telephone || '');
+  if (!telephoneNormalise && clientReconnu.telephone) {
+    telephoneNormalise = normaliserTelephoneLocal(clientReconnu.telephone);
+  }
+  if (!telephoneValideLocal(telephoneNormalise)) {
+    afficherNotification("Merci de renseigner un numéro de téléphone valide pour créer ou mettre à jour votre accès client.", 'erreur');
+    if (ui.champTelephoneClient) {
+      ui.champTelephoneClient.value = telephoneNormalise;
+      ui.champTelephoneClient.focus();
+    }
+    afficherConteneurFinalisation();
+    return;
+  }
+  if (ui.champTelephoneClient) {
+    ui.champTelephoneClient.value = telephoneNormalise;
+  }
+  if (window.etat?.clientReconnu) {
+    window.etat.clientReconnu.telephone = telephoneNormalise;
+  }
 
   const residentActif = estForfaitResidentActif() || !!clientReconnu.resident;
   const modeResident = (typeof obtenirModeResident === 'function') ? obtenirModeResident() : 'standard';
@@ -471,6 +511,7 @@ function soumettreReservationClientReconnu() {
       contactEmail: email,
       nom: clientReconnu.nom || '',
       adresse: clientReconnu.adresse || '',
+      telephone: telephoneNormalise,
       siret: clientReconnu.siret || '',
       note: ui.champNoteReservation?.value.trim() || '',
       resident: residentActif,
@@ -663,6 +704,26 @@ function gererSoumissionReservation(e) {
     ui.champEmailClient.focus();
     return;
   }
+  let telephoneClient = ui.champTelephoneClient ? normaliserTelephoneLocal(ui.champTelephoneClient.value) : '';
+  if (!telephoneClient && window.etat.clientReconnu?.telephone) {
+    telephoneClient = normaliserTelephoneLocal(window.etat.clientReconnu.telephone);
+    if (ui.champTelephoneClient && telephoneClient) {
+      ui.champTelephoneClient.value = telephoneClient;
+    }
+  }
+  if (!telephoneValideLocal(telephoneClient)) {
+    afficherNotification("Merci de renseigner un numéro de téléphone valide pour organiser le retrait.", 'erreur');
+    if (ui.champTelephoneClient) {
+      ui.champTelephoneClient.focus();
+    }
+    return;
+  }
+  if (ui.champTelephoneClient) {
+    ui.champTelephoneClient.value = telephoneClient;
+  }
+  if (window.etat.clientReconnu) {
+    window.etat.clientReconnu.telephone = telephoneClient;
+  }
   if (!emailSaisi) {
     ui.champEmailClient.value = emailClient;
   }
@@ -677,6 +738,7 @@ function gererSoumissionReservation(e) {
       contactEmail: emailClient,
       nom: ui.champNomClient.value.trim(),
       adresse: ui.champAdresseClient.value.trim(),
+      telephone: telephoneClient,
       siret: ui.champSiretClient.value.trim(),
       note: ui.champNoteReservation.value.trim(),
       resident: isResident,

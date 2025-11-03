@@ -454,6 +454,8 @@ const COLONNE_NB_TOURNEES_OFFERTES = "Nombre Tournées Offertes";
 const COLONNE_RESIDENT_CLIENT = "Resident";
 /** @const {string} Colonne stockant le code postal de l'officine cliente. */
 const COLONNE_CODE_POSTAL_CLIENT = "Code Postal";
+/** @const {string} Colonne stockant le num&eacute;ro de t&eacute;l&eacute;phone principal de l'officine cliente. */
+const COLONNE_TELEPHONE_CLIENT = "Téléphone";
 
 
 // =================================================================

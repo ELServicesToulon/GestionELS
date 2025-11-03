@@ -297,24 +297,33 @@
         <h3>Finaliser la réservation</h3>
         <form id="formulaire-reservation">
           <h4>Informations Client</h4>
+          <p class="muted">Pour créer votre accès client, validez votre réservation et complétez les champs indiqués comme obligatoires. Les autres informations pourront être ajoutées depuis l'espace client.</p>
           <div class="groupe-formulaire">
-            <label for="client-email">Email</label>
-            <input type="email" id="client-email">
+            <label for="client-email">Email (obligatoire)</label>
+            <input type="email" id="client-email" required>
             <small id="client-email-helper" class="muted">Cette adresse email est requise pour recevoir votre identifiant d'acc&egrave;s client.</small>
           </div>
           <div class="groupe-formulaire">
-            <label for="client-code-postal">Code postal de l'officine</label>
+            <label for="client-code-postal">Code postal de l'officine (obligatoire)</label>
             <div class="code-postal-input-row">
               <input type="text" id="client-code-postal" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" autocomplete="postal-code" required readonly>
               <button type="button" id="btn-modifier-code-postal" class="btn btn-secondaire btn-sm">Modifier</button>
             </div>
             <small class="muted">L'accès est limité aux codes postaux desservis par ELS.</small>
           </div>
-          <div class="groupe-formulaire"><label for="client-nom">Raison Sociale</label><input type="text" id="client-nom" required></div>
           <div class="groupe-formulaire">
-            <label for="client-adresse">Adresse</label>
+            <label for="client-nom">Raison Sociale (obligatoire)</label>
+            <input type="text" id="client-nom" required>
+          </div>
+          <div class="groupe-formulaire">
+            <label for="client-telephone">Téléphone (obligatoire)</label>
+            <input type="tel" id="client-telephone" inputmode="tel" autocomplete="tel" required>
+            <small class="muted">Ce numéro nous permet de vous joindre en cas d'ajustement logistique.</small>
+          </div>
+          <div class="groupe-formulaire">
+            <label for="client-adresse">Adresse de retrait (obligatoire)</label>
             <div class="adresse-autocomplete">
-              <input type="text" id="client-adresse" autocomplete="street-address">
+              <input type="text" id="client-adresse" autocomplete="street-address" required>
               <div id="client-adresse-suggestions" class="adresse-suggestions hidden" role="listbox" aria-label="Suggestions d'adresse"></div>
             </div>
           </div>

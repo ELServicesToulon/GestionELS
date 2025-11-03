@@ -52,6 +52,19 @@ function reserverPanier(donneesReservation) {
     }
     client.email = emailNormalise;
     client.contactEmail = emailNormalise;
+    const telephoneBrut =
+      client.telephone ||
+      client.phone ||
+      client.mobile ||
+      client.tel ||
+      client.telephonePrincipal ||
+      '';
+    const telephoneNormalise = String(telephoneBrut).replace(/\s+/g, ' ').trim();
+    const telephoneDigits = telephoneNormalise.replace(/\D/g, '');
+    if (!telephoneDigits || telephoneDigits.length < 10) {
+      return { success: false, summary: "Merci d'indiquer un numéro de téléphone joignable (10 chiffres minimum)." };
+    }
+    client.telephone = telephoneNormalise;
     const codePostalNormalise = normaliserCodePostal(
       client.codePostal || client.code_postal || client.postalCode || client.zip || ''
     );
@@ -154,7 +167,11 @@ function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
     const idReservation = overrideIdReservation || ('RESA-' + Utilities.getUuid());
 
     const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${client.nom}`;
-    let descriptionEvenement = `Client: ${client.nom} (${client.email})\nID Réservation: ${idReservation}\nDétails: ${infosTournee.details}\nNote: ${client.note || ''}`;
+    let descriptionEvenement = `Client: ${client.nom} (${client.email})`;
+    if (client.telephone) {
+      descriptionEvenement += `\nTéléphone: ${client.telephone}`;
+    }
+    descriptionEvenement += `\nID Réservation: ${idReservation}\nDétails: ${infosTournee.details}\nNote: ${client.note || ''}`;
     if (client.resident === true) {
       descriptionEvenement += '\nResident: Oui';
     }

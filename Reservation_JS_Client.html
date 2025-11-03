@@ -65,6 +65,7 @@ function preRemplirInfosClient(identifiant) {
         if (window.ui.champEmailClient) window.ui.champEmailClient.value = client.email || '';
         if (window.ui.champNomClient) window.ui.champNomClient.value = client.nom || '';
         if (window.ui.champAdresseClient) window.ui.champAdresseClient.value = client.adresse || '';
+        if (window.ui.champTelephoneClient) window.ui.champTelephoneClient.value = client.telephone || '';
         if (window.ui.champSiretClient) window.ui.champSiretClient.value = client.siret || '';
         if (client.codePostal && typeof window.definirCodePostalCourant === 'function') {
           window.definirCodePostalCourant(client.codePostal);
@@ -127,7 +128,7 @@ async function sauvegarderSessionClient(email) {
 
 /**
  * M�morise un client reconnu dans le stockage local pour faciliter les futurs acc�s.
- * @param {{email:string,nom?:string,adresse?:string,siret?:string,resident?:boolean}} client
+ * @param {{email:string,nom?:string,adresse?:string,telephone?:string,siret?:string,resident?:boolean}} client
  */
 function memoriserClientReconnu(client) {
   if (!client || !client.email) return;
@@ -139,6 +140,7 @@ function memoriserClientReconnu(client) {
     email: client.email || '',
     nom: client.nom || '',
     adresse: client.adresse || '',
+    telephone: client.telephone || '',
     siret: client.siret || '',
     codePostal: client.codePostal || '',
     resident: !!client.resident,

@@ -12,6 +12,7 @@ const TEST_CLIENT = {
   email: "test.client@example.com",
   nom: "Pharmacie de Test",
   adresse: "123 Rue du Test, 75000 Paris",
+  telephone: "+33 6 12 34 56 78",
   siret: "12345678901234",
   typeRemise: "Pourcentage",
   valeurRemise: 10,
