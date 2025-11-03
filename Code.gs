@@ -9,7 +9,7 @@
  * S'exécute à l'ouverture du Google Sheet pour créer les menus.
  * @summary Fonction trigger `onOpen` pour créer l'interface utilisateur du menu.
  */
-function onOpen() {
+function onOpen(e) {
   const ui = SpreadsheetApp.getUi();
 
   // --- Création du menu principal ---
@@ -62,6 +62,11 @@ function onOpen() {
   menuPrincipal.addToUi();
   try { SpreadsheetApp.getActive().toast('Menu ELS mis à jour', 'ELS', 5); } catch (_e) {}
 
+  var canValidate = hasFullAuthorization_(e);
+  if (!canValidate) {
+    try { SpreadsheetApp.getActive().toast('Autorisations Apps Script requises pour valider la config. Ouvrez le projet Apps Script et exécutez validerConfiguration().', 'ELS', 10); } catch (_e) {}
+    return;
+  }
   try {
     validerConfiguration();
   } catch (err) {
@@ -71,6 +76,25 @@ function onOpen() {
 
 function onInstall(e) {
   onOpen(e);
+}
+
+function hasFullAuthorization_(event) {
+  try {
+    if (event && typeof event.authMode !== 'undefined' && ScriptApp && ScriptApp.AuthMode) {
+      if (event.authMode === ScriptApp.AuthMode.LIMITED || event.authMode === ScriptApp.AuthMode.NONE) {
+        return false;
+      }
+    }
+    if (ScriptApp && ScriptApp.getAuthorizationInfo && ScriptApp.AuthMode && ScriptApp.AuthorizationStatus) {
+      const info = ScriptApp.getAuthorizationInfo(ScriptApp.AuthMode.FULL);
+      if (info && typeof info.getAuthorizationStatus === 'function') {
+        return info.getAuthorizationStatus() !== ScriptApp.AuthorizationStatus.REQUIRED;
+      }
+    }
+  } catch (authErr) {
+    Logger.log('hasFullAuthorization_ check failed: ' + authErr);
+  }
+  return true;
 }
 
 /**
