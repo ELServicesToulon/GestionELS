@@ -474,49 +474,6 @@
       </div>
   </div>
 
-  <!-- MODALE 5: Coordonnées de facturation -->
-  <div id="modale-billing" class="modale-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="billing-titre">
-      <div class="modale-contenu">
-          <button id="btn-fermer-billing" class="btn-fermer" aria-label="Fermer">&times;</button>
-          <div class="app-logo-container" data-logo-slot>
-            <span class="app-logo--fallback" data-logo-fallback="true"><?= nomService ?></span>
-          </div>
-          <h3 id="billing-titre">Coordonnées de facturation</h3>
-          <form id="formulaire-billing">
-              <div class="groupe-formulaire">
-                  <label for="billing-nom">Nom / Raison sociale</label>
-                  <input type="text" id="billing-nom" name="billingNom" required>
-              </div>
-              <div class="groupe-formulaire">
-                  <label for="billing-adresse">Adresse</label>
-                  <textarea id="billing-adresse" name="billingAdresse" rows="2"></textarea>
-              </div>
-              <div class="groupe-formulaire">
-                  <label for="billing-email">Email</label>
-                  <input type="email" id="billing-email" name="billingEmail">
-              </div>
-              <div class="groupe-formulaire">
-                  <label for="billing-telephone">Téléphone</label>
-                  <input type="tel" id="billing-telephone" name="billingTelephone">
-              </div>
-              <div class="groupe-formulaire">
-                  <label for="billing-siret">SIRET</label>
-                  <input type="text" id="billing-siret" name="billingSiret">
-              </div>
-              <div class="groupe-formulaire">
-                  <label for="billing-tva">TVA intracom</label>
-                  <input type="text" id="billing-tva" name="billingTva">
-              </div>
-              <div class="modale-pied-de-page">
-                  <button type="button" id="btn-billing-switch" class="btn btn-secondaire btn-sm hidden">Saisir nouvelles coordonnées</button>
-                  <span style="flex:1"></span>
-                  <button type="button" id="btn-billing-annuler" class="btn btn-secondaire">Annuler</button>
-                  <button type="submit" class="btn btn-primaire">Enregistrer</button>
-              </div>
-          </form>
-      </div>
-  </div>
-
   <div id="conteneur-notifications" role="status" aria-live="polite"></div>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
