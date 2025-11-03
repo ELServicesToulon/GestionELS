@@ -15,6 +15,7 @@ cache/
 
 # Project-specific tools and assets
 tools/
+tools/**
 branding/
 jules-scratch/
 scripts/
