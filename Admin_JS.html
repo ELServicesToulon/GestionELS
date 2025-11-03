@@ -20,6 +20,13 @@ function logWarn(...args) {
 function logError(...args) {
   console.error('[ELS]', ...args);
 }
+function formatDateAvecJourFr(date, options = {}) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  const baseOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+  const opts = Object.assign({}, baseOptions, options);
+  const formatted = date.toLocaleDateString('fr-FR', opts);
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
 const ADMIN_OPTIMISTIC_CREATION_ENABLED = <?!= ADMIN_OPTIMISTIC_CREATION_ENABLED ?>;
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const ADMIN_CONFIG = window.ADMIN_CONFIG || {};
@@ -288,7 +295,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (contenuReservations) renderMessage(contenuReservations, 'Chargement des courses...');
         const date = new Date(dateString + "T00:00:00");
         if (titreReservations) {
-            titreReservations.textContent = `Courses du ${date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`;
+            const dateFormatee = formatDateAvecJourFr(date);
+            titreReservations.textContent = dateFormatee ? `Courses du ${dateFormatee}` : `Courses du ${dateString}`;
         }
 
         google.script.run
@@ -400,7 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
             groupeParClient[nomClient].forEach(resa => {
                 const dateDebut = new Date(resa.start);
                 const heureDebut = escapeHTML(dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
-                const dateAffichee = escapeHTML(dateDebut.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
+                const dateFormatee = formatDateAvecJourFr(dateDebut, { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const dateAffichee = escapeHTML(dateFormatee || dateDebut.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
                 const prix = typeof resa.amount === 'number' ? escapeHTML(resa.amount.toFixed(2)) : 'N/A';
                 const infoRemiseHtml = resa.infoRemise ? `<span class="info-remise">${escapeHTML(resa.infoRemise)}</span>` : '';
                 const dateHtml = montrerDate ? `<strong>${dateAffichee}</strong> &agrave; ` : '';

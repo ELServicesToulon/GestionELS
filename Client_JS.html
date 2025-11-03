@@ -24,6 +24,14 @@ function logError(...args) {
   console.error('[ELS]', ...args);
 }
 
+function formatDateLongueFr(date, options = {}) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+  const baseOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const opts = Object.assign({}, baseOptions, options);
+  const formatted = date.toLocaleDateString('fr-FR', opts);
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
 function telechargerPdfDepuisBase64(base64Data, fileName, mimeType) {
   if (!base64Data) return;
   const safeName = fileName || 'devis.pdf';
@@ -539,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
             html += `<div class="carte"><h3>Courses résidents affiliés</h3>`;
             resResidents.forEach(resa => {
                 const dateDebut = new Date(resa.start);
-                const dateFormatee = escapeHTML(dateDebut.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+                const dateFormatee = escapeHTML(formatDateLongueFr(dateDebut));
                 const heureFormatee = escapeHTML(dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
                 html += `
                 <div class="reservation-item" data-id="${escapeHTML(resa.id)}">
@@ -557,7 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         resStandard.forEach(resa => {
             const dateDebut = new Date(resa.start);
-            const dateFormatee = escapeHTML(dateDebut.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+            const dateFormatee = escapeHTML(formatDateLongueFr(dateDebut));
             const heureFormatee = escapeHTML(dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
             html += `
                 <div class="reservation-item" data-id="${escapeHTML(resa.id)}">

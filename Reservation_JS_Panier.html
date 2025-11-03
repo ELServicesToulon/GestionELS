@@ -63,7 +63,14 @@ function afficherPanier() {
   ui.listePanier.textContent = '';
   panier.forEach(item => {
     const date = new Date(item.date + 'T00:00:00');
-    const dateFormatee = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+    let dateFormatee = '';
+    if (!Number.isNaN(date.getTime())) {
+      const options = { weekday: 'long', day: 'numeric', month: 'long' };
+      const brute = date.toLocaleDateString('fr-FR', options);
+      dateFormatee = brute.charAt(0).toUpperCase() + brute.slice(1);
+    } else {
+      dateFormatee = item.date;
+    }
 
     const li = document.createElement('li');
     li.className = 'item-panier';
