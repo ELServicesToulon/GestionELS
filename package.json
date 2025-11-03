@@ -22,6 +22,7 @@
     "clasp:version": "clasp version 'auto: CI'",
     "clasp:deploy": "clasp deploy -d 'client'",
     "clasp:deploy:admin": "clasp deploy -d 'admin'",
-    "icons:optimize": "svgo icons.svg"
+    "icons:optimize": "svgo icons.svg",
+    "validate:manifest": "node tools/validate-appsscript.js"
   }
 }

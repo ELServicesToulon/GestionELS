@@ -29,6 +29,26 @@ function checkSetup_ELS() {
     }
   }
 
+  if (ScriptApp.getAuthorizationInfo && ScriptApp.AuthorizationStatus && ScriptApp.AuthMode) {
+    try {
+      const authInfo = ScriptApp.getAuthorizationInfo(ScriptApp.AuthMode.FULL);
+      if (authInfo && typeof authInfo.getAuthorizationStatus === 'function' &&
+        authInfo.getAuthorizationStatus() === ScriptApp.AuthorizationStatus.REQUIRED) {
+        var authUrl = '';
+        if (typeof authInfo.getAuthorizationUrl === 'function') {
+          authUrl = authInfo.getAuthorizationUrl();
+        }
+        var authMsg = "Certaines autorisations Apps Script sont manquantes. Suivez le lien d'autorisation ou exécutez une fonction nécessitant l'accès complet pour réautoriser le projet.";
+        if (authUrl) {
+          authMsg += ' Autorisez via: ' + authUrl;
+        }
+        warnings.push(authMsg);
+      }
+    } catch (authError) {
+      warnings.push('Impossible de vérifier l’état des autorisations Apps Script: ' + authError);
+    }
+  }
+
   // 1) Propriétés requises
   const sp = PropertiesService.getScriptProperties();
   const missing = (Array.isArray(REQUIRED_PROPS) ? REQUIRED_PROPS : []).filter(k => {

@@ -76,9 +76,8 @@ function validerConfiguration() {
         if (check.scope) {
           missingScopes.add(check.scope);
         }
-      } else {
-        erreurs.push(check.message + describeConfigAccessError_(e));
       }
+      erreurs.push(check.message + describeConfigAccessError_(e));
     }
   });
 
@@ -165,7 +164,7 @@ function buildMissingScopeMessage_(scopes) {
   });
   return "Autorisations Apps Script insuffisantes pour valider la configuration. Veuillez réautoriser l'application afin d'accéder aux services : " +
     humanReadable.join(', ') +
-    ". Ouvrez le projet dans l'éditeur Apps Script, exécutez une fonction (par exemple checkSetup_ELS) et acceptez les nouvelles autorisations, puis relancez la validation.";
+    ". Ouvrez le projet dans l'éditeur Apps Script, exécutez une fonction (par exemple checkSetup_ELS) et acceptez les nouvelles autorisations, puis relancez la validation. Vérifiez également que le manifeste appsscript.json déclare bien ces scopes.";
 }
 
 /**
