@@ -374,7 +374,14 @@ function genererDevisPdfFromItems(donneesDevis) {
     doc.saveAndClose();
     const pdfBlob = DriveApp.getFileById(doc.getId()).getAs(MimeType.PDF).setName(doc.getName() + '.pdf');
     const pdfFile = dossierDevis.createFile(pdfBlob);
-    return { success: true, url: pdfFile.getUrl() };
+    const mimeType = pdfBlob.getContentType() || MimeType.PDF;
+    const pdfBase64 = Utilities.base64Encode(pdfBlob.getBytes());
+    return {
+      success: true,
+      fileName: pdfFile.getName(),
+      mimeType: mimeType,
+      base64: pdfBase64
+    };
   } catch (e) {
     Logger.log('Erreur devis PDF: ' + e.stack);
     return { success: false, error: e.message };

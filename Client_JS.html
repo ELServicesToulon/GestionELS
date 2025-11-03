@@ -24,6 +24,34 @@ function logError(...args) {
   console.error('[ELS]', ...args);
 }
 
+function telechargerPdfDepuisBase64(base64Data, fileName, mimeType) {
+  if (!base64Data) return;
+  const safeName = fileName || 'devis.pdf';
+  const type = mimeType || 'application/pdf';
+  try {
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = safeName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Echec téléchargement devis PDF', err);
+    try {
+      window.open(`data:${type};base64,${base64Data}`, '_blank');
+    } catch (_ignored) {}
+  }
+}
+
 const CLE_LOCALSTORAGE_CLIENT = 'sessionClientELServices';
 const CLIENT_SESSION_OPAQUE_ID_ENABLED = <?!= CLIENT_SESSION_OPAQUE_ID_ENABLED ?>;
 const CLIENT_SESSION_TTL_HOURS = <?!= CLIENT_SESSION_TTL_HOURS ?>;
@@ -230,7 +258,17 @@ document.addEventListener('DOMContentLoaded', () => {
               basculerIndicateurChargement(true);
               google.script.run.withSuccessHandler(res => {
                 basculerIndicateurChargement(false);
-                if (res && res.success && res.url) { try { window.open(res.url, '_blank'); } catch(e) {} }
+                if (res && res.success) {
+                  if (res.base64) {
+                    telechargerPdfDepuisBase64(res.base64, res.fileName, res.mimeType);
+                  } else if (res.url) {
+                    try { window.open(res.url, '_blank'); } catch (_e) {}
+                  } else {
+                    afficherErreur('Le devis n\'a pas pu être généré.');
+                  }
+                } else {
+                  afficherErreur(res && res.error ? res.error : 'Le devis n\'a pas pu être généré.');
+                }
               }).withFailureHandler(err => { basculerIndicateurChargement(false); afficherErreur(err); }).genererDevisPdfFromItems({ client, items });
             });
           }

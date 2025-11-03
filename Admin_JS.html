@@ -30,6 +30,34 @@ function formatEuro(value) {
   return EURO_FORMATTER.format(amount);
 }
 
+function telechargerPdfDepuisBase64(base64Data, fileName, mimeType) {
+  if (!base64Data) return;
+  const safeName = fileName || 'devis.pdf';
+  const type = mimeType || 'application/pdf';
+  try {
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = safeName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Echec téléchargement devis PDF', err);
+    try {
+      window.open(`data:${type};base64,${base64Data}`, '_blank');
+    } catch (_ignored) {}
+  }
+}
+
 function openModal() {
   document.body.classList.add('is-modal-open');
   const modal = document.getElementById('modale-action');
@@ -424,10 +452,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const client = (tousLesClients && tousLesClients.find(c => c.email === email)) || { email: email, nom: key.replace(/\s*\([^)]*\)\s*$/, '') };
             google.script.run.withSuccessHandler(res => {
-                if (res && res.success && res.url) {
-                    try { window.open(res.url, '_blank'); } catch(_e) {}
+                if (res && res.success) {
+                    if (res.base64) {
+                        telechargerPdfDepuisBase64(res.base64, res.fileName, res.mimeType);
+                    } else if (res.url) {
+                        try { window.open(res.url, '_blank'); } catch(_e) {}
+                    } else {
+                        logError('Reponse devis sans contenu telechargeable.');
+                    }
                 } else {
-                    logError(res && res.error ? res.error : 'Échec génération devis');
+                    logError(res && res.error ? res.error : 'Echec generation devis');
                 }
             }).withFailureHandler(logError).genererDevisPdfFromItems({ client, items });
         }));

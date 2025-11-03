@@ -1,5 +1,33 @@
 <script>
 // Gestion du téléchargement de devis PDF depuis la page de réservation
+function telechargerPdfDepuisBase64(base64Data, fileName, mimeType) {
+  if (!base64Data) return;
+  const safeName = fileName || 'devis.pdf';
+  const type = mimeType || 'application/pdf';
+  try {
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = safeName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Echec téléchargement devis PDF', err);
+    try {
+      window.open(`data:${type};base64,${base64Data}`, '_blank');
+    } catch (_ignored) {}
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('btn-telecharger-devis');
   if (btn) {
@@ -13,9 +41,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const panier = Array.isArray(etat.panier) ? etat.panier : [];
         if (panier.length === 0) { alert('Votre panier est vide.'); return; }
         const email = (ui.champEmailClient && ui.champEmailClient.value || '').trim() || (etat.clientReconnu && etat.clientReconnu.email) || '';
-        const client = { email: email, nom: (ui.champNomClient && ui.champNomClient.value || '').trim(), adresse: (ui.champAdresseClient && ui.champAdresseClient.value || '').trim() };
+        const client = {
+          email: email,
+          nom: (ui.champNomClient && ui.champNomClient.value || '').trim(),
+          adresse: (ui.champAdresseClient && ui.champAdresseClient.value || '').trim()
+        };
         const items = panier.map(it => ({ date: it.date, startTime: it.startTime, details: it.details, prix: it.prix }));
-        google.script.run.withSuccessHandler(res => { if (res && res.success && res.url) { try { window.open(res.url, '_blank'); } catch(e) {} } }).genererDevisPdfFromItems({ client, items });
+        google.script.run.withSuccessHandler(res => {
+          if (res && res.success) {
+            if (res.base64) {
+              telechargerPdfDepuisBase64(res.base64, res.fileName, res.mimeType);
+            } else if (res.url) {
+              try { window.open(res.url, '_blank'); } catch (_e) {}
+            }
+          }
+        }).genererDevisPdfFromItems({ client, items });
       }
     });
   }
