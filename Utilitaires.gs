@@ -321,6 +321,20 @@ function getLogoEmailBlockHtml() {
   }
 }
 
+/**
+ * Encode un sujet d'e-mail en UTF-8 conformément à RFC 2047.
+ * @param {string} subjectText Texte brut du sujet.
+ * @returns {string} Sujet encodé ou chaîne vide.
+ */
+function encodeMailSubjectUtf8(subjectText) {
+  const raw = subjectText || '';
+  if (!raw) {
+    return '';
+  }
+  const bytes = Utilities.newBlob(raw, 'text/plain').getBytes();
+  return '=?UTF-8?B?' + Utilities.base64Encode(bytes) + '?=';
+}
+
 
 // --- NOUVELLES FONCTIONS UTILITAIRES AJOUTÉES ---
 

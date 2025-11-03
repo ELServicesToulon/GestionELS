@@ -498,9 +498,11 @@ function notifierClientConfirmation(email, nom, reservations) {
                 <p>L'équipe ${NOM_ENTREPRISE}</p>
             </div>
         `;
+        const subjectText = `Confirmation de votre réservation - ${NOM_ENTREPRISE}`;
+        const subjectEncoded = encodeMailSubjectUtf8(subjectText) || subjectText;
         GmailApp.sendEmail(
             email,
-            `Confirmation de votre réservation - ${NOM_ENTREPRISE}`,
+            subjectEncoded,
             'Votre confirmation détaillée est disponible dans la version HTML ci-dessous.',
             {
                 htmlBody: corpsHtml,
