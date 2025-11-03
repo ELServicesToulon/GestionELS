@@ -300,8 +300,33 @@ function obtenirEtatCreneauxPourDate(dateString, duree, idEvenementAIgnorer = nu
  * @returns {Object} Un objet avec le niveau de disponibilité pour chaque jour.
  */
 function obtenirDonneesCalendrierPublic(mois, annee) {
+  const fallbackDate = new Date();
+  let moisNormalise = typeof mois === 'string' ? Number(mois.trim()) : Number(mois);
+  let anneeNormalisee = typeof annee === 'string' ? Number(annee.trim()) : Number(annee);
+  let fallbackUtilise = false;
+
+  if (!Number.isFinite(moisNormalise)) {
+    moisNormalise = NaN;
+  }
+  if (!Number.isFinite(anneeNormalisee)) {
+    anneeNormalisee = NaN;
+  }
+
+  if (!Number.isInteger(moisNormalise) || moisNormalise < 1 || moisNormalise > 12) {
+    moisNormalise = fallbackDate.getMonth() + 1;
+    fallbackUtilise = true;
+  }
+
+  if (!Number.isInteger(anneeNormalisee) || anneeNormalisee < 2000) {
+    anneeNormalisee = fallbackDate.getFullYear();
+    fallbackUtilise = true;
+  }
+
+  mois = moisNormalise;
+  annee = anneeNormalisee;
+
   const cache = CacheService.getScriptCache();
-  const cleCache = `dispo_${annee}_${mois}`;
+  const cleCache = `dispo_${annee}_${String(mois).padStart(2, '0')}`;
   const donneesEnCache = cache.get(cleCache);
 
   if (donneesEnCache) {
@@ -309,10 +334,8 @@ function obtenirDonneesCalendrierPublic(mois, annee) {
   }
 
   try {
-    if (typeof mois === 'string') mois = Number(mois);
-    if (typeof annee === 'string') annee = Number(annee);
-    if (!mois || !annee || mois < 1 || mois > 12) {
-      throw new Error("Mois ou année invalide.");
+    if (fallbackUtilise) {
+      Logger.log(`WARN obtenirDonneesCalendrierPublic: paramètres invalides normalisés -> mois=${mois}, annee=${annee}`);
     }
 
     const disponibilite = {};
