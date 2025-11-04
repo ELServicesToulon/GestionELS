@@ -960,69 +960,6 @@ function lancerAuditDrive() {
 }
 
 // =================================================================
-//                      5. MIGRATIONS & OUTILS
-// =================================================================
-
-/**
- * Recalcule les identifiants clients existants pour appliquer le nouveau format.
- * @returns {{updated:number,unchanged:number,skipped:number}} Statistiques de migration.
- */
-function maintenance_recalculerIdentifiantsClients() {
-  try {
-    const ss = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL'));
-    const feuilleClients = ss.getSheetByName(SHEET_CLIENTS);
-    if (!feuilleClients) {
-      throw new Error("La feuille 'Clients' est introuvable.");
-    }
-
-    const donnees = feuilleClients.getDataRange().getValues();
-    if (donnees.length <= 1) {
-      logAdminAction('Recalcul IDs clients', 'Succes');
-      return { updated: 0, unchanged: 0, skipped: 0 };
-    }
-
-    const indices = obtenirIndicesEnTetes(feuilleClients, ["Email", COLONNE_ID_CLIENT]);
-    const emailIdx = indices["Email"];
-    const idIdx = indices[COLONNE_ID_CLIENT];
-
-    const nouvellesValeurs = [];
-    let updated = 0;
-    let unchanged = 0;
-    let skipped = 0;
-
-    for (let i = 1; i < donnees.length; i++) {
-      const ligne = donnees[i];
-      const email = String(ligne[emailIdx] || '').trim();
-      if (!email) {
-        nouvellesValeurs.push([String(ligne[idIdx] || '')]);
-        skipped++;
-        continue;
-      }
-      const nouvelId = genererIdentifiantClient(email);
-      const idActuel = String(ligne[idIdx] || '').trim();
-      if (nouvelId === idActuel) {
-        nouvellesValeurs.push([idActuel]);
-        unchanged++;
-      } else {
-        nouvellesValeurs.push([nouvelId]);
-        updated++;
-      }
-    }
-
-    if (nouvellesValeurs.length) {
-      feuilleClients.getRange(2, idIdx + 1, nouvellesValeurs.length, 1).setValues(nouvellesValeurs);
-    }
-
-    logAdminAction('Recalcul IDs clients', 'Succes');
-    return { updated: updated, unchanged: unchanged, skipped: skipped };
-  } catch (e) {
-    logAdminAction('Recalcul IDs clients', 'Echec');
-    Logger.log(`maintenance_recalculerIdentifiantsClients: ${e.stack || e}`);
-    throw e;
-  }
-}
-
-// =================================================================
 //                      6. DÉDUPLICATION
 // =================================================================
 
