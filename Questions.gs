@@ -51,7 +51,29 @@ function getQuestions(email, exp, sig) {
  * @returns {{success:boolean,id:number}} Resultat de l operation.
  */
 function addQuestion(question, auteur, email, exp, sig) {
-  const emailNorm = assertClient(email, exp, sig);
+  let emailNorm = '';
+  let lastError = null;
+  // Autorise un repli sur l'auteur si l'email n'est pas passé côté client.
+  const candidats = [email, auteur];
+
+  for (let i = 0; i < candidats.length; i++) {
+    const candidat = candidats[i];
+    if (!candidat) continue;
+    try {
+      emailNorm = assertClient(candidat, exp, sig);
+      break;
+    } catch (err) {
+      lastError = err;
+      if (!err || err.message !== 'Email invalide.') {
+        throw err;
+      }
+    }
+  }
+
+  if (!emailNorm) {
+    throw lastError || new Error('Email invalide.');
+  }
+
   const sheet = getQuestionsSheet_();
   const id = Date.now();
   sheet.appendRow([id, question, emailNorm, JSON.stringify([])]);
