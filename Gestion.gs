@@ -26,14 +26,8 @@ function validerClientParEmail(emailClient, exp, sig) {
       }
     }
 
-    const infosClient = obtenirInfosClientParEmail(email);
-
-    if (infosClient) {
-      if (CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED) {
-        CacheService.getScriptCache().remove(cacheKey);
-      }
-      return { success: true, client: { nom: infosClient.nom } };
-    } else {
+    const reservations = obtenirReservationsPourClient(email);
+    if (!reservations || reservations.length === 0) {
       if (CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED) {
         const cache = CacheService.getScriptCache();
         const attempts = parseInt(cache.get(cacheKey) || '0', 10) + 1;
@@ -43,7 +37,19 @@ function validerClientParEmail(emailClient, exp, sig) {
           return { success: false, error: "Trop de tentatives, réessayez plus tard." };
         }
       }
-      return { success: false, error: "Aucun client trouvé avec cette adresse e-mail." };
+      return { success: false, error: "Vous devez avoir au moins une réservation confirmée pour accéder à votre espace client." };
+    }
+
+    const infosClient = obtenirInfosClientParEmail(email);
+
+    if (infosClient) {
+      if (CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED) {
+        CacheService.getScriptCache().remove(cacheKey);
+      }
+      return { success: true, client: { nom: infosClient.nom } };
+    } else {
+      // Fallback for clients with reservations but not in the client sheet
+      return { success: true, client: { nom: email } };
     }
   } catch (e) {
     if (e && e.message === 'Email invalide.') {
