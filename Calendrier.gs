@@ -182,9 +182,10 @@ function obtenirCreneauxDisponiblesPourDate(dateString, duree, idEvenementAIgnor
     const finJournee = new Date(annee, mois - 1, jour, heureFin, minuteFin);
 
     const maintenant = new Date();
+    const dateAujourdhuiString = formaterDateEnYYYYMMDD(maintenant);
 
     // CORRECTION : Pour les non-admins, on bloque les jours passés. Pour les admins, on ne bloque JAMAIS.
-    if (!estAdmin && new Date(dateString + "T23:59:59") < maintenant) {
+    if (!estAdmin && dateString < dateAujourdhuiString) {
         return [];
     }
 
