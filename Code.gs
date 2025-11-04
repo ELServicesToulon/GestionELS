@@ -452,6 +452,17 @@ function fetchGoogleChartsLoader() {
  */
 function doPost(e) {
   try {
+    const event = e && typeof e === 'object' ? e : {};
+    if (!event.parameter || typeof event.parameter !== 'object') {
+      event.parameter = {};
+    }
+    if (!event.headers || typeof event.headers !== 'object') {
+      event.headers = {};
+    }
+    if (!event.postData || typeof event.postData !== 'object') {
+      event.postData = null;
+    }
+
     if (CONFIG_CACHE_ENABLED) {
       const cache = CacheService.getScriptCache();
       const lastValidated = cache.get('CONFIG_VALIDATED_AT');
@@ -466,7 +477,7 @@ function doPost(e) {
     }
 
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED && typeof logRequest === 'function') {
-      logRequest(e);
+      logRequest(event);
     }
 
     if (typeof POST_ENDPOINT_ENABLED === 'undefined' || !POST_ENDPOINT_ENABLED) {
@@ -477,19 +488,19 @@ function doPost(e) {
     }
 
     let payload = {};
-    if (e && e.postData && e.postData.contents) {
+    if (event.postData && event.postData.contents) {
       try {
-        if (e.postData.type === 'application/json') {
-          payload = JSON.parse(e.postData.contents);
+        if (event.postData.type === 'application/json') {
+          payload = JSON.parse(event.postData.contents);
         } else {
           // Pour les formulaires standards (application/x-www-form-urlencoded)
-          payload = e.parameter;
+          payload = event.parameter;
         }
       } catch (jsonError) {
         throw new Error("Invalid JSON payload received.");
       }
     } else {
-      payload = e.parameter; // Fallback pour les cas simples
+      payload = event.parameter; // Fallback pour les cas simples
     }
 
 

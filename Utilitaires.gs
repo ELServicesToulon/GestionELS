@@ -408,7 +408,14 @@ function obtenirIndicesEnTetes(feuille, enTetesRequis) {
  * @returns {GoogleAppsScript.Drive.Folder} Le dossier trouvé ou créé.
  */
 function obtenirOuCreerDossier(dossierParent, nomDossier) {
-  const dossiers = dossierParent.getFoldersByName(nomDossier);
+  if (!dossierParent) {
+    throw new Error('Dossier parent absent dans obtenirOuCreerDossier pour "' + nomDossier + '".');
+  }
+  const getFoldersByName = dossierParent.getFoldersByName;
+  if (typeof getFoldersByName !== 'function') {
+    throw new Error('Objet parent invalide (pas de getFoldersByName) pour "' + nomDossier + '".');
+  }
+  const dossiers = getFoldersByName.call(dossierParent, nomDossier);
   if (dossiers.hasNext()) {
     return dossiers.next();
   }
