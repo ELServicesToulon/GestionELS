@@ -564,7 +564,7 @@ function notifierPremiereConnexionClient() {
   if (dejaInforme) {
     return false;
   }
-  const message = "Pour activer votre accès client, validez simplement une première réservation — cela n'engage à rien.";
+  const message = "Astuce : après votre première réservation validée, votre espace client se personnalise automatiquement. Vous pouvez déjà vous connecter pour préparer vos informations.";
   if (typeof afficherNotification === 'function') {
     afficherNotification(message, 'info');
   } else if (typeof alert === 'function') {

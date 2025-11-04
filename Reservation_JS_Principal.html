@@ -951,9 +951,9 @@ function configurerEcouteursEvenements() {
   ui.btnConnexionClient?.addEventListener('click', demanderConnexionClient);
   const lienEspaceClient = document.getElementById('btn-espace-client');
   if (lienEspaceClient) {
-    lienEspaceClient.addEventListener('click', (event) => {
-      if (typeof notifierPremiereConnexionClient === 'function' && notifierPremiereConnexionClient()) {
-        event.preventDefault();
+    lienEspaceClient.addEventListener('click', () => {
+      if (typeof notifierPremiereConnexionClient === 'function') {
+        notifierPremiereConnexionClient();
       }
     });
   }

@@ -538,10 +538,15 @@ function logRequest(e) {
  * @returns {string} Le contenu du fichier.
  */
 function include(nomFichier) {
+  const label = (typeof nomFichier === 'string') ? nomFichier.trim() : '';
+  if (!label) {
+    console.error('Fichier inclus introuvable: ' + String(nomFichier) + ' (nom invalide)\nStack: ' + (new Error().stack || ''));
+    return '';
+  }
   try {
-    return HtmlService.createTemplateFromFile(nomFichier).evaluate().getContent();
+    return HtmlService.createTemplateFromFile(label).evaluate().getContent();
   } catch (e) {
-    console.error('Fichier inclus introuvable: ' + nomFichier);
+    console.error('Fichier inclus introuvable: ' + label + ' (' + e.message + ')\nStack: ' + (e && e.stack ? e.stack : ''));
     return '';
   }
 }
