@@ -180,10 +180,16 @@ function creerReservationUnique(item, client, clientPourCalcul, options = {}) {
 
     if (evenement) {
         if (RESERVATION_VERIFY_ENABLED) {
-          const eventCheck = calendrier.getEventById(evenement.getId());
-          const startOk = eventCheck && eventCheck.getStartTime().getTime() === dateDebut.getTime();
-          const endOk = eventCheck && eventCheck.getEndTime().getTime() === dateFin.getTime();
-          if (!startOk || !endOk || reservationIdExiste(idReservation)) {
+          let verificationFailed = false;
+          if (typeof calendrier.getEventById === 'function') {
+            const eventCheck = calendrier.getEventById(evenement.getId());
+            const startOk = eventCheck && eventCheck.getStartTime().getTime() === dateDebut.getTime();
+            const endOk = eventCheck && eventCheck.getEndTime().getTime() === dateFin.getTime();
+            verificationFailed = !startOk || !endOk;
+          } else {
+            Logger.log('RESERVATION_VERIFY_ENABLED actif mais Calendar.getEventById indisponible, vérification sautée.');
+          }
+          if (verificationFailed || reservationIdExiste(idReservation)) {
             evenement.deleteEvent();
             return null;
           }

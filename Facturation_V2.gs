@@ -17,7 +17,14 @@ function INV2_generateInvoicePdf_(data) {
   INV2_insertTotals_(body, 'TOTALS', data.totaux, data.options);
 
   doc.saveAndClose();
-  const pdfBlob = docFile.getAs('application/pdf');
+  let pdfBlob;
+  if (docFile && typeof docFile.getAs === 'function') {
+    pdfBlob = docFile.getAs('application/pdf');
+  } else if (doc && typeof doc.getAs === 'function') {
+    pdfBlob = doc.getAs('application/pdf');
+  } else {
+    pdfBlob = Utilities.newBlob('', 'application/pdf', name + '.pdf');
+  }
   const pdfFile = parent.createFile(pdfBlob).setName(name + '.pdf');
   try {
     docFile.setTrashed(true);
