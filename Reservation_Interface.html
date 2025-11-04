@@ -81,6 +81,17 @@
   </script>
 </head>
 <body class="page" data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= brandLogoUrl ?>">
+  <script>
+    (function() {
+      try {
+        if (localStorage.getItem('ELS_THEME_CHOICE') === 'ultra') {
+          document.body.classList.add('theme-ultra');
+        }
+      } catch (_err) {
+        // ignore storage access errors (navigation privée, etc.)
+      }
+    })();
+  </script>
   <div id="code-postal-overlay" class="code-postal-overlay" role="dialog" aria-modal="true" aria-hidden="false" aria-labelledby="code-postal-overlay-titre">
     <div class="code-postal-overlay__card">
       <h2 id="code-postal-overlay-titre">Accès réservé aux officines desservies</h2>
@@ -135,6 +146,15 @@
 
   
   
+
+  <? if (THEME_SWITCHER_ENABLED) { ?>
+  <div id="theme-switcher" class="theme-switcher">
+    <span id="theme-switch-label" class="theme-switcher__label muted">Thème actuel : immersif</span>
+    <button id="btn-theme-switch" class="btn btn-secondaire btn-sm" type="button" aria-pressed="false">
+      Activer le thème rapide
+    </button>
+  </div>
+  <? } ?>
 
   <main id="layout" class="container layout-two-cols">
     <section id="col-tarifs" class="col col--tarifs">

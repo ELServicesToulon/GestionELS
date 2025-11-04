@@ -38,6 +38,7 @@ function initializeFlags(flags = {}) {
       reservationCacheEnabled: false,
       reservationShowTakenSlotsEnabled: false,
       themeV2Enabled: false,
+      themeSwitcherEnabled: false,
     elsUiThemingEnabled: false,
     cartResetEnabled: false,
     devisEnabled: false
@@ -47,6 +48,11 @@ function initializeFlags(flags = {}) {
 }
 
 const CLE_LOCALSTORAGE_CODE_POSTAL = 'ELS_CODE_POSTAL_OFFICINE';
+const CLE_THEME_PREFERENCE = 'ELS_THEME_CHOICE';
+const THEMES = Object.freeze({
+  IMMERSIVE: 'immersive',
+  ULTRA: 'ultra'
+});
 let releaseCodePostalFocus = () => {};
 
 // État global de l'application côté client
@@ -59,6 +65,89 @@ window.etat = {
   adresseSuggestion: null,
   flags: initializeFlags() // Flags d'activation issus de Configuration.gs
 };
+
+function lireThemePreference() {
+  try {
+    return localStorage.getItem(CLE_THEME_PREFERENCE) || '';
+  } catch (_err) {
+    return '';
+  }
+}
+
+function mettreAJourThemeUI(theme) {
+  const isUltra = theme === THEMES.ULTRA;
+  const btn = window.ui?.btnThemeSwitch;
+  const label = window.ui?.themeSwitchLabel;
+  if (btn) {
+    btn.textContent = isUltra ? 'Revenir au thème immersif' : 'Activer le thème rapide';
+    btn.setAttribute('aria-pressed', isUltra ? 'true' : 'false');
+    btn.dataset.nextTheme = isUltra ? THEMES.IMMERSIVE : THEMES.ULTRA;
+  }
+  if (label) {
+    label.textContent = isUltra ? 'Thème actuel : rapide' : 'Thème actuel : immersif';
+  }
+}
+
+function appliquerThemeClient(theme, options = {}) {
+  const cible = theme === THEMES.ULTRA ? THEMES.ULTRA : THEMES.IMMERSIVE;
+  const body = document.body;
+  if (!body) return;
+
+  if (cible === THEMES.ULTRA) {
+    body.classList.add('theme-ultra');
+    body.classList.remove('els-aluminium');
+  } else {
+    body.classList.remove('theme-ultra');
+    if (window.etat?.flags?.elsUiThemingEnabled) {
+      body.classList.add('els-aluminium');
+    }
+  }
+  mettreAJourThemeUI(cible);
+  if (options.persist !== false) {
+    try {
+      localStorage.setItem(CLE_THEME_PREFERENCE, cible);
+    } catch (_err) {
+      // ignore storage errors (navigation privée, etc.)
+    }
+  }
+}
+
+function basculerTheme() {
+  const body = document.body;
+  if (!body) return;
+  const prochain = body.classList.contains('theme-ultra') ? THEMES.IMMERSIVE : THEMES.ULTRA;
+  appliquerThemeClient(prochain);
+}
+
+function initialiserThemeSwitcher() {
+  const flags = window.etat?.flags || {};
+  const container = window.ui?.themeSwitcherContainer;
+  if (!flags.themeSwitcherEnabled) {
+    if (container) {
+      if (typeof container.remove === 'function') {
+        container.remove();
+      } else if (container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+    }
+    appliquerThemeClient(THEMES.IMMERSIVE, { persist: false });
+    try {
+      localStorage.removeItem(CLE_THEME_PREFERENCE);
+    } catch (_err) {
+      // ignore storage errors
+    }
+    return;
+  }
+
+  const btn = window.ui?.btnThemeSwitch;
+  if (!btn) return;
+
+  const stored = lireThemePreference();
+  const initialTheme = stored === THEMES.ULTRA ? THEMES.ULTRA : THEMES.IMMERSIVE;
+  appliquerThemeClient(initialTheme, { persist: false });
+  btn.removeEventListener('click', basculerTheme);
+  btn.addEventListener('click', basculerTheme);
+}
 
 function estForfaitResidentActif() {
   return !!(configServeur?.FORFAIT_RESIDENT_ENABLED && window.ui?.champResidentClient?.checked);
@@ -869,17 +958,20 @@ document.addEventListener('DOMContentLoaded', () => {
   initialiserVerrouCodePostal();
   google.script.run.withSuccessHandler(cfg => {
     window.etat.flags = initializeFlags(cfg);
+    try {
+      if (window.etat.flags && window.etat.flags.elsUiThemingEnabled) {
+        document.body.classList.add('els-ui-theming');
+        if (!document.body.classList.contains('theme-ultra')) {
+          document.body.classList.add('els-aluminium');
+        }
+      }
+    } catch (e) { /* no-op */ }
+    initialiserThemeSwitcher();
     initialiserTarifsResident();
     if (typeof initialiserAdresseAutocompleteClient === 'function') {
       initialiserAdresseAutocompleteClient();
     }
     mettreAJourEtatResident();
-    try {
-      if (window.etat.flags && window.etat.flags.elsUiThemingEnabled) {
-        document.body.classList.add('els-ui-theming');
-        document.body.classList.add('els-aluminium'); // QA: fond aluminium activé
-      }
-    } catch (e) { /* no-op */ }
     mettreAJourBoutonViderPanier();
     configurerEcouteursEvenements();
   }).getConfiguration();

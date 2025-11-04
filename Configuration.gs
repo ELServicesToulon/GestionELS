@@ -269,6 +269,8 @@ const RESERVATION_SHOW_TAKEN_SLOTS_ENABLED = true;
 /** @const {boolean} Active la nouvelle version du thème graphique (V2). */
 const THEME_V2_ENABLED = true;
 const ELS_UI_THEMING_ENABLED = true;
+/** @const {boolean} Affiche un bouton client pour basculer vers un thème épuré. */
+const THEME_SWITCHER_ENABLED = false;
 
 /** @const {boolean} Utilise les icônes hébergées sur Drive au lieu des Data URI. */
 const DRIVE_ASSETS_ENABLED = false;
@@ -325,6 +327,7 @@ const FLAGS = Object.freeze({
   proQaEnabled: PRO_QA_ENABLED,
   extraIconsEnabled: EXTRA_ICONS_ENABLED,
   themeV2Enabled: THEME_V2_ENABLED,
+  themeSwitcherEnabled: THEME_SWITCHER_ENABLED,
   elsUiThemingEnabled: ELS_UI_THEMING_ENABLED,
   pricingRulesV2Enabled: PRICING_RULES_V2_ENABLED,
   returnImpactsEstimatesEnabled: RETURN_IMPACTS_ESTIMATES_ENABLED,

@@ -1317,6 +1317,163 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   overflow: hidden;
 }
 
+/* --- Sélecteur de thème --- */
+.theme-switcher {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: min(1280px, 94vw);
+  margin: 0 auto clamp(16px, 2vw, 24px);
+  padding: 0 clamp(8px, 1.5vw, 16px);
+}
+.theme-switcher .btn {
+  white-space: nowrap;
+}
+.theme-switcher__label {
+  font-size: 0.85rem;
+}
+@media (max-width: 600px) {
+  .theme-switcher {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .theme-switcher .btn {
+    width: 100%;
+  }
+}
+
+/* --- Thème rapide épuré --- */
+body.theme-ultra {
+  background-color: #ffffff;
+  --shadow: none;
+  --card: #ffffff;
+  --muted: #475569;
+  --radius: 12px;
+  --grad: linear-gradient(135deg, rgba(142,68,173,0.12), rgba(52,152,219,0.12));
+}
+body.theme-ultra .card,
+body.theme-ultra .carte,
+body.theme-ultra .dialog,
+body.theme-ultra .els-card,
+body.theme-ultra #tarifs-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+}
+body.theme-ultra #tarifs-card {
+  padding: clamp(18px, 2vw, 24px);
+}
+body.theme-ultra #tarifs-card h2::before {
+  background: color-mix(in oklab, var(--bleu) 35%, #ffffff 65%);
+}
+body.theme-ultra #tarifs-card .tarif-carte {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+}
+body.theme-ultra #tarifs-card .tarif-ligne + .tarif-ligne {
+  border-color: #e5e7eb;
+}
+body.theme-ultra #tarifs-card .tarif-valeur {
+  color: var(--txt);
+}
+body.theme-ultra #tarifs-card .tarif-supplement-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+  color: inherit;
+}
+body.theme-ultra #tarifs-card .tarif-supplement-chip::before {
+  background: var(--bleu);
+  opacity: 0.28;
+}
+body.theme-ultra .btn {
+  box-shadow: none;
+}
+body.theme-ultra .btn-primaire {
+  background: var(--bleu);
+  color: #ffffff;
+}
+body.theme-ultra .btn-secondaire {
+  background: transparent;
+  border: 1px solid color-mix(in oklab, var(--bleu) 24%, #dbeafe 76%);
+  color: var(--bleu);
+}
+body.theme-ultra .btn-secondaire:hover:not(:disabled) {
+  background: #eff6ff;
+}
+body.theme-ultra .btn-icone {
+  border: 1px solid #e2e8f0;
+  background: transparent;
+  box-shadow: none;
+}
+body.theme-ultra .btn-icone:hover,
+body.theme-ultra .btn-icone:focus-visible {
+  background: #e2e8f0;
+}
+body.theme-ultra .calendrier-jours-semaine {
+  background: none;
+  color: #475569;
+}
+body.theme-ultra .jour-calendrier {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+body.theme-ultra .jour-calendrier > span {
+  color: inherit;
+}
+body.theme-ultra .jour-calendrier:not(.desactive):hover,
+body.theme-ultra .jour-calendrier:not(.desactive):focus-visible {
+  background: #e2e8f0;
+  border-color: #cbd5f5;
+  transform: none;
+}
+body.theme-ultra .jour-calendrier:not(.desactive):focus-visible {
+  outline: 2px solid var(--bleu);
+  outline-offset: 2px;
+}
+body.theme-ultra .jour-calendrier.desactive {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #94a3b8;
+}
+body.theme-ultra .barre-disponibilite {
+  background: #cbd5f5;
+}
+body.theme-ultra .slot-btn {
+  background-image: none !important;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: none;
+  color: #1f2937;
+}
+body.theme-ultra .slot-btn:not(:disabled):hover,
+body.theme-ultra .slot-btn.standard.selected {
+  background-color: #e2e8f0;
+  border-color: #cbd5f5;
+}
+body.theme-ultra .slot-btn:disabled {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+}
+body.theme-ultra .slot-btn:focus-visible {
+  outline: 2px solid var(--bleu);
+  outline-offset: 2px;
+}
+body.theme-ultra.els-ui-theming main,
+body.theme-ultra.els-ui-theming .card,
+body.theme-ultra.els-ui-theming .dialog {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 /* --- STYLES D'IMPRESSION --- */
 @media print {
   body { background-color: var(--txt); color: var(--bg); }
