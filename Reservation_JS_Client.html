@@ -8,6 +8,7 @@
  */
 
 const CLE_LOCALSTORAGE_CLIENT = 'sessionClientELServices';
+const CLE_NOTICE_PREMIERE_CONNEXION = 'noticePremiereConnexionELServices';
 const CLIENT_SESSION_OPAQUE_ID_ENABLED = <?!= CLIENT_SESSION_OPAQUE_ID_ENABLED ?>;
 const CLIENT_SESSION_TTL_HOURS = <?!= CLIENT_SESSION_TTL_HOURS ?>;
 const CLIENT_ID_CARTOON_NAMES = <?!= JSON.stringify(CLIENT_ID_CARTOON_NAMES) ?>;
@@ -539,10 +540,48 @@ function initialiserAdresseAutocompleteClient() {
   input.setAttribute('aria-controls', list.id);
 }
 
+function notifierPremiereConnexionClient() {
+  if (window.etat?.clientReconnu) {
+    return false;
+  }
+  let sessionActive = false;
+  try {
+    sessionActive = Boolean(localStorage.getItem(CLE_LOCALSTORAGE_CLIENT));
+  } catch (_err) {
+    sessionActive = false;
+  }
+  if (sessionActive) {
+    return false;
+  }
+  let dejaInforme = window.__elsPremiereConnexionNoticeShown === true;
+  if (!dejaInforme) {
+    try {
+      dejaInforme = localStorage.getItem(CLE_NOTICE_PREMIERE_CONNEXION) === '1';
+    } catch (_err) {
+      dejaInforme = false;
+    }
+  }
+  if (dejaInforme) {
+    return false;
+  }
+  const message = "Pour activer votre accès client, validez simplement une première réservation — cela n'engage à rien.";
+  if (typeof afficherNotification === 'function') {
+    afficherNotification(message, 'info');
+  } else if (typeof alert === 'function') {
+    alert(message);
+  }
+  window.__elsPremiereConnexionNoticeShown = true;
+  try {
+    localStorage.setItem(CLE_NOTICE_PREMIERE_CONNEXION, '1');
+  } catch (_err) { /* ignore stockage indisponible */ }
+  return true;
+}
+
 /**
  * Demande une connexion client via un prompt et pré-remplit les informations.
  */
 function demanderConnexionClient() {
+  notifierPremiereConnexionClient();
   const prefill =
     (window.ui?.champEmailClient && window.ui.champEmailClient.value) ||
     (window.etat?.clientReconnu && window.etat.clientReconnu.email) ||
