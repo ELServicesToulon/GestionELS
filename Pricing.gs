@@ -166,7 +166,7 @@ function computeCoursePriceV1_(opts) {
     };
   }
   const supplements = computeSupplementCost(nbSupp);
-  const retourFee = retour ? (computeSupplementCost(nbSupp + 1) - supplements) : 0;
+  let retourFee = retour ? (computeSupplementCost(nbSupp + 1) - supplements) : 0;
   const urgentBase = TARIFS?.Urgent?.base || 0;
   if (isUrgent && !TARIFS?.Urgent?.base) {
     return {
@@ -177,6 +177,9 @@ function computeCoursePriceV1_(opts) {
     };
   }
   const surcUrg = isUrgent ? (urgentBase - base) : 0;
+  if (isUrgent) {
+    retourFee = Math.max(0, retourFee - surcUrg);
+  }
   const samediBase = TARIFS?.Samedi?.base || 0;
   if (isSamedi && !TARIFS?.Samedi?.base) {
     return {
