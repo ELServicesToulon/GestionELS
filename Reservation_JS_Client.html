@@ -79,6 +79,18 @@ function preRemplirInfosClient(identifiant) {
         if (window.ui.champResidentClient) window.ui.champResidentClient.checked = !!client.resident;
         if (nomClientEl) nomClientEl.textContent = client.nom;
         if (banniere) banniere.classList.remove('hidden');
+      } else {
+        // Aucun client trouvé : inviter l'utilisateur à créer une réservation
+        if (typeof afficherNotification === 'function') {
+          afficherNotification(
+            "Aucun compte client trouvé. Veuillez valider une réservation pour créer votre compte.",
+            'info'
+          );
+        }
+        // Afficher le conteneur de finalisation afin de saisir ses informations
+        if (typeof afficherConteneurFinalisation === 'function') {
+          afficherConteneurFinalisation();
+        }
       }
     })
     .withFailureHandler(afficherErreur);

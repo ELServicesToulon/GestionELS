@@ -951,7 +951,17 @@ function configurerEcouteursEvenements() {
   ui.btnConnexionClient?.addEventListener('click', demanderConnexionClient);
   const lienEspaceClient = document.getElementById('btn-espace-client');
   if (lienEspaceClient) {
-    lienEspaceClient.addEventListener('click', () => {
+    lienEspaceClient.addEventListener('click', (e) => {
+      if (!window.etat?.clientReconnu) {
+        e.preventDefault();
+        if (typeof afficherNotification === 'function') {
+          afficherNotification("Aucun compte client trouvé. Veuillez valider une réservation pour créer votre compte.", 'info');
+        }
+        if (typeof afficherConteneurFinalisation === 'function') {
+          afficherConteneurFinalisation();
+        }
+        return;
+      }
       if (typeof notifierPremiereConnexionClient === 'function') {
         notifierPremiereConnexionClient();
       }
