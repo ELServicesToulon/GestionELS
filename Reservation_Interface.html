@@ -157,6 +157,31 @@
   <? } ?>
 
   <main id="layout" class="container layout-two-cols">
+    <!-- Bouton WhatsApp ELS au-dessus des tarifs -->
+<div style="text-align:center; margin:30px 0;">
+  <a href="https://wa.me/33768591888" target="_blank"
+     style="
+       display:inline-flex;
+       align-items:center;
+       gap:10px;
+       background:linear-gradient(145deg,#8e44ad,#3498db);
+       color:white;
+       font-family:'Montserrat',sans-serif;
+       font-weight:500;
+       padding:12px 22px;
+       border-radius:40px;
+       text-decoration:none;
+       box-shadow:0 4px 10px rgba(0,0,0,0.25);
+       transition:all 0.3s ease;
+     "
+     onmouseover="this.style.boxShadow='0 6px 14px rgba(0,0,0,0.3)'"
+     onmouseout="this.style.boxShadow='0 4px 10px rgba(0,0,0,0.25)'">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+         alt="WhatsApp" width="22" height="22"
+         style="filter:brightness(0) invert(1)">
+    Discuter sur WhatsApp
+  </a>
+</div>
     <section id="col-tarifs" class="col col--tarifs">
       <div id="tarifs-card" class="carte card">
         <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
@@ -521,8 +546,6 @@
   <?!= include('Reservation_JS_Client'); ?>
   <?!= include('Reservation_JS_Tournee'); ?>
   <?!= include('Reservation_JS_Chat'); ?>
-  <?!= include('ElsLogo_Script'); ?>
-  <?!= include('whatsapp_js'); ?>
   <? } ?>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -726,5 +749,7 @@
     <p>&copy; <?= new Date().getFullYear() ?> <?= nomService ?>. Tous droits réservés.</p>
   </footer>
   <? } ?>
+  <?!= include('ElsLogo_Script'); ?>
+  <?!= include('whatsapp_js'); ?>
 </body>
 </html>

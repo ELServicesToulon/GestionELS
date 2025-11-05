@@ -1,20 +1,38 @@
-<!-- Bouton flottant WhatsApp ELS -->
-<a href="https://wa.me/33768591888" target="_blank"
-   id="whatsapp-btn-els"
+<!-- Bouton flottant WhatsApp ELS (capsule translucide + pulsation douce) -->
+<style>
+  @keyframes els-pulse {
+    0%   { transform: scale(1);   box-shadow: 0 4px 12px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.2); }
+    50%  { transform: scale(1.06); box-shadow: 0 8px 18px rgba(0,0,0,0.40), inset 0 1px 2px rgba(255,255,255,0.28); }
+    100% { transform: scale(1);   box-shadow: 0 4px 12px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.2); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #whatsapp-btn-els { animation: none !important; }
+  }
+</style>
+
+<a href="https://wa.me/33768591888" target="_blank" id="whatsapp-btn-els" aria-label="Discuter sur WhatsApp"
    style="
      position:fixed;
      bottom:20px;
      right:20px;
      z-index:9999;
-     background:linear-gradient(135deg,#8e44ad,#3498db);
+     display:flex;
+     align-items:center;
+     justify-content:center;
+     width:58px;
+     height:58px;
      border-radius:50%;
-     padding:14px;
-     box-shadow:0 4px 10px rgba(0,0,0,0.3);
-     transition:transform 0.3s ease;
+     background:linear-gradient(145deg,rgba(142,68,173,0.8),rgba(52,152,219,0.8));
+     backdrop-filter:blur(6px);
+     -webkit-backdrop-filter:blur(6px);
+     box-shadow:0 4px 12px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.2);
+     border:1px solid rgba(255,255,255,0.3);
+     transition:transform 0.25s ease, box-shadow 0.25s ease;
+     animation: els-pulse 5s ease-in-out infinite;
    "
-   onmouseover="this.style.transform='scale(1.1)'"
-   onmouseout="this.style.transform='scale(1)'">
+   onmouseover="this.style.transform='scale(1.12)';this.style.boxShadow='0 10px 20px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.3)'"
+   onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.2)'">
   <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-       alt="WhatsApp" width="32" height="32"
+       alt="" width="30" height="30"
        style="filter:brightness(0) invert(1)">
 </a>
