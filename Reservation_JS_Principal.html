@@ -977,6 +977,14 @@ function configurerEcouteursEvenements() {
       }
     });
   }
+  const btnReloadEspaceClient = document.getElementById('btn-recharger-espace-client');
+  if (btnReloadEspaceClient) {
+    btnReloadEspaceClient.addEventListener('click', () => {
+      if (typeof rechargerEspaceClientInline === 'function') {
+        rechargerEspaceClientInline();
+      }
+    });
+  }
 }
 
 /**

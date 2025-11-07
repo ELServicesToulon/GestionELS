@@ -74,7 +74,7 @@
     <?!= include('GoogleChartsStub'); ?>
   <? } ?>
 </head>
-<body data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= BRANDING_LOGO_PUBLIC_URL ?>">
+<body data-brand-name="<?= nomService ?>" data-brand-home="<?= appUrl ?>" data-brand-logo="<?= BRANDING_LOGO_PUBLIC_URL ?>" data-client-embed="<?= EMBED_MODE ? '1' : '0' ?>">
 
   <div id="indicateur-chargement" class="indicateur-chargement-overlay">
     <div class="spinner"></div>
@@ -160,9 +160,6 @@
   </div>
 
   <div id="conteneur-notifications" role="status" aria-live="polite"></div>
-  <? if (typeof CLIENT_WHATSAPP_ENABLED === 'undefined' || CLIENT_WHATSAPP_ENABLED) { ?>
-  <?!= include('whatsapp_js'); ?>
-  <? } ?>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.theme-selector, #btn-theme, #menu-theme').forEach(el => el && el.remove());

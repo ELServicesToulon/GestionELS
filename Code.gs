@@ -243,8 +243,8 @@ function doGet(e) {
 
         case 'gestion':
           if (typeof CLIENT_PORTAL_ENABLED !== 'undefined' && CLIENT_PORTAL_ENABLED) {
+            const params = (e && e.parameter) || {};
             if (typeof CLIENT_PORTAL_SIGNED_LINKS !== 'undefined' && CLIENT_PORTAL_SIGNED_LINKS) {
-              const params = (e && e.parameter) || {};
               const emailRaw = String(params.email || '').trim();
               const emailParam = emailRaw.toLowerCase();
               const exp = params.exp || '';
@@ -255,6 +255,7 @@ function doGet(e) {
             }
             const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
             templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
+            templateGestion.EMBED_MODE = String(params.embed || '') === '1';
             return templateGestion.evaluate().setTitle("Mon Espace Client").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
           }
           return creerReponseHtml('Espace client indisponible', 'Merci de votre compréhension.');

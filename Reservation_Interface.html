@@ -391,6 +391,28 @@
           </div>
         </aside>
       </div>
+      <? if (CLIENT_PORTAL_ENABLED) { ?>
+      <div id="client-espace-inline" class="card client-espace-inline hidden" aria-live="polite">
+        <div class="client-espace-inline__header">
+          <div>
+            <h3>Mon Espace Client</h3>
+            <p id="client-espace-inline-caption" class="muted">Suivez vos tournées, factures et messages sans quitter cette page.</p>
+          </div>
+          <button type="button" class="btn btn-secondaire btn-sm hidden" id="btn-recharger-espace-client">Actualiser</button>
+        </div>
+        <div id="client-espace-inline-status" class="client-espace-inline__status">
+          Validez votre première réservation puis utilisez «&nbsp;Se connecter&nbsp;» pour activer votre espace client.
+        </div>
+        <div id="client-espace-inline-frame-wrapper" class="client-espace-inline__frame-wrapper hidden">
+          <iframe
+            id="client-espace-inline-frame"
+            title="Mon Espace Client"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowtransparency="true"></iframe>
+        </div>
+      </div>
+      <? } ?>
     </section>
   </main>
   <!-- MODALE 1: Configuration de la tournée (VERSION COMPLÈTE) -->

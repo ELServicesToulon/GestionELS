@@ -13,6 +13,31 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body[data-client-embed="1"] {
+  background-color: transparent;
+}
+body[data-client-embed="1"] #app-conteneur-principal {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 20px;
+}
+body[data-client-embed="1"] .app-en-tete {
+  display: none;
+}
+body[data-client-embed="1"] .carte {
+  box-shadow: none;
+  border-radius: 0;
+  border: none;
+  padding: 20px;
+}
+body[data-client-embed="1"] .carte + .carte {
+  border-top: 1px solid var(--couleur-bordure);
+}
+body[data-client-embed="1"] .btn-contact-support {
+  margin-left: 0;
+}
+
 /* --- ACCESSIBILITÉ : Style pour le focus clavier --- */
 .champ-formulaire:focus, .btn-fermer:focus {
   outline: 3px solid var(--couleur-secondaire);

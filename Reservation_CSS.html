@@ -929,6 +929,31 @@ body.els-ui-theming.els-aluminium {
 /* Bouton Espace Client placé dans le panier */
 #vue-panier #btn-espace-client { width: 100%; margin-bottom: 12px; }
 #vue-panier #btn-connecter-client { width: 100%; margin-bottom: 8px; }
+.client-espace-inline { margin-top: 16px; padding: 0; }
+.client-espace-inline__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid color-mix(in oklab, var(--muted) 35%, #ffffff 65%);
+}
+.client-espace-inline__header h3 { margin: 0; }
+.client-espace-inline__header p { margin: 4px 0 0; font-size: 0.9rem; }
+.client-espace-inline__status {
+  padding: 18px 24px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  border-bottom: 1px solid color-mix(in oklab, var(--muted) 25%, #ffffff 75%);
+}
+.client-espace-inline__frame-wrapper { border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
+.client-espace-inline__frame-wrapper iframe {
+  width: 100%;
+  min-height: 540px;
+  border: none;
+  background: #fff;
+}
+.client-espace-inline .client-portal-loading { opacity: 0.4; pointer-events: none; }
 
 /* --- FORMULAIRES & BOUTONS --- */
 .groupe-formulaire { margin-bottom: 15px; }

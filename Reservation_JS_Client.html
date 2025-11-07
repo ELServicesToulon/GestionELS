@@ -613,6 +613,120 @@ function demanderConnexionClient() {
   preRemplirInfosClient(emailTrim);
 }
 
+function getInlinePortalElements() {
+  return {
+    card: document.getElementById('client-espace-inline'),
+    status: document.getElementById('client-espace-inline-status'),
+    wrapper: document.getElementById('client-espace-inline-frame-wrapper'),
+    iframe: document.getElementById('client-espace-inline-frame'),
+    reloadBtn: document.getElementById('btn-recharger-espace-client')
+  };
+}
+
+function construireLienEspaceClientInline(portalUrl, cacheBuster) {
+  if (!portalUrl || portalUrl === '#') return '';
+  try {
+    const urlObj = new URL(portalUrl, window.location.origin);
+    urlObj.searchParams.set('embed', '1');
+    if (cacheBuster) {
+      urlObj.searchParams.set('_ts', cacheBuster);
+    }
+    return urlObj.toString();
+  } catch (_err) {
+    let finalUrl = portalUrl;
+    const separator = finalUrl.includes('?') ? '&' : '?';
+    finalUrl += `${separator}embed=1`;
+    if (cacheBuster) {
+      finalUrl += `&_ts=${cacheBuster}`;
+    }
+    return finalUrl;
+  }
+}
+
+function chargerEspaceClientInline(portalUrl, options = {}) {
+  const { card, wrapper, iframe, status, reloadBtn } = getInlinePortalElements();
+  if (!card || !wrapper || !iframe || !status) return;
+
+  if (!portalUrl || portalUrl === '#') {
+    wrapper.classList.add('hidden');
+    reloadBtn?.classList.add('hidden');
+    status.textContent = "Votre espace client sera disponible après validation de votre première réservation.";
+    status.classList.remove('hidden');
+    return;
+  }
+
+  const finalUrl = construireLienEspaceClientInline(portalUrl, options.cacheBuster);
+  if (!finalUrl) return;
+
+  wrapper.classList.remove('hidden');
+  reloadBtn?.classList.remove('hidden');
+  status.textContent = options.statusMessage || 'Chargement de votre espace client…';
+  status.classList.remove('hidden');
+
+  if (iframe.__elsPortalLoadHandler) {
+    iframe.removeEventListener('load', iframe.__elsPortalLoadHandler);
+  }
+  iframe.__elsPortalLoadHandler = () => {
+    iframe.classList.remove('client-portal-loading');
+    status.classList.add('hidden');
+    iframe.__elsPortalLoadHandler = null;
+  };
+  iframe.addEventListener('load', iframe.__elsPortalLoadHandler);
+
+  iframe.dataset.portalBaseUrl = portalUrl;
+  iframe.dataset.email = options.email || '';
+  iframe.classList.add('client-portal-loading');
+  iframe.src = finalUrl;
+}
+
+function mettreAJourCarteEspaceClient(client, portalUrl) {
+  const { card, wrapper, iframe, reloadBtn, status } = getInlinePortalElements();
+  if (!card) return;
+
+  if (!client || !client.email) {
+    card.classList.add('hidden');
+    status?.classList.remove('hidden');
+    if (status) {
+      status.textContent = "Validez votre première réservation puis utilisez \"Se connecter\" pour activer votre espace client.";
+    }
+    wrapper?.classList.add('hidden');
+    reloadBtn?.classList.add('hidden');
+    if (iframe) {
+      iframe.removeAttribute('src');
+      delete iframe.dataset.portalBaseUrl;
+      delete iframe.dataset.email;
+      if (iframe.__elsPortalLoadHandler) {
+        iframe.removeEventListener('load', iframe.__elsPortalLoadHandler);
+        iframe.__elsPortalLoadHandler = null;
+      }
+    }
+    return;
+  }
+
+  card.classList.remove('hidden');
+  if (iframe && iframe.dataset.portalBaseUrl && iframe.dataset.portalBaseUrl === portalUrl && portalUrl && portalUrl !== '#') {
+    status?.classList.add('hidden');
+    wrapper?.classList.remove('hidden');
+    reloadBtn?.classList.remove('hidden');
+    return;
+  }
+
+  chargerEspaceClientInline(portalUrl, {
+    email: client.email,
+    statusMessage: 'Chargement de votre espace client…'
+  });
+}
+
+function rechargerEspaceClientInline() {
+  const { iframe } = getInlinePortalElements();
+  if (!iframe || !iframe.dataset.portalBaseUrl) return;
+  chargerEspaceClientInline(iframe.dataset.portalBaseUrl, {
+    email: iframe.dataset.email || '',
+    cacheBuster: Date.now().toString(36),
+    statusMessage: 'Actualisation de votre espace client…'
+  });
+}
+
 /**
  * Met à jour le lien "Mon Espace Client" selon l'état de connexion.
  * @param {{email?:string}|null} client
@@ -628,21 +742,34 @@ function mettreAJourLienEspaceClient(client) {
   if (!client || !client.email) {
     portailClientLienEnCours = null;
     lien.href = defaultHref;
+    if (lien.dataset) {
+      delete lien.dataset.portalUrl;
+    }
     btnConnexion?.classList.remove('hidden');
+    mettreAJourCarteEspaceClient(null, null);
     return;
   }
 
   btnConnexion?.classList.add('hidden');
   portailClientLienEnCours = client.email;
+  const appliquerLien = (url) => {
+    if (!lien) return;
+    const href = url || defaultHref;
+    lien.href = href;
+    if (lien.dataset) {
+      lien.dataset.portalUrl = href;
+    }
+    mettreAJourCarteEspaceClient(client, href);
+  };
 
   const fallback = () => {
     if (portailClientLienEnCours !== client.email) return;
     if (!defaultHref || defaultHref === '#') {
-      lien.href = '#';
+      appliquerLien('#');
       return;
     }
     const separator = defaultHref.includes('?') ? '&' : '?';
-    lien.href = `${defaultHref}${separator}email=${encodeURIComponent(client.email)}`;
+    appliquerLien(`${defaultHref}${separator}email=${encodeURIComponent(client.email)}`);
   };
 
   fallback();
@@ -652,7 +779,7 @@ function mettreAJourLienEspaceClient(client) {
       .withSuccessHandler(res => {
         if (portailClientLienEnCours !== client.email) return;
         if (res && res.success && res.url) {
-          lien.href = res.url;
+          appliquerLien(res.url);
         } else {
           fallback();
         }
@@ -683,5 +810,7 @@ document.addEventListener('els-client-cleared', () => {
 
 mettreAJourLienEspaceClient(window.etat?.clientReconnu || null);
 </script>
+
+
 
 
