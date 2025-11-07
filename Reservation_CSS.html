@@ -1172,13 +1172,14 @@ input:checked + .glissiere:before { transform: translateX(22px); }
 @keyframes spin { to { transform: rotate(360deg); } }
 .hidden { display: none !important; }
 
-#conteneur-notifications { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
-.notification { padding: 15px 20px; border-radius: var(--radius); color: var(--txt); font-weight: 500; box-shadow: var(--shadow); animation: slideIn 0.5s ease-out forwards, slideOut 0.5s ease-in 4.5s forwards; opacity: 0; transform: translateX(100%); max-width: 320px; }
+.notification { padding: 15px 20px; border-radius: var(--radius); color: var(--txt); font-weight: 500; box-shadow: var(--shadow); animation: slideIn 0.5s ease-out forwards, slideOut 0.5s ease-in 4.5s forwards; opacity: 0; transform: translateX(100%); max-width: 320px; cursor: pointer; }
 .notification.succes { background-color: var(--bleu-clair); color: var(--bg); }
 .notification.erreur { background-color: var(--danger); color: var(--bg); }
 .notification.info { background-color: var(--bleu); }
+.notification--closing { animation: notificationDismiss 0.25s ease-in forwards !important; }
 @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
 @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+@keyframes notificationDismiss { to { opacity: 0; transform: translateX(120%); } }
 @media (prefers-reduced-motion: reduce) {
   .notification { animation: none; }
 }

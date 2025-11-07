@@ -417,9 +417,19 @@ function afficherNotification(message, type = 'succes') {
   if (!conteneur) return;
   const notif = document.createElement('div');
   notif.className = `notification ${type}`;
+  notif.setAttribute('role', 'alert');
   notif.textContent = message;
   conteneur.appendChild(notif);
-  setTimeout(() => notif.remove(), 5000);
+
+  const dismiss = () => {
+    if (!notif.parentNode) return;
+    notif.classList.add('notification--closing');
+    notif.removeEventListener('click', dismiss);
+    notif.addEventListener('animationend', () => notif.remove(), { once: true });
+  };
+
+  notif.addEventListener('click', dismiss);
+  setTimeout(dismiss, 5000);
 }
 
 /**
