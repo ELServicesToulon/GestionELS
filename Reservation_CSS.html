@@ -87,17 +87,18 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
   gap: inherit;
 }
 
+#col-tarifs {
+  grid-column: 1 / -1;
+  margin-top: 0;
+  margin-bottom: clamp(24px, 3vw, 40px);
+}
+
 #col-center {
   grid-column: 1 / 2;
 }
 
-#basket-section,
-#col-tarifs {
+#basket-section {
   grid-column: 2 / 3;
-}
-
-#col-tarifs {
-  margin-top: clamp(20px, 2vw, 32px);
 }
 
 .els-client-col {
@@ -1450,34 +1451,6 @@ input:checked + .glissiere:before { transform: translateX(22px); }
   width: 1px;
   height: 1px;
   overflow: hidden;
-}
-
-/* --- Sélecteur de thème --- */
-.theme-switcher {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  max-width: min(1280px, 94vw);
-  margin: 0 auto clamp(16px, 2vw, 24px);
-  padding: 0 clamp(8px, 1.5vw, 16px);
-}
-.theme-switcher .btn {
-  white-space: nowrap;
-}
-.theme-switcher__label {
-  font-size: 0.85rem;
-}
-@media (max-width: 600px) {
-  .theme-switcher {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .theme-switcher .btn {
-    width: 100%;
-  }
 }
 
 /* --- Thème rapide épuré --- */
