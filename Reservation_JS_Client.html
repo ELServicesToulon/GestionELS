@@ -697,7 +697,7 @@ function chargerEspaceClientInline(portalUrl, options = {}) {
     if (!iframe.classList.contains('client-portal-loading')) return;
     iframe.classList.remove('client-portal-loading');
     iframe.classList.add('client-portal-error');
-    status.textContent = "Impossible d'afficher l'espace client. Cliquez sur \"Actualiser\" ou utilisez le lien reçu par email.";
+    status.textContent = "Impossible d'afficher l'espace client. Cliquez sur « Actualiser » ou utilisez le lien reçu par email.";
     status.classList.remove('hidden');
     status.classList.add('is-error');
   }, 7000);
@@ -711,7 +711,7 @@ function mettreAJourCarteEspaceClient(client, portalUrl) {
     card.classList.add('hidden');
     status?.classList.remove('hidden');
     if (status) {
-      status.textContent = "Validez votre première réservation puis utilisez \"Se connecter\" pour activer votre espace client.";
+      status.textContent = "Validez votre première réservation puis utilisez « Se connecter » pour activer votre espace client.";
       status.classList.remove('is-error');
     }
     wrapper?.classList.add('hidden');
