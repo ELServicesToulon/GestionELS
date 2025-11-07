@@ -87,13 +87,17 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
   gap: inherit;
 }
 
-#col-tarifs,
 #col-center {
   grid-column: 1 / 2;
 }
 
-#basket-section {
+#basket-section,
+#col-tarifs {
   grid-column: 2 / 3;
+}
+
+#col-tarifs {
+  margin-top: clamp(20px, 2vw, 32px);
 }
 
 .els-client-col {
