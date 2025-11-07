@@ -241,7 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
      * Gère l'affichage initial en fonction des paramètres de l'URL.
      */
     function gererAffichageInitial() {
-        if (linkEmail && linkExp && linkSig) {
+        if (linkEmail) {
+            if (emailConnexionInput) {
+                emailConnexionInput.value = linkEmail;
+            }
             validerEtChargerClient(linkEmail);
             return;
         }

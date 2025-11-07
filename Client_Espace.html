@@ -160,6 +160,9 @@
   </div>
 
   <div id="conteneur-notifications" role="status" aria-live="polite"></div>
+  <? if (typeof CLIENT_WHATSAPP_ENABLED === 'undefined' || CLIENT_WHATSAPP_ENABLED) { ?>
+  <?!= include('whatsapp_js'); ?>
+  <? } ?>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.theme-selector, #btn-theme, #menu-theme').forEach(el => el && el.remove());
