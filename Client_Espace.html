@@ -121,7 +121,7 @@
         <form id="form-question" class="groupe-formulaire" autocomplete="off">
           <label for="question-texte">Posez votre question</label>
           <input type="text" id="question-texte" class="champ-formulaire" required aria-required="true">
-          <button type="submit" class="btn btn-primaire btn--client" style="margin-top:10px;">Envoyer</button>
+          <button type="submit" class="btn btn-primaire btn--client u-mt-10">Envoyer</button>
         </form>
       </div>
       <? } ?>
@@ -136,14 +136,14 @@
         <h2>Accès à l'espace client</h2>
         <p>Pour consulter vos réservations, veuillez utiliser le lien qui vous a été envoyé par e-mail ou saisissez votre adresse ci-dessous.</p>
         
-        <form id="formulaire-connexion-client" class="groupe-formulaire" style="margin-top: 20px;">
+        <form id="formulaire-connexion-client" class="groupe-formulaire u-mt-20">
             <label for="email-connexion">Votre adresse e-mail :</label>
             <input type="email" id="email-connexion" class="champ-formulaire" required placeholder="exemple@domaine.com">
             <div id="erreur-connexion" class="message-erreur-connexion hidden"></div>
-            <button type="submit" class="btn btn-primaire btn--client" style="margin-top: 15px; width: 100%;">Accéder à mes réservations</button>
+            <button type="submit" class="btn btn-primaire btn--client btn--client-full u-mt-15">Accéder à mes réservations</button>
         </form>
 
-        <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-secondaire btn--client" style="margin-top: 20px;">Retour à la page de réservation</a>
+        <a href="<?= ScriptApp.getService().getUrl() ?>" class="btn btn-secondaire btn--client u-mt-20">Retour à la page de réservation</a>
     </div>
   </div>
 
