@@ -255,8 +255,12 @@ function doGet(e) {
             }
             const templateGestion = HtmlService.createTemplateFromFile('Client_Espace');
             templateGestion.ADMIN_EMAIL = ADMIN_EMAIL;
-            templateGestion.EMBED_MODE = String(params.embed || '') === '1';
-            return templateGestion.evaluate().setTitle("Mon Espace Client").setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+            const embedMode = String(params.embed || '') === '1';
+            templateGestion.EMBED_MODE = embedMode;
+            const sortieGestion = templateGestion.evaluate().setTitle("Mon Espace Client");
+            return sortieGestion.setXFrameOptionsMode(
+              embedMode ? HtmlService.XFrameOptionsMode.ALLOWALL : HtmlService.XFrameOptionsMode.DEFAULT
+            );
           }
           return creerReponseHtml('Espace client indisponible', 'Merci de votre compréhension.');
 

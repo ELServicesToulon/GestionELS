@@ -369,7 +369,12 @@
           <? if (CLIENT_PORTAL_ENABLED) { ?>
           <button id="btn-connecter-client" class="btn btn-secondaire btn-sm" type="button">Se connecter</button>
           <? } ?>
-          <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm">Mon Espace Client</a>
+          <a
+            id="btn-espace-client"
+            href="<?= appUrl ?>?page=gestion"
+            class="btn btn-secondaire btn-sm hidden"
+            aria-hidden="true"
+            tabindex="-1">Mon Espace Client</a>
           <ul id="liste-panier">
             <li class="panier-vide" aria-live="polite">Votre panier est vide.</li>
           </ul>

@@ -650,6 +650,12 @@ function chargerEspaceClientInline(portalUrl, options = {}) {
   if (!portalUrl || portalUrl === '#') {
     wrapper.classList.add('hidden');
     reloadBtn?.classList.add('hidden');
+    iframe.classList.remove('client-portal-error', 'client-portal-loading');
+    if (iframe.__elsPortalLoadTimeout) {
+      clearTimeout(iframe.__elsPortalLoadTimeout);
+      iframe.__elsPortalLoadTimeout = null;
+    }
+    status.classList.remove('is-error');
     status.textContent = "Votre espace client sera disponible après validation de votre première réservation.";
     status.classList.remove('hidden');
     return;
@@ -660,13 +666,23 @@ function chargerEspaceClientInline(portalUrl, options = {}) {
 
   wrapper.classList.remove('hidden');
   reloadBtn?.classList.remove('hidden');
+  status.classList.remove('is-error');
   status.textContent = options.statusMessage || 'Chargement de votre espace client…';
   status.classList.remove('hidden');
 
   if (iframe.__elsPortalLoadHandler) {
     iframe.removeEventListener('load', iframe.__elsPortalLoadHandler);
   }
+  if (iframe.__elsPortalLoadTimeout) {
+    clearTimeout(iframe.__elsPortalLoadTimeout);
+    iframe.__elsPortalLoadTimeout = null;
+  }
+  iframe.classList.remove('client-portal-error');
   iframe.__elsPortalLoadHandler = () => {
+    if (iframe.__elsPortalLoadTimeout) {
+      clearTimeout(iframe.__elsPortalLoadTimeout);
+      iframe.__elsPortalLoadTimeout = null;
+    }
     iframe.classList.remove('client-portal-loading');
     status.classList.add('hidden');
     iframe.__elsPortalLoadHandler = null;
@@ -677,6 +693,14 @@ function chargerEspaceClientInline(portalUrl, options = {}) {
   iframe.dataset.email = options.email || '';
   iframe.classList.add('client-portal-loading');
   iframe.src = finalUrl;
+  iframe.__elsPortalLoadTimeout = window.setTimeout(() => {
+    if (!iframe.classList.contains('client-portal-loading')) return;
+    iframe.classList.remove('client-portal-loading');
+    iframe.classList.add('client-portal-error');
+    status.textContent = "Impossible d'afficher l'espace client. Cliquez sur \"Actualiser\" ou utilisez le lien reçu par email.";
+    status.classList.remove('hidden');
+    status.classList.add('is-error');
+  }, 7000);
 }
 
 function mettreAJourCarteEspaceClient(client, portalUrl) {
@@ -688,6 +712,7 @@ function mettreAJourCarteEspaceClient(client, portalUrl) {
     status?.classList.remove('hidden');
     if (status) {
       status.textContent = "Validez votre première réservation puis utilisez \"Se connecter\" pour activer votre espace client.";
+      status.classList.remove('is-error');
     }
     wrapper?.classList.add('hidden');
     reloadBtn?.classList.add('hidden');
@@ -695,6 +720,11 @@ function mettreAJourCarteEspaceClient(client, portalUrl) {
       iframe.removeAttribute('src');
       delete iframe.dataset.portalBaseUrl;
       delete iframe.dataset.email;
+      iframe.classList.remove('client-portal-error', 'client-portal-loading');
+      if (iframe.__elsPortalLoadTimeout) {
+        clearTimeout(iframe.__elsPortalLoadTimeout);
+        iframe.__elsPortalLoadTimeout = null;
+      }
       if (iframe.__elsPortalLoadHandler) {
         iframe.removeEventListener('load', iframe.__elsPortalLoadHandler);
         iframe.__elsPortalLoadHandler = null;
@@ -704,8 +734,16 @@ function mettreAJourCarteEspaceClient(client, portalUrl) {
   }
 
   card.classList.remove('hidden');
-  if (iframe && iframe.dataset.portalBaseUrl && iframe.dataset.portalBaseUrl === portalUrl && portalUrl && portalUrl !== '#') {
+  if (
+    iframe &&
+    iframe.dataset.portalBaseUrl &&
+    iframe.dataset.portalBaseUrl === portalUrl &&
+    portalUrl &&
+    portalUrl !== '#' &&
+    !iframe.classList.contains('client-portal-error')
+  ) {
     status?.classList.add('hidden');
+    status?.classList.remove('is-error');
     wrapper?.classList.remove('hidden');
     reloadBtn?.classList.remove('hidden');
     return;
