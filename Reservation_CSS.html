@@ -67,33 +67,26 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 /* --- MISE EN PAGE PRINCIPALE --- */
 .layout-two-cols {
   display: grid;
-  grid-template-columns: clamp(320px, 32vw, 420px) minmax(0, 1fr);
+  grid-template-columns:
+    clamp(260px, 22vw, 320px)
+    minmax(620px, 2.2fr)
+    clamp(320px, 27vw, 380px);
   gap: clamp(24px, 3vw, 40px);
-  align-items: start;
-  width: 100%;
+  align-items: stretch;
+  width: min(1320px, calc(100% - clamp(32px, 6vw, 96px)));
+  margin: 0 auto;
+  padding: 0 clamp(16px, 3vw, 32px) clamp(24px, 3vw, 40px);
+  box-sizing: border-box;
 }
 
 .layout-two-cols > .col {
   min-width: 0;
+  align-self: stretch;
 }
 
 .layout-els {
-  grid-template-columns:
-    clamp(230px, 22vw, 300px)
-    minmax(480px, 1fr)
-    clamp(300px, 30vw, 380px);
-  gap: clamp(18px, 2.2vw, 32px);
-  align-items: stretch;
-}
-
-.layout-els > .col:not(.els-client-col) {
-  align-self: stretch;
-  min-height: 100%;
-}
-
-.layout-els .col--tarifs,
-.layout-els #col-center {
-  height: 100%;
+  grid-template-columns: inherit;
+  gap: inherit;
 }
 
 .els-client-col {
@@ -108,6 +101,11 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 }
 
 @media (max-width: 1200px) {
+  .layout-two-cols {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    padding: 0 16px 24px;
+  }
   .layout-els {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -948,7 +946,13 @@ body.els-ui-theming.els-aluminium {
 /* Bouton Espace Client placé dans le panier */
 #vue-panier #btn-espace-client { width: 100%; margin-bottom: 12px; }
 #vue-panier #btn-connecter-client { width: 100%; margin-bottom: 8px; }
-.client-espace-inline { margin-top: 16px; padding: 0; }
+.client-espace-inline {
+  margin-top: 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
 .client-espace-inline__header {
   display: flex;
   justify-content: space-between;
@@ -966,11 +970,16 @@ body.els-ui-theming.els-aluminium {
   border-bottom: 1px solid color-mix(in oklab, var(--muted) 25%, #ffffff 75%);
   line-height: 1.45;
   word-break: break-word;
+  background: rgba(142, 68, 173, 0.04);
 }
-.client-espace-inline__frame-wrapper { border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
+.client-espace-inline__frame-wrapper {
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow: hidden;
+  flex: 1;
+}
 .client-espace-inline__frame-wrapper iframe {
   width: 100%;
-  min-height: 540px;
+  min-height: 480px;
   border: none;
   background: #fff;
 }
