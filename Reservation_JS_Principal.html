@@ -987,6 +987,65 @@ function configurerEcouteursEvenements() {
   }
 }
 
+function focusCalendrier() {
+  const panel = document.getElementById('calendar-panel');
+  if (!panel) return null;
+  try {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (_err) {
+    const top = panel.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: Math.max(top - 16, 0), behavior: 'smooth' });
+  }
+  panel.classList.add('tarif-highlight');
+  window.setTimeout(() => panel.classList.remove('tarif-highlight'), 1200);
+  return panel;
+}
+
+function declencherActionTarif(element) {
+  if (!element) return;
+  const action = element.getAttribute('data-tarif-action') || '';
+  const variant = element.getAttribute('data-tarif-variant') || '';
+  focusCalendrier();
+
+  if (action === 'resident') {
+    if (window.ui?.champResidentClient && !window.ui.champResidentClient.checked) {
+      window.ui.champResidentClient.checked = true;
+      mettreAJourEtatResident();
+    }
+    if (variant) {
+      const radio = document.getElementById(`resident-mode-${variant}`);
+      if (radio) {
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+    afficherConteneurFinalisation();
+    afficherNotification("Forfait résident sélectionné. Complétez vos informations pour finaliser.", 'info');
+    return;
+  }
+
+  window.etat.tarifChoisi = {
+    type: variant || action,
+    horodatage: Date.now()
+  };
+  afficherNotification("Choisissez un créneau dans le calendrier pour poursuivre avec ce tarif.", 'info');
+}
+
+function initialiserActionsTarifs() {
+  const elements = document.querySelectorAll('[data-tarif-action]');
+  if (!elements.length) return;
+  elements.forEach(element => {
+    const trigger = () => declencherActionTarif(element);
+    element.addEventListener('click', trigger);
+    element.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        trigger();
+      }
+    });
+  });
+}
+
 /**
  * Point d'entrée principal, exécuté après le chargement du DOM.
  */
@@ -1010,6 +1069,7 @@ document.addEventListener('DOMContentLoaded', () => {
     mettreAJourEtatResident();
     mettreAJourBoutonViderPanier();
     configurerEcouteursEvenements();
+    initialiserActionsTarifs();
   }).getConfiguration();
   chargerPanierDepuisLocalStorage();
   verifierSessionClient();
