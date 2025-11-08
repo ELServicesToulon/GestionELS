@@ -41,6 +41,7 @@ function onOpen(e) {
     sousMenuMaintenance.addItem("Purger Event ID introuvable", "menuPurgerEventId");
   }
 
+  menuPrincipal.addSeparator().addItem("Poser une question a l'assistant", "menuAskAssistant");
   menuPrincipal.addSubMenu(sousMenuMaintenance);
   // Actions devis PDF et refresh menu
   if (typeof genererDevisPdfDepuisSelection === 'function') {

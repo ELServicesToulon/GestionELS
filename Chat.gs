@@ -332,7 +332,12 @@ function chatPostMessage(rawPayload) {
       }
     }
 
-    if (requestedType === 'admin' && isAdminUser) {
+    if (requestedType === 'assistant') {
+      authorType = 'assistant';
+      authorRef = 'ASSISTANT';
+      authorPseudo = sanitizeScalar(payload.authorPseudo || '', 64) || 'Assistant';
+      visibleTo = wantsAdminVisibility ? 'admin' : 'pharmacy';
+    } else if (requestedType === 'admin' && isAdminUser) {
       authorType = 'admin';
       visibleTo = wantsAdminVisibility ? 'admin' : 'all';
       authorRef = userEmail;
