@@ -147,62 +147,62 @@
   
   
 
+  <section id="tarifs-full" class="section section--tarifs-full">
+    <!-- Bouton WhatsApp ELS au-dessus des tarifs -->
+    <div class="cta-whatsapp-wrapper">
+      <a class="cta-whatsapp" href="https://wa.me/33768591888" target="_blank" rel="noopener noreferrer">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" width="22" height="22">
+        Discuter sur WhatsApp
+      </a>
+    </div>
+    <div id="tarifs-card" class="carte card">
+      <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
+      <div class="tarifs-grid">
+        <article class="tarif-carte" data-tarif="tournees">
+          <h3>Tournées</h3>
+          <ul class="tarif-liste">
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Normal</span>
+              <span class="tarif-valeur" id="tarif-normal-base">-</span>
+              <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
+            </li>
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Samedi</span>
+              <span class="tarif-valeur" id="tarif-samedi-base">-</span>
+              <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
+            </li>
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Urgent</span>
+              <span class="tarif-valeur" id="tarif-urgent-base">-</span>
+              <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
+            </li>
+            <li class="tarif-ligne tarif-ligne--wrap">
+              <span class="tarif-libelle">Suppléments par arrêt</span>
+              <span class="tarif-valeur" id="tarif-supplements">-</span>
+              <span class="tarif-description js-meta-supp" data-meta-prefix="Par arrêt supplémentaire" data-meta-separator=" + "></span>
+            </li>
+          </ul>
+        </article>
+        <article class="tarif-carte" data-tarif="forfait-resident">
+          <h3>Forfait résident</h3>
+          <ul class="tarif-liste">
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
+              <span class="tarif-valeur" id="forfait-resident-standard">-</span>
+              <span class="tarif-description">1 retrait documents sur site résident + 1 démarche &amp; retrait PUI Sainte Musse + 1 livraison sur site résident le lendemain.</span>
+            </li>
+            <li class="tarif-ligne">
+              <span class="tarif-libelle">Retrait &amp; livraison en URGENCE </span>
+              <span class="tarif-valeur" id="forfait-resident-urgence">-</span>
+              <span class="tarif-description">1 retrait documents sur site résident + 1 démarche & retrait PUI Sainte Musse + 1 livraison sur site résident dans les délais les plus rapides possibles.</span>
+            </li>
+          </ul>
+        </article>
+      </div>
+      <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
+    </div>
+  </section>
   <main id="layout" class="container layout-two-cols layout-els">
-    <section id="col-tarifs" class="col col--tarifs">
-      <!-- Bouton WhatsApp ELS au-dessus des tarifs -->
-      <div class="cta-whatsapp-wrapper">
-        <a class="cta-whatsapp" href="https://wa.me/33768591888" target="_blank" rel="noopener noreferrer">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" width="22" height="22">
-          Discuter sur WhatsApp
-        </a>
-      </div>
-      <div id="tarifs-card" class="carte card">
-        <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
-        <div class="tarifs-grid">
-          <article class="tarif-carte" data-tarif="tournees">
-            <h3>Tournées</h3>
-            <ul class="tarif-liste">
-              <li class="tarif-ligne">
-                <span class="tarif-libelle">Normal</span>
-                <span class="tarif-valeur" id="tarif-normal-base">-</span>
-                <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
-              </li>
-              <li class="tarif-ligne">
-                <span class="tarif-libelle">Samedi</span>
-                <span class="tarif-valeur" id="tarif-samedi-base">-</span>
-                <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
-              </li>
-              <li class="tarif-ligne">
-                <span class="tarif-libelle">Urgent</span>
-                <span class="tarif-valeur" id="tarif-urgent-base">-</span>
-                <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
-              </li>
-              <li class="tarif-ligne tarif-ligne--wrap">
-                <span class="tarif-libelle">Suppléments par arrêt</span>
-                <span class="tarif-valeur" id="tarif-supplements">-</span>
-                <span class="tarif-description js-meta-supp" data-meta-prefix="Par arrêt supplémentaire" data-meta-separator=" + "></span>
-              </li>
-            </ul>
-          </article>
-          <article class="tarif-carte" data-tarif="forfait-resident">
-            <h3>Forfait résident</h3>
-            <ul class="tarif-liste">
-              <li class="tarif-ligne">
-                <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
-                <span class="tarif-valeur" id="forfait-resident-standard">-</span>
-                <span class="tarif-description">1 retrait documents sur site résident + 1 démarche &amp; retrait PUI Sainte Musse + 1 livraison sur site résident le lendemain.</span>
-              </li>
-              <li class="tarif-ligne">
-                <span class="tarif-libelle">Retrait &amp; livraison en URGENCE </span>
-                <span class="tarif-valeur" id="forfait-resident-urgence">-</span>
-                <span class="tarif-description">1 retrait documents sur site résident + 1 démarche & retrait PUI Sainte Musse + 1 livraison sur site résident dans les délais les plus rapides possibles.</span>
-              </li>
-            </ul>
-          </article>
-        </div>
-        <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
-      </div>
-    </section>
     <section id="col-center" class="col col--calendar els-center-grid" aria-label="Sélection de créneau">
       <div id="calendar-panel" class="card" aria-label="Calendrier de réservation" role="region" data-component="calendar">
         <div id="app-conteneur" role="main" aria-label="Contenu principal de la page de réservation">
