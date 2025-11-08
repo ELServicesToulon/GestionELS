@@ -168,6 +168,8 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
   border-radius: var(--radius, 16px);
   box-shadow: var(--shadow);
   border: 1px solid color-mix(in oklab, var(--bleu) 16%, #ffffff 84%);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 #tarifs-card h2 {
@@ -1597,4 +1599,10 @@ body.theme-ultra.els-ui-theming .dialog {
   padding: clamp(24px, 4vw, 48px);
   background: transparent;
   box-sizing: border-box;
+}
+.container.layout-two-cols {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
