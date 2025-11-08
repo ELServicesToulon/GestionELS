@@ -1574,26 +1574,6 @@ body.theme-ultra.els-ui-theming .dialog {
   -webkit-backdrop-filter: none;
 }
 
-/* --- STYLES D'IMPRESSION --- */
-@media print {
-  body { background-color: var(--txt); color: var(--bg); }
-  #app-conteneur-principal { display: block !important; }
-  .app-en-tete, .carte-en-tete button, #btn-valider-panier, .modale-overlay, #conteneur-notifications, .actions-formulaire button, .item-panier-supprimer, .app-pied-de-page { display: none; }
-  #app-conteneur-principal, #app-conteneur, #vue-calendrier, #vue-panier, .carte { box-shadow: none; border: 1px solid var(--muted); margin: 10px 0; padding: 15px; page-break-inside: avoid; }
-  #app-conteneur { flex-direction: column; }
-  .jour-calendrier.desactive { color: var(--muted); }
-  .champ-formulaire { border-color: var(--muted); }
-}
-</style>
-
-
-
-
-
-
-
-
-
 .section--tarifs-full {
   width: 100%;
   padding: clamp(24px, 4vw, 48px);
@@ -1606,3 +1586,16 @@ body.theme-ultra.els-ui-theming .dialog {
   margin: 0;
   padding: 0;
 }
+
+/* --- STYLES D'IMPRESSION --- */
+@media print {
+  body { background-color: var(--txt); color: var(--bg); }
+  #app-conteneur-principal { display: block !important; }
+  .app-en-tete, .carte-en-tete button, #btn-valider-panier, .modale-overlay, #conteneur-notifications, .actions-formulaire button, .item-panier-supprimer, .app-pied-de-page { display: none; }
+  #app-conteneur-principal, #app-conteneur, #vue-calendrier, #vue-panier, .carte { box-shadow: none; border: 1px solid var(--muted); margin: 10px 0; padding: 15px; page-break-inside: avoid; }
+  #app-conteneur { flex-direction: column; }
+  .jour-calendrier.desactive { color: var(--muted); }
+  .champ-formulaire { border-color: var(--muted); }
+}
+</style>
+
