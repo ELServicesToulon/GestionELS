@@ -200,6 +200,12 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
   background: var(--grad);
 }
 
+#tarifs-card .tarifs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(18px, 2vw, 24px);
+}
+
 #tarifs-card .tarif-carte {
   background: rgba(255, 255, 255, 0.82);
   border-radius: calc(var(--radius, 16px) - 4px);

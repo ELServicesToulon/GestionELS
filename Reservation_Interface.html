@@ -158,46 +158,48 @@
       </div>
       <div id="tarifs-card" class="carte card">
         <h2 id="titre-tarifs-detaille">Tarifs détaillés</h2>
-        <article class="tarif-carte" data-tarif="tournees">
-          <h3>Tournées</h3>
-          <ul class="tarif-liste">
-            <li class="tarif-ligne">
-              <span class="tarif-libelle">Normal</span>
-              <span class="tarif-valeur" id="tarif-normal-base">-</span>
-              <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
-            </li>
-            <li class="tarif-ligne">
-              <span class="tarif-libelle">Samedi</span>
-              <span class="tarif-valeur" id="tarif-samedi-base">-</span>
-              <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
-            </li>
-            <li class="tarif-ligne">
-              <span class="tarif-libelle">Urgent</span>
-              <span class="tarif-valeur" id="tarif-urgent-base">-</span>
-              <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
-            </li>
-            <li class="tarif-ligne tarif-ligne--wrap">
-              <span class="tarif-libelle">Suppléments par arrêt</span>
-              <span class="tarif-valeur" id="tarif-supplements">-</span>
-              <span class="tarif-description js-meta-supp" data-meta-prefix="Par arrêt supplémentaire" data-meta-separator=" + "></span>
-            </li>
-          </ul>
-        </article>
-        <article class="tarif-carte" data-tarif="forfait-resident">
-          <h3>Forfait résident</h3>
-          <ul class="tarif-liste">
-            <li class="tarif-ligne">
-              <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
-              <span class="tarif-valeur" id="forfait-resident-standard">-</span>
-              <span class="tarif-description">1 retrait documents sur site résident + 1 démarche &amp; retrait PUI Sainte Musse + 1 livraison sur site résident le lendemain.</span>
-            </li>
-            <li class="tarif-ligne">
-              <span class="tarif-libelle">Retrait &amp; livraison en URGENCE </span>
-              <span class="tarif-valeur" id="forfait-resident-urgence">-</span>
-              <span class="tarif-description">1 retrait documents sur site résident + 1 démarche & retrait PUI Sainte Musse + 1 livraison sur site résident dans les délais les plus rapides possibles.</span>
-            </li>
-          </ul>
-        </article>
+        <div class="tarifs-grid">
+          <article class="tarif-carte" data-tarif="tournees">
+            <h3>Tournées</h3>
+            <ul class="tarif-liste">
+              <li class="tarif-ligne">
+                <span class="tarif-libelle">Normal</span>
+                <span class="tarif-valeur" id="tarif-normal-base">-</span>
+                <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
+              </li>
+              <li class="tarif-ligne">
+                <span class="tarif-libelle">Samedi</span>
+                <span class="tarif-valeur" id="tarif-samedi-base">-</span>
+                <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
+              </li>
+              <li class="tarif-ligne">
+                <span class="tarif-libelle">Urgent</span>
+                <span class="tarif-valeur" id="tarif-urgent-base">-</span>
+                <span class="tarif-description js-meta-base" data-meta-prefix="1 retrait + 1 livraison" data-meta-separator=" + "></span>
+              </li>
+              <li class="tarif-ligne tarif-ligne--wrap">
+                <span class="tarif-libelle">Suppléments par arrêt</span>
+                <span class="tarif-valeur" id="tarif-supplements">-</span>
+                <span class="tarif-description js-meta-supp" data-meta-prefix="Par arrêt supplémentaire" data-meta-separator=" + "></span>
+              </li>
+            </ul>
+          </article>
+          <article class="tarif-carte" data-tarif="forfait-resident">
+            <h3>Forfait résident</h3>
+            <ul class="tarif-liste">
+              <li class="tarif-ligne">
+                <span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span>
+                <span class="tarif-valeur" id="forfait-resident-standard">-</span>
+                <span class="tarif-description">1 retrait documents sur site résident + 1 démarche &amp; retrait PUI Sainte Musse + 1 livraison sur site résident le lendemain.</span>
+              </li>
+              <li class="tarif-ligne">
+                <span class="tarif-libelle">Retrait &amp; livraison en URGENCE </span>
+                <span class="tarif-valeur" id="forfait-resident-urgence">-</span>
+                <span class="tarif-description">1 retrait documents sur site résident + 1 démarche & retrait PUI Sainte Musse + 1 livraison sur site résident dans les délais les plus rapides possibles.</span>
+              </li>
+            </ul>
+          </article>
+        </div>
         <p class="hero-footnote">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</p>
       </div>
     </section>
