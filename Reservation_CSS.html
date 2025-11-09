@@ -108,15 +108,20 @@ h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var
 
 @media (max-width: 1200px) {
   .layout-two-cols {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     width: 100%;
     padding: 0 16px 24px;
   }
   .layout-els {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
   }
   .els-client-col {
     position: static;
+  }
+  #basket-section {
+    order: -1;
   }
 }
 
@@ -336,7 +341,10 @@ main.layout > .main > * {
     grid-column: 1;
   }
 
-  .section--panier,
+  .section--panier {
+    order: -1;
+  }
+
   .section--finalisation,
   .section--tarifs {
     order: initial;
