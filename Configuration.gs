@@ -186,6 +186,9 @@ const CALENDAR_RESYNC_ENABLED = true;
 const CALENDAR_PURGE_ENABLED = true;
 const RESERVATION_CONFIRMATION_EMAILS_ENABLED = true;
 
+/** @const {boolean} Active l'assistant IA côté Apps Script (désactivé par sécurité). */
+const CFG_ENABLE_ASSISTANT = false;
+
 /** @const {boolean} Module l'opacité de la barre de disponibilité selon le taux de charge. */
 const CALENDAR_BAR_OPACITY_ENABLED = false;
 

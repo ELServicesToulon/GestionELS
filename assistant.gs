@@ -18,6 +18,10 @@ const CHAT_ASSISTANT_DEFAULT_VISIBILITY = 'pharmacy';
  * @returns {string} Reponse texte ou message d'erreur lisible.
  */
 function callChatGPT(contextMessages, userPrompt) {
+  if (typeof CFG_ENABLE_ASSISTANT !== 'undefined' && !CFG_ENABLE_ASSISTANT) {
+    return { ok: false, reason: 'UNCONFIGURED' };
+  }
+
   const apiKey = PropertiesService.getScriptProperties().getProperty('OPENAI_API_KEY');
   if (!apiKey) {
     Logger.log('[callChatGPT] OPENAI_API_KEY manquante dans les proprietes du script.');
@@ -95,6 +99,10 @@ function callChatGPT(contextMessages, userPrompt) {
  * @returns {string} Reponse envoyee.
  */
 function askAssistant(row) {
+  if (typeof CFG_ENABLE_ASSISTANT !== 'undefined' && !CFG_ENABLE_ASSISTANT) {
+    return { ok: false, reason: 'UNCONFIGURED' };
+  }
+
   try {
     const ss = getMainSpreadsheet();
     const chatSheet = getChatSheet(ss);
@@ -117,12 +125,18 @@ function askAssistant(row) {
 
     const threadId = rowValues[1] || CHAT_THREAD_GLOBAL;
     const contextMessages = buildAssistantContext_(chatSheet, targetRow, threadId, CHAT_ASSISTANT_HISTORY_LIMIT);
-    const assistantAnswer = callChatGPT(contextMessages, question) || 'Assistant indisponible.';
+    const assistantAnswer = callChatGPT(contextMessages, question);
+    if (assistantAnswer && typeof assistantAnswer === 'object' && assistantAnswer.ok === false) {
+      return assistantAnswer;
+    }
+    const resolvedAnswer = typeof assistantAnswer === 'string'
+      ? assistantAnswer
+      : 'Assistant indisponible.';
 
     const payload = {
       authorType: 'assistant',
       authorPseudo: 'ChatGPT',
-      message: assistantAnswer,
+      message: resolvedAnswer,
       visibleTo: CHAT_ASSISTANT_DEFAULT_VISIBILITY,
       threadId: threadId,
       sessionId: buildAssistantSessionId_(threadId)
@@ -133,7 +147,7 @@ function askAssistant(row) {
       throw new Error('La reponse de l\'assistant n\'a pas pu etre enregistree (code: ' + (result && result.reason ? result.reason : 'inconnu') + ').');
     }
 
-    return assistantAnswer;
+    return resolvedAnswer;
   } catch (err) {
     Logger.log('[askAssistant] ' + err);
     throw err;
@@ -144,6 +158,15 @@ function askAssistant(row) {
  * Cree ou met a jour le menu permettant d'invoquer l'assistant.
  */
 function menuAskAssistant() {
+  if (typeof CFG_ENABLE_ASSISTANT !== 'undefined' && !CFG_ENABLE_ASSISTANT) {
+    try { SpreadsheetApp.getActive().toast('Assistant désactivé dans la configuration.', 'Assistant', 5); } catch (_err) {}
+    try {
+      const disabledUi = SpreadsheetApp.getUi();
+      disabledUi.alert('Assistant Chat', 'L\'assistant est désactivé par configuration (CFG_ENABLE_ASSISTANT=false).', disabledUi.ButtonSet.OK);
+    } catch (_err) {}
+    return { ok: false, reason: 'UNCONFIGURED' };
+  }
+
   const ui = SpreadsheetApp.getUi();
   try {
     const activeSheet = SpreadsheetApp.getActiveSheet();
@@ -158,7 +181,14 @@ function menuAskAssistant() {
     }
     const rowIndex = activeRange.getRow();
     const answer = askAssistant(rowIndex);
+    if (answer && typeof answer === 'object') {
+      if (answer.ok === false && answer.reason === 'UNCONFIGURED') {
+        ui.alert('Assistant Chat', 'L\'assistant est désactivé par configuration.', ui.ButtonSet.OK);
+      }
+      return answer;
+    }
     ui.alert('Assistant Chat', 'Reponse envoyee dans le fil: \n\n' + answer, ui.ButtonSet.OK);
+    return { ok: true };
   } catch (err) {
     ui.alert('Assistant Chat', err.message || String(err), ui.ButtonSet.OK);
   }
@@ -295,4 +325,19 @@ function getAssistantTargetRow_(inputRow, chatSheet, lastRow) {
 function buildAssistantSessionId_(threadId) {
   const safeThread = threadId || CHAT_THREAD_GLOBAL;
   return 'assistant:' + safeThread + ':' + Date.now();
+}
+
+/**
+ * Test: vérifie que les entrées assistant sont bloquées si le flag est désactivé.
+ * @returns {boolean}
+ */
+function test_assistantDisabledFlag() {
+  const callRes = callChatGPT([], 'ping');
+  const askRes = askAssistant();
+  const menuRes = menuAskAssistant();
+  return Boolean(
+    callRes && callRes.ok === false && callRes.reason === 'UNCONFIGURED'
+    && askRes && askRes.ok === false && askRes.reason === 'UNCONFIGURED'
+    && menuRes && menuRes.ok === false && menuRes.reason === 'UNCONFIGURED'
+  );
 }
