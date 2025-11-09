@@ -790,14 +790,34 @@ function mettreAJourLienEspaceClient(client) {
 
   btnConnexion?.classList.add('hidden');
   portailClientLienEnCours = client.email;
+  const warn = typeof logWarn === 'function' ? logWarn : (...args) => console.warn('[ELS]', ...args);
   const appliquerLien = (url) => {
     if (!lien) return;
-    const href = url || defaultHref;
-    lien.href = href;
-    if (lien.dataset) {
-      lien.dataset.portalUrl = href;
+    let hrefSecurise = defaultHref;
+    let urlEstSure = false;
+    if (url) {
+      try {
+        const baseNormalisation = baseUrl || window.location.origin;
+        const urlNormalisee = new URL(url, baseNormalisation);
+        if (urlNormalisee.protocol === 'http:' || urlNormalisee.protocol === 'https:') {
+          hrefSecurise = urlNormalisee.toString();
+          urlEstSure = true;
+        } else {
+          warn('URL portail client rejetée: protocole non autorisé.');
+        }
+      } catch (_err) {
+        warn('URL portail client invalide, fallback appliqué.');
+      }
     }
-    mettreAJourCarteEspaceClient(client, href);
+    lien.setAttribute('href', hrefSecurise);
+    if (lien.dataset) {
+      if (urlEstSure) {
+        lien.dataset.portalUrl = hrefSecurise;
+      } else {
+        delete lien.dataset.portalUrl;
+      }
+    }
+    mettreAJourCarteEspaceClient(client, hrefSecurise);
   };
 
   const fallback = () => {
