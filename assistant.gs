@@ -118,6 +118,7 @@ function askAssistant(row) {
     const threadId = rowValues[1] || CHAT_THREAD_GLOBAL;
     const contextMessages = buildAssistantContext_(chatSheet, targetRow, threadId, CHAT_ASSISTANT_HISTORY_LIMIT);
     const assistantAnswer = callChatGPT(contextMessages, question) || 'Assistant indisponible.';
+    const assistantSessionId = buildAssistantSessionId_(threadId);
 
     const payload = {
       authorType: 'assistant',
@@ -125,7 +126,7 @@ function askAssistant(row) {
       message: assistantAnswer,
       visibleTo: CHAT_ASSISTANT_DEFAULT_VISIBILITY,
       threadId: threadId,
-      sessionId: buildAssistantSessionId_(threadId)
+      sessionId: assistantSessionId
     };
 
     const result = chatPostMessage(payload);
@@ -293,6 +294,36 @@ function getAssistantTargetRow_(inputRow, chatSheet, lastRow) {
  * @returns {string}
  */
 function buildAssistantSessionId_(threadId) {
-  const safeThread = threadId || CHAT_THREAD_GLOBAL;
-  return 'assistant:' + safeThread + ':' + Date.now();
+  const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+  return 'assistant:' + safeThread;
+}
+
+/**
+ * Teste le respect du burst rate-limit pour les reponses assistant.
+ * @returns {{ok:boolean}}
+ */
+function testAssistantRateLimitBurst() {
+  const threadId = 'TEST_THREAD';
+  const sessionId = buildAssistantSessionId_(threadId);
+  const rateKey = buildChatRateKey(sessionId);
+  const cacheKey = 'chat_rate:' + rateKey;
+  const cache = CacheService.getScriptCache();
+  cache.remove(cacheKey);
+  try {
+    PropertiesService.getScriptProperties().deleteProperty('chat_rate_last:' + rateKey);
+  } catch (_err) {
+    // Ignore les erreurs de nettoyage.
+  }
+
+  for (let i = 0; i < CHAT_RATE_LIMIT_BURST; i++) {
+    if (!isChatRateAllowed(sessionId)) {
+      throw new Error('Le burst est trop strict a l\'iteration ' + i + '.');
+    }
+  }
+
+  if (isChatRateAllowed(sessionId)) {
+    throw new Error('Le burst n\'est pas applique apres ' + CHAT_RATE_LIMIT_BURST + ' appels.');
+  }
+
+  return { ok: true };
 }
