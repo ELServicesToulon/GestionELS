@@ -1,241 +1,136 @@
-# GestionELS
+Module Livreur – Livraison EHPAD
+===============================
 
-## Contributing
-See `AGENTS.md` for project structure, coding style, testing steps, and the pull request process.
+Résumé
+------
+Implémentation complète d'un module livreur pour Android basé sur PWA + TWA + Apps Script + FCM. Le projet couvre la capture terrain offline, la synchronisation append-only RGPD compatible et les notifications automatiques liées à Google Calendar.
 
-## Installation locale
+Prérequis
+---------
+- Domaine HTTPS `DOMAIN` pointant vers l'hébergement PWA.
+- Accès Google Workspace avec agenda `CALENDAR_ID` et comptes livreurs.
+- Projet Firebase (`FIREBASE_PROJECT_ID`, `FIREBASE_APP_ID`, `FIREBASE_SENDER_ID`).
+- Identifiant de web app Apps Script `WEB_APP_URL` (déployée « exécuter en tant que moi »).
+- Dossier Google Drive pour photos (`DRIVE_PHOTOS_FOLDER_ID`) et signatures (`DRIVE_SIG_FOLDER_ID`).
+- Google Sheet journal (`SHEET_ID`) contenant feuilles `journal` et `devices`.
+- ScriptProperty `FCM_SA_JSON` contenant le JSON du compte de service FCM.
 
-Installez les dépendances Node locales :
-
-```bash
-npm install
+Structure
+---------
+```
+/pwa
+/android-twa
+/apps-script
 ```
 
-## Useful Tools
-- `./clasp-helper.cmd`: Launches a small GUI to Push/Pull/Version/Deploy and manage snapshots.
-- Scripts overview: see `scripts/README.md` for `open-projet*.cmd` launchers.
+Mise en place PWA
+-----------------
+1. Installer dépendances locales:
+   ```bash
+   npm install --save-dev esbuild typescript workbox-build
+   ```
+2. Compiler TypeScript:
+   ```bash
+   npx esbuild pwa/app.ts pwa/ui.ts pwa/idb.ts pwa/barcode.ts pwa/signature.ts pwa/geo.ts --bundle --format=esm --outdir=pwa/dist --sourcemap
+   ```
+   Adapter `index.html` pour charger `./dist/app.js` si bundler différent.
+3. Déployer le dossier `pwa/` sur un hébergement HTTPS sous `https://DOMAIN/`.
+4. Publier `assetlinks.json` sur `https://DOMAIN/.well-known/assetlinks.json`.
+5. Vérifier l'installation PWA (Chrome Android > Ajouter à l'écran d'accueil).
 
-## Quick Commands
-- `clasp open`: Open the Apps Script project in the browser.
-- `clasp push -f`: Push local code to Apps Script (force overwrite).
+Intégration Firebase Web
+------------------------
+- Créer une application Web Firebase et récupérer `FIREBASE_PROJECT_ID`, `FIREBASE_APP_ID`, `FIREBASE_SENDER_ID`, `apiKey`.
+- Ajouter le fichier `firebase-config.js` (non fourni, à créer dans `pwa/`) exposant `initializeApp`. Exemple:
+  ```js
+  export const firebaseConfig = {
+    apiKey: 'TODO',
+    appId: 'FIREBASE_APP_ID',
+    projectId: 'FIREBASE_PROJECT_ID',
+    messagingSenderId: 'FIREBASE_SENDER_ID'
+  };
+  ```
+- Importer ce module dans `app.ts` (voir section `TODO` commentée).
 
-## Accès au calendrier
-1. Ouvrir l'éditeur Apps Script puis **Deploy → Manage deployments**.
-2. Sur la ligne du déploiement actif, copier l'URL du Web App pour accéder au calendrier.
-3. Si le lien est perdu, créer un nouveau déploiement : chaque version génère une URL unique.
+Mise en place Apps Script
+-------------------------
+1. Copier le contenu de `/apps-script` dans votre projet Apps Script (via `clasp` ou éditeur).
+2. Dans `Configuration.gs`, déclarer les constantes:
+   ```gs
+   const CFG_TOURNEES_SHEET_ID = 'SHEET_ID';
+   const CFG_DRIVE_PHOTOS_FOLDER_ID = 'DRIVE_PHOTOS_FOLDER_ID';
+   const CFG_DRIVE_SIG_FOLDER_ID = 'DRIVE_SIG_FOLDER_ID';
+   const CFG_CALENDAR_ID = 'CALENDAR_ID';
+   const CFG_PWA_DOMAIN = 'https://DOMAIN';
+   const CFG_WEB_APP_URL = 'WEB_APP_URL';
+   const CFG_FIREBASE_PROJECT_ID = 'FIREBASE_PROJECT_ID';
+   ```
+3. Créer les feuilles `journal` et `devices` via `chatProvisionSheets()` si non présent.
+4. Déployer la Web App (`Publier > Déployer en tant qu'application web`).
+5. Ajouter dans `Script Properties` la clé `FCM_SA_JSON` contenant le JSON du compte de service FCM.
+6. Créer un déclencheur time-driven toutes les 5 minutes sur `CalendarWorker.checkAndNotify`.
 
-## Tarifs
-Les tarifs sont centralisés dans `Configuration.gs` via l'objet `TARIFS`.
+Google Sheet
+------------
+Feuille `journal` (append-only):
+```
+ts_srv,eventId,cmd,status,lat,lng,accuracy,items_json,temp,receiver_name,receiver_role,sign_fileId,photo_fileIds,deviceId,battery,appVersion,clientUUID,seq,userEmail
+```
+Feuille `devices`:
+```
+driverEmail,fcmToken,platform,updated_ts
+```
 
-- **Normal** – livraisons standard du lundi au vendredi.
-- **Samedi** – appliqué aux livraisons du samedi.
-- **Urgent** – déclenché si la réservation est dans le seuil `URGENT_THRESHOLD_MINUTES`.
-- **Special** – base pour tarifs ponctuels ou expérimentaux.
+Apps Script Tests
+-----------------
+Exécuter:
+```
+clasp run test_sheetStoreIdempotence
+clasp run test_fcmJwtGeneration
+clasp run test_endToEndSimulation
+```
 
-Chaque entrée suit la forme `{ base: <prix premier arrêt>, arrets: [<arrêt 2>, ...] }`.
-Dupliquez une entrée existante pour ajouter un nouveau type puis ajustez les montants.
+Android TWA
+-----------
+1. Installer bubblewrap et initialiser:
+   ```bash
+   npm install -g @bubblewrap/cli
+   cd android-twa
+   bubblewrap init --manifest ../pwa/manifest.webmanifest
+   ```
+2. Ajouter le module Firebase Cloud Messaging (Gradle déjà configuré).
+3. Ouvrir le projet dans Android Studio, synchroniser Gradle.
+4. Mettre à jour `applicationId`, `package` et `asset_statements.json` si nécessaire.
+5. Générer l'APK/Bundle:
+   ```bash
+   ./gradlew assembleRelease
+   ```
+6. Signer et déployer sur Play Console (Internal Testing).
 
-## Clasp Version
-Le projet utilise `@google/clasp` version `2.5.0` en local comme en CI.
+Firebase Cloud Messaging côté serveur
+-------------------------------------
+- Le script Apps Script `FcmService.gs` génère un JWT RS256 et appelle l'API FCM HTTP v1.
+- Vérifier que le compte de service dispose du rôle « Firebase Admin SDK Administrator Service Agent ».
 
-- Installation locale : `npm install -g @google/clasp@2.5.0`.
+Google Calendar
+---------------
+- Les événements doivent suivre la nomenclature:
+  - Titre: `Livraison {EHPAD} – {Créneau} – {CMD}`.
+  - Location: `https://DOMAIN/app/?eventId={EVENT_ID}&cmd={CMD}`.
+  - Description: clés `EHPAD`, `adresse`, `conducteur`, `fenetre` séparées par lignes.
 
-- Vérifier la version : `clasp -v` (doit retourner `2.5.0`).
+Vérifications post-déploiement
+------------------------------
+- PWA installable et fonctionnement offline (activer mode avion).
+- Notifications H-15/H-5/H+5 reçues par les livreurs.
+- Ouverture notification → fiche correspondante.
+- Signature et photos stockées dans Drive dossiers dédiés.
+- Entrées `journal` append-only avec timestamps serveur cohérents.
+- Table `devices` mise à jour à chaque nouvelle session.
 
-- Le workflow GitHub Actions (`.github/workflows/clasp.yml`) installe la même version.
+Maintenance & RGPD
+------------------
+- Les données sont minimisées (pas de noms patients).
+- Prévoir un script d'archivage annuel pour anonymiser les entrées >12 mois.
+- Export possible via Google Sheet (filtre sur période).
 
-### Mettre à jour
-1. Modifier `.github/workflows/clasp.yml` avec la nouvelle version.
-2. Exécuter `npm install -g @google/clasp@<nouvelle_version>` sur chaque poste.
-3. Mettre à jour cette section du README.
-
-## CI/CD
- Le dépôt fournit un workflow GitHub Actions (`.github/workflows/clasp.yml`) qui exécute `clasp push -f` à l'aide des secrets `CLASP_CREDENTIALS` et `CLASP_SCRIPT_ID`.
-
-### Reprise manuelle
-1. Exécuter `./clasp-helper.cmd` puis choisir **Push**, ou se connecter via `npx @google/clasp login --creds <fichier>`.
-2. Lancer `npx @google/clasp push -f`.
-3. En cas de conflit, exécuter `npx @google/clasp pull` avant de retenter.
-
-## Menu Debug
-1. Activer `DEBUG_MENU_ENABLED` dans `Configuration.gs`.
-2. `clasp push -f` puis créer une nouvelle version pour déploiement.
-3. Pour rollback, remettre le flag à `false` et redéployer la version précédente.
-
-## Cache des réservations
-- Activer `RESERVATION_CACHE_ENABLED` dans `Configuration.gs` pour limiter l'accès à la feuille.
-- Les résultats sont mis en cache par semaine (`week_<ISO>`) et par jour (`day_<ISO>`).
-- Lors de la création d'une réservation, les entrées correspondantes sont automatiquement invalidées.
-
-## Tests Manuels
-- Déplacer une facture vers `Facturation_Aout_2025` puis vérifier qu'elle reste visible et envoyable depuis l'espace client.
-- Choisir un créneau puis vérifier que le champ horaire est pré-rempli avant la validation.
-
-## Resynchronisation du calendrier
-Lorsqu'un événement est supprimé manuellement dans Google Calendar, la ligne correspondante de "Facturation" conserve l'ID Réservation mais l'`Event ID` devient invalide.
-
-1. Activer temporairement le flag `CALENDAR_RESYNC_ENABLED` dans `Configuration.gs`.
-2. Dans le Sheet, menu **EL Services → Vérifier la cohérence du calendrier**.
-3. Pour chaque réservation introuvable, utiliser le bouton **Resync** afin de recréer l'événement et mettre à jour la colonne *Event ID*.
-4. Après intervention, désactiver le flag ou supprimer la ligne si l'événement ne doit plus exister.
-
-## Purge des Event ID inexistants
-Si un événement supprimé ne doit pas être recréé, on peut purger sa référence dans "Facturation" sans toucher à la ligne de réservation.
-
-1. Activer temporairement le flag `CALENDAR_PURGE_ENABLED` dans `Configuration.gs`.
-2. Dans le Sheet, menu **EL Services → Vérifier la cohérence du calendrier**.
-3. Sélectionner les réservations à purger via les cases à cocher puis cliquer sur **Purger sélection**.
-   La colonne *Event ID* est vidée et "À vérifier" est ajouté dans *Note Interne*.
-4. Désactiver le flag une fois l'opération terminée.
-
-## Script Properties
-Set the following keys in the Apps Script editor (File → Project properties → Script properties):
-
-- `NOM_ENTREPRISE` – nom affiché sur les factures
-- `SIRET` – identifiant légal pour la facturation
-- `ADRESSE_ENTREPRISE` – adresse postale de l'entreprise
-- `EMAIL_ENTREPRISE` – contact principal pour les clients
-- `ADMIN_EMAIL` – destinataire des notifications internes
-- `RIB_ENTREPRISE` – IBAN utilisé pour les paiements
-- `BIC_ENTREPRISE` – BIC associé au RIB
-- `ID_DOCUMENT_CGV` – document des conditions générales de vente
-- `ID_MODELE_FACTURE` – modèle Google Docs pour générer les factures
-- `ID_DOSSIER_ARCHIVES` – dossier Drive d'archivage des factures
-- `ID_FACTURES_DRIVE` – dossier Drive racine contenant l'ensemble des factures disponibles (actives + archives)
-- `ID_DOSSIER_TEMPORAIRE` – dossier Drive temporaire pour génération des PDF
-- `DOSSIER_PUBLIC_FOLDER_ID` – dossier Drive public (alias : `DOCS_PUBLIC_FOLDER_ID`)
-- `ID_FEUILLE_CALCUL` – feuille de calcul principale
-- `ID_CALENDRIER` – calendrier Google utilisé pour les créneaux
-- `ELS_SHARED_SECRET` – clé secrète pour signer les liens d'accès à l'espace client
-
-Open the Apps Script editor, go to **File → Project properties → Script properties**, and add each key with its value.
-
-## Sécurité & accès
-- Web App exécutée en tant que propriétaire et accessible à toute personne disposant du lien.
-- Les liens client peuvent être signés via `ELS_SHARED_SECRET` et expirent après `CLIENT_PORTAL_LINK_TTL_HOURS` heures.
-- Les sessions client expirent après `CLIENT_SESSION_TTL_HOURS` heures.
-
-## Scopes OAuth minimaux
-Les scopes nécessaires sont définis dans `appsscript.json` :
-
-- `https://www.googleapis.com/auth/drive`
-- `https://www.googleapis.com/auth/script.external_request`
-- `https://www.googleapis.com/auth/script.scriptapp`
-- `https://www.googleapis.com/auth/spreadsheets`
-- `https://www.googleapis.com/auth/documents`
-- `https://www.googleapis.com/auth/calendar`
-- `https://www.googleapis.com/auth/userinfo.email`
-- `https://www.googleapis.com/auth/script.send_mail`
-- `https://www.googleapis.com/auth/gmail.send`
-- `https://www.googleapis.com/auth/script.container.ui`
-
-Pour ajouter ou retirer un scope : éditer `appsscript.json`, puis exécuter `clasp push -f` et redéployer.
-
-## Flags
-| Flag | Description | Défaut |
-| ---- | ----------- | ------ |
-| CLIENT_PORTAL_ENABLED | Active l'espace client | true |
-| CLIENT_PORTAL_SIGNED_LINKS | Exige un lien signé pour l'espace client | false |
-| PRIVACY_LINK_ENABLED | Affiche le lien vers les informations de confidentialité | true |
-| LEGAL_NOTICE_LINK_ENABLED | Affiche le lien vers les mentions légales | true |
-| SLOTS_AMPM_ENABLED | Sépare les créneaux matin/après-midi | false |
-| CLIENT_SESSION_OPAQUE_ID_ENABLED | Stocke un identifiant client opaque | false |
-| SEND_MAIL_SCOPE_CHECK_ENABLED | Vérifie la présence du scope d'envoi d'email | false |
-| BILLING_MULTI_SHEET_ENABLED | Agrège les feuilles « Facturation* » | false |
-| CA_EN_COURS_ENABLED | Affiche le CA en cours dans l'admin | false |
-| CALENDAR_RESYNC_ENABLED | Resynchronise les événements manquants | true |
-| CALENDAR_PURGE_ENABLED | Purge les Event ID inexistants | true |
-| CALENDAR_BAR_OPACITY_ENABLED | Module l'opacité de la barre de disponibilité | false |
-| ADMIN_OPTIMISTIC_CREATION_ENABLED | Création optimiste des courses admin | false |
-| ADMIN_SLOTS_PNG_ENABLED | Colonne des créneaux PNG dans la modale admin | false |
-| RESERVATION_VERIFY_ENABLED | Vérifie création d'événement et unicité des ID | false |
-| RESERVATION_UI_V2_ENABLED | Nouvelle interface de réservation | true |
-| RESIDENT_BILLING_ENABLED | Facturation directe au résident | false |
-| BILLING_MODAL_ENABLED | Modale de coordonnées de facturation | false |
-| CART_RESET_ENABLED | Réinitialisation du panier côté client | false |
-| RETURN_IMPACTS_ESTIMATES_ENABLED | Inclut le retour dans les estimations | false |
-| PRICING_RULES_V2_ENABLED | Règles de tarification V2 | false |
-| PROOF_SOCIAL_ENABLED | Affiche les preuves sociales | false |
-| PRO_QA_ENABLED | Module Q/R pour professionnels | false |
-| EXTRA_ICONS_ENABLED | Pictogrammes supplémentaires | false |
-| DEBUG_MENU_ENABLED | Sous-menu Debug | false |
-| DEMO_RESERVATION_ENABLED | Mode démo de réservation | false |
-| BILLING_V2_DRYRUN | Mode facturation V2 sans effet | false |
-| BILLING_LOG_ENABLED | Journalisation de facturation | false |
-| BILLING_ID_PDF_CHECK_ENABLED | Vérifie l'ID PDF de facturation | false |
-| REQUEST_LOGGING_ENABLED | Journalisation des requêtes | false |
-| POST_ENDPOINT_ENABLED | Active l'endpoint POST | false |
-| CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED | Limite les tentatives d'accès au portail | false |
-| CONFIG_CACHE_ENABLED | Cache la configuration | false |
-| RESERVATION_CACHE_ENABLED | Cache les réservations | false |
-| THEME_V2_ENABLED | Thème v2 activé | true |
-| ELS_UI_THEMING_ENABLED | Théming UI ELS | true |
-
-Pour surcharger un flag sans modifier le code : ajouter une Script Property `FLAG_<NOM>` (`true` ou `false`). Supprimer la propriété après usage.
-
-## Déploiements
-1. `clasp push -f` pour pousser les sources locales.
-2. Dans l'éditeur Apps Script : **Deploy → Manage deployments → New deployment**.
-3. Choisir « Web app », exécuter en tant que propriétaire et partager via l'URL générée.
-4. Rollback : éditer le déploiement et sélectionner une version antérieure ou désactiver le flag impliqué.
-
-## Playbooks
-- [Incident calendrier](playbooks/incident-calendrier.md)
-- [Purge des Event ID](playbooks/purge-calendrier.md)
-- [Facture en double](playbooks/facture-en-double.md)
-- [Quota mails](playbooks/quota-mails.md)
-
-## Obligations lors de la livraison de médicaments
-
-### Conditionnement
-- ✅ Paquet scellé, opaque, nominatif
-- ✅ Boîte ou sac fermé permettant de vérifier toute ouverture
-
-### Médicaments sensibles
-- ✅ Respect de la chaîne du froid (conteneurs isothermes adaptés)
-- ⚠️ Ne jamais laisser sans surveillance
-
-### Stupéfiants et produits à usage restreint
-- ✅ Emballage séparé et sécurisé
-- ✅ Livraison uniquement contre signature d’une personne habilitée (pharmacien, infirmier référent, cadre de santé)
-- ✅ Traçabilité assurée (registre / fiche de suivi signée à chaque transfert)
-
-### Remise
-- ✅ En main propre au patient ou au professionnel désigné
-- ⚠️ Jamais déposés en libre accès
-
-### Références officielles
-- Code de la santé publique – art. R.5125-47 à R.5125-52
-- Ordre des pharmaciens – livraison et dispensation
-- OMéDIT – Transport en EHPAD
-
-## Export Factur-X
-
-La génération Factur-X se fait via le bouton « Exporter Factur-X » (fichier `apps-script/Facture.html`). Le flux :
-- charge la facture depuis Sheets (`loadInvoiceData`),
-- rend le PDF HTML et le XML EN16931,
-- appelle le micro-service FastAPI (`FACTURX_URL`) pour embarquer le XML (PDF/A-3),
-- archive les artefacts dans `Drive/Factures/YYYY/MM/` puis renvoie les 3 URLs Drive.
-
-### Pré-requis Apps Script
-- Script Properties : `FACTURX_URL`, `FACTURX_TOKEN`, `ID_FEUILLE_CALCUL`, `ID_DOSSIER_FACTURES`.
-- Droits requis : Drive, Spreadsheet, UrlFetch.
-- Feuilles attendues : `Facturation` (en-têtes standard) et optionnellement `Facturation_Lignes` pour le détail.
-
-### Micro-service Python
-- Code et installation : `python-facturx/README.md`.
-- Image Docker : `python-facturx/Dockerfile`.
-- ENV obligatoire : `FACTURX_TOKEN` (Bearer validé côté FastAPI).
-
-### Tests rapides
-- `./tests/curl-embed.sh sample.pdf sample.xml` (Unix/macOS).
-- `pwsh ./tests/curl-embed.ps1 -PdfPath sample.pdf -XmlPath sample.xml` (Windows).
-- Depuis Apps Script : exécuter `exportFacturX('<NUMERO>')` et vérifier la feuille `Logs`.
-
-### Résumé du flux
-1. L’utilisateur clique sur « Exporter Factur-X » → `google.script.run.exportFacturX`.
-2. Apps Script stocke PDF + XML, tente l’embed (non bloquant).
-3. Les URLs Drive sont affichées côté client (PDF, XML, PDF/A-3 Factur-X).
-
-## License
-Ce projet est distribué sous la licence MIT. Consultez le fichier `LICENSE` pour plus d'informations.

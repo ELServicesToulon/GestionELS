@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>Module Livreur</title>
+    <meta name="theme-color" content="#121212" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="app-header">
+        <h1>Fiche Livraison</h1>
+        <button id="install-btn" class="primary" hidden>Installer l'application</button>
+      </header>
+      <main id="main" class="app-main" hidden>
+        <section id="status-section" class="card"></section>
+        <section id="action-section" class="card"></section>
+        <section id="items-section" class="card"></section>
+        <section id="receiver-section" class="card"></section>
+        <section id="signature-section" class="card"></section>
+        <section id="photos-section" class="card"></section>
+        <section id="logs-section" class="card"></section>
+      </main>
+      <div id="loader" class="loader">Chargement…</div>
+      <div id="toast" class="toast" hidden></div>
+    </div>
+    <script type="module" src="./dist/app.js"></script>
+    <script>
+      let deferredPrompt;
+      const installBtn = document.getElementById('install-btn');
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredPrompt = event;
+        installBtn.hidden = false;
+      });
+      installBtn?.addEventListener('click', async () => {
+        if (!deferredPrompt) {
+          return;
+        }
+        installBtn.disabled = true;
+        await deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        installBtn.hidden = true;
+        deferredPrompt = null;
+      });
+    </script>
+  </body>
+</html>
