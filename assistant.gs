@@ -362,7 +362,7 @@ function getAssistantTargetRow_(inputRow, chatSheet, lastRow) {
  */
 function buildAssistantSessionId_(threadId) {
   const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
-  return 'assistant:' + safeThread + ':' + Date.now();
+  return 'assistant:' + safeThread;
 }
 
 /**
