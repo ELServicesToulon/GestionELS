@@ -31,20 +31,10 @@ function assertAllowedDomain(email) {
 }
 
 /**
- * Nettoie string.
- * @param {string} value
- * @param {number} maxLen
- * @return {string}
- */
-function sanitizeString(value, maxLen) {
-  return sanitizeScalar(value, maxLen);
-}
-
-/**
  * Arrondit géoloc à 50m.
  * @param {{lat:number,lng:number,accuracy:number}} geo
  */
-function roundGeo(geo) {
+function livreurRoundGeo(geo) {
   if (!geo) {
     return null;
   }

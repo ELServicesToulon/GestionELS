@@ -223,6 +223,13 @@ function doGet(e) {
       Logger.log('checkSetup_ELS erreur: ' + err.message);
     }
 
+    if (LIVREUR_MODULE_ENABLED && typeof livreurHandleGet === 'function') {
+      const livreurResponse = livreurHandleGet(e);
+      if (livreurResponse) {
+        return livreurResponse;
+      }
+    }
+
     const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : '';
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED && typeof logRequest === 'function') {
       logRequest(e);
@@ -484,6 +491,13 @@ function doPost(e) {
 
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED && typeof logRequest === 'function') {
       logRequest(event);
+    }
+
+    if (LIVREUR_MODULE_ENABLED && typeof livreurHandlePost === 'function') {
+      const livreurResponse = livreurHandlePost(event);
+      if (livreurResponse) {
+        return livreurResponse;
+      }
     }
 
     if (typeof POST_ENDPOINT_ENABLED === 'undefined' || !POST_ENDPOINT_ENABLED) {

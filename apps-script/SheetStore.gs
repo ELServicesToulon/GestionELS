@@ -1,98 +1,113 @@
-const JOURNAL_HEADERS = ['ts_srv','eventId','cmd','status','lat','lng','accuracy','items_json','temp','receiver_name','receiver_role','sign_fileId','photo_fileIds','deviceId','battery','appVersion','clientUUID','seq','userEmail'];
-const DEVICES_HEADERS = ['driverEmail','fcmToken','platform','updated_ts'];
+const LIVREUR_JOURNAL_HEADERS = ['ts_srv','eventId','cmd','status','lat','lng','accuracy','items_json','temp','receiver_name','receiver_role','sign_fileId','photo_fileIds','deviceId','battery','appVersion','clientUUID','seq','userEmail'];
+const LIVREUR_DEVICES_HEADERS = ['driverEmail','fcmToken','platform','updated_ts'];
 
 /**
- * Récupère feuille journal.
+ * Retourne la feuille journal append-only du module livreur.
  * @return {GoogleAppsScript.Spreadsheet.Sheet}
  */
-function getJournalSheet() {
-  const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID') || 'SHEET_ID';
-  const ss = SpreadsheetApp.openById(sheetId);
-  let sheet = ss.getSheetByName('journal');
-  if (!sheet) {
-    sheet = ss.insertSheet('journal');
-    sheet.appendRow(JOURNAL_HEADERS);
-  }
-  return sheet;
+function livreurGetJournalSheet() {
+  const ss = getMainSpreadsheet();
+  return ensureSheetWithHeaders(ss, LIVREUR_JOURNAL_SHEET, LIVREUR_JOURNAL_HEADERS);
 }
 
 /**
- * Récupère feuille devices.
+ * Retourne la feuille de mapping des tokens FCM.
+ * @return {GoogleAppsScript.Spreadsheet.Sheet}
  */
-function getDevicesSheet() {
-  const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID') || 'SHEET_ID';
-  const ss = SpreadsheetApp.openById(sheetId);
-  let sheet = ss.getSheetByName('devices');
-  if (!sheet) {
-    sheet = ss.insertSheet('devices');
-    sheet.appendRow(DEVICES_HEADERS);
-  }
-  return sheet;
+function livreurGetDevicesSheet() {
+  const ss = getMainSpreadsheet();
+  return ensureSheetWithHeaders(ss, LIVREUR_DEVICES_SHEET, LIVREUR_DEVICES_HEADERS);
 }
 
 /**
- * Vérifie idempotence via clés composites.
+ * Vérifie l'existence d'une ligne identique selon la clé composite.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ * @param {string} eventId
+ * @param {string} cmd
+ * @param {string} clientUUID
+ * @param {number} seq
+ * @return {boolean}
  */
-function hasExistingEntry(sheet, eventId, cmd, clientUUID, seq) {
-  const rows = sheet.getLastRow() - 1;
-  if (rows <= 0) {
+function livreurHasExistingEntry_(sheet, eventId, cmd, clientUUID, seq) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) {
     return false;
   }
-  const range = sheet.getRange(2, 1, rows, JOURNAL_HEADERS.length);
+  const range = sheet.getRange(2, 1, lastRow - 1, LIVREUR_JOURNAL_HEADERS.length);
   const values = range.getValues();
-  return values.some((row) => row[1] === eventId && row[2] === cmd && row[16] === clientUUID && Number(row[17]) === Number(seq));
-}
-
-/**
- * Ajoute ligne journal.
- */
-function appendJournalEntry(payload, userEmail, signatureFileId, photoFileIds) {
-  const sheet = getJournalSheet();
-  if (hasExistingEntry(sheet, payload.eventId, payload.cmd, payload.clientUUID, payload.seq)) {
-    return { ok: true, ts: new Date().toISOString(), duplicate: true };
+  for (var i = 0; i < values.length; i += 1) {
+    const row = values[i];
+    if (row[1] === eventId && row[2] === cmd && row[16] === clientUUID && Number(row[17]) === Number(seq)) {
+      return true;
+    }
   }
-  const geo = roundGeo(payload.geo);
-  const row = [
-    new Date(),
-    sanitizeString(payload.eventId, 120),
-    sanitizeString(payload.cmd, 120),
-    sanitizeString(payload.status, 20),
-    geo ? geo.lat : '',
-    geo ? geo.lng : '',
-    geo ? geo.accuracy : '',
-    JSON.stringify(payload.items || []),
-    payload.temp || '',
-    sanitizeString(payload.receiver?.name, 120),
-    sanitizeString(payload.receiver?.role, 120),
-    signatureFileId || '',
-    photoFileIds.join(','),
-    sanitizeString(payload.device?.id, 120),
-    payload.device?.battery ?? '',
-    sanitizeString(payload.device?.appVersion, 20),
-    sanitizeString(payload.clientUUID, 120),
-    payload.seq,
-    sanitizeString(userEmail, 200)
-  ];
-  sheet.appendRow(row);
-  return { ok: true, ts: new Date().toISOString() };
+  return false;
 }
 
 /**
- * Enregistre device.
+ * Ajoute une entrée de journal pour une fiche livraison.
+ * @param {Object} entryPayload
+ * @return {{ok:boolean,reason?:string,ts?:string,duplicate?:boolean}}
  */
-function upsertDevice(driverEmail, token, platform) {
-  const sheet = getDevicesSheet();
-  const rows = sheet.getLastRow() - 1;
-  if (rows > 0) {
-    const range = sheet.getRange(2, 1, rows, DEVICES_HEADERS.length);
+function livreurAppendJournalEntry(entryPayload) {
+  const sheet = livreurGetJournalSheet();
+  if (livreurHasExistingEntry_(sheet, entryPayload.eventId, entryPayload.cmd, entryPayload.clientUUID, entryPayload.seq)) {
+    return { ok: true, duplicate: true, ts: new Date().toISOString() };
+  }
+  const serverTs = new Date();
+  const geo = entryPayload.geo || null;
+  const photoIds = Array.isArray(entryPayload.photoFileIds) ? entryPayload.photoFileIds : [];
+  const sanitizedItemsJson = sanitizeMultiline(JSON.stringify(entryPayload.items || []), 4000);
+  const row = [
+    serverTs,
+    sanitizeScalar(entryPayload.eventId, 120),
+    sanitizeScalar(entryPayload.cmd, 120),
+    sanitizeScalar(entryPayload.status, 32),
+    geo && typeof geo.lat === 'number' ? Number(geo.lat) : '',
+    geo && typeof geo.lng === 'number' ? Number(geo.lng) : '',
+    geo && typeof geo.accuracy === 'number' ? Number(geo.accuracy) : '',
+    sanitizedItemsJson,
+    entryPayload.temp === '' ? '' : Number(entryPayload.temp),
+    sanitizeScalar(entryPayload.receiver && entryPayload.receiver.name, 120),
+    sanitizeScalar(entryPayload.receiver && entryPayload.receiver.role, 80),
+    sanitizeScalar(entryPayload.signatureFileId, 200),
+    photoIds.map(function (id) { return sanitizeScalar(id, 200); }).filter(String).join(','),
+    sanitizeScalar(entryPayload.device && entryPayload.device.id, 120),
+    entryPayload.device && entryPayload.device.battery !== '' ? Number(entryPayload.device.battery) : '',
+    sanitizeScalar(entryPayload.device && entryPayload.device.appVersion, 32),
+    sanitizeScalar(entryPayload.clientUUID, 120),
+    Number(entryPayload.seq || 0),
+    sanitizeEmail(entryPayload.userEmail)
+  ];
+  sheet.getRange(sheet.getLastRow() + 1, 1, 1, LIVREUR_JOURNAL_HEADERS.length).setValues([row]);
+  return { ok: true, ts: serverTs.toISOString() };
+}
+
+/**
+ * Insère ou met à jour un enregistrement device/token.
+ * @param {{driverEmail:string,token:string,platform:string}} record
+ * @return {{ok:boolean,reason?:string}}
+ */
+function livreurUpsertDevice(record) {
+  const sheet = livreurGetDevicesSheet();
+  const email = sanitizeEmail(record.driverEmail);
+  const token = sanitizeScalar(record.token, 1024);
+  const platform = sanitizeScalar(record.platform || 'android', 32) || 'android';
+  if (!email || !token) {
+    return { ok: false, reason: 'MISSING_FIELDS' };
+  }
+  const lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    const range = sheet.getRange(2, 1, lastRow - 1, LIVREUR_DEVICES_HEADERS.length);
     const values = range.getValues();
-    for (let index = 0; index < values.length; index += 1) {
-      if (values[index][0] === driverEmail) {
-        sheet.getRange(index + 2, 1, 1, DEVICES_HEADERS.length).setValues([[driverEmail, token, platform, new Date()]]);
+    for (var i = 0; i < values.length; i += 1) {
+      if (values[i][0] === email) {
+        range.getCell(i + 1, 1).offset(0, 0, 1, LIVREUR_DEVICES_HEADERS.length)
+          .setValues([[email, token, platform, new Date()]]);
         return { ok: true };
       }
     }
   }
-  sheet.appendRow([driverEmail, token, platform, new Date()]);
+  sheet.getRange(lastRow + 1, 1, 1, LIVREUR_DEVICES_HEADERS.length).setValues([[email, token, platform, new Date()]]);
   return { ok: true };
 }

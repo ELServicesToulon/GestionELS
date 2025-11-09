@@ -1,123 +1,162 @@
 /**
- * Tâche planifiée 5 min.
+ * Tâche planifiée exécutée toutes les 5 minutes.
+ * @return {{ok:boolean,reason?:string}}
  */
-function checkAndNotify() {
-  const now = new Date();
-  processWindow(now, 15, 'H-15');
-  processWindow(now, 5, 'H-5');
-  processLateWindow(now, 5, 'H+5');
+function livreurCheckAndNotify() {
+  if (!LIVREUR_MODULE_ENABLED) {
+    return { ok: false, reason: 'DISABLED' };
+  }
+  const calendarId = livreurResolveCalendarId_();
+  if (!calendarId) {
+    return { ok: false, reason: 'UNCONFIGURED' };
+  }
+  const reference = new Date();
+  livreurProcessWindow_(calendarId, reference, 15, 'H-15');
+  livreurProcessWindow_(calendarId, reference, 5, 'H-5');
+  livreurProcessLateWindow_(calendarId, reference, 5, 'H+5');
+  return { ok: true };
 }
 
-function processWindow(reference, offsetMinutes, label) {
-  const calendarId = PropertiesService.getScriptProperties().getProperty('CALENDAR_ID') || 'CALENDAR_ID';
+function livreurProcessWindow_(calendarId, reference, offsetMinutes, label) {
   const calendar = CalendarApp.getCalendarById(calendarId);
-  const start = new Date(reference.getTime() + (offsetMinutes - 2) * 60 * 1000);
-  const end = new Date(reference.getTime() + (offsetMinutes + 2) * 60 * 1000);
+  if (!calendar) {
+    return;
+  }
+  const start = new Date(reference.getTime() + (offsetMinutes - 2) * 60000);
+  const end = new Date(reference.getTime() + (offsetMinutes + 2) * 60000);
   const events = calendar.getEvents(start, end);
-  events.forEach((event) => {
-    const eventId = event.getId().split('@')[0];
-    const meta = parseEventDescription(event.getDescription());
-    const cmd = extractCmd(event.getTitle());
-    const driverEmail = meta.conducteur || '';
-    if (!driverEmail) {
-      return;
-    }
-    const tokens = fetchDriverTokens(driverEmail);
-    tokens.forEach((token) => {
-      sendFcmMessage(token, {
-        notification: {
-          title: `Livraison ${label}`,
-          body: `${meta.ehpad || ''} ${meta.fenetre || ''}`.trim()
-        },
-        data: {
-          eventId: eventId,
-          cmd: cmd,
-          driverEmail: driverEmail,
-          url: `${PropertiesService.getScriptProperties().getProperty('PWA_DOMAIN') || 'https://DOMAIN'}/app/?eventId=${eventId}&cmd=${cmd}`
-        }
-      });
-    });
-  });
+  for (var i = 0; i < events.length; i += 1) {
+    const event = events[i];
+    livreurNotifyEvent_(event, label, false);
+  }
 }
 
-function processLateWindow(reference, minutes, label) {
-  const calendarId = PropertiesService.getScriptProperties().getProperty('CALENDAR_ID') || 'CALENDAR_ID';
+function livreurProcessLateWindow_(calendarId, reference, minutes, label) {
   const calendar = CalendarApp.getCalendarById(calendarId);
-  const start = new Date(reference.getTime() - (minutes + 2) * 60 * 1000);
-  const end = new Date(reference.getTime() - (minutes - 2) * 60 * 1000);
+  if (!calendar) {
+    return;
+  }
+  const start = new Date(reference.getTime() - (minutes + 2) * 60000);
+  const end = new Date(reference.getTime() - (minutes - 2) * 60000);
   const events = calendar.getEvents(start, end);
-  events.forEach((event) => {
-    const eventId = event.getId().split('@')[0];
-    const meta = parseEventDescription(event.getDescription());
-    const cmd = extractCmd(event.getTitle());
-    const driverEmail = meta.conducteur || '';
-    if (!driverEmail) {
-      return;
-    }
-    if (hasJournalEntry(eventId, cmd)) {
-      return;
-    }
-    const tokens = fetchDriverTokens(driverEmail);
-    tokens.forEach((token) => {
-      sendFcmMessage(token, {
-        notification: {
-          title: `Livraison ${label}`,
-          body: `Fiche non ouverte ${meta.ehpad || ''}`.trim()
-        },
-        data: {
-          eventId: eventId,
-          cmd: cmd,
-          driverEmail: driverEmail,
-          url: `${PropertiesService.getScriptProperties().getProperty('PWA_DOMAIN') || 'https://DOMAIN'}/app/?eventId=${eventId}&cmd=${cmd}&alert=late`
-        }
-      });
-    });
-  });
+  for (var i = 0; i < events.length; i += 1) {
+    const event = events[i];
+    livreurNotifyEvent_(event, label, true);
+  }
 }
 
-function parseEventDescription(description) {
+function livreurNotifyEvent_(event, label, lateOnly) {
+  if (!event) {
+    return;
+  }
+  const eventId = event.getId().split('@')[0];
+  const meta = livreurParseEventDescription(event.getDescription());
+  const cmd = livreurExtractCmd(event.getTitle());
+  const driverEmail = sanitizeEmail(meta.conducteur || '');
+  if (!driverEmail) {
+    return;
+  }
+  if (lateOnly && livreurHasJournalEntry(eventId, cmd)) {
+    return;
+  }
+  const tokens = livreurFetchDriverTokens(driverEmail);
+  if (!tokens.length) {
+    return;
+  }
+  const origin = livreurGetPwaOrigin_();
+  for (var i = 0; i < tokens.length; i += 1) {
+    const data = {
+      eventId: eventId,
+      cmd: cmd,
+      driverEmail: driverEmail,
+      url: origin.replace(/\/$/, '') + '/app/?eventId=' + encodeURIComponent(eventId) + '&cmd=' + encodeURIComponent(cmd)
+    };
+    if (lateOnly) {
+      data.url += '&alert=late';
+    }
+    const payload = {
+      notification: {
+        title: 'Livraison ' + label,
+        body: sanitizeScalar(meta.ehpad || '', 120) + ' ' + sanitizeScalar(meta.fenetre || '', 120)
+      },
+      data: data
+    };
+    livreurSendFcmMessage(tokens[i], payload);
+  }
+}
+
+function livreurParseEventDescription(description) {
   const meta = {};
   if (!description) {
     return meta;
   }
-  const lines = description.split(/\n|;/);
-  lines.forEach((line) => {
-    const parts = line.split(':');
-    if (parts.length >= 2) {
-      const key = parts[0].trim().toLowerCase();
-      const value = parts.slice(1).join(':').trim();
-      if (key === 'ehpad') {
-        meta.ehpad = value;
-      } else if (key === 'adresse') {
-        meta.adresse = value;
-      } else if (key === 'conducteur') {
-        meta.conducteur = value;
-      } else if (key === 'fenetre') {
-        meta.fenetre = value;
-      }
+  const lines = String(description).split(/\n|;/);
+  for (var i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!line) {
+      continue;
     }
-  });
+    const parts = line.split(':');
+    if (parts.length < 2) {
+      continue;
+    }
+    const key = parts[0].trim().toLowerCase();
+    const value = parts.slice(1).join(':').trim();
+    if (!value) {
+      continue;
+    }
+    if (key === 'ehpad') {
+      meta.ehpad = sanitizeScalar(value, 120);
+    } else if (key === 'adresse') {
+      meta.adresse = sanitizeMultiline(value, 200);
+    } else if (key === 'conducteur') {
+      meta.conducteur = sanitizeEmail(value);
+    } else if (key === 'fenetre' || key === 'fenêtre') {
+      meta.fenetre = sanitizeScalar(value, 120);
+    }
+  }
   return meta;
 }
 
-function extractCmd(title) {
+function livreurExtractCmd(title) {
   if (!title) {
     return '';
   }
-  const match = title.match(/CMD\s*(\w+)/i);
+  const match = String(title).match(/CMD\s*([\w-]+)/i);
   return match ? match[1] : '';
 }
 
-function fetchDriverTokens(driverEmail) {
-  const sheet = getDevicesSheet();
-  const range = sheet.getRange(2, 1, Math.max(sheet.getLastRow() - 1, 0), 4);
+function livreurFetchDriverTokens(driverEmail) {
+  const sheet = livreurGetDevicesSheet();
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) {
+    return [];
+  }
+  const range = sheet.getRange(2, 1, lastRow - 1, LIVREUR_DEVICES_HEADERS.length);
   const values = range.getValues();
-  return values.filter((row) => row[0] === driverEmail).map((row) => row[1]).filter(Boolean);
+  const tokens = [];
+  for (var i = 0; i < values.length; i += 1) {
+    const row = values[i];
+    if (row[0] === driverEmail && row[1]) {
+      tokens.push(String(row[1]));
+    }
+  }
+  return tokens;
 }
 
-function hasJournalEntry(eventId, cmd) {
-  const sheet = getJournalSheet();
-  const range = sheet.getRange(2, 1, Math.max(sheet.getLastRow() - 1, 0), JOURNAL_HEADERS.length);
+function livreurHasJournalEntry(eventId, cmd) {
+  const sheet = livreurGetJournalSheet();
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) {
+    return false;
+  }
+  const range = sheet.getRange(2, 1, lastRow - 1, LIVREUR_JOURNAL_HEADERS.length);
   const values = range.getValues();
-  return values.some((row) => row[1] === eventId && row[2] === cmd);
+  for (var i = 0; i < values.length; i += 1) {
+    const row = values[i];
+    if (row[1] === eventId && row[2] === cmd) {
+      return true;
+    }
+  }
+  return false;
 }

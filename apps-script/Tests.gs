@@ -1,8 +1,11 @@
-function test_sheetStoreIdempotence() {
-  const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
-  if (!sheetId) {
-    Logger.log('SHEET_ID non configuré, test ignoré');
-    return { ok: false, reason: 'UNCONFIGURED' };
+function test_livreurSheetStoreIdempotence() {
+  try {
+    const sheet = livreurGetJournalSheet();
+    if (!sheet) {
+      return { ok: false, reason: 'UNCONFIGURED' };
+    }
+  } catch (err) {
+    return { ok: false, reason: 'ERROR', details: String(err) };
   }
   const payload = {
     eventId: 'TEST_EVENT',
@@ -10,43 +13,65 @@ function test_sheetStoreIdempotence() {
     status: 'OPEN',
     items: [],
     receiver: { name: 'Test', role: 'Agent' },
-    photos: [],
-    device: { id: 'TEST', appVersion: '1.0.0' },
+    temp: '',
+    signatureFileId: '',
+    photoFileIds: [],
+    geo: null,
+    device: { id: 'TEST', battery: '', appVersion: '1.0.0' },
     clientUUID: 'UUID',
-    seq: 1
+    seq: 1,
+    userEmail: 'test@example.com'
   };
-  appendJournalEntry(payload, 'test@example.com', '', []);
-  const result = appendJournalEntry(payload, 'test@example.com', '', []);
-  return result.duplicate === true;
+  livreurAppendJournalEntry(payload);
+  const result = livreurAppendJournalEntry(payload);
+  return result.duplicate === true ? { ok: true } : { ok: false, reason: 'FAILED' };
 }
 
-function test_fcmJwtGeneration() {
-  const sa = PropertiesService.getScriptProperties().getProperty('FCM_SA_JSON');
-  if (!sa) {
-    Logger.log('FCM_SA_JSON manquant');
+function test_livreurFcmJwtGeneration() {
+  try {
+    const sa = getSecret('FCM_SA_JSON');
+    if (!sa) {
+      return { ok: false, reason: 'UNCONFIGURED' };
+    }
+    const token = livreurBuildFcmJwt(JSON.parse(sa));
+    return token ? { ok: true } : { ok: false, reason: 'FAILED' };
+  } catch (_err) {
     return { ok: false, reason: 'UNCONFIGURED' };
   }
-  const serviceAccount = JSON.parse(sa);
-  const token = buildFcmJwt(serviceAccount);
-  return Boolean(token);
 }
 
-function test_endToEndSimulation() {
-  const sheetId = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
-  if (!sheetId) {
+function test_livreurEndToEndSimulation() {
+  try {
+    const sheet = livreurGetJournalSheet();
+    if (!sheet) {
+      return { ok: false, reason: 'UNCONFIGURED' };
+    }
+  } catch (_err) {
     return { ok: false, reason: 'UNCONFIGURED' };
   }
   const payload = {
     eventId: 'SIM_EVENT',
     cmd: 'CMD999',
+    clientUUID: 'SIMUUID',
+    seq: Math.floor(Math.random() * 1000) + 1,
     status: 'OPEN',
     items: [{ barcode: '123', qty: 1 }],
     receiver: { name: 'Simu', role: 'Test' },
     photos: [],
-    device: { id: 'SIM', appVersion: '1.0.0' },
-    clientUUID: 'SIMUUID',
-    seq: Math.floor(Math.random() * 1000)
+    temp: '',
+    signatureDataUrl: '',
+    photoFileIds: [],
+    geo: null,
+    device: { id: 'SIM', battery: '', appVersion: '1.0.0' },
+    timestamps: {},
+    userEmail: 'sim@example.com'
   };
-  const result = handleSaveDelivery(payload);
-  return result.ok === true;
+  const result = livreurHandleSaveDelivery(payload);
+  if (result && result.ok) {
+    return { ok: true };
+  }
+  if (result && result.reason === 'UNAUTHORIZED') {
+    return { ok: false, reason: 'UNAUTHORIZED' };
+  }
+  return { ok: false, reason: 'FAILED' };
 }

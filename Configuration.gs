@@ -158,6 +158,13 @@ const CLIENT_ID_CARTOON_NAMES = Object.freeze([
 // --- Drapeaux de Fonctionnalités Générales ---
 /** @const {boolean} Active l'espace client. */
 const CLIENT_PORTAL_ENABLED = true;
+
+/** @const {boolean} Active les APIs du module livreur (PWA, notifications). */
+const LIVREUR_MODULE_ENABLED = true;
+/** @const {string} Feuille journal append-only du module livreur. */
+const LIVREUR_JOURNAL_SHEET = 'LivreurJournal';
+/** @const {string} Feuille de mapping tokens FCM du module livreur. */
+const LIVREUR_DEVICES_SHEET = 'LivreurDevices';
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
 const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {number} Durée de validité d'un lien client signé (heures). */

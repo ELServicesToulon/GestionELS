@@ -9,6 +9,10 @@ function saveBase64ToDrive(folderId, dataUrl, prefix) {
   if (!dataUrl) {
     return '';
   }
+  const safeFolderId = sanitizeScalar(folderId, 256);
+  if (!safeFolderId) {
+    throw new Error('UNCONFIGURED');
+  }
   const matches = dataUrl.match(/^data:(.+);base64,(.*)$/);
   if (!matches) {
     throw new Error('INVALID_DATAURL');
@@ -16,7 +20,7 @@ function saveBase64ToDrive(folderId, dataUrl, prefix) {
   const mimeType = matches[1];
   const bytes = Utilities.base64Decode(matches[2]);
   const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/jpeg' ? 'jpg' : 'bin';
-  const folder = DriveApp.getFolderById(folderId);
+  const folder = DriveApp.getFolderById(safeFolderId);
   const file = folder.createFile(bytes, `${prefix}-${Date.now()}.${extension}`, mimeType);
   file.setSharing(DriveApp.Access.DOMAIN, DriveApp.Permission.VIEW);
   return file.getId();
