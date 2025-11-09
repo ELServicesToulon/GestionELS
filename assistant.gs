@@ -28,7 +28,7 @@ function buildAssistantApiPayload_(contextMessages, sanitizedPrompt, opts) {
         return;
       }
       const safeRole = String(msg.role).toLowerCase() === 'assistant' ? 'assistant' : 'user';
-      const safeContent = sanitizeMultiline ? sanitizeMultiline(msg.content, 1200) : String(msg.content || '').trim();
+      const safeContent = sanitizeMultiline(msg.content, 1200);
       if (!safeContent) {
         return;
       }
@@ -38,7 +38,7 @@ function buildAssistantApiPayload_(contextMessages, sanitizedPrompt, opts) {
   messages.push({ role: 'user', content: sanitizedPrompt });
 
   const config = opts || {};
-  const selectedModel = sanitizeScalar ? sanitizeScalar(config.model, 64) : String(config.model || '').trim();
+  const selectedModel = sanitizeScalar(config.model, 64);
   const model = selectedModel || CHAT_ASSISTANT_MODEL;
   const selectedTemperature = typeof config.temperature === 'number' ? config.temperature : CHAT_ASSISTANT_TEMPERATURE;
 
@@ -61,7 +61,7 @@ function callChatGPT(contextMessages, userPrompt, opts) {
     return { ok: false, reason: 'UNCONFIGURED', message: 'Assistant d\u00E9sactiv\u00E9.' };
   }
 
-  const sanitizedPrompt = sanitizeMultiline ? sanitizeMultiline(userPrompt, 1200) : String(userPrompt || '').trim();
+  const sanitizedPrompt = sanitizeMultiline(userPrompt, 1200);
   if (!sanitizedPrompt) {
     return { ok: false, reason: 'EMPTY_MESSAGE', message: 'Question requise pour appeler l\'assistant.' };
   }
@@ -115,7 +115,7 @@ function callChatGPT(contextMessages, userPrompt, opts) {
       return { ok: false, reason: 'API_ERROR', message: 'Assistant indisponible (r\u00E9ponse vide).' };
     }
 
-    const sanitizedAnswer = sanitizeMultiline ? sanitizeMultiline(messageContent, 1500) : String(messageContent || '').trim();
+    const sanitizedAnswer = sanitizeMultiline(messageContent, 1500);
     if (!sanitizedAnswer) {
       return { ok: false, reason: 'API_ERROR', message: 'Assistant indisponible (contenu vide).' };
     }
@@ -142,7 +142,7 @@ function callChatGPT(contextMessages, userPrompt, opts) {
 /**
  * Recupere les derniers messages et poste la reponse de l'assistant.
  * @param {number} row Ligne cible (optionnelle).
- * @returns {string} Reponse envoyee.
+ * @returns {{ok:boolean, reason?:string, answer?:string, usage?:Object}} Resultat d'appel assistant.
  */
 function askAssistant(row) {
   if (typeof CFG_ENABLE_ASSISTANT !== 'undefined' && !CFG_ENABLE_ASSISTANT) {
@@ -170,7 +170,7 @@ function askAssistant(row) {
     }
 
     const rawThreadId = rowValues[1] || CHAT_THREAD_GLOBAL;
-    const sanitizedThreadId = sanitizeScalar ? sanitizeScalar(rawThreadId, 64) : String(rawThreadId || '');
+    const sanitizedThreadId = sanitizeScalar(rawThreadId, 64);
     const threadId = sanitizedThreadId || CHAT_THREAD_GLOBAL;
     const contextMessages = buildAssistantContext_(chatSheet, targetRow, threadId, CHAT_ASSISTANT_HISTORY_LIMIT);
     const assistantAnswer = callChatGPT(contextMessages, question);
@@ -184,7 +184,7 @@ function askAssistant(row) {
       message: assistantAnswer.message,
       visibleTo: CHAT_ASSISTANT_DEFAULT_VISIBILITY,
       threadId: threadId,
-      sessionId: 'sys'
+      sessionId: buildAssistantSessionId_(threadId)
     };
 
     const postResult = chatPostMessage(payload);
@@ -272,7 +272,7 @@ function buildAssistantContext_(chatSheet, targetRow, threadId, limit) {
   for (let i = 0; i < values.length; i++) {
     const row = values[i];
     const currentThreadRaw = row[1] || CHAT_THREAD_GLOBAL;
-    const currentThread = sanitizeScalar ? sanitizeScalar(currentThreadRaw, 64) : String(currentThreadRaw || '');
+    const currentThread = sanitizeScalar(currentThreadRaw, 64);
     if (threadId && currentThread !== threadId) {
       continue;
     }
@@ -293,13 +293,13 @@ function buildAssistantContext_(chatSheet, targetRow, threadId, limit) {
     try {
       pseudo = computeChatPseudo(row[3], {});
     } catch (_err) {
-      pseudo = sanitizeScalar ? sanitizeScalar(row[4], 64) : String(row[4] || '');
+      pseudo = sanitizeScalar(row[4], 64);
     }
     const role = authorType === 'assistant' ? 'assistant' : 'user';
     const label = pseudo ? '[' + pseudo + '] ' : '';
     context.push({
       role: role,
-      content: sanitizeMultiline ? sanitizeMultiline(label + sanitized, 1200) : (label + sanitized)
+      content: sanitizeMultiline(label + sanitized, 1200)
     });
   }
 
@@ -353,6 +353,16 @@ function getAssistantTargetRow_(inputRow, chatSheet, lastRow) {
     rowIndex = lastRow;
   }
   return rowIndex;
+}
+
+/**
+ * Genere un identifiant interne pour le rate limit du bot assistant.
+ * @param {string} threadId
+ * @returns {string}
+ */
+function buildAssistantSessionId_(threadId) {
+  const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+  return 'assistant:' + safeThread + ':' + Date.now();
 }
 
 /**
