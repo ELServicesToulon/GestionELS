@@ -198,6 +198,9 @@ const ADMIN_SLOTS_PNG_ENABLED = false;
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = true;
 
+/** @const {boolean} Active l'assistant conversationnel côté reservation. */
+const CFG_ENABLE_ASSISTANT = false;
+
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
 const RESERVATION_UI_V2_ENABLED = true;
 
@@ -491,6 +494,7 @@ const CONFIG = Object.freeze({
   RESERVATION_CONFIRMATION_EMAILS_ENABLED,
   BILLING_ATOMIC_NUMBERING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
+  CFG_ENABLE_ASSISTANT,
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN,
   BILLING_ID_PDF_CHECK_ENABLED,
@@ -519,7 +523,8 @@ function getPublicConfig() {
     HEURE_DEBUT_SERVICE: CONFIG.HEURE_DEBUT_SERVICE,
     HEURE_FIN_SERVICE: CONFIG.HEURE_FIN_SERVICE,
     TVA_APPLICABLE: CONFIG.TVA_APPLICABLE,
-    BRANDING: CONFIG.BRANDING
+    BRANDING: CONFIG.BRANDING,
+    CFG_ENABLE_ASSISTANT: CONFIG.CFG_ENABLE_ASSISTANT
   };
 }
 

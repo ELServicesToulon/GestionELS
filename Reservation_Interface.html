@@ -136,7 +136,8 @@
       FORFAIT_RESIDENT_STANDARD: <?= FORFAIT_RESIDENT.STANDARD_PRICE ?>,
       FORFAIT_RESIDENT_URGENCE: <?= FORFAIT_RESIDENT.URGENCE_PRICE ?>,
       FORFAIT_RESIDENT_DURATION: <?= FORFAIT_RESIDENT.DURATION_HOURS ?>
-      ,RESIDENT_AFFILIATION_REQUIRED: <?= RESIDENT_AFFILIATION_REQUIRED ? 'true' : 'false' ?>
+      ,RESIDENT_AFFILIATION_REQUIRED: <?= RESIDENT_AFFILIATION_REQUIRED ? 'true' : 'false' ?>,
+      CFG_ENABLE_ASSISTANT: <?= CFG_ENABLE_ASSISTANT ? 'true' : 'false' ?>
     };
   </script>
 
@@ -164,27 +165,22 @@
           </div>
         </div>
       </div>
-      <section id="els-chat" class="els-card" role="region" aria-labelledby="els-chat-title">
+      <? if (CFG_ENABLE_ASSISTANT) { ?>
+      <section id="els-assistant" class="els-card" role="region" aria-labelledby="els-assistant-title">
         <header class="els-card__head">
-          <h3 id="els-chat-title">Échanges Pharmacies (anonyme) &amp; Messages Admin</h3>
-          <div class="els-chat__filters">
-            <label>
-              <input type="checkbox" id="onlyPharmacy"> Pharmacies uniquement
-            </label>
-            <button id="refreshChat" class="els-btn" type="button">Actualiser</button>
-          </div>
+          <h3 id="els-assistant-title">Assistant ELS</h3>
         </header>
-        <div id="chatStream" class="els-chat__stream" aria-live="polite"></div>
-        <form id="chatForm" class="els-chat__composer" autocomplete="off" novalidate>
-          <select id="authorType" required>
-            <option value="pharmacy">Je suis une pharmacie cliente</option>
-            <option value="admin">Message privé à l’admin</option>
-          </select>
-          <textarea id="chatMessage" maxlength="1000" placeholder="Écrire un message (anonyme côté pharmacie)…" required></textarea>
-          <input id="pharmacyCode" type="password" minlength="4" maxlength="8" placeholder="Code client pharmacie (4–8 chars)" aria-label="Code pharmacie">
-          <button type="submit" class="els-btn">Envoyer</button>
+        <p id="assistantStatus" class="els-assistant__status" aria-live="polite"></p>
+        <div id="assistantStream" class="els-assistant__stream" aria-live="polite"></div>
+        <form id="assistantForm" class="els-assistant__composer" autocomplete="off" novalidate>
+          <label for="assistantPrompt" class="visually-hidden">Question pour l’assistant</label>
+          <textarea id="assistantPrompt" class="els-assistant__textarea" maxlength="1000" rows="3" placeholder="Poser une question sur les tournées, les tarifs ou les procédures…" required></textarea>
+          <div class="els-assistant__actions">
+            <button id="assistantSubmit" type="submit" class="els-btn">Envoyer</button>
+          </div>
         </form>
       </section>
+      <? } ?>
 
       <section id="els-demandes" class="els-card" role="region" aria-labelledby="els-demandes-title">
         <header class="els-card__head">
@@ -549,7 +545,7 @@
   <?!= include('Reservation_JS_Panier'); ?>
   <?!= include('Reservation_JS_Client'); ?>
   <?!= include('Reservation_JS_Tournee'); ?>
-  <?!= include('Reservation_JS_Chat'); ?>
+  <?!= include('Reservation_JS_Assistant'); ?>
   <? } ?>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
