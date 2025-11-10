@@ -270,7 +270,7 @@ const RESERVATION_SHOW_TAKEN_SLOTS_ENABLED = true;
 const THEME_V2_ENABLED = true;
 const ELS_UI_THEMING_ENABLED = true;
 /** @const {boolean} Affiche un bouton client pour basculer vers un thème épuré. */
-const THEME_SWITCHER_ENABLED = true;
+const THEME_SWITCHER_ENABLED = false;
 
 /** @const {boolean} Utilise les icônes hébergées sur Drive au lieu des Data URI. */
 const DRIVE_ASSETS_ENABLED = false;
