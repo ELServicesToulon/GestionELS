@@ -44,6 +44,7 @@ function lancerTousLesTests() {
   testerAdministration();
   testerMaintenance();
   testerAuditDrive();
+  testerAuditModules();
 
   Logger.log("===== FIN DE LA SUITE DE TESTS COMPLÈTE =====");
   // SpreadsheetApp.getUi().alert("Tests terminés. Consultez les journaux (Logs) pour les résultats détaillés.");
@@ -483,6 +484,23 @@ function testerAuditDrive() {
     Logger.log("SUCCESS: lancerAuditDrive() s'est exécutée sans erreur.");
   } catch (e) {
     Logger.log(`FAILURE: lancerAuditDrive() a échoué. Erreur: ${e.message}`);
+  }
+}
+
+/**
+ * Vérifie le résultat global de auditGsModules().
+ */
+function testerAuditModules() {
+  Logger.log("\n--- Test de auditGsModules() ---");
+  try {
+    const audit = auditGsModules();
+    if (audit && audit.ok) {
+      Logger.log('SUCCESS: auditGsModules() a validé toutes les vérifications.');
+    } else {
+      Logger.log(`FAILURE: auditGsModules() a détecté des anomalies: ${JSON.stringify(audit && audit.failingChecks)}`);
+    }
+  } catch (err) {
+    Logger.log(`FAILURE: auditGsModules() a levé une exception: ${err && err.message}`);
   }
 }
 
