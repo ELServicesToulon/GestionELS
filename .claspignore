@@ -19,6 +19,9 @@ tools/**
 branding/
 jules-scratch/
 scripts/
+modules/
+modules/**
+docs/
 
 # Project-level files
 .clasp.json
