@@ -22,6 +22,10 @@
     "clasp:version": "clasp version 'auto: CI'",
     "clasp:deploy": "clasp deploy -d 'client'",
     "clasp:deploy:admin": "clasp deploy -d 'admin'",
+    "test:assistant:flag": "clasp run test_callChatGPT_refuseSansFlag",
+    "test:assistant:success": "clasp run test_askAssistantOnThread_success",
+    "test:assistant:error": "clasp run test_askAssistantOnThread_apiError",
+    "test:assistant": "npm run clasp:push && npm run test:assistant:flag && npm run test:assistant:success && npm run test:assistant:error",
     "icons:optimize": "svgo icons.svg",
     "validate:manifest": "node tools/validate-appsscript.js"
   }

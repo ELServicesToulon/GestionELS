@@ -41,7 +41,18 @@ function onOpen(e) {
     sousMenuMaintenance.addItem("Purger Event ID introuvable", "menuPurgerEventId");
   }
 
-  menuPrincipal.addSeparator().addItem("Poser une question a l'assistant", "menuAskAssistant");
+  // Ajout conditionnel de l'entrée assistant
+  menuPrincipal.addSeparator();
+  try {
+    const assistantEnabled = (typeof isAssistantFeatureEnabled_ === 'function')
+      ? isAssistantFeatureEnabled_()
+      : (typeof CFG_ENABLE_ASSISTANT !== 'undefined' && CFG_ENABLE_ASSISTANT);
+    if (assistantEnabled && typeof menuAskAssistant === 'function') {
+      menuPrincipal.addItem("Poser une question a l'assistant", "menuAskAssistant");
+    }
+  } catch (_err) {
+    // Ignore si l'assistant n'est pas disponible
+  }
   menuPrincipal.addSubMenu(sousMenuMaintenance);
   // Actions devis PDF et refresh menu
   if (typeof genererDevisPdfDepuisSelection === 'function') {

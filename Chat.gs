@@ -382,7 +382,11 @@ function chatGetMessagesForThread(threadId, options) {
   if (!safeThread) {
     return { messages: [], lastTs: since };
   }
-  if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
+  if (typeof isAssistantFeatureEnabled_ === 'function') {
+    if (!isAssistantFeatureEnabled_()) {
+      return { messages: [], lastTs: since };
+    }
+  } else if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
     return { messages: [], lastTs: since };
   }
 
@@ -453,7 +457,11 @@ function chatGetMessagesForThread(threadId, options) {
  * @returns {{ok:boolean, reason?:string}}
  */
 function chatPostMessage(rawPayload) {
-  if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
+  if (typeof isAssistantFeatureEnabled_ === 'function') {
+    if (!isAssistantFeatureEnabled_()) {
+      return { ok: false, reason: 'UNCONFIGURED' };
+    }
+  } else if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
     return { ok: false, reason: 'UNCONFIGURED' };
   }
 
@@ -568,7 +576,11 @@ function chatGetMessages(options) {
   const since = Number(params.since) || 0;
   const threadId = sanitizeChatThreadId(params.threadId);
 
-  if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
+  if (typeof isAssistantFeatureEnabled_ === 'function') {
+    if (!isAssistantFeatureEnabled_()) {
+      return { ok: false, reason: 'UNCONFIGURED', messages: [], lastTs: since };
+    }
+  } else if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
     return { ok: false, reason: 'UNCONFIGURED', messages: [], lastTs: since };
   }
 
@@ -591,6 +603,41 @@ function chatGetMessages(options) {
     console.error('[chatGetMessages]', err);
     return { ok: false, reason: 'ERROR', messages: [], lastTs: since };
   }
+}
+
+/**
+ * Masque un message (statut hidden). Réservé à l'administrateur.
+ * @param {number|string} timestamp
+ * @returns {{ok:boolean, reason?:string}}
+ */
+function chatAdminHide(timestamp) {
+  const userEmail = (Session.getActiveUser() && Session.getActiveUser().getEmail()) || '';
+  if (!userEmail || userEmail.toLowerCase() !== String(ADMIN_EMAIL || '').toLowerCase()) {
+    return { ok: false, reason: 'UNAUTHORIZED' };
+  }
+  const tsNumber = Number(timestamp);
+  if (!tsNumber) {
+    return { ok: false, reason: 'INVALID_TIMESTAMP' };
+  }
+  const ss = getMainSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_CHAT);
+  if (!sheet) {
+    return { ok: false, reason: 'NOT_FOUND' };
+  }
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) {
+    return { ok: false, reason: 'NOT_FOUND' };
+  }
+  const rows = sheet.getRange(2, 1, lastRow - 1, 8).getValues();
+  for (let i = 0; i < rows.length; i++) {
+    const rowTimestamp = rows[i][0];
+    const rowTs = rowTimestamp instanceof Date ? rowTimestamp.getTime() : Number(rowTimestamp) || 0;
+    if (rowTs === tsNumber) {
+      sheet.getRange(i + 2, 8).setValue('hidden');
+      return { ok: true };
+    }
+  }
+  return { ok: false, reason: 'NOT_FOUND' };
 }
 
 /**

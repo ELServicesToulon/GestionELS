@@ -8,85 +8,128 @@
 const CHAT_ASSISTANT_API_URL = 'https://api.openai.com/v1/chat/completions';
 const CHAT_ASSISTANT_MODEL = 'gpt-4o';
 const CHAT_ASSISTANT_HISTORY_LIMIT = 10;
-const CHAT_ASSISTANT_SYSTEM_PROMPT = 'Vous \u00EAtes un assistant pour des pharmaciens qui livrent des m\u00E9dicaments en EHPAD.';
+const CHAT_ASSISTANT_SYSTEM_PROMPT = 'Assistant pour pharmaciens en EHPAD; r\u00E9ponses concises; pas de donn\u00E9es personnelles.';
 const CHAT_ASSISTANT_DEFAULT_VISIBILITY = 'pharmacy';
+const CHAT_ASSISTANT_DEFAULT_TEMPERATURE = 0.3;
+const CHAT_ASSISTANT_MAX_RETRIES = 3;
+const CHAT_ASSISTANT_BACKOFF_MS = 400;
+const CHAT_ASSISTANT_USAGE_PREFIX = 'assistant_tokens:';
 
 /**
  * Appelle l'API OpenAI en combinant le contexte et la question utilisateur.
  * @param {Array<{role:string, content:string}>} contextMessages
  * @param {string} userPrompt
- * @returns {string} Reponse texte ou message d'erreur lisible.
+ * @param {{fetchImpl?:Function, sleepImpl?:Function, maxRetries?:number, backoffMs?:number}} [opts]
+ * @returns {{ok:boolean, reason?:string, message?:string, usage?:Object}}
  */
-function callChatGPT(contextMessages, userPrompt) {
-  const apiKey = PropertiesService.getScriptProperties().getProperty('OPENAI_API_KEY');
+function callChatGPT(contextMessages, userPrompt, opts) {
+  if (!isAssistantFeatureEnabled_()) {
+    return { ok: false, reason: 'UNCONFIGURED' };
+  }
+
+  const promptChunk = sanitizeMultiline(userPrompt, 1200);
+  const safePrompt = scrubChatMessage_(promptChunk);
+  if (!safePrompt) {
+    return { ok: false, reason: 'EMPTY_MESSAGE' };
+  }
+
+  let apiKey = '';
+  try {
+    apiKey = getSecret('OPENAI_API_KEY');
+  } catch (err) {
+    console.error('[callChatGPT] Missing OPENAI_API_KEY', err);
+    return { ok: false, reason: 'UNCONFIGURED' };
+  }
   if (!apiKey) {
-    Logger.log('[callChatGPT] OPENAI_API_KEY manquante dans les proprietes du script.');
-    return 'Assistant indisponible : cle API manquante. Contactez l\'administrateur.';
+    console.error('[callChatGPT] OPENAI_API_KEY empty');
+    return { ok: false, reason: 'UNCONFIGURED' };
   }
 
-  const sanitizedPrompt = scrubChatMessage_(userPrompt);
-  if (!sanitizedPrompt) {
-    return 'Merci de formuler une question avant d\'interroger l\'assistant.';
+  const limit = Number(typeof CFG_ASSISTANT_MONTHLY_BUDGET_TOKENS !== 'undefined' ? CFG_ASSISTANT_MONTHLY_BUDGET_TOKENS : 0);
+  const usageKey = getAssistantUsageKey_();
+  const currentUsage = readAssistantUsage_(usageKey);
+  if (limit > 0 && currentUsage >= limit) {
+    return { ok: false, reason: 'BUDGET_EXCEEDED' };
   }
 
-  const messages = [{
-    role: 'system',
-    content: CHAT_ASSISTANT_SYSTEM_PROMPT
-  }];
-
+  const formattedContext = [];
   if (Array.isArray(contextMessages)) {
-    contextMessages.forEach(msg => {
-      if (!msg || !msg.role || !msg.content) {
-        return;
-      }
-      const role = String(msg.role).toLowerCase() === 'assistant' ? 'assistant' : 'user';
-      const content = scrubChatMessage_(msg.content);
-      if (!content) {
-        return;
-      }
-      messages.push({ role: role, content: content });
-    });
+    for (let i = Math.max(0, contextMessages.length - CHAT_ASSISTANT_HISTORY_LIMIT); i < contextMessages.length; i++) {
+      const msg = contextMessages[i];
+      if (!msg) { continue; }
+      const role = String(msg.role || '').toLowerCase() === 'assistant' ? 'assistant' : 'user';
+      const chunk = sanitizeMultiline(msg.content, 1000);
+      const cleaned = scrubChatMessage_(chunk);
+      if (!cleaned) { continue; }
+      formattedContext.push({ role: role, content: cleaned });
+    }
   }
 
-  messages.push({ role: 'user', content: sanitizedPrompt });
+  const requestMessages = [{ role: 'system', content: CHAT_ASSISTANT_SYSTEM_PROMPT }]
+    .concat(formattedContext)
+    .concat([{ role: 'user', content: safePrompt }]);
 
   const requestBody = {
     model: CHAT_ASSISTANT_MODEL,
-    temperature: 0.3,
-    messages: messages
+    temperature: CHAT_ASSISTANT_DEFAULT_TEMPERATURE,
+    messages: requestMessages
   };
 
-  try {
-    const response = UrlFetchApp.fetch(CHAT_ASSISTANT_API_URL, {
-      method: 'post',
-      contentType: 'application/json',
-      headers: {
-        Authorization: 'Bearer ' + apiKey
-      },
-      payload: JSON.stringify(requestBody),
-      muteHttpExceptions: true
-    });
+  const options = opts || {};
+  const fetchImpl = typeof options.fetchImpl === 'function' ? options.fetchImpl : function(url, params) { return UrlFetchApp.fetch(url, params); };
+  const sleepImpl = typeof options.sleepImpl === 'function' ? options.sleepImpl : function(delay) { Utilities.sleep(delay); };
+  const maxRetries = Math.max(1, Number(options.maxRetries) || CHAT_ASSISTANT_MAX_RETRIES);
+  const backoffBase = Math.max(0, Number(options.backoffMs) || CHAT_ASSISTANT_BACKOFF_MS);
 
-    const status = response.getResponseCode();
-    const body = response.getContentText();
-    if (status !== 200) {
-      Logger.log('[callChatGPT] HTTP ' + status + ' - ' + body);
-      return 'Assistant indisponible (erreur API). Merci de reessayer plus tard.';
+  let lastError = null;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = fetchImpl(CHAT_ASSISTANT_API_URL, {
+        method: 'post',
+        contentType: 'application/json',
+        headers: { Authorization: 'Bearer ' + apiKey },
+        payload: JSON.stringify(requestBody),
+        muteHttpExceptions: true
+      });
+      const status = typeof response.getResponseCode === 'function' ? response.getResponseCode() : Number(response.status || 0);
+      const body = typeof response.getContentText === 'function' ? response.getContentText() : String(response.body || '');
+      if (status === 200) {
+        let parsed;
+        try { parsed = JSON.parse(body); } catch (parseErr) {
+          console.error('[callChatGPT] JSON parse error', parseErr);
+          return { ok: false, reason: 'API_ERROR' };
+        }
+        const firstChoice = parsed && parsed.choices && parsed.choices[0];
+        const rawMessage = firstChoice && firstChoice.message && firstChoice.message.content;
+        const assistantText = scrubChatMessage_(sanitizeMultiline(rawMessage, 1200));
+        if (!assistantText) {
+          console.error('[callChatGPT] Empty message content');
+          return { ok: false, reason: 'API_ERROR' };
+        }
+        const usage = parsed && parsed.usage ? parsed.usage : {};
+        const totalTokens = Number(usage.total_tokens) || 0;
+        const promptTokens = Number(usage.prompt_tokens) || 0;
+        const completionTokens = Number(usage.completion_tokens) || 0;
+        const newUsage = currentUsage + totalTokens;
+        writeAssistantUsage_(usageKey, newUsage);
+        return { ok: true, message: assistantText, usage: { totalTokens: totalTokens, promptTokens: promptTokens, completionTokens: completionTokens, budget: { limit: limit, used: newUsage, remaining: limit > 0 ? Math.max(0, limit - newUsage) : null } } };
+      }
+      const shouldRetry = status === 429 || status >= 500;
+      if (!shouldRetry) {
+        console.error('[callChatGPT] HTTP ' + status + ' - ' + body);
+        return { ok: false, reason: 'API_ERROR' };
+      }
+      lastError = 'HTTP ' + status;
+    } catch (err) {
+      console.error('[callChatGPT] fetch error', err);
+      lastError = err;
     }
-
-    const parsed = JSON.parse(body);
-    const firstChoice = parsed && parsed.choices && parsed.choices[0];
-    const messageContent = firstChoice && firstChoice.message && firstChoice.message.content;
-    if (!messageContent) {
-      Logger.log('[callChatGPT] Reponse vide ou incomplete: ' + body);
-      return 'Assistant indisponible (reponse vide).';
+    if (attempt < maxRetries - 1 && backoffBase > 0) {
+      try { const delay = backoffBase * Math.pow(2, attempt); sleepImpl(delay); } catch (_err) {}
     }
-
-    return String(messageContent).trim();
-  } catch (err) {
-    Logger.log('[callChatGPT] ' + err);
-    return 'Assistant indisponible pour le moment. Merci de reessayer plus tard.';
   }
+  console.warn('[callChatGPT] Attempts exhausted', lastError);
+  return { ok: false, reason: 'API_ERROR' };
 }
 
 /**
@@ -115,7 +158,7 @@ function askAssistant(row) {
       throw new Error('La ligne selectionnee ne contient pas de question exploitable.');
     }
 
-    if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
+    if (!isAssistantFeatureEnabled_()) {
       throw new Error('Assistant désactivé.');
     }
 
@@ -131,7 +174,12 @@ function askAssistant(row) {
     threadId = sanitizeChatThreadId(threadId || '') || CHAT_THREAD_GLOBAL;
 
     const contextMessages = buildAssistantContext_(chatSheet, targetRow, threadId, CHAT_ASSISTANT_HISTORY_LIMIT);
-    const assistantAnswer = callChatGPT(contextMessages, question) || 'Assistant indisponible.';
+    const aiResult = callChatGPT(contextMessages, question);
+    if (!aiResult || aiResult.ok !== true) {
+      const reason = aiResult && aiResult.reason ? aiResult.reason : 'API_ERROR';
+      throw new Error('Assistant indisponible (' + reason + ').');
+    }
+    const assistantAnswer = sanitizeMultiline(aiResult.message, 1200) || 'Assistant indisponible.';
     const assistantSessionId = buildAssistantSessionId_(threadId);
 
     const payload = {
@@ -161,7 +209,7 @@ function askAssistant(row) {
  * @returns {{ok:boolean, reason?:string, answer?:string, question?:string, threadId?:string, history?:Array<Object>}}
  */
 function askAssistantOnThread(rawInput) {
-  if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
+  if (!isAssistantFeatureEnabled_()) {
     return { ok: false, reason: 'UNCONFIGURED' };
   }
 
@@ -208,8 +256,11 @@ function askAssistantOnThread(rawInput) {
     }
 
     const contextMessages = buildAssistantThreadContext_(safeThread, CHAT_ASSISTANT_HISTORY_LIMIT);
-    const assistantRaw = callChatGPT(contextMessages, question) || '';
-    const assistantText = sanitizeMultiline(assistantRaw, 1200) || 'Assistant indisponible pour le moment.';
+    const aiResponse = callChatGPT(contextMessages, question);
+    if (!aiResponse || aiResponse.ok !== true) {
+      return aiResponse && aiResponse.reason ? aiResponse : { ok: false, reason: 'API_ERROR' };
+    }
+    const assistantText = sanitizeMultiline(aiResponse.message, 1200) || 'Assistant indisponible pour le moment.';
 
     const assistantPayload = {
       authorType: 'assistant',
@@ -232,7 +283,8 @@ function askAssistantOnThread(rawInput) {
       answer: assistantText,
       question: question,
       threadId: safeThread,
-      history: history
+      history: history,
+      usage: aiResponse.usage || null
     };
   } catch (err) {
     console.error('[askAssistantOnThread]', err);
@@ -513,4 +565,60 @@ function testAssistantRateLimitBurst() {
   }
 
   return { ok: true };
+}
+
+/**
+ * Retourne la clé de stockage du compteur de jetons mensuel.
+ * @returns {string}
+ */
+function getAssistantUsageKey_() {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+  return CHAT_ASSISTANT_USAGE_PREFIX + year + month;
+}
+
+/**
+ * Lit le compteur de jetons assistant depuis les propriétés.
+ * @param {string} key
+ * @returns {number}
+ */
+function readAssistantUsage_(key) {
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty(key);
+    return raw ? Number(raw) || 0 : 0;
+  } catch (err) {
+    console.warn('[callChatGPT] Unable to read usage', err);
+    return 0;
+  }
+}
+
+/**
+ * Écrit le compteur de jetons assistant dans les propriétés.
+ * @param {string} key
+ * @param {number} value
+ */
+function writeAssistantUsage_(key, value) {
+  try {
+    const safeValue = Math.max(0, Math.floor(Number(value) || 0));
+    PropertiesService.getScriptProperties().setProperty(key, String(safeValue));
+  } catch (err) {
+    console.warn('[callChatGPT] Unable to persist usage', err);
+  }
+}
+
+/**
+ * Indique si l'assistant est activé (flag de config ou override Script Properties).
+ * @returns {boolean}
+ */
+function isAssistantFeatureEnabled_() {
+  if (typeof CFG_ENABLE_ASSISTANT !== 'undefined' && CFG_ENABLE_ASSISTANT) {
+    return true;
+  }
+  try {
+    const override = PropertiesService.getScriptProperties().getProperty('CFG_ENABLE_ASSISTANT_OVERRIDE');
+    return String(override || '').toLowerCase() === 'true';
+  } catch (_err) {
+    return false;
+  }
 }
