@@ -2,13 +2,13 @@
 //                 INTEGRATION ASSISTANT CHATGPT
 // =================================================================
 // Fournit une fonction utilitaire pour appeler l'API OpenAI et
-// poster automatiquement la réponse dans l'onglet Chat.
+// poster automatiquement la reponse dans l'onglet Chat.
 // =================================================================
 
 const CHAT_ASSISTANT_API_URL = 'https://api.openai.com/v1/chat/completions';
 const CHAT_ASSISTANT_MODEL = 'gpt-4o';
 const CHAT_ASSISTANT_HISTORY_LIMIT = 10;
-const CHAT_ASSISTANT_SYSTEM_PROMPT = 'Assistant pour pharmaciens en EHPAD; réponses concises; pas de données personnelles.';
+const CHAT_ASSISTANT_SYSTEM_PROMPT = 'Assistant pour pharmaciens en EHPAD; r\u00E9ponses concises; pas de donn\u00E9es personnelles.';
 const CHAT_ASSISTANT_DEFAULT_VISIBILITY = 'pharmacy';
 const CHAT_ASSISTANT_DEFAULT_TEMPERATURE = 0.3;
 const CHAT_ASSISTANT_MAX_RETRIES = 3;
@@ -17,7 +17,7 @@ const CHAT_ASSISTANT_USAGE_PREFIX = 'assistant_tokens:';
 
 /**
  * Appelle l'API OpenAI en combinant le contexte et la question utilisateur.
- * @param {Array<Object>} contextMessages
+ * @param {Array<{role:string, content:string}>} contextMessages
  * @param {string} userPrompt
  * @param {{fetchImpl?:Function, sleepImpl?:Function, maxRetries?:number, backoffMs?:number}} [opts]
  * @returns {{ok:boolean, reason?:string, message?:string, usage?:Object}}
@@ -40,6 +40,10 @@ function callChatGPT(contextMessages, userPrompt, opts) {
     console.error('[callChatGPT] Missing OPENAI_API_KEY', err);
     return { ok: false, reason: 'UNCONFIGURED' };
   }
+  if (!apiKey) {
+    console.error('[callChatGPT] OPENAI_API_KEY empty');
+    return { ok: false, reason: 'UNCONFIGURED' };
+  }
 
   const limit = Number(typeof CFG_ASSISTANT_MONTHLY_BUDGET_TOKENS !== 'undefined' ? CFG_ASSISTANT_MONTHLY_BUDGET_TOKENS : 0);
   const usageKey = getAssistantUsageKey_();
@@ -48,39 +52,26 @@ function callChatGPT(contextMessages, userPrompt, opts) {
     return { ok: false, reason: 'BUDGET_EXCEEDED' };
   }
 
-  const contextList = Array.isArray(contextMessages) ? contextMessages : [];
   const formattedContext = [];
-  const startIndex = Math.max(0, contextList.length - CHAT_ASSISTANT_HISTORY_LIMIT);
-  for (let i = startIndex; i < contextList.length; i++) {
-    const entry = contextList[i];
-    if (!entry) {
-      continue;
+  if (Array.isArray(contextMessages)) {
+    for (let i = Math.max(0, contextMessages.length - CHAT_ASSISTANT_HISTORY_LIMIT); i < contextMessages.length; i++) {
+      const msg = contextMessages[i];
+      if (!msg) {
+        continue;
+      }
+      const role = String(msg.role || '').toLowerCase() === 'assistant' ? 'assistant' : 'user';
+      const chunk = sanitizeMultiline(msg.content, 1000);
+      const cleaned = scrubChatMessage_(chunk);
+      if (!cleaned) {
+        continue;
+      }
+      formattedContext.push({ role: role, content: cleaned });
     }
-    let role = 'user';
-    let content = '';
-    if (entry.role) {
-      role = String(entry.role).toLowerCase() === 'assistant' ? 'assistant' : 'user';
-      content = entry.content;
-    } else {
-      role = String(entry.authorType || '').toLowerCase() === 'assistant' ? 'assistant' : 'user';
-      content = entry.message;
-    }
-    const sanitizedContent = scrubChatMessage_(sanitizeMultiline(content, 1000));
-    if (!sanitizedContent) {
-      continue;
-    }
-    formattedContext.push({ role: role, content: sanitizedContent });
   }
 
-  const requestMessages = [{
-    role: 'system',
-    content: CHAT_ASSISTANT_SYSTEM_PROMPT
-  }].concat(formattedContext);
-
-  requestMessages.push({
-    role: 'user',
-    content: safePrompt
-  });
+  const requestMessages = [{ role: 'system', content: CHAT_ASSISTANT_SYSTEM_PROMPT }]
+    .concat(formattedContext)
+    .concat([{ role: 'user', content: safePrompt }]);
 
   const requestBody = {
     model: CHAT_ASSISTANT_MODEL,
@@ -179,115 +170,323 @@ function callChatGPT(contextMessages, userPrompt, opts) {
 }
 
 /**
- * Fournit une réponse assistant pour un thread spécifique côté WebApp.
- * @param {string} threadId
- * @param {string} prompt
- * @returns {{ok:boolean, reason?:string, messages?:Array<Object>, usage?:Object}}
+ * Recupere les derniers messages et poste la reponse de l'assistant.
+ * @param {number} row Ligne cible (optionnelle).
+ * @returns {string} Reponse envoyee.
  */
-function askAssistantOnThread(threadId, prompt) {
+function askAssistant(row) {
+  try {
+    const ss = getMainSpreadsheet();
+    const chatSheet = getChatSheet(ss);
+    const lastRow = chatSheet.getLastRow();
+    if (lastRow <= 1) {
+      throw new Error('Aucun message disponible dans l\'onglet Chat.');
+    }
+
+    const targetRow = getAssistantTargetRow_(row, chatSheet, lastRow);
+    const rowValues = chatSheet.getRange(targetRow, 1, 1, 9).getValues()[0];
+    const status = String(rowValues[7] || '').toLowerCase();
+    if (status && status !== 'active') {
+      throw new Error('La ligne selectionnee est archivee.');
+    }
+
+    const question = scrubChatMessage_(rowValues[5]);
+    if (!question) {
+      throw new Error('La ligne selectionnee ne contient pas de question exploitable.');
+    }
+
+    if (!isAssistantFeatureEnabled_()) {
+      throw new Error('Assistant désactivé.');
+    }
+
+    let threadId = sanitizeChatThreadId(rowValues[1] || '');
+    if (!threadId) {
+      const authorRef = String(rowValues[3] || '');
+      if (authorRef.indexOf('CLIENT_') === 0) {
+        threadId = buildChatThreadIdFromClient({ clientId: authorRef.replace('CLIENT_', '') }) || '';
+      } else if (authorRef.indexOf('PHC_') === 0) {
+        threadId = buildChatThreadIdFromCode(authorRef.replace('PHC_', '')) || '';
+      }
+    }
+    threadId = sanitizeChatThreadId(threadId || '') || CHAT_THREAD_GLOBAL;
+
+    const contextMessages = buildAssistantContext_(chatSheet, targetRow, threadId, CHAT_ASSISTANT_HISTORY_LIMIT);
+    const aiResult = callChatGPT(contextMessages, question);
+    if (!aiResult || aiResult.ok !== true) {
+      const reason = aiResult && aiResult.reason ? aiResult.reason : 'API_ERROR';
+      throw new Error('Assistant indisponible (' + reason + ').');
+    }
+    const assistantAnswer = sanitizeMultiline(aiResult.message, 1200) || 'Assistant indisponible.';
+    const assistantSessionId = buildAssistantSessionId_(threadId);
+
+    const payload = {
+      authorType: 'assistant',
+      authorPseudo: 'ChatGPT',
+      message: assistantAnswer,
+      visibleTo: CHAT_ASSISTANT_DEFAULT_VISIBILITY,
+      threadId: threadId,
+      sessionId: assistantSessionId
+    };
+
+    const result = chatPostMessage(payload);
+    if (!result || !result.ok) {
+      throw new Error('La reponse de l\'assistant n\'a pas pu etre enregistree (code: ' + (result && result.reason ? result.reason : 'inconnu') + ').');
+    }
+
+    return assistantAnswer;
+  } catch (err) {
+    Logger.log('[askAssistant] ' + err);
+    throw err;
+  }
+}
+
+/**
+ * Fournit une réponse assistant pour un thread spécifique côté WebApp.
+ * @param {{threadId?:string, question?:string, sessionId?:string, clientId?:string, clientEmail?:string, pharmacyCode?:string}} rawInput
+ * @returns {{ok:boolean, reason?:string, answer?:string, question?:string, threadId?:string, history?:Array<Object>}}
+ */
+function askAssistantOnThread(rawInput) {
   if (!isAssistantFeatureEnabled_()) {
     return { ok: false, reason: 'UNCONFIGURED' };
   }
 
-  const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
-  const sanitizedQuestion = sanitizeMultiline(prompt, 1000);
-  if (!sanitizedQuestion) {
-    return { ok: false, reason: 'EMPTY_MESSAGE' };
-  }
-  const safeQuestion = scrubChatMessage_(sanitizedQuestion);
-  if (!safeQuestion) {
-    return { ok: false, reason: 'EMPTY_MESSAGE' };
-  }
+  try {
+    const input = rawInput || {};
+    const skipUserPost = input.skipUserPost === true;
+    let safeThread = sanitizeChatThreadId(input.threadId || '');
+    const safeSession = sanitizeScalar(input.sessionId || '', 64) || ('webapp:' + (safeThread || 'THREAD'));
+    const baseQuestion = sanitizeMultiline(input.question, 1000);
 
-  const contextResult = chatGetThreadMessages({
-    threadId: safeThread,
-    limit: CHAT_ASSISTANT_HISTORY_LIMIT,
-    audience: 'pharmacy'
-  });
-  if (!contextResult || contextResult.ok === false) {
-    return contextResult && contextResult.reason ? contextResult : { ok: false, reason: 'ERROR' };
-  }
-
-  const contextMessages = Array.isArray(contextResult.messages) ? contextResult.messages : [];
-  const gptContext = [];
-  for (let i = 0; i < contextMessages.length; i++) {
-    const msg = contextMessages[i];
-    if (!msg) {
-      continue;
+    if (!baseQuestion) {
+      return { ok: false, reason: 'EMPTY_MESSAGE' };
     }
-    const content = scrubChatMessage_(sanitizeMultiline(msg.message, 1000));
-    if (!content) {
-      continue;
+
+    const payload = {
+      authorType: 'pharmacy',
+      message: baseQuestion,
+      threadId: safeThread,
+      sessionId: safeSession,
+      clientId: sanitizeScalar(input.clientId, 64),
+      clientEmail: sanitizeEmail(input.clientEmail),
+      pharmacyCode: sanitizePharmacyCode(input.pharmacyCode)
+    };
+
+    if (!payload.clientId && !payload.clientEmail && !payload.pharmacyCode) {
+      payload.pharmacyCode = sanitizePharmacyCode(computeAssistantFallbackCode_(safeSession));
     }
-    const role = String(msg.authorType || '').toLowerCase() === 'assistant' ? 'assistant' : 'user';
-    gptContext.push({ role: role, content: content });
+
+    let question = baseQuestion;
+
+    if (!skipUserPost) {
+      const postResult = chatPostMessage(payload);
+      if (!postResult || !postResult.ok) {
+        return postResult && postResult.reason ? postResult : { ok: false, reason: 'ERROR' };
+      }
+      question = sanitizeMultiline(postResult.message, 1000) || question;
+      safeThread = sanitizeChatThreadId(postResult.threadId || safeThread) || safeThread;
+    } else if (!safeThread) {
+      safeThread = sanitizeChatThreadId(resolveChatThreadId(payload, null, payload.pharmacyCode));
+    }
+
+    if (!safeThread) {
+      return { ok: false, reason: 'INVALID_THREAD' };
+    }
+
+    const contextMessages = buildAssistantThreadContext_(safeThread, CHAT_ASSISTANT_HISTORY_LIMIT);
+    const aiResponse = callChatGPT(contextMessages, question);
+    if (!aiResponse || aiResponse.ok !== true) {
+      return aiResponse && aiResponse.reason ? aiResponse : { ok: false, reason: 'API_ERROR' };
+    }
+    const assistantText = sanitizeMultiline(aiResponse.message, 1200);
+    if (!assistantText) {
+      return { ok: false, reason: 'API_ERROR' };
+    }
+
+    const assistantPayload = {
+      authorType: 'assistant',
+      authorPseudo: 'Assistant',
+      message: assistantText,
+      visibleTo: CHAT_ASSISTANT_DEFAULT_VISIBILITY,
+      threadId: safeThread,
+      sessionId: buildAssistantSessionId_(safeThread)
+    };
+
+    const assistantPost = chatPostMessage(assistantPayload);
+    if (!assistantPost || !assistantPost.ok) {
+      return assistantPost && assistantPost.reason ? assistantPost : { ok: false, reason: 'ERROR' };
+    }
+
+    const history = buildAssistantHistorySnapshot_(safeThread, CHAT_ASSISTANT_HISTORY_LIMIT);
+
+    return {
+      ok: true,
+      answer: assistantText,
+      question: question,
+      threadId: safeThread,
+      history: history,
+      usage: aiResponse.usage || null
+    };
+  } catch (err) {
+    console.error('[askAssistantOnThread]', err);
+    return { ok: false, reason: 'ERROR' };
   }
-
-  const sessionId = buildAssistantClientSessionId_(safeThread);
-  const fallbackCode = computeAssistantFallbackCode_(sessionId);
-
-  const userPost = chatPostMessage({
-    authorType: 'pharmacy',
-    message: sanitizedQuestion,
-    threadId: safeThread,
-    sessionId: sessionId,
-    pharmacyCode: fallbackCode,
-    visibleTo: CHAT_ASSISTANT_DEFAULT_VISIBILITY
-  });
-  if (!userPost || userPost.ok !== true) {
-    return userPost && userPost.reason ? userPost : { ok: false, reason: 'ERROR' };
-  }
-
-  const aiResponse = callChatGPT(gptContext, sanitizedQuestion);
-  if (!aiResponse || aiResponse.ok !== true) {
-    return aiResponse && aiResponse.reason ? aiResponse : { ok: false, reason: 'API_ERROR' };
-  }
-
-  const assistantMessage = sanitizeMultiline(aiResponse.message, 1200);
-  if (!assistantMessage) {
-    return { ok: false, reason: 'API_ERROR' };
-  }
-
-  const assistantPost = chatPostMessage({
-    authorType: 'assistant',
-    authorPseudo: 'Assistant',
-    message: assistantMessage,
-    visibleTo: CHAT_ASSISTANT_DEFAULT_VISIBILITY,
-    threadId: safeThread,
-    sessionId: buildAssistantSessionId_(safeThread)
-  });
-  if (!assistantPost || assistantPost.ok !== true) {
-    return assistantPost && assistantPost.reason ? assistantPost : { ok: false, reason: 'ERROR' };
-  }
-
-  const updated = chatGetThreadMessages({
-    threadId: safeThread,
-    limit: CHAT_ASSISTANT_HISTORY_LIMIT * 2,
-    audience: 'pharmacy'
-  });
-  if (!updated || updated.ok === false) {
-    return { ok: true, messages: [], usage: aiResponse.usage || null };
-  }
-
-  return {
-    ok: true,
-    messages: Array.isArray(updated.messages) ? updated.messages : [],
-    usage: aiResponse.usage || null
-  };
 }
 
 /**
- * Construit un identifiant de session pour l'utilisateur assistant côté web.
- * @param {string} threadId
- * @returns {string}
+ * Cree ou met a jour le menu permettant d'invoquer l'assistant.
  */
-function buildAssistantClientSessionId_(threadId) {
-  const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
-  return 'assistant-client:' + safeThread;
+function menuAskAssistant() {
+  const ui = SpreadsheetApp.getUi();
+  try {
+    const activeSheet = SpreadsheetApp.getActiveSheet();
+    if (!activeSheet || activeSheet.getSheetName() !== SHEET_CHAT) {
+      ui.alert('Assistant Chat', 'Selectionnez une ligne dans l\'onglet Chat avant d\'appeler l\'assistant.', ui.ButtonSet.OK);
+      return;
+    }
+    const activeRange = activeSheet.getActiveRange();
+    if (!activeRange) {
+      ui.alert('Assistant Chat', 'Selectionnez une ligne contenant la question a poser.', ui.ButtonSet.OK);
+      return;
+    }
+    const rowIndex = activeRange.getRow();
+    const answer = askAssistant(rowIndex);
+    ui.alert('Assistant Chat', 'Reponse envoyee dans le fil: \n\n' + answer, ui.ButtonSet.OK);
+  } catch (err) {
+    ui.alert('Assistant Chat', err.message || String(err), ui.ButtonSet.OK);
+  }
 }
 
 /**
- * Indique si l'assistant est activé via la configuration ou une propriété override.
+ * Construit la liste des 10 derniers messages (meme thread) pour fournir du contexte.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} chatSheet
+ * @param {number} targetRow
+ * @param {string} threadId
+ * @param {number} limit
+ * @returns {Array<{role:string, content:string}>}
+ */
+function buildAssistantContext_(chatSheet, targetRow, threadId, limit) {
+  const endRow = Math.max(2, targetRow - 1);
+  if (endRow < 2) {
+    return [];
+  }
+  const startRow = Math.max(2, endRow - limit + 1);
+  const rowCount = endRow - startRow + 1;
+  if (rowCount <= 0) {
+    return [];
+  }
+
+  const values = chatSheet.getRange(startRow, 1, rowCount, 8).getValues();
+  const context = [];
+  const safeThread = sanitizeChatThreadId(threadId || '');
+  for (let i = 0; i < values.length; i++) {
+    const row = values[i];
+    const currentThread = sanitizeChatThreadId(row[1] || '');
+    if (safeThread && currentThread !== safeThread) {
+      continue;
+    }
+    const visibility = String(row[6] || CHAT_ASSISTANT_DEFAULT_VISIBILITY).toLowerCase();
+    if (visibility !== 'pharmacy') {
+      continue; // On evite d'exposer les fils internes admin.
+    }
+    const status = String(row[7] || '').toLowerCase();
+    if (status && status !== 'active') {
+      continue;
+    }
+    const sanitized = scrubChatMessage_(row[5]);
+    if (!sanitized) {
+      continue;
+    }
+    const authorType = String(row[2] || 'pharmacy').toLowerCase();
+    const pseudo = anonymizeAssistantPseudo_(row[4], authorType);
+    const role = authorType === 'assistant' ? 'assistant' : 'user';
+    const label = pseudo ? '[' + pseudo + '] ' : '';
+    context.push({
+      role: role,
+      content: label + sanitized
+    });
+  }
+
+  if (context.length > limit) {
+    return context.slice(context.length - limit);
+  }
+  return context;
+}
+
+/**
+ * Construit le contexte assistant pour un thread donné (webapp).
+ * @param {string} threadId
+ * @param {number} limit
+ * @returns {Array<{role:string, content:string}>}
+ */
+function buildAssistantThreadContext_(threadId, limit) {
+  const safeThread = sanitizeChatThreadId(threadId || '');
+  if (!safeThread) {
+    return [];
+  }
+  const context = [];
+  try {
+    const ss = getMainSpreadsheet();
+    const sheet = getChatSheet(ss);
+    if (!sheet) {
+      return context;
+    }
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) {
+      return context;
+    }
+    const values = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
+    for (let i = values.length - 1; i >= 0 && context.length < Number(limit || 10); i--) {
+      const row = values[i];
+      const currentThread = sanitizeChatThreadId(row[1] || '');
+      if (currentThread !== safeThread) {
+        continue;
+      }
+      const status = String(row[7] || '').toLowerCase();
+      if (status && status !== 'active') {
+        continue;
+      }
+      const visibility = String(row[6] || CHAT_ASSISTANT_DEFAULT_VISIBILITY).toLowerCase();
+      if (visibility !== 'pharmacy') {
+        continue;
+      }
+      const role = String(row[2] || 'pharmacy').toLowerCase() === 'assistant' ? 'assistant' : 'user';
+      const message = sanitizeMultiline(row[5], 1000);
+      if (!message) {
+        continue;
+      }
+      context.unshift({ role: role, content: message });
+    }
+  } catch (err) {
+    console.warn('[buildAssistantThreadContext_]', err);
+  }
+  const maxItems = Number(limit || 10);
+  return context.length > maxItems ? context.slice(context.length - maxItems) : context;
+}
+
+/**
+ * Retourne l'historique du thread pour affichage côté client.
+ * @param {string} threadId
+ * @param {number} limit
+ * @returns {Array<Object>}
+ */
+function buildAssistantHistorySnapshot_(threadId, limit) {
+  const safeThread = sanitizeChatThreadId(threadId || '');
+  if (!safeThread) {
+    return [];
+  }
+  try {
+    const result = chatGetMessagesForThread(safeThread, { limit: Number(limit || 20) });
+    const messages = Array.isArray(result && result.messages) ? result.messages : [];
+    const maxItems = Number(limit || 20);
+    return messages.length > maxItems ? messages.slice(messages.length - maxItems) : messages;
+  } catch (err) {
+    console.warn('[buildAssistantHistorySnapshot_]', err);
+    return [];
+  }
+}
+
+/**
+ * Indique si l'assistant est activé via configuration ou override.
  * @returns {boolean}
  */
 function isAssistantFeatureEnabled_() {
@@ -357,17 +556,7 @@ function computeAssistantFallbackCode_(sessionId) {
 }
 
 /**
- * Génère un identifiant interne pour le rate limit du bot.
- * @param {string} threadId
- * @returns {string}
- */
-function buildAssistantSessionId_(threadId) {
-  const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
-  return 'assistant:' + safeThread;
-}
-
-/**
- * Supprime les informations sensibles des messages pour respecter la confidentialité.
+ * Supprime les informations sensibles des messages pour respecter la confidentialite.
  * @param {string} rawText
  * @returns {string}
  */
@@ -385,7 +574,67 @@ function scrubChatMessage_(rawText) {
 }
 
 /**
- * Teste le respect du burst rate-limit pour les réponses assistant.
+ * Retourne un pseudo anonymise a partir du pseudo calcule ou du type d'auteur.
+ * @param {string} pseudo
+ * @param {string} authorType
+ * @returns {string}
+ */
+function anonymizeAssistantPseudo_(pseudo, authorType) {
+  const safePseudo = typeof sanitizeScalar === 'function'
+    ? sanitizeScalar(pseudo || '', 48)
+    : String(pseudo || '');
+  const compact = safePseudo.replace(/[^A-Za-z0-9#\- ]/g, '').trim();
+  if (compact) {
+    return compact;
+  }
+  switch (authorType) {
+    case 'admin': return 'Admin';
+    case 'assistant': return 'Assistant';
+    case 'client': return 'Client';
+    default: return 'Pharmacie';
+  }
+}
+
+/**
+ * Determine la ligne a utiliser pour l'appel assistant.
+ * @param {number} inputRow
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} chatSheet
+ * @param {number} lastRow
+ * @returns {number}
+ */
+function getAssistantTargetRow_(inputRow, chatSheet, lastRow) {
+  let rowIndex = Number(inputRow) || 0;
+  if (!rowIndex || rowIndex < 2 || rowIndex > lastRow) {
+    try {
+      const activeSheet = SpreadsheetApp.getActiveSheet();
+      if (activeSheet && activeSheet.getSheetName() === chatSheet.getSheetName()) {
+        const activeRange = activeSheet.getActiveRange();
+        if (activeRange) {
+          rowIndex = activeRange.getRow();
+        }
+      }
+    } catch (_err) {
+      rowIndex = 0;
+    }
+  }
+  if (!rowIndex || rowIndex < 2 || rowIndex > lastRow) {
+    rowIndex = lastRow;
+  }
+  return rowIndex;
+}
+
+/**
+ * Genere un identifiant interne pour le rate limit du bot.
+ * @param {string} threadId
+ * @returns {string}
+ */
+function buildAssistantSessionId_(threadId) {
+  const safeThread = sanitizeChatThreadId(threadId || '') || CHAT_THREAD_GLOBAL;
+  return 'assistant:' + safeThread;
+}
+
+/**
+ * Teste le respect du burst rate-limit pour les reponses assistant.
  * @returns {{ok:boolean}}
  */
 function testAssistantRateLimitBurst() {
@@ -403,12 +652,12 @@ function testAssistantRateLimitBurst() {
 
   for (let i = 0; i < CHAT_RATE_LIMIT_BURST; i++) {
     if (!isChatRateAllowed(sessionId)) {
-      throw new Error('Le burst est trop strict à l\'iteration ' + i + '.');
+      throw new Error('Le burst est trop strict a l\'iteration ' + i + '.');
     }
   }
 
   if (isChatRateAllowed(sessionId)) {
-    throw new Error('Le burst n\'est pas appliqué après ' + CHAT_RATE_LIMIT_BURST + ' appels.');
+    throw new Error('Le burst n\'est pas applique apres ' + CHAT_RATE_LIMIT_BURST + ' appels.');
   }
 
   return { ok: true };

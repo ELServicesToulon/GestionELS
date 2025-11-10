@@ -53,8 +53,11 @@ function test_askAssistantOnThread_rateLimit() {
   withAssistantMocks_({
     enable: true,
     mocks: {
-      chatGetThreadMessages: function() {
-        return { ok: true, messages: [] };
+      buildAssistantThreadContext_: function() {
+        return [];
+      },
+      buildAssistantHistorySnapshot_: function() {
+        return [];
       },
       chatPostMessage: function(payload) {
         posts.push(payload);
@@ -66,7 +69,7 @@ function test_askAssistantOnThread_rateLimit() {
       }
     }
   }, () => {
-    const res = askAssistantOnThread('THREAD_RATE', 'Bonjour');
+    const res = askAssistantOnThread({ threadId: 'THREAD_RATE', question: 'Bonjour', sessionId: 'sess' });
     if (!res || res.ok !== false || res.reason !== 'RATE_LIMIT') {
       throw new Error('Le rate-limit doit être propagé au client.');
     }
@@ -83,35 +86,46 @@ function test_askAssistantOnThread_rateLimit() {
 function test_askAssistantOnThread_success() {
   const posts = [];
   const gptCalls = [];
-  const threadCalls = [];
+  const historyCalls = [];
   let finalResponse = null;
+  let postCount = 0;
   withAssistantMocks_({
     enable: true,
     mocks: {
-      chatGetThreadMessages: function(params) {
-        threadCalls.push(params);
-        if (threadCalls.length === 1) {
-          return { ok: true, messages: [{
-            threadId: 'THREAD_OK',
-            message: 'Historique 1',
-            authorType: 'pharmacy',
-            timestamp: 1
-          }] };
+      buildAssistantThreadContext_: function(threadId, limit) {
+        if (threadId !== 'THREAD_OK' || limit !== CHAT_ASSISTANT_HISTORY_LIMIT) {
+          throw new Error('Contexte appelé avec des paramètres inattendus.');
         }
-        return { ok: true, messages: [{
+        return [{ role: 'user', content: 'Historique 1' }];
+      },
+      buildAssistantHistorySnapshot_: function(threadId, limit) {
+        historyCalls.push({ threadId: threadId, limit: limit });
+        return [{
           threadId: 'THREAD_OK',
-          message: 'Question test',
           authorType: 'pharmacy',
-          timestamp: 2
+          authorPseudo: 'Vous',
+          message: 'Question test',
+          timestamp: 1
         }, {
           threadId: 'THREAD_OK',
-          message: 'Réponse IA',
           authorType: 'assistant',
-          timestamp: 3
-        }] };
+          authorPseudo: 'Assistant',
+          message: 'Réponse IA',
+          timestamp: 2
+        }];
       },
       chatPostMessage: function(payload) {
         posts.push(payload);
+        postCount++;
+        if (postCount === 1) {
+          return {
+            ok: true,
+            threadId: 'THREAD_OK',
+            message: 'Question test',
+            authorType: 'pharmacy',
+            authorPseudo: 'Vous'
+          };
+        }
         return { ok: true };
       },
       callChatGPT: function(context, prompt) {
@@ -120,15 +134,12 @@ function test_askAssistantOnThread_success() {
       }
     }
   }, () => {
-    const res = askAssistantOnThread('THREAD_OK', 'Question test');
+    const res = askAssistantOnThread({ threadId: 'THREAD_OK', question: 'Question test', sessionId: 'sess' });
     if (!res || res.ok !== true) {
       throw new Error('La réponse doit être ok en cas de succès.');
     }
     finalResponse = res;
   });
-  if (threadCalls.length !== 2) {
-    throw new Error('Les messages de contexte et de rafraîchissement doivent être lus.');
-  }
   if (gptCalls.length !== 1) {
     throw new Error('L’API doit être appelée une fois.');
   }
@@ -141,8 +152,11 @@ function test_askAssistantOnThread_success() {
   if (posts[0].authorType !== 'pharmacy' || posts[1].authorType !== 'assistant') {
     throw new Error('Les types d’auteurs enregistrés sont incorrects.');
   }
-  if (!finalResponse || !Array.isArray(finalResponse.messages) || finalResponse.messages.length !== 2) {
-    throw new Error('Les messages rafraîchis doivent contenir deux entrées.');
+  if (historyCalls.length !== 1) {
+    throw new Error('L’historique doit être rafraîchi après la réponse.');
+  }
+  if (!finalResponse || !Array.isArray(finalResponse.history) || finalResponse.history.length !== 2) {
+    throw new Error('L’historique renvoyé doit contenir deux entrées.');
   }
   if (!finalResponse.usage || finalResponse.usage.totalTokens !== 11) {
     throw new Error('Le résumé d’usage doit être propagé.');
@@ -155,11 +169,23 @@ function test_askAssistantOnThread_apiError() {
   withAssistantMocks_({
     enable: true,
     mocks: {
-      chatGetThreadMessages: function() {
-        return { ok: true, messages: [] };
+      buildAssistantThreadContext_: function() {
+        return [];
+      },
+      buildAssistantHistorySnapshot_: function() {
+        return [];
       },
       chatPostMessage: function(payload) {
         posts.push(payload);
+        if (posts.length === 1) {
+          return {
+            ok: true,
+            threadId: 'THREAD_ERR',
+            message: 'Question test',
+            authorType: 'pharmacy',
+            authorPseudo: 'Vous'
+          };
+        }
         return { ok: true };
       },
       callChatGPT: function() {
@@ -167,7 +193,7 @@ function test_askAssistantOnThread_apiError() {
       }
     }
   }, () => {
-    const res = askAssistantOnThread('THREAD_ERR', 'Question test');
+    const res = askAssistantOnThread({ threadId: 'THREAD_ERR', question: 'Question test', sessionId: 'sess' });
     if (!res || res.ok !== false || res.reason !== 'API_ERROR') {
       throw new Error('Les erreurs API doivent être renvoyées au client.');
     }
