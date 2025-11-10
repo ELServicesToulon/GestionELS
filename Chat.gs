@@ -311,8 +311,15 @@ function resolveChatThreadId(payload, clientRecord, pharmacyCode) {
     return fromCode;
   }
   const explicit = sanitizeChatThreadId(payload && payload.threadId);
-  if (explicit && (explicit.indexOf('THR_CLIENT_') === 0 || explicit.indexOf('THR_PHC_') === 0)) {
-    return explicit;
+  if (explicit) {
+    if (explicit.indexOf('THR_CLIENT_') === 0 || explicit.indexOf('THR_PHC_') === 0) {
+      return explicit;
+    }
+    // Allow assistant replies on global thread when explicitly set
+    const authorType = String(payload && payload.authorType || '').toLowerCase();
+    if (authorType === 'assistant' && explicit === CHAT_THREAD_GLOBAL) {
+      return explicit;
+    }
   }
   return '';
 }

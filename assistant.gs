@@ -171,23 +171,26 @@ function askAssistant(row) {
         threadId = buildChatThreadIdFromCode(authorRef.replace('PHC_', '')) || '';
       }
     }
-    threadId = sanitizeChatThreadId(threadId || '') || CHAT_THREAD_GLOBAL;
-
-    const contextMessages = buildAssistantContext_(chatSheet, targetRow, threadId, CHAT_ASSISTANT_HISTORY_LIMIT);
+    let candidateThread = sanitizeChatThreadId(threadId || '');
+    if (!candidateThread || (candidateThread.indexOf('THR_CLIENT_') !== 0 && candidateThread.indexOf('THR_PHC_') !== 0)) {
+      // Fallback to global thread for admin assistant if no valid client/pharmacy thread
+      candidateThread = CHAT_THREAD_GLOBAL;
+    }
+    const contextMessages = buildAssistantContext_(chatSheet, targetRow, candidateThread, CHAT_ASSISTANT_HISTORY_LIMIT);
     const aiResult = callChatGPT(contextMessages, question);
     if (!aiResult || aiResult.ok !== true) {
       const reason = aiResult && aiResult.reason ? aiResult.reason : 'API_ERROR';
       throw new Error('Assistant indisponible (' + reason + ').');
     }
     const assistantAnswer = sanitizeMultiline(aiResult.message, 1200) || 'Assistant indisponible.';
-    const assistantSessionId = buildAssistantSessionId_(threadId);
+    const assistantSessionId = buildAssistantSessionId_(candidateThread);
 
     const payload = {
       authorType: 'assistant',
       authorPseudo: 'ChatGPT',
       message: assistantAnswer,
       visibleTo: CHAT_ASSISTANT_DEFAULT_VISIBILITY,
-      threadId: threadId,
+      threadId: candidateThread,
       sessionId: assistantSessionId
     };
 
