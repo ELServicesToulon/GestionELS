@@ -184,6 +184,22 @@ function sanitizeEmail(value) {
 }
 
 /**
+ * Nettoie un identifiant de thread de chat.
+ * @param {string} value
+ * @returns {string}
+ */
+function sanitizeChatThreadId(value) {
+  const base = typeof sanitizeScalar === 'function'
+    ? sanitizeScalar(value || '', 64)
+    : String(value || '').trim();
+  if (!base) {
+    return '';
+  }
+  const normalized = base.replace(/[^A-Za-z0-9_:-]/g, '').toUpperCase();
+  return normalized.substring(0, 64);
+}
+
+/**
  * Formate un libellé de ville pour affichage.
  * @param {string} raw
  * @returns {string}
@@ -230,6 +246,73 @@ function extractCityFromClient(clientRecord) {
       return nameMatch[1];
     }
     return name.split(/\s+/).pop();
+  }
+  return '';
+}
+
+/**
+ * Construit un identifiant de thread à partir d'un client reconnu.
+ * @param {Object} clientRecord
+ * @returns {string}
+ */
+function buildChatThreadIdFromClient(clientRecord) {
+  if (!clientRecord) {
+    return '';
+  }
+  const rawId = sanitizeScalar(clientRecord.clientId || '', 48).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  if (rawId) {
+    return 'THR_CLIENT_' + rawId.substring(0, 32);
+  }
+  const email = sanitizeEmail(clientRecord.email || clientRecord.contactEmail || '');
+  if (email) {
+    let computed = '';
+    try {
+      if (typeof calculerIdentifiantClient === 'function') {
+        computed = String(calculerIdentifiantClient(email) || '');
+      }
+    } catch (_err) {
+      computed = '';
+    }
+    const hashed = sanitizeScalar(computed || email, 48).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    if (hashed) {
+      return 'THR_CLIENT_' + hashed.substring(0, 32);
+    }
+  }
+  return '';
+}
+
+/**
+ * Construit un identifiant de thread à partir d'un code pharmacie anonymisé.
+ * @param {string} code
+ * @returns {string}
+ */
+function buildChatThreadIdFromCode(code) {
+  const safeCode = sanitizePharmacyCode(code);
+  if (!safeCode) {
+    return '';
+  }
+  return 'THR_PHC_' + safeCode;
+}
+
+/**
+ * Détermine le thread cible pour un payload donné.
+ * @param {Object} payload
+ * @param {Object} clientRecord
+ * @param {string} pharmacyCode
+ * @returns {string}
+ */
+function resolveChatThreadId(payload, clientRecord, pharmacyCode) {
+  const fromClient = buildChatThreadIdFromClient(clientRecord);
+  if (fromClient) {
+    return fromClient;
+  }
+  const fromCode = buildChatThreadIdFromCode(pharmacyCode);
+  if (fromCode) {
+    return fromCode;
+  }
+  const explicit = sanitizeChatThreadId(payload && payload.threadId);
+  if (explicit && (explicit.indexOf('THR_CLIENT_') === 0 || explicit.indexOf('THR_PHC_') === 0)) {
+    return explicit;
   }
   return '';
 }
@@ -286,14 +369,98 @@ function isChatRateAllowed(sessionId) {
 }
 
 /**
+ * Retourne les messages actifs d'un thread donné.
+ * @param {string} threadId
+ * @param {{since?:number, limit?:number}} [options]
+ * @returns {{messages:Array<Object>, lastTs:number}}
+ */
+function chatGetMessagesForThread(threadId, options) {
+  const since = Number(options && options.since) || 0;
+  const limitValue = Number(options && options.limit) || 200;
+  const limit = Math.min(Math.max(limitValue, 1), 200);
+  const safeThread = sanitizeChatThreadId(threadId);
+  if (!safeThread) {
+    return { messages: [], lastTs: since };
+  }
+  if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
+    return { messages: [], lastTs: since };
+  }
+
+  try {
+    const ss = getMainSpreadsheet();
+    const chatSheet = ss.getSheetByName(SHEET_CHAT);
+    if (!chatSheet) {
+      return { messages: [], lastTs: since };
+    }
+
+    const lastRow = chatSheet.getLastRow();
+    if (lastRow <= 1) {
+      return { messages: [], lastTs: since };
+    }
+
+    const values = chatSheet.getRange(2, 1, lastRow - 1, 9).getValues();
+    const messages = [];
+    let lastTimestamp = since;
+
+    for (let i = 0; i < values.length; i++) {
+      const [rawTs, rowThread, authorType, _authorRef, authorPseudo, rawMessage, visibleTo, status] = values[i];
+      if (String(status || '').toLowerCase() !== 'active') {
+        continue;
+      }
+      const rowThreadId = sanitizeChatThreadId(rowThread);
+      if (rowThreadId !== safeThread) {
+        continue;
+      }
+      const visibility = String(visibleTo || 'pharmacy').toLowerCase();
+      if (visibility !== 'pharmacy') {
+        continue;
+      }
+      const timestamp = rawTs instanceof Date ? rawTs.getTime() : Number(rawTs) || 0;
+      if (since && timestamp <= since) {
+        continue;
+      }
+      const sanitizedMessage = sanitizeMultiline(rawMessage, 1000);
+      if (!sanitizedMessage) {
+        continue;
+      }
+      messages.push({
+        timestamp: timestamp,
+        threadId: safeThread,
+        authorType: String(authorType || 'pharmacy').toLowerCase(),
+        authorPseudo: sanitizeScalar(authorPseudo || '', 64),
+        message: sanitizedMessage,
+        visibleTo: 'pharmacy'
+      });
+      if (timestamp > lastTimestamp) {
+        lastTimestamp = timestamp;
+      }
+    }
+
+    if (messages.length > limit) {
+      messages.splice(0, messages.length - limit);
+    }
+
+    return { messages: messages, lastTs: lastTimestamp };
+  } catch (err) {
+    console.error('[chatGetMessagesForThread]', err);
+    return { messages: [], lastTs: since };
+  }
+}
+
+/**
  * Poste un message dans le chat.
  * @param {Object} rawPayload
  * @returns {{ok:boolean, reason?:string}}
  */
 function chatPostMessage(rawPayload) {
+  if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
+    return { ok: false, reason: 'UNCONFIGURED' };
+  }
+
   try {
     const payload = rawPayload || {};
-    if (!isChatRateAllowed(payload.sessionId || '')) {
+    const sessionId = sanitizeScalar(payload.sessionId || '', 64);
+    if (!isChatRateAllowed(sessionId)) {
       return { ok: false, reason: 'RATE_LIMIT' };
     }
 
@@ -302,24 +469,17 @@ function chatPostMessage(rawPayload) {
       return { ok: false, reason: 'EMPTY_MESSAGE' };
     }
 
+    const requestedType = String(payload.authorType || 'pharmacy').toLowerCase();
+    if (requestedType === 'admin') {
+      return { ok: false, reason: 'UNAUTHORIZED' };
+    }
+
     const ss = getMainSpreadsheet();
     const chatSheet = getChatSheet(ss);
-    const userEmail = (Session.getActiveUser() && Session.getActiveUser().getEmail()) || '';
-    const adminEmail = (ADMIN_EMAIL || '').toLowerCase();
-    const isAdminUser = userEmail && userEmail.toLowerCase() === adminEmail;
-
-    const requestedType = String(payload.authorType || 'pharmacy').toLowerCase();
-    const wantsAdminVisibility = String(payload.visibleTo || '').toLowerCase() === 'admin' || requestedType === 'admin';
-
-    let authorType = 'pharmacy';
-    let visibleTo = wantsAdminVisibility ? 'admin' : 'pharmacy';
-    let authorRef = '';
-    let authorPseudo = '';
 
     const clientId = sanitizeScalar(payload.clientId, 64);
     const clientEmail = sanitizeEmail(payload.clientEmail);
     let clientRecord = null;
-
     if (clientEmail) {
       try {
         clientRecord = obtenirInfosClientParEmail(clientEmail);
@@ -332,58 +492,66 @@ function chatPostMessage(rawPayload) {
       }
     }
 
+    const pharmacyCode = sanitizePharmacyCode(payload.pharmacyCode);
+    const resolvedThreadId = resolveChatThreadId(payload, clientRecord, pharmacyCode);
+    if (!resolvedThreadId) {
+      if (requestedType === 'assistant') {
+        return { ok: false, reason: 'INVALID_THREAD' };
+      }
+      if (clientEmail && !clientRecord) {
+        return { ok: false, reason: 'CLIENT_NOT_FOUND' };
+      }
+      return { ok: false, reason: 'INVALID_CODE' };
+    }
+
+    let authorType = 'pharmacy';
+    let authorRef = '';
+    let authorPseudo = '';
+
     if (requestedType === 'assistant') {
       authorType = 'assistant';
       authorRef = 'ASSISTANT';
-      authorPseudo = sanitizeScalar(payload.authorPseudo || '', 64) || 'Assistant';
-      visibleTo = wantsAdminVisibility ? 'admin' : 'pharmacy';
-    } else if (requestedType === 'admin' && isAdminUser) {
-      authorType = 'admin';
-      visibleTo = wantsAdminVisibility ? 'admin' : 'all';
-      authorRef = userEmail;
-      authorPseudo = 'Admin';
-    } else {
-      const code = sanitizePharmacyCode(payload.pharmacyCode);
-      if (clientRecord) {
-        const refId = sanitizeScalar(clientRecord.clientId || '', 64);
-        const baseEmail = sanitizeEmail(clientRecord.email || clientEmail);
-        let computedRef = '';
-        if (refId) {
-          computedRef = 'CLIENT_' + refId;
-        } else if (baseEmail) {
-          computedRef = 'CLIENT_' + calculerIdentifiantClient(baseEmail);
-        } else {
-          computedRef = 'CLIENT_' + Utilities.getUuid().replace(/-/g, '');
-        }
-        authorRef = computedRef;
-        const cityLabel = extractCityFromClient(clientRecord);
-        authorPseudo = computeChatPseudo(authorRef, { city: cityLabel });
-      } else if (code) {
-        authorRef = 'PHC_' + code;
-        authorPseudo = computeChatPseudo(authorRef);
+      authorPseudo = sanitizeScalar(payload.authorPseudo || 'Assistant', 64) || 'Assistant';
+    } else if (clientRecord) {
+      const refId = sanitizeScalar(clientRecord.clientId || '', 64);
+      const baseEmail = sanitizeEmail(clientRecord.email || clientEmail);
+      if (refId) {
+        authorRef = 'CLIENT_' + refId;
+      } else if (baseEmail && typeof calculerIdentifiantClient === 'function') {
+        authorRef = 'CLIENT_' + calculerIdentifiantClient(baseEmail);
       } else {
-        return { ok: false, reason: clientEmail ? 'CLIENT_NOT_FOUND' : 'INVALID_CODE' };
+        authorRef = 'CLIENT_' + Utilities.getUuid().replace(/-/g, '');
       }
-      if (!wantsAdminVisibility) {
-        visibleTo = 'pharmacy';
-      }
+      const cityLabel = extractCityFromClient(clientRecord);
+      authorPseudo = computeChatPseudo(authorRef, { city: cityLabel });
+    } else if (pharmacyCode) {
+      authorRef = 'PHC_' + pharmacyCode;
+      authorPseudo = computeChatPseudo(authorRef);
+    } else {
+      return { ok: false, reason: 'INVALID_CODE' };
     }
 
-    const threadId = sanitizeScalar(payload.threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
-
+    const timestampDate = new Date();
     chatSheet.appendRow([
-      new Date(),
-      threadId,
+      timestampDate,
+      resolvedThreadId,
       authorType,
       authorRef,
       authorPseudo,
       message,
-      visibleTo,
+      'pharmacy',
       'active',
       ''
     ]);
 
-    return { ok: true };
+    return {
+      ok: true,
+      threadId: resolvedThreadId,
+      timestamp: timestampDate.getTime(),
+      message: message,
+      authorType: authorType,
+      authorPseudo: authorPseudo
+    };
   } catch (err) {
     console.error('[chatPostMessage]', err);
     return { ok: false, reason: 'ERROR' };
@@ -396,102 +564,33 @@ function chatPostMessage(rawPayload) {
  * @returns {{messages:Array<Object>, lastTs:number}}
  */
 function chatGetMessages(options) {
+  const params = options || {};
+  const since = Number(params.since) || 0;
+  const threadId = sanitizeChatThreadId(params.threadId);
+
+  if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
+    return { ok: false, reason: 'UNCONFIGURED', messages: [], lastTs: since };
+  }
+
+  if (!threadId) {
+    return { ok: false, reason: 'INVALID_THREAD', messages: [], lastTs: since };
+  }
+
   try {
-    const params = options || {};
-    const since = Number(params.since) || 0;
-    const audience = String(params.audience || 'pharmacy').toLowerCase();
-    const includeAdmin = audience === 'admin';
-
-    const ss = getMainSpreadsheet();
-    const chatSheet = ss.getSheetByName(SHEET_CHAT);
-    if (!chatSheet) {
-      return { messages: [], lastTs: since };
-    }
-
-    const lastRow = chatSheet.getLastRow();
-    if (lastRow <= 1) {
-      return { messages: [], lastTs: since };
-    }
-
-    const range = chatSheet.getRange(2, 1, lastRow - 1, 9);
-    const rows = range.getValues();
-    const messages = [];
-    let lastTimestamp = since;
-
-    for (let i = 0; i < rows.length; i++) {
-      const [ts, threadId, authorType, _authorRef, authorPseudo, msg, visibleTo, status] = rows[i];
-      if (String(status || '').toLowerCase() !== 'active') {
-        continue;
-      }
-
-      const timestamp = ts instanceof Date ? ts.getTime() : Number(ts) || 0;
-      if (since && timestamp <= since) {
-        continue;
-      }
-
-      const visibility = String(visibleTo || 'pharmacy').toLowerCase();
-      if (visibility === 'admin' && !includeAdmin) {
-        continue;
-      }
-
-      messages.push({
-        timestamp: timestamp,
-        threadId: threadId || CHAT_THREAD_GLOBAL,
-        authorType: authorType || 'pharmacy',
-        authorPseudo: authorPseudo || '',
-        message: msg || '',
-        visibleTo: visibility
-      });
-
-      if (timestamp > lastTimestamp) {
-        lastTimestamp = timestamp;
-      }
-    }
-
-    if (messages.length > 200) {
-      messages.splice(0, messages.length - 200);
-    }
-
-    return { messages: messages, lastTs: lastTimestamp };
+    const result = chatGetMessagesForThread(threadId, {
+      since: since,
+      limit: Number(params.limit) || 200
+    });
+    return {
+      ok: true,
+      messages: result.messages,
+      lastTs: result.lastTs,
+      threadId: threadId
+    };
   } catch (err) {
     console.error('[chatGetMessages]', err);
-    return { messages: [], lastTs: Number(options && options.since) || 0 };
+    return { ok: false, reason: 'ERROR', messages: [], lastTs: since };
   }
-}
-
-/**
- * Masque un message (statut hidden). Réservé à l'administrateur.
- * @param {number|string} timestamp
- * @returns {{ok:boolean, reason?:string}}
- */
-function chatAdminHide(timestamp) {
-  const userEmail = (Session.getActiveUser() && Session.getActiveUser().getEmail()) || '';
-  if (!userEmail || userEmail.toLowerCase() !== String(ADMIN_EMAIL || '').toLowerCase()) {
-    return { ok: false, reason: 'UNAUTHORIZED' };
-  }
-  const tsNumber = Number(timestamp);
-  if (!tsNumber) {
-    return { ok: false, reason: 'INVALID_TIMESTAMP' };
-  }
-  const ss = getMainSpreadsheet();
-  const sheet = ss.getSheetByName(SHEET_CHAT);
-  if (!sheet) {
-    return { ok: false, reason: 'NOT_FOUND' };
-  }
-  const lastRow = sheet.getLastRow();
-  if (lastRow <= 1) {
-    return { ok: false, reason: 'NOT_FOUND' };
-  }
-  const rows = sheet.getRange(2, 1, lastRow - 1, 8).getValues();
-  for (let i = 0; i < rows.length; i++) {
-    const rowTimestamp = rows[i][0];
-    const rowTs = rowTimestamp instanceof Date ? rowTimestamp.getTime() : Number(rowTimestamp) || 0;
-    if (rowTs === tsNumber) {
-      sheet.getRange(i + 2, 8).setValue('hidden');
-      return { ok: true };
-    }
-  }
-  return { ok: false, reason: 'NOT_FOUND' };
 }
 
 /**

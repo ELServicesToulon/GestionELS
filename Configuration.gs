@@ -198,7 +198,7 @@ const ADMIN_SLOTS_PNG_ENABLED = false;
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = true;
 
-/** @const {boolean} Active l'assistant conversationnel côté reservation. */
+/** @const {boolean} Active l'assistant conversationnel (chat et réservation). */
 const CFG_ENABLE_ASSISTANT = false;
 
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
