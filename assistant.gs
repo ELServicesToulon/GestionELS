@@ -142,6 +142,78 @@ function askAssistant(row) {
 }
 
 /**
+ * Fournit une réponse assistant pour un thread spécifique côté WebApp.
+ * @param {{threadId?:string, question?:string, sessionId?:string, clientId?:string, clientEmail?:string, pharmacyCode?:string}} rawInput
+ * @returns {{ok:boolean, reason?:string, answer?:string, question?:string, threadId?:string, history?:Array<Object>}}
+ */
+function askAssistantOnThread(rawInput) {
+  if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
+    return { ok: false, reason: 'UNCONFIGURED' };
+  }
+
+  try {
+    const input = rawInput || {};
+    const safeThread = sanitizeScalar(input.threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+    const safeSession = sanitizeScalar(input.sessionId || '', 64) || ('webapp:' + safeThread);
+    const question = sanitizeMultiline(input.question, 1000);
+
+    if (!question) {
+      return { ok: false, reason: 'EMPTY_MESSAGE' };
+    }
+
+    const payload = {
+      authorType: 'pharmacy',
+      message: question,
+      threadId: safeThread,
+      sessionId: safeSession,
+      clientId: sanitizeScalar(input.clientId, 64),
+      clientEmail: sanitizeEmail(input.clientEmail),
+      pharmacyCode: sanitizePharmacyCode(input.pharmacyCode)
+    };
+
+    if (!payload.clientId && !payload.clientEmail && !payload.pharmacyCode) {
+      payload.pharmacyCode = sanitizePharmacyCode(computeAssistantFallbackCode_(safeSession));
+    }
+
+    const postResult = chatPostMessage(payload);
+    if (!postResult || !postResult.ok) {
+      return postResult && postResult.reason ? postResult : { ok: false, reason: 'ERROR' };
+    }
+
+    const contextMessages = buildAssistantThreadContext_(safeThread, CHAT_ASSISTANT_HISTORY_LIMIT);
+    const assistantRaw = callChatGPT(contextMessages, question) || '';
+    const assistantText = sanitizeMultiline(assistantRaw, 1200) || 'Assistant indisponible pour le moment.';
+
+    const assistantPayload = {
+      authorType: 'assistant',
+      authorPseudo: 'Assistant',
+      message: assistantText,
+      visibleTo: CHAT_ASSISTANT_DEFAULT_VISIBILITY,
+      threadId: safeThread,
+      sessionId: buildAssistantSessionId_(safeThread)
+    };
+
+    const assistantPost = chatPostMessage(assistantPayload);
+    if (!assistantPost || !assistantPost.ok) {
+      return assistantPost && assistantPost.reason ? assistantPost : { ok: false, reason: 'ERROR' };
+    }
+
+    const history = buildAssistantHistorySnapshot_(safeThread, CHAT_ASSISTANT_HISTORY_LIMIT);
+
+    return {
+      ok: true,
+      answer: assistantText,
+      question: question,
+      threadId: safeThread,
+      history: history
+    };
+  } catch (err) {
+    console.error('[askAssistantOnThread]', err);
+    return { ok: false, reason: 'ERROR' };
+  }
+}
+
+/**
  * Cree ou met a jour le menu permettant d'invoquer l'assistant.
  */
 function menuAskAssistant() {
@@ -218,6 +290,88 @@ function buildAssistantContext_(chatSheet, targetRow, threadId, limit) {
     return context.slice(context.length - limit);
   }
   return context;
+}
+
+/**
+ * Construit le contexte assistant pour un thread donné (webapp).
+ * @param {string} threadId
+ * @param {number} limit
+ * @returns {Array<{role:string, content:string}>}
+ */
+function buildAssistantThreadContext_(threadId, limit) {
+  const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+  const context = [];
+  try {
+    const ss = getMainSpreadsheet();
+    const sheet = getChatSheet(ss);
+    if (!sheet) {
+      return context;
+    }
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) {
+      return context;
+    }
+    const values = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
+    for (let i = values.length - 1; i >= 0 && context.length < Number(limit || 10); i--) {
+      const row = values[i];
+      const currentThread = sanitizeScalar(row[1] || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+      if (currentThread !== safeThread) {
+        continue;
+      }
+      const status = String(row[7] || '').toLowerCase();
+      if (status && status !== 'active') {
+        continue;
+      }
+      const visibility = String(row[6] || CHAT_ASSISTANT_DEFAULT_VISIBILITY).toLowerCase();
+      if (visibility === 'admin') {
+        continue;
+      }
+      const role = String(row[2] || 'pharmacy').toLowerCase() === 'assistant' ? 'assistant' : 'user';
+      const message = sanitizeMultiline(row[5], 1000);
+      if (!message) {
+        continue;
+      }
+      context.unshift({ role: role, content: message });
+    }
+  } catch (err) {
+    console.warn('[buildAssistantThreadContext_]', err);
+  }
+  const maxItems = Number(limit || 10);
+  return context.length > maxItems ? context.slice(context.length - maxItems) : context;
+}
+
+/**
+ * Retourne l'historique du thread pour affichage côté client.
+ * @param {string} threadId
+ * @param {number} limit
+ * @returns {Array<Object>}
+ */
+function buildAssistantHistorySnapshot_(threadId, limit) {
+  try {
+    const result = chatGetMessages({ since: 0, audience: 'pharmacy' });
+    const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+    const messages = Array.isArray(result && result.messages) ? result.messages : [];
+    const filtered = messages.filter(msg => (msg.threadId || CHAT_THREAD_GLOBAL) === safeThread);
+    const maxItems = Number(limit || 20);
+    return filtered.length > maxItems ? filtered.slice(filtered.length - maxItems) : filtered;
+  } catch (err) {
+    console.warn('[buildAssistantHistorySnapshot_]', err);
+    return [];
+  }
+}
+
+/**
+ * Génère un code fallback pour les sessions anonymes de l'assistant.
+ * @param {string} sessionId
+ * @returns {string}
+ */
+function computeAssistantFallbackCode_(sessionId) {
+  const base = sanitizeScalar(sessionId || '', 32).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+  const padded = (base + 'ELSCHAT').substring(0, 8);
+  if (padded.length >= 4) {
+    return padded;
+  }
+  return (padded + 'XXXX').substring(0, 4);
 }
 
 /**
