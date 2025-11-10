@@ -152,11 +152,13 @@ function envoyerLienEspaceClient(emailClient) {
     // Throttle: interval minimal + burst par heure
     const cache = CacheService.getScriptCache();
     const keyBase = Utilities.base64EncodeWebSafe(email);
-    const interval = (typeof CLIENT_PORTAL_LINK_RATE_LIMIT_SECONDS !== 'undefined') ? Math.max(1, Number(CLIENT_PORTAL_LINK_RATE_LIMIT_SECONDS) || 60) : 60;
-    const burstMax = (typeof CLIENT_PORTAL_LINK_BURST_PER_HOUR !== 'undefined') ? Math.max(1, Number(CLIENT_PORTAL_LINK_BURST_PER_HOUR) || 5) : 5;
+    const intervalConf = (typeof CLIENT_PORTAL_LINK_RATE_LIMIT_SECONDS !== 'undefined') ? Number(CLIENT_PORTAL_LINK_RATE_LIMIT_SECONDS) : 60;
+    const interval = isFinite(intervalConf) ? intervalConf : 60;
+    const burstConf = (typeof CLIENT_PORTAL_LINK_BURST_PER_HOUR !== 'undefined') ? Number(CLIENT_PORTAL_LINK_BURST_PER_HOUR) : 5;
+    const burstMax = isFinite(burstConf) && burstConf > 0 ? Math.floor(burstConf) : 5;
     const rateKey = 'client_link_rate:' + keyBase;
     const burstKey = 'client_link_burst:' + keyBase;
-    if (cache.get(rateKey)) {
+    if (interval > 0 && cache.get(rateKey)) {
       return { success: false, error: 'RATE_LIMIT' };
     }
     let burstCount = 0;
@@ -164,7 +166,9 @@ function envoyerLienEspaceClient(emailClient) {
     if (burstCount >= burstMax) {
       return { success: false, error: 'RATE_LIMIT_BURST' };
     }
-    cache.put(rateKey, '1', interval);
+    if (interval > 0) {
+      cache.put(rateKey, '1', interval);
+    }
     cache.put(burstKey, String(burstCount + 1), 3600);
 
     var url = '';
