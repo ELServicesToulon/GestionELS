@@ -44,7 +44,6 @@ function lancerTousLesTests() {
   testerAdministration();
   testerMaintenance();
   testerAuditDrive();
-  testerAuditModules();
 
   Logger.log("===== FIN DE LA SUITE DE TESTS COMPLÈTE =====");
   // SpreadsheetApp.getUi().alert("Tests terminés. Consultez les journaux (Logs) pour les résultats détaillés.");
@@ -445,7 +444,7 @@ function test_computeCoursePriceV2() {
 
 function testerGestionClient() {
   Logger.log("\n--- Test de Gestion.gs ---");
-  (function(){ try { var tmp = generateSignedClientLink(TEST_CLIENT.email); var params = tmp && tmp.url ? tmp.url.split('?')[1] : ''; var map = {}; params.split('&').forEach(function(p){ var kv=p.split('='); map[decodeURIComponent(kv[0]||'')]=decodeURIComponent(kv[1]||''); }); var exp = map.exp || ''; var sig = map.sig || ''; return validerClientParEmail(TEST_CLIENT.email, exp, sig); } catch (e) { return validerClientParEmail(TEST_CLIENT.email, '', ''); } })();
+  const validation = validerClientParEmail(TEST_CLIENT.email, '', '');
   if (validation && validation.success) {
     Logger.log("SUCCESS: validerClientParEmail()");
   } else {
@@ -484,23 +483,6 @@ function testerAuditDrive() {
     Logger.log("SUCCESS: lancerAuditDrive() s'est exécutée sans erreur.");
   } catch (e) {
     Logger.log(`FAILURE: lancerAuditDrive() a échoué. Erreur: ${e.message}`);
-  }
-}
-
-/**
- * Vérifie le résultat global de auditGsModules().
- */
-function testerAuditModules() {
-  Logger.log("\n--- Test de auditGsModules() ---");
-  try {
-    const audit = auditGsModules();
-    if (audit && audit.ok) {
-      Logger.log('SUCCESS: auditGsModules() a validé toutes les vérifications.');
-    } else {
-      Logger.log(`FAILURE: auditGsModules() a détecté des anomalies: ${JSON.stringify(audit && audit.failingChecks)}`);
-    }
-  } catch (err) {
-    Logger.log(`FAILURE: auditGsModules() a levé une exception: ${err && err.message}`);
   }
 }
 

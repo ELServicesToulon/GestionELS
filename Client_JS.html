@@ -401,7 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         const ul = document.createElement('ul');
         ul.className = 'liste-factures';
-        let notificationLienInvalideAffichee = false;
         factures.forEach(f => {
             const li = document.createElement('li');
             const numero = escapeHTML(f.numero);
@@ -410,25 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const periodeDebut = formatISODate(f.periodeStartISO);
             const periodeFin = formatISODate(f.periodeEndISO);
             const dueDate = formatISODate(f.dueDateISO);
-            let urlValidee = '#';
-            let urlEstValide = false;
-            if (f && typeof f.url === 'string' && f.url.trim() !== '') {
-                try {
-                    const urlCandidate = new URL(f.url, window.location.origin);
-                    if (urlCandidate.protocol === 'http:' || urlCandidate.protocol === 'https:') {
-                        urlValidee = urlCandidate.href;
-                        urlEstValide = true;
-                    } else {
-                        logWarn('URL de facture rejetée (protocole interdit)', urlCandidate.protocol);
-                    }
-                } catch (err) {
-                    logWarn('URL de facture invalide', f.url, err);
-                }
-            }
-            if (!urlEstValide && !notificationLienInvalideAffichee && typeof afficherNotification === 'function') {
-                afficherNotification('Lien de téléchargement de facture indisponible.', 'erreur');
-                notificationLienInvalideAffichee = true;
-            }
+            const url = escapeHTML(f.url);
 
             const ligneNumero = `Numéro : ${numero}${dateEmission ? ` — Date : ${escapeHTML(dateEmission)}` : ''}`;
             let lignePeriode = '';
@@ -452,28 +433,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${lignePeriode ? `<p>${lignePeriode}</p>` : ''}
                     ${ligneEcheance ? `<p>${ligneEcheance}</p>` : ''}
                 </div>
+                <div class="facture-actions">
+                    <a class="btn btn-secondaire btn--client" href="${url}" target="_blank" rel="noopener">Télécharger</a>
+                    <button class="btn btn-primaire btn--client btn-mail-facture" data-numero="${numero}">Recevoir par e-mail</button>
+                </div>
             `);
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'facture-actions';
-            const lienTelechargement = document.createElement('a');
-            lienTelechargement.className = 'btn btn-secondaire btn--client';
-            lienTelechargement.target = '_blank';
-            lienTelechargement.rel = 'noopener';
-            lienTelechargement.textContent = 'Télécharger';
-            lienTelechargement.setAttribute('href', urlValidee);
-            if (!urlEstValide) {
-                lienTelechargement.setAttribute('aria-disabled', 'true');
-                lienTelechargement.addEventListener('click', evt => {
-                    evt.preventDefault();
-                });
-            }
-            const boutonEmail = document.createElement('button');
-            boutonEmail.className = 'btn btn-primaire btn--client btn-mail-facture';
-            boutonEmail.dataset.numero = numero;
-            boutonEmail.textContent = 'Recevoir par e-mail';
-            actionsDiv.appendChild(lienTelechargement);
-            actionsDiv.appendChild(boutonEmail);
-            li.appendChild(actionsDiv);
             ul.appendChild(li);
         });
         cont.appendChild(ul);

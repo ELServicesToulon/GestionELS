@@ -262,44 +262,8 @@ function initialiserModaleConnexionClient() {
       input.setCustomValidity('');
       return;
     }
-    const emailLower = emailTrim.toLowerCase();
     fermer();
-    try {
-      // Envoie le lien d'accès par e-mail côté serveur
-      google.script.run
-        .withSuccessHandler(res => {
-          if (!res || res.success !== true) {
-            const reason = res && res.error ? String(res.error) : '';
-            if (typeof afficherNotification === 'function') {
-              let msg = "Impossible d'envoyer le lien d'accès. Réessayez plus tard.";
-              if (reason === 'EMAIL_INVALID') {
-                msg = "Adresse e-mail invalide.";
-              } else if (reason === 'BASE_URL_UNAVAILABLE') {
-                msg = "Service indisponible. L'application n'est pas déployée en Web App.";
-              } else if (reason === 'RATE_LIMIT') {
-                msg = "Trop de demandes. Attendez une minute avant de réessayer.";
-              } else if (reason === 'RATE_LIMIT_BURST') {
-                msg = "Limite horaire d'envois atteinte. Réessayez plus tard.";
-              }
-              afficherNotification(msg, 'erreur');
-            }
-            return;
-          }
-          if (typeof afficherNotification === 'function') {
-            afficherNotification('Un lien sécurisé a été envoyé à ' + emailLower + '.', 'info');
-          }
-        })
-        .withFailureHandler(err => {
-          if (typeof afficherNotification === 'function') {
-            afficherNotification("Envoi du lien impossible: " + (err && err.message ? err.message : ''), 'erreur');
-          }
-        })
-        .envoyerLienEspaceClient(emailLower);
-    } catch (_err) {
-      // ignore script.run errors
-    }
-    // Tentative de reconnaissance locale pour adapter l'UI
-    preRemplirInfosClient(emailLower);
+    preRemplirInfosClient(emailTrim);
   });
 }
 
@@ -826,34 +790,14 @@ function mettreAJourLienEspaceClient(client) {
 
   btnConnexion?.classList.add('hidden');
   portailClientLienEnCours = client.email;
-  const warn = typeof logWarn === 'function' ? logWarn : (...args) => console.warn('[ELS]', ...args);
   const appliquerLien = (url) => {
     if (!lien) return;
-    let hrefSecurise = defaultHref;
-    let urlEstSure = false;
-    if (url) {
-      try {
-        const baseNormalisation = baseUrl || window.location.origin;
-        const urlNormalisee = new URL(url, baseNormalisation);
-        if (urlNormalisee.protocol === 'http:' || urlNormalisee.protocol === 'https:') {
-          hrefSecurise = urlNormalisee.toString();
-          urlEstSure = true;
-        } else {
-          warn('URL portail client rejetée: protocole non autorisé.');
-        }
-      } catch (_err) {
-        warn('URL portail client invalide, fallback appliqué.');
-      }
-    }
-    lien.setAttribute('href', hrefSecurise);
+    const href = url || defaultHref;
+    lien.href = href;
     if (lien.dataset) {
-      if (urlEstSure) {
-        lien.dataset.portalUrl = hrefSecurise;
-      } else {
-        delete lien.dataset.portalUrl;
-      }
+      lien.dataset.portalUrl = href;
     }
-    mettreAJourCarteEspaceClient(client, hrefSecurise);
+    mettreAJourCarteEspaceClient(client, href);
   };
 
   const fallback = () => {

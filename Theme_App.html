@@ -34,16 +34,7 @@ h2 { font-size: clamp(18px, 2vw, 22px); }
 .layout > .main > * { min-width: 0; }
 .section--calendar { grid-column: 1; }
 .section--tarifs, .section--panier { grid-column: 2; }
-@media (max-width:1080px) {
-  .layout > .main {
-    display: flex;
-    flex-direction: column;
-  }
-  .section--calendar,
-  .section--tarifs,
-  .section--panier { grid-column: 1; }
-  .section--panier { order: -1; }
-}
+@media (max-width:1080px) { .layout > .main { grid-template-columns: 1fr; } .section--calendar, .section--tarifs, .section--panier { grid-column: 1; } }
 @media (min-width:1280px) { .section--panier { grid-column: 1 / -1; } }
 
 /* Utility grids */

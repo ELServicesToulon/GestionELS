@@ -159,15 +159,9 @@ const CLIENT_ID_CARTOON_NAMES = Object.freeze([
 /** @const {boolean} Active l'espace client. */
 const CLIENT_PORTAL_ENABLED = true;
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
-const CLIENT_PORTAL_SIGNED_LINKS = true;
-/** @const {boolean} Integre l'espace client dans la page de reservation. */
-const CLIENT_PORTAL_EMBED_ENABLED = false;
+const CLIENT_PORTAL_SIGNED_LINKS = false;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
-/** @const {number} Interval minimal entre deux envois de lien (secondes). */
-const CLIENT_PORTAL_LINK_RATE_LIMIT_SECONDS = 0;
-/** @const {number} Nombre maximum d'envois de lien par heure (par email). */
-const CLIENT_PORTAL_LINK_BURST_PER_HOUR = 15;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
 const PRIVACY_LINK_ENABLED = true;
 /** @const {boolean} Affiche le lien vers les mentions légales. */
@@ -203,11 +197,6 @@ const ADMIN_SLOTS_PNG_ENABLED = false;
 
 /** @const {boolean} Vérifie la création d'événement et l'unicité des ID de réservation. */
 const RESERVATION_VERIFY_ENABLED = true;
-
-/** @const {boolean} Active l'assistant conversationnel (chat et réservation). */
-const CFG_ENABLE_ASSISTANT = true;
-/** @const {number} Budget mensuel maximum (jetons) pour l'assistant IA. */
-const CFG_ASSISTANT_MONTHLY_BUDGET_TOKENS = 150000;
 
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
 const RESERVATION_UI_V2_ENABLED = true;
@@ -281,7 +270,7 @@ const RESERVATION_SHOW_TAKEN_SLOTS_ENABLED = true;
 const THEME_V2_ENABLED = true;
 const ELS_UI_THEMING_ENABLED = true;
 /** @const {boolean} Affiche un bouton client pour basculer vers un thème épuré. */
-const THEME_SWITCHER_ENABLED = false;
+const THEME_SWITCHER_ENABLED = true;
 
 /** @const {boolean} Utilise les icônes hébergées sur Drive au lieu des Data URI. */
 const DRIVE_ASSETS_ENABLED = false;
@@ -494,7 +483,6 @@ const CONFIG = Object.freeze({
   MOIS_RETENTION_LOGS,
   CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED,
   CLIENT_PORTAL_MAX_ATTEMPTS,
-  CLIENT_PORTAL_EMBED_ENABLED,
   SHEET_RESERVATIONS,
   BILLING,
   BILLING_MODAL_ENABLED,
@@ -503,8 +491,6 @@ const CONFIG = Object.freeze({
   RESERVATION_CONFIRMATION_EMAILS_ENABLED,
   BILLING_ATOMIC_NUMBERING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
-  CFG_ENABLE_ASSISTANT,
-  CFG_ASSISTANT_MONTHLY_BUDGET_TOKENS,
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN,
   BILLING_ID_PDF_CHECK_ENABLED,
@@ -533,8 +519,7 @@ function getPublicConfig() {
     HEURE_DEBUT_SERVICE: CONFIG.HEURE_DEBUT_SERVICE,
     HEURE_FIN_SERVICE: CONFIG.HEURE_FIN_SERVICE,
     TVA_APPLICABLE: CONFIG.TVA_APPLICABLE,
-    BRANDING: CONFIG.BRANDING,
-    CFG_ENABLE_ASSISTANT: CONFIG.CFG_ENABLE_ASSISTANT
+    BRANDING: CONFIG.BRANDING
   };
 }
 

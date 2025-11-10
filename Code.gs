@@ -41,18 +41,6 @@ function onOpen(e) {
     sousMenuMaintenance.addItem("Purger Event ID introuvable", "menuPurgerEventId");
   }
 
-  // Ajout conditionnel de l'entrée assistant
-  menuPrincipal.addSeparator();
-  try {
-    const assistantEnabled = (typeof isAssistantFeatureEnabled_ === 'function')
-      ? isAssistantFeatureEnabled_()
-      : (typeof CFG_ENABLE_ASSISTANT !== 'undefined' && CFG_ENABLE_ASSISTANT);
-    if (assistantEnabled && typeof menuAskAssistant === 'function') {
-      menuPrincipal.addItem("Poser une question a l'assistant", "menuAskAssistant");
-    }
-  } catch (_err) {
-    // Ignore si l'assistant n'est pas disponible
-  }
   menuPrincipal.addSubMenu(sousMenuMaintenance);
   // Actions devis PDF et refresh menu
   if (typeof genererDevisPdfDepuisSelection === 'function') {
@@ -383,7 +371,6 @@ function renderReservationInterface() {
   template.dateDuJour = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
   template.PRICING_RULES_V2_ENABLED = (typeof PRICING_RULES_V2_ENABLED !== 'undefined') ? PRICING_RULES_V2_ENABLED : false;
   template.RETURN_IMPACTS_ESTIMATES_ENABLED = (typeof RETURN_IMPACTS_ESTIMATES_ENABLED !== 'undefined') ? RETURN_IMPACTS_ESTIMATES_ENABLED : false;
-  template.CFG_ENABLE_ASSISTANT = (typeof CFG_ENABLE_ASSISTANT !== 'undefined') ? CFG_ENABLE_ASSISTANT : false;
 
   // Variables pour la bannière d'information
   template.heureDebut = conf.HEURE_DEBUT_SERVICE;
