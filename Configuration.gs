@@ -159,7 +159,7 @@ const CLIENT_ID_CARTOON_NAMES = Object.freeze([
 /** @const {boolean} Active l'espace client. */
 const CLIENT_PORTAL_ENABLED = true;
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
-const CLIENT_PORTAL_SIGNED_LINKS = false;
+const CLIENT_PORTAL_SIGNED_LINKS = true;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
@@ -199,7 +199,7 @@ const ADMIN_SLOTS_PNG_ENABLED = false;
 const RESERVATION_VERIFY_ENABLED = true;
 
 /** @const {boolean} Active l'assistant conversationnel (chat et réservation). */
-const CFG_ENABLE_ASSISTANT = false;
+const CFG_ENABLE_ASSISTANT = true;
 /** @const {number} Budget mensuel maximum (jetons) pour l'assistant IA. */
 const CFG_ASSISTANT_MONTHLY_BUDGET_TOKENS = 150000;
 
