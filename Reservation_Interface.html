@@ -163,28 +163,7 @@
             <div id="grille-calendrier" class="grille-calendrier" role="grid"></div>
           </div>
         </div>
-      </div>
-      <section id="els-chat" class="els-card" role="region" aria-labelledby="els-chat-title">
-        <header class="els-card__head">
-          <h3 id="els-chat-title">Échanges Pharmacies (anonyme) &amp; Messages Admin</h3>
-          <div class="els-chat__filters">
-            <label>
-              <input type="checkbox" id="onlyPharmacy"> Pharmacies uniquement
-            </label>
-            <button id="refreshChat" class="els-btn" type="button">Actualiser</button>
-          </div>
-        </header>
-        <div id="chatStream" class="els-chat__stream" aria-live="polite"></div>
-        <form id="chatForm" class="els-chat__composer" autocomplete="off" novalidate>
-          <select id="authorType" required>
-            <option value="pharmacy">Je suis une pharmacie cliente</option>
-            <option value="admin">Message privé à l’admin</option>
-          </select>
-          <textarea id="chatMessage" maxlength="1000" placeholder="Écrire un message (anonyme côté pharmacie)…" required></textarea>
-          <input id="pharmacyCode" type="password" minlength="4" maxlength="8" placeholder="Code client pharmacie (4–8 chars)" aria-label="Code pharmacie">
-          <button type="submit" class="els-btn">Envoyer</button>
-        </form>
-      </section>
+        </div>
 
       <section id="els-demandes" class="els-card" role="region" aria-labelledby="els-demandes-title">
         <header class="els-card__head">
@@ -549,7 +528,6 @@
   <?!= include('Reservation_JS_Panier'); ?>
   <?!= include('Reservation_JS_Client'); ?>
   <?!= include('Reservation_JS_Tournee'); ?>
-  <?!= include('Reservation_JS_Chat'); ?>
   <? } ?>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
