@@ -26,6 +26,10 @@
     "test:assistant:success": "clasp run test_askAssistantOnThread_success",
     "test:assistant:error": "clasp run test_askAssistantOnThread_apiError",
     "test:assistant": "npm run clasp:push && npm run test:assistant:flag && npm run test:assistant:success && npm run test:assistant:error",
+    "test:portal:signed": "clasp run test_client_getPortalLink_signed",
+    "test:portal:send": "clasp run test_envoyerLienEspaceClient_smoke",
+    "test:portal": "npm run test:portal:signed && npm run test:portal:send",
+    "ci:deploy": "npm run clasp:push && npm run test:assistant && npm run test:portal && npm run clasp:version && npm run clasp:deploy",
     "icons:optimize": "svgo icons.svg",
     "validate:manifest": "node tools/validate-appsscript.js"
   }

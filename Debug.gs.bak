@@ -445,7 +445,7 @@ function test_computeCoursePriceV2() {
 
 function testerGestionClient() {
   Logger.log("\n--- Test de Gestion.gs ---");
-  (function(){ try { var tmp = generateSignedClientLink(TEST_CLIENT.email); var params = tmp && tmp.url ? tmp.url.split('?')[1] : ''; var map = {}; params.split('&').forEach(function(p){ var kv=p.split('='); map[decodeURIComponent(kv[0]||'')]=decodeURIComponent(kv[1]||''); }); var exp = map.exp || ''; var sig = map.sig || ''; return validerClientParEmail(TEST_CLIENT.email, exp, sig); } catch (e) { return validerClientParEmail(TEST_CLIENT.email, '', ''); } })();
+  const validation = validerClientParEmail(TEST_CLIENT.email, '', '');
   if (validation && validation.success) {
     Logger.log("SUCCESS: validerClientParEmail()");
   } else {
