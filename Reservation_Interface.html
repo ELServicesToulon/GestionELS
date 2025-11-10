@@ -300,15 +300,14 @@
               <button id="btn-changer-client" class="btn btn-sm">Changer de client</button>
             </div>
           </div>
-          <? if (CLIENT_PORTAL_ENABLED) { ?>
+          <? if (CLIENT_PORTAL_ENABLED && CLIENT_PORTAL_EMBED_ENABLED) { ?>
           <button id="btn-connecter-client" class="btn btn-secondaire btn-sm" type="button">Se connecter</button>
           <? } ?>
-          <a
-            id="btn-espace-client"
-            href="<?= appUrl ?>?page=gestion"
-            class="btn btn-secondaire btn-sm hidden"
-            aria-hidden="true"
-            tabindex="-1">Mon Espace Client</a>
+          <? if (CLIENT_PORTAL_ENABLED && !CLIENT_PORTAL_EMBED_ENABLED) { ?>
+          <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm">Mon Espace Client</a>
+          <? } else { ?>
+          <a id="btn-espace-client" href="<?= appUrl ?>?page=gestion" class="btn btn-secondaire btn-sm hidden" aria-hidden="true" tabindex="-1">Mon Espace Client</a>
+          <? } ?>
           <ul id="liste-panier">
             <li class="panier-vide" aria-live="polite">Votre panier est vide.</li>
           </ul>
@@ -330,7 +329,7 @@
           </div>
         </aside>
       </div>
-      <? if (CLIENT_PORTAL_ENABLED) { ?>
+      <? if (CLIENT_PORTAL_ENABLED && CLIENT_PORTAL_EMBED_ENABLED) { ?>
       <div id="client-espace-inline" class="card client-espace-inline hidden" aria-live="polite">
         <div class="client-espace-inline__header">
           <div>
@@ -543,7 +542,9 @@
   <?!= include('Reservation_JS_Principal'); ?>
   <?!= include('Reservation_JS_Devis'); ?>
   <?!= include('Reservation_JS_Panier'); ?>
-  <?!= include('Reservation_JS_Client'); ?>
+      <? if (CLIENT_PORTAL_ENABLED && CLIENT_PORTAL_EMBED_ENABLED) { ?>
+      <?!= include('Reservation_JS_Client'); ?>
+      <? } ?>
   <?!= include('Reservation_JS_Tournee'); ?>
   <?!= include('Reservation_JS_Assistant'); ?>
   <? } ?>

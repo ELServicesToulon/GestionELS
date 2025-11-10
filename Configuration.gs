@@ -160,6 +160,8 @@ const CLIENT_ID_CARTOON_NAMES = Object.freeze([
 const CLIENT_PORTAL_ENABLED = true;
 /** @const {boolean} Exige un lien signé (email+exp+sig) pour l'espace client. */
 const CLIENT_PORTAL_SIGNED_LINKS = true;
+/** @const {boolean} Integre l'espace client dans la page de reservation. */
+const CLIENT_PORTAL_EMBED_ENABLED = false;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
@@ -488,6 +490,7 @@ const CONFIG = Object.freeze({
   MOIS_RETENTION_LOGS,
   CLIENT_PORTAL_ATTEMPT_LIMIT_ENABLED,
   CLIENT_PORTAL_MAX_ATTEMPTS,
+  CLIENT_PORTAL_EMBED_ENABLED,
   SHEET_RESERVATIONS,
   BILLING,
   BILLING_MODAL_ENABLED,
