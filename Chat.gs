@@ -391,10 +391,73 @@ function chatPostMessage(rawPayload) {
 }
 
 /**
- * Retourne la liste des messages du chat, filtrés depuis un timestamp donné.
- * @param {{since?:number, audience?:string}} [options]
- * @returns {{messages:Array<Object>, lastTs:number}}
+ * Retourne les messages d'un thread spécifique du chat.
+ * @param {{threadId?:string, limit?:number, audience?:string}} [options]
+ * @returns {{ok:boolean, messages:Array<Object>, lastTs:number, reason?:string}}
  */
+function chatGetThreadMessages(options) {
+  try {
+    const params = options || {};
+    const safeThread = sanitizeScalar(params.threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+    const limit = Math.max(1, Math.min(Number(params.limit) || 20, 50));
+    const audience = String(params.audience || 'pharmacy').toLowerCase();
+    const includeAdmin = audience === 'admin';
+
+    const ss = getMainSpreadsheet();
+    const chatSheet = ss.getSheetByName(SHEET_CHAT);
+    if (!chatSheet) {
+      return { ok: true, messages: [], lastTs: 0 };
+    }
+
+    const lastRow = chatSheet.getLastRow();
+    if (lastRow <= 1) {
+      return { ok: true, messages: [], lastTs: 0 };
+    }
+
+    const rows = chatSheet.getRange(2, 1, lastRow - 1, 9).getValues();
+    const messages = [];
+    let lastTimestamp = 0;
+
+    for (let i = rows.length - 1; i >= 0 && messages.length < limit; i--) {
+      const row = rows[i];
+      const threadId = sanitizeScalar(row[1] || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+      if (threadId !== safeThread) {
+        continue;
+      }
+      const status = String(row[7] || '').toLowerCase();
+      if (status && status !== 'active') {
+        continue;
+      }
+      const visibility = String(row[6] || 'pharmacy').toLowerCase();
+      if (visibility === 'admin' && !includeAdmin) {
+        continue;
+      }
+      const message = sanitizeMultiline(row[5], 1000);
+      if (!message) {
+        continue;
+      }
+      const timestamp = row[0] instanceof Date ? row[0].getTime() : Number(row[0]) || 0;
+      const payload = {
+        timestamp: timestamp,
+        threadId: threadId,
+        authorType: String(row[2] || 'pharmacy').toLowerCase(),
+        authorPseudo: sanitizeScalar(row[4], 64),
+        message: message,
+        visibleTo: visibility
+      };
+      messages.unshift(payload);
+      if (timestamp > lastTimestamp) {
+        lastTimestamp = timestamp;
+      }
+    }
+
+    return { ok: true, messages: messages, lastTs: lastTimestamp };
+  } catch (err) {
+    console.error('[chatGetThreadMessages]', err);
+    return { ok: false, reason: 'ERROR', messages: [], lastTs: 0 };
+  }
+}
+
 function chatGetMessages(options) {
   try {
     const params = options || {};

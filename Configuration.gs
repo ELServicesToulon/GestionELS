@@ -200,6 +200,8 @@ const RESERVATION_VERIFY_ENABLED = true;
 
 /** @const {boolean} Active l'assistant conversationnel côté reservation. */
 const CFG_ENABLE_ASSISTANT = false;
+/** @const {number} Budget mensuel maximum (jetons) pour l'assistant IA. */
+const CFG_ASSISTANT_MONTHLY_BUDGET_TOKENS = 150000;
 
 /** @const {boolean} Active la nouvelle interface de réservation JavaScript. */
 const RESERVATION_UI_V2_ENABLED = true;
@@ -495,6 +497,7 @@ const CONFIG = Object.freeze({
   BILLING_ATOMIC_NUMBERING_ENABLED,
   RESERVATION_VERIFY_ENABLED,
   CFG_ENABLE_ASSISTANT,
+  CFG_ASSISTANT_MONTHLY_BUDGET_TOKENS,
   BILLING_LOG_ENABLED,
   BILLING_V2_DRYRUN,
   BILLING_ID_PDF_CHECK_ENABLED,

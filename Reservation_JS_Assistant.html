@@ -105,15 +105,6 @@
     return ensureSessionThreadId();
   };
 
-  const computePharmacyCodeFromThread = (threadId) => {
-    const base = String(threadId || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-    const padded = (base + 'ELS').substring(0, 8);
-    if (padded.length >= 4) {
-      return padded;
-    }
-    return (padded + 'XXXX').substring(0, 4);
-  };
-
   const buildConversationMessage = (entry) => {
     const type = String(entry.authorType || '').toLowerCase() === 'assistant' ? 'assistant' : 'client';
     return {
@@ -208,42 +199,23 @@
     setStatus(statusEl, 'Chargement des derniers échanges…', false);
     runner
       .withSuccessHandler(response => {
-        const messages = response && Array.isArray(response.messages) ? response.messages : [];
+        if (!response || response.ok === false) {
+          const reason = response && response.reason;
+          let message = 'Impossible de charger l’historique pour le moment.';
+          if (reason === 'UNCONFIGURED') {
+            message = 'Assistant désactivé actuellement.';
+          }
+          setStatus(statusEl, message, true);
+          return;
+        }
+        const messages = Array.isArray(response.messages) ? response.messages : [];
         mergeHistory(messages, streamEl, statusEl);
       })
       .withFailureHandler(err => {
         console.warn('[ELS] Assistant: impossible de charger l\'historique', err);
         setStatus(statusEl, 'Impossible de charger l’historique pour le moment.', true);
       })
-      .chatGetMessages({ since: 0, audience: 'pharmacy' });
-  };
-
-  const updateLocalQuestion = (questionId, sanitizedQuestion, streamEl) => {
-    const index = state.conversation.findIndex(message => message.id === questionId);
-    if (index >= 0) {
-      state.conversation[index] = buildConversationMessage({
-        id: state.conversation[index].id,
-        authorType: 'client',
-        content: sanitizedQuestion,
-        pseudo: 'Vous',
-        timestamp: state.conversation[index].timestamp
-      });
-      renderConversation(streamEl);
-    }
-  };
-
-  const updatePendingAnswer = (pendingId, answerText, streamEl) => {
-    const index = state.conversation.findIndex(message => message.id === pendingId);
-    if (index >= 0) {
-      state.conversation[index] = buildConversationMessage({
-        id: pendingId,
-        authorType: 'assistant',
-        content: answerText,
-        pseudo: 'Assistant',
-        timestamp: Date.now()
-      });
-      renderConversation(streamEl);
-    }
+      .chatGetThreadMessages({ threadId: state.threadId, limit: 20, audience: 'pharmacy' });
   };
 
   const removePendingAnswer = (pendingId, streamEl) => {
@@ -254,9 +226,10 @@
     }
   };
 
-  const handleAssistantResponse = (response, ui, originalQuestionId, pendingId) => {
+  const handleAssistantResponse = (response, ui, _originalQuestionId, pendingId) => {
     const { streamEl, statusEl, promptEl, submitEl, cardEl } = ui;
     state.isSending = false;
+    state.pendingMessageId = null;
     if (submitEl) {
       submitEl.disabled = false;
     }
@@ -277,6 +250,8 @@
         message = 'Assistant désactivé actuellement.';
       } else if (reason === 'BUDGET_EXCEEDED') {
         message = 'Le quota mensuel de l’assistant est atteint.';
+      } else if (reason === 'API_ERROR') {
+        message = 'Erreur API lors de la génération de la réponse.';
       }
       setStatus(statusEl, message, true);
       removePendingAnswer(pendingId, streamEl);
@@ -287,16 +262,9 @@
       promptEl.value = '';
     }
 
-    const sanitizedQuestion = response.question || '';
-    const answer = response.answer || '';
-    updateLocalQuestion(originalQuestionId, sanitizedQuestion, streamEl);
-    updatePendingAnswer(pendingId, answer, streamEl);
-
-    if (Array.isArray(response.history) && response.history.length) {
-      mergeHistory(response.history, streamEl, statusEl);
-    } else {
-      setStatus(statusEl, '', false);
-    }
+    const messages = Array.isArray(response.messages) ? response.messages : [];
+    mergeHistory(messages, streamEl, statusEl);
+    setStatus(statusEl, '', false);
   };
 
   const submitQuestion = (event) => {
@@ -321,7 +289,7 @@
 
     updateThreadId(statusEl, false);
     const threadId = state.threadId;
-    const sessionId = ensureSessionId();
+    ensureSessionId();
     const client = window?.etat?.clientReconnu;
 
     if (!threadId) {
@@ -358,19 +326,6 @@
     state.isSending = true;
     state.pendingMessageId = pendingId;
 
-    const payload = {
-      threadId: threadId,
-      question: question,
-      sessionId: sessionId
-    };
-
-    if (client && client.clientId) {
-      payload.clientId = String(client.clientId || '').trim();
-      payload.clientEmail = String(client.email || client.contactEmail || '').trim();
-    } else {
-      payload.pharmacyCode = computePharmacyCodeFromThread(threadId);
-    }
-
     runner
       .withSuccessHandler(response => handleAssistantResponse(response, { streamEl, statusEl, promptEl, submitEl, cardEl }, questionId, pendingId))
       .withFailureHandler(err => {
@@ -385,7 +340,7 @@
         setStatus(statusEl, 'Impossible d’obtenir une réponse pour le moment.', true);
         removePendingAnswer(pendingId, streamEl);
       })
-      .askAssistantOnThread(payload);
+      .askAssistantOnThread(threadId, question);
   };
 
   const initializeAssistant = () => {
