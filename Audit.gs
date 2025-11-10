@@ -17,7 +17,7 @@ const AUDIT_REQUIRED_FUNCTION_GROUPS = Object.freeze({
     'isChatRateAllowed',
     'chatPostMessage',
     'chatGetMessages',
-    'chatAdminHide'
+    'chatGetMessagesForThread'
   ],
   sheetHelpers: [
     'getMainSpreadsheet',

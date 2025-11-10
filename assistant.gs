@@ -115,7 +115,21 @@ function askAssistant(row) {
       throw new Error('La ligne selectionnee ne contient pas de question exploitable.');
     }
 
-    const threadId = rowValues[1] || CHAT_THREAD_GLOBAL;
+    if (typeof CFG_ENABLE_ASSISTANT === 'undefined' || !CFG_ENABLE_ASSISTANT) {
+      throw new Error('Assistant désactivé.');
+    }
+
+    let threadId = sanitizeChatThreadId(rowValues[1] || '');
+    if (!threadId) {
+      const authorRef = String(rowValues[3] || '');
+      if (authorRef.indexOf('CLIENT_') === 0) {
+        threadId = buildChatThreadIdFromClient({ clientId: authorRef.replace('CLIENT_', '') }) || '';
+      } else if (authorRef.indexOf('PHC_') === 0) {
+        threadId = buildChatThreadIdFromCode(authorRef.replace('PHC_', '')) || '';
+      }
+    }
+    threadId = sanitizeChatThreadId(threadId || '') || CHAT_THREAD_GLOBAL;
+
     const contextMessages = buildAssistantContext_(chatSheet, targetRow, threadId, CHAT_ASSISTANT_HISTORY_LIMIT);
     const assistantAnswer = callChatGPT(contextMessages, question) || 'Assistant indisponible.';
     const assistantSessionId = buildAssistantSessionId_(threadId);
@@ -153,17 +167,18 @@ function askAssistantOnThread(rawInput) {
 
   try {
     const input = rawInput || {};
-    const safeThread = sanitizeScalar(input.threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
-    const safeSession = sanitizeScalar(input.sessionId || '', 64) || ('webapp:' + safeThread);
-    const question = sanitizeMultiline(input.question, 1000);
+    const skipUserPost = input.skipUserPost === true;
+    let safeThread = sanitizeChatThreadId(input.threadId || '');
+    const safeSession = sanitizeScalar(input.sessionId || '', 64) || ('webapp:' + (safeThread || 'THREAD'));
+    const baseQuestion = sanitizeMultiline(input.question, 1000);
 
-    if (!question) {
+    if (!baseQuestion) {
       return { ok: false, reason: 'EMPTY_MESSAGE' };
     }
 
     const payload = {
       authorType: 'pharmacy',
-      message: question,
+      message: baseQuestion,
       threadId: safeThread,
       sessionId: safeSession,
       clientId: sanitizeScalar(input.clientId, 64),
@@ -175,9 +190,21 @@ function askAssistantOnThread(rawInput) {
       payload.pharmacyCode = sanitizePharmacyCode(computeAssistantFallbackCode_(safeSession));
     }
 
-    const postResult = chatPostMessage(payload);
-    if (!postResult || !postResult.ok) {
-      return postResult && postResult.reason ? postResult : { ok: false, reason: 'ERROR' };
+    let question = baseQuestion;
+
+    if (!skipUserPost) {
+      const postResult = chatPostMessage(payload);
+      if (!postResult || !postResult.ok) {
+        return postResult && postResult.reason ? postResult : { ok: false, reason: 'ERROR' };
+      }
+      question = sanitizeMultiline(postResult.message, 1000) || question;
+      safeThread = sanitizeChatThreadId(postResult.threadId || safeThread) || safeThread;
+    } else if (!safeThread) {
+      safeThread = sanitizeChatThreadId(resolveChatThreadId(payload, null, payload.pharmacyCode));
+    }
+
+    if (!safeThread) {
+      return { ok: false, reason: 'INVALID_THREAD' };
     }
 
     const contextMessages = buildAssistantThreadContext_(safeThread, CHAT_ASSISTANT_HISTORY_LIMIT);
@@ -258,14 +285,15 @@ function buildAssistantContext_(chatSheet, targetRow, threadId, limit) {
 
   const values = chatSheet.getRange(startRow, 1, rowCount, 8).getValues();
   const context = [];
+  const safeThread = sanitizeChatThreadId(threadId || '');
   for (let i = 0; i < values.length; i++) {
     const row = values[i];
-    const currentThread = row[1] || CHAT_THREAD_GLOBAL;
-    if (threadId && currentThread !== threadId) {
+    const currentThread = sanitizeChatThreadId(row[1] || '');
+    if (safeThread && currentThread !== safeThread) {
       continue;
     }
     const visibility = String(row[6] || CHAT_ASSISTANT_DEFAULT_VISIBILITY).toLowerCase();
-    if (visibility === 'admin') {
+    if (visibility !== 'pharmacy') {
       continue; // On evite d'exposer les fils internes admin.
     }
     const status = String(row[7] || '').toLowerCase();
@@ -299,7 +327,10 @@ function buildAssistantContext_(chatSheet, targetRow, threadId, limit) {
  * @returns {Array<{role:string, content:string}>}
  */
 function buildAssistantThreadContext_(threadId, limit) {
-  const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+  const safeThread = sanitizeChatThreadId(threadId || '');
+  if (!safeThread) {
+    return [];
+  }
   const context = [];
   try {
     const ss = getMainSpreadsheet();
@@ -314,7 +345,7 @@ function buildAssistantThreadContext_(threadId, limit) {
     const values = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
     for (let i = values.length - 1; i >= 0 && context.length < Number(limit || 10); i--) {
       const row = values[i];
-      const currentThread = sanitizeScalar(row[1] || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+      const currentThread = sanitizeChatThreadId(row[1] || '');
       if (currentThread !== safeThread) {
         continue;
       }
@@ -323,7 +354,7 @@ function buildAssistantThreadContext_(threadId, limit) {
         continue;
       }
       const visibility = String(row[6] || CHAT_ASSISTANT_DEFAULT_VISIBILITY).toLowerCase();
-      if (visibility === 'admin') {
+      if (visibility !== 'pharmacy') {
         continue;
       }
       const role = String(row[2] || 'pharmacy').toLowerCase() === 'assistant' ? 'assistant' : 'user';
@@ -347,13 +378,15 @@ function buildAssistantThreadContext_(threadId, limit) {
  * @returns {Array<Object>}
  */
 function buildAssistantHistorySnapshot_(threadId, limit) {
+  const safeThread = sanitizeChatThreadId(threadId || '');
+  if (!safeThread) {
+    return [];
+  }
   try {
-    const result = chatGetMessages({ since: 0, audience: 'pharmacy' });
-    const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+    const result = chatGetMessagesForThread(safeThread, { limit: Number(limit || 20) });
     const messages = Array.isArray(result && result.messages) ? result.messages : [];
-    const filtered = messages.filter(msg => (msg.threadId || CHAT_THREAD_GLOBAL) === safeThread);
     const maxItems = Number(limit || 20);
-    return filtered.length > maxItems ? filtered.slice(filtered.length - maxItems) : filtered;
+    return messages.length > maxItems ? messages.slice(messages.length - maxItems) : messages;
   } catch (err) {
     console.warn('[buildAssistantHistorySnapshot_]', err);
     return [];
@@ -448,7 +481,7 @@ function getAssistantTargetRow_(inputRow, chatSheet, lastRow) {
  * @returns {string}
  */
 function buildAssistantSessionId_(threadId) {
-  const safeThread = sanitizeScalar(threadId || CHAT_THREAD_GLOBAL, 64) || CHAT_THREAD_GLOBAL;
+  const safeThread = sanitizeChatThreadId(threadId || '') || CHAT_THREAD_GLOBAL;
   return 'assistant:' + safeThread;
 }
 
