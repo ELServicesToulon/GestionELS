@@ -45,7 +45,7 @@ function roundGeo(geo) {
     return null;
   }
   const roundCoord = function (val) {
-    const metersPerDegree = 111_320;
+    const metersPerDegree = 111320;
     const roundFactor = 50 / metersPerDegree;
     return Math.round(val / roundFactor) * roundFactor;
   };
