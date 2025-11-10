@@ -164,6 +164,10 @@ const CLIENT_PORTAL_SIGNED_LINKS = true;
 const CLIENT_PORTAL_EMBED_ENABLED = false;
 /** @const {number} Durée de validité d'un lien client signé (heures). */
 const CLIENT_PORTAL_LINK_TTL_HOURS = 168;
+/** @const {number} Interval minimal entre deux envois de lien (secondes). */
+const CLIENT_PORTAL_LINK_RATE_LIMIT_SECONDS = 60;
+/** @const {number} Nombre maximum d'envois de lien par heure (par email). */
+const CLIENT_PORTAL_LINK_BURST_PER_HOUR = 5;
 /** @const {boolean} Affiche le lien vers les informations de confidentialité. */
 const PRIVACY_LINK_ENABLED = true;
 /** @const {boolean} Affiche le lien vers les mentions légales. */
