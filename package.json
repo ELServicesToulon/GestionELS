@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
-    "@google/clasp": "^2.5.0",
+    "@google/clasp": "^3.1.1",
     "@rushstack/eslint-patch": "^1.14.1",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
