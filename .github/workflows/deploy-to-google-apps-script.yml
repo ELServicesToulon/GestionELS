@@ -2,31 +2,58 @@ name: Deploy to Google Apps Script
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ] # ⚙️ Modifiez si besoin
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
-      - name: Install clasp globally
-        run: npm install -g @google/clasp
+      - name: Install clasp
+        run: npm i -g @google/clasp
 
-      - name: Authenticate clasp
+      - name: Authenticate (user token)
         env:
-          CLASPRC: ${{ secrets.CLASPRC_JSON }}
+          CLASPRC_B64: ${{ secrets.CLASPRC_B64 }}
         run: |
-          mkdir -p ~/.clasprc
-          echo "$CLASPRC" > ~/.clasprc.json
+          set -e
+          if [ -z "$CLASPRC_B64" ]; then
+            echo "❌ Missing secret CLASPRC_B64 (base64 of ~/.clasprc.json)"; exit 1;
+          fi
+          echo "$CLASPRC_B64" | base64 --decode > "$HOME/.clasprc.json"
+          test -s "$HOME/.clasprc.json" || (echo "❌ ~/.clasprc.json empty" && exit 1)
 
-      - name: Push code to Google Apps Script
+      - name: Ensure .clasp.json
+        env:
+          APPS_SCRIPT_ID: ${{ secrets.APPS_SCRIPT_ID }}
+        run: |
+          set -e
+          if [ -f ".clasp.json" ]; then
+            echo ".clasp.json present"
+            cat .clasp.json
+          else
+            if [ -z "$APPS_SCRIPT_ID" ]; then
+              echo "❌ .clasp.json missing and APPS_SCRIPT_ID not set"; exit 1;
+            fi
+            cat > .clasp.json <<EOF
+{
+  "scriptId": "$APPS_SCRIPT_ID",
+  "rootDir": "src"
+}
+EOF
+            echo "Created .clasp.json"
+            cat .clasp.json
+          fi
+
+      - name: Who am I
+        run: clasp whoami || true
+
+      - name: Push code to Apps Script
         run: clasp push -f
