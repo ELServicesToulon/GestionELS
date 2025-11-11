@@ -3,14 +3,37 @@
   "extends": ["eslint:recommended", "plugin:import/recommended", "prettier"],
   "plugins": ["html", "googleappsscript"],
   "env": {
-    "browser": true,
-    "es2022": true
+    "es2022": true,
+    "browser": true
   },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "ignorePatterns": ["dist/", "build/", "node_modules/"],
   "overrides": [
     {
       "files": ["*.gs"],
       "env": {
         "googleappsscript/googleappsscript": true
+      }
+    },
+    {
+      "files": ["scripts/**/*.js", "*.cjs"],
+      "env": {
+        "node": true
+      },
+      "parserOptions": {
+        "sourceType": "script"
+      }
+    },
+    {
+      "files": ["pwa/firebase-messaging-sw.js"],
+      "env": {
+        "worker": true
+      },
+      "globals": {
+        "importScripts": "readonly"
       }
     }
   ],
