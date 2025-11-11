@@ -557,14 +557,19 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHTML(contenuModale, `
             <h3 id="modale-titre">Modifier les arrêts</h3><p><strong>Client :</strong> ${escapeHTML(reservation.clientName)}</p>
             <div class="groupe-formulaire"><label>Nombre d'arrêt(s) total(s) :</label><div class="champ-compteur"><button type="button" class="btn-compteur btn-retirer">-</button><span class="valeur-compteur">${escapeHTML(String(arretsActuels))}</span><button type="button" class="btn-compteur btn-ajouter">+</button></div></div>
+            <div class="groupe-formulaire"><label for="champ-note-reservation">Note interne</label><textarea id="champ-note-reservation" class="champ-formulaire" rows="4">${escapeHTML(reservation.note || '')}</textarea></div>
             <div class="modale-pied-de-page"><button type="button" id="btn-confirmer-maj" class="btn btn-primaire">Valider la modification</button></div>`);
         openModal();
         const valeurCompteur = contenuModale.querySelector('.valeur-compteur');
+        const champNoteReservation = contenuModale.querySelector('#champ-note-reservation');
         if (valeurCompteur) {
             contenuModale.querySelector('.btn-ajouter')?.addEventListener('click', () => { valeurCompteur.textContent = parseInt(valeurCompteur.textContent, 10) + 1; });
             contenuModale.querySelector('.btn-retirer')?.addEventListener('click', () => { let val = parseInt(valeurCompteur.textContent, 10); if (val > 1) valeurCompteur.textContent = val - 1; });
         }
-        contenuModale.querySelector('#btn-confirmer-maj')?.addEventListener('click', () => { gererSoumissionMiseAJour(idReservation, parseInt(valeurCompteur?.textContent || '1', 10)); });
+        contenuModale.querySelector('#btn-confirmer-maj')?.addEventListener('click', () => {
+            const noteValeur = champNoteReservation ? champNoteReservation.value : '';
+            gererSoumissionMiseAJour(idReservation, parseInt(valeurCompteur?.textContent || '1', 10), noteValeur);
+        });
     }
     function ouvrirModaleReplanifier(idReservation) {
         const reservation = toutesLesReservationsAffichees.find(r => r.id === idReservation);
@@ -730,16 +735,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- SOUMISSIONS (utilisent maintenant rafraichirVueActuelle) ---
-    function gererSoumissionMiseAJour(idReservation, totalStops) {
+    function gererSoumissionMiseAJour(idReservation, totalStops, noteSaisie) {
         basculerIndicateurChargement(true);
         closeModal();
+        const notePropre = (noteSaisie || '').trim();
         google.script.run.withSuccessHandler(reponse => {
             basculerIndicateurChargement(false);
             if (reponse.success) {
+                const indexReservation = toutesLesReservationsAffichees.findIndex(r => r.id === idReservation);
+                if (indexReservation !== -1) {
+                    const reservationExistante = toutesLesReservationsAffichees[indexReservation];
+                    toutesLesReservationsAffichees[indexReservation] = Object.assign({}, reservationExistante, { note: notePropre });
+                    afficherReservations(toutesLesReservationsAffichees, vueActuelle === 'toutes');
+                }
                 afficherNotification("Réservation mise à jour !", "succes");
                 rafraichirVueActuelle();
             } else { afficherErreur(reponse.error); }
-        }).withFailureHandler(afficherErreur).mettreAJourDetailsReservation(idReservation, totalStops);
+        }).withFailureHandler(afficherErreur).mettreAJourDetailsReservation(idReservation, totalStops, null, null, null, notePropre);
     }
     function gererSoumissionReplanifier(idReservation, nouvelleDate, nouvelleHeure) {
         basculerIndicateurChargement(true);
