@@ -1,15 +1,19 @@
-name: Deploy Apps Script
+name: Deploy Apps Script (root)
 
 on:
   push:
     branches: [ main, test ]
     paths:
-      - "src/**"
+      - "appsscript.json"
+      - ".claspignore"
+      - "*.gs"
+      - "*.html"
       - ".github/workflows/apps-script-deploy.yml"
+      - "!**/apps-script/**"   # on ignore l'ancien dossier si présent
   workflow_dispatch:
 
 env:
-  APPS_DIR: src
+  APPS_DIR: .              # racine du repo
   CLASP_VERSION: 2.5.0
 
 permissions:
@@ -34,8 +38,8 @@ jobs:
           echo "${{ secrets.CLASPRC_JSON }}" > ~/.clasprc.json
           chmod 600 ~/.clasprc.json
 
-      # Écrit .clasp.json avec le bon scriptId selon la branche
-      - name: Write .clasp.json
+      # .clasp.json au ROOT avec le bon scriptId selon la branche
+      - name: Write .clasp.json (root)
         working-directory: ${{ env.APPS_DIR }}
         run: |
           if [ "${GITHUB_REF_NAME}" = "main" ]; then
@@ -47,14 +51,14 @@ jobs:
           cat > .clasp.json <<EOF
           {
             "scriptId": "$SID",
-            "rootDir": "${{ env.APPS_DIR }}"
+            "rootDir": "."
           }
           EOF
 
       - name: Install clasp
         run: npm i -g @google/clasp@${{ env.CLASP_VERSION }}
 
-      # (Build éventuel ici si TS/webpack, puis rootDir=dist)
+      # (optionnel) build/format/test ici si besoin
 
       - name: Push to Apps Script
         working-directory: ${{ env.APPS_DIR }}
