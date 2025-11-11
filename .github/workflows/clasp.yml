@@ -13,10 +13,8 @@ jobs:
           node-version: 20
       - run: npm ci
       - name: Authenticate
-        env:
-          GCP_OAUTH_CREDS: ${{ secrets.GCP_OAUTH_CREDS }}
         run: |
-          printf '%s' "$GCP_OAUTH_CREDS" > "$RUNNER_TEMP/creds.json"
+          printf '%s' "${{ secrets.GCP_OAUTH_CREDS }}" > "$RUNNER_TEMP/creds.json"
           npx clasp login --creds "$RUNNER_TEMP/creds.json"
           rm -f "$RUNNER_TEMP/creds.json"
       - run: npm run clasp:push
