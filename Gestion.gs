@@ -649,9 +649,13 @@ function envoyerFactureClient(emailClient, numeroFacture, exp, sig) {
  * Met à jour les détails (nombre d'arrêts, prix, durée) d'une réservation existante.
  * @param {string} idReservation L'ID unique de la réservation à modifier.
  * @param {number} totalStops Le nouveau nombre d'arrêt(s) total(s).
+ * @param {string=} emailClient Email du client pour vérification côté client.
+ * @param {string=} exp Jeton d'expiration pour vérification.
+ * @param {string=} sig Signature pour vérification.
+ * @param {string=} note Nouvelle note interne.
  * @returns {Object} Un résumé de l'opération.
  */
-function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, exp, sig) {
+function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, exp, sig, note) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) return { success: false, error: "Le système est occupé, veuillez réessayer." };
 
@@ -661,9 +665,13 @@ function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, e
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     const enTete = feuille.getRange(1, 1, 1, feuille.getLastColumn()).getValues()[0];
     const indices = {
-      idResa: enTete.indexOf("ID Réservation"), idEvent: enTete.indexOf("Event ID"),
-      details: enTete.indexOf("Détails"), email: enTete.indexOf("Client (Email)"),
-      montant: enTete.indexOf("Montant"), date: enTete.indexOf("Date")
+      idResa: enTete.indexOf("ID Réservation"),
+      idEvent: enTete.indexOf("Event ID"),
+      details: enTete.indexOf("Détails"),
+      email: enTete.indexOf("Client (Email)"),
+      montant: enTete.indexOf("Montant"),
+      date: enTete.indexOf("Date"),
+      noteInterne: enTete.indexOf("Note Interne")
     };
     if (Object.values(indices).some(i => i === -1)) throw new Error("Colonnes requises introuvables.");
 
@@ -695,16 +703,36 @@ function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, e
     const retourPharmacie = detailsAnciens.includes('retour: oui');
 
     const clientPourCalcul = obtenirInfosClientParEmail(emailNorm || emailFeuille);
+    const noteParamFourni = typeof note !== 'undefined';
+    const noteSanitisee = noteParamFourni ? sanitizeMultiline(note, 500) : null;
     const { prix: nouveauPrix, duree: nouvelleDuree, details: nouveauxDetails } = calculerPrixEtDureeServeur(totalStops, retourPharmacie, dateEvenement, heureEvenement, clientPourCalcul);
     
     // Si l'événement existe, on le met à jour
     if (ressourceEvenement) {
       const nouvelleDateFin = new Date(dateDebutOriginale.getTime() + nouvelleDuree * 60000);
+      const descriptionInitiale = String(ressourceEvenement.description || '');
+      const descriptionAjourMontant = descriptionInitiale
+        .replace(/Total:.*€/, `Total: ${nouveauPrix.toFixed(2)} €`)
+        .replace(/Arrêts (?:suppl|totaux):.*\n/, `Arrêts totaux: ${totalStops}, Retour: ${retourPharmacie ? 'Oui' : 'Non'}\n`);
+      let descriptionMaj = descriptionAjourMontant;
+      if (noteParamFourni) {
+        const ligneNote = `Note: ${noteSanitisee || ''}`;
+        if (descriptionMaj) {
+          if (/Note:.*/.test(descriptionMaj)) {
+            descriptionMaj = descriptionMaj.replace(/Note:.*(?:\r?\n|$)/, (match) => {
+              const finLigne = /\r?\n$/.test(match) ? '\n' : '';
+              return `${ligneNote}${finLigne}`;
+            });
+          } else {
+            descriptionMaj = `${descriptionMaj.replace(/\s*$/, '')}\n${ligneNote}`;
+          }
+        } else {
+          descriptionMaj = ligneNote;
+        }
+      }
       const ressourceMaj = {
         end: { dateTime: nouvelleDateFin.toISOString() },
-        description: ressourceEvenement.description
-          .replace(/Total:.*€/, `Total: ${nouveauPrix.toFixed(2)} €`)
-          .replace(/Arrêts (?:suppl|totaux):.*\n/, `Arrêts totaux: ${totalStops}, Retour: ${retourPharmacie ? 'Oui' : 'Non'}\n`)
+        description: descriptionMaj
       };
       Calendar.Events.patch(ressourceMaj, getSecret('ID_CALENDRIER'), idEvenement);
     }
@@ -712,6 +740,9 @@ function mettreAJourDetailsReservation(idReservation, totalStops, emailClient, e
     // On met TOUJOURS à jour la feuille de calcul
     feuille.getRange(indexLigne + 1, indices.details + 1).setValue(nouveauxDetails);
     feuille.getRange(indexLigne + 1, indices.montant + 1).setValue(nouveauPrix);
+    if (indices.noteInterne !== -1 && noteParamFourni) {
+      feuille.getRange(indexLigne + 1, indices.noteInterne + 1).setValue(noteSanitisee || '');
+    }
 
     logActivity(idNorm, emailNorm || emailFeuille, `Modification: ${totalStops} arrêts totaux.`, nouveauPrix, "Modification");
     return { success: true };
