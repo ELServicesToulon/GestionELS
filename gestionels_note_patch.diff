@@ -1,0 +1,59 @@
+*** Begin Patch
+*** Update File: Admin_JS.html
+@@ function ouvrirModaleAjout() {
+             <div class="groupe-formulaire hidden" id="conteneur-horaire-manuel">
+               <label for="champ-horaire-manuel">Horaire manuel</label>
+               <input type="time" id="champ-horaire-manuel" class="champ-formulaire" step="900">
+               <p class="champ-helper">Utilisez cette option lorsqu'aucun créneau n'est proposé (ex : forfait résident, dates passées).</p>
+             </div>
++            <!-- Champ de saisie pour la note interne de la course -->
++            <div class="groupe-formulaire">
++              <label for="champ-note">Note interne</label>
++              <textarea id="champ-note" class="champ-formulaire" rows="2" placeholder="Ajoutez une note (facultatif)"></textarea>
++            </div>
+             <div class="modale-pied-de-page">
+@@ function attacherEcouteursModaleAjout() {
+-        const champDateAjout = document.getElementById('champ-date-ajout');
++        const champDateAjout = document.getElementById('champ-date-ajout');
++        // Champ de note interne
++        const champNote = document.getElementById('champ-note');
+@@ function attacherEcouteursModaleAjout() {
+         btnConfirmer?.addEventListener('click', () => {
+@@
+             const data = {
+                 client: clientData,
+                 date: champDateAjout?.value,
+                 startTime: creneauSelectionne,
+                 totalStops: parseInt(valeurCompteur?.textContent || '1', 10),
+                 returnToPharmacy: checkRetour?.checked || false,
+                 notifyClient: document.getElementById('check-notifier')?.checked || false,
+                 forceUrgent: document.getElementById('check-urgent')?.checked || false,
+                 residentMode: residentMode,
+                 recurrence: {
+                     enabled: recurrenceActive,
+                     endDate: recurrenceActive ? recurrenceEndDate : '',
+                     skipSaturday: true
+                 }
+             };
++            // Ajoute la note fournie par l'admin si présente
++            data.note = (champNote?.value || '').trim();
+             gererSoumissionCreation(data);
+         }, { once: true });
+*** End Patch
+*** Update File: Administration.gs
+@@ function creerReservationAdmin(data) {
+-       let descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${typeCourse}\nID Réservation: ${idReservation}\nArrêts totaux: ${totalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${prix.toFixed(2)} €\nNote: Ajouté par admin.`;
++       // Crée la description de l'événement en ajoutant la note saisie par l'admin si fournie.
++       let descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${typeCourse}\nID Réservation: ${idReservation}\nArrêts totaux: ${totalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${prix.toFixed(2)} €\nNote: ${(data.note && String(data.note).trim()) || 'Ajouté par admin.'}`;
+@@ function creerReservationAdmin(data) {
+-       const noteInterne = estResident && libelleResident
+-         ? `Ajouté par admin | Forfait résident: ${libelleResident}`
+-         : 'Ajouté par admin';
++       // Construit la note interne : inclut la mention admin, le cas résident éventuel, et la note personnalisée.
++       let noteInterne = estResident && libelleResident
++         ? `Ajouté par admin | Forfait résident: ${libelleResident}`
++         : 'Ajouté par admin';
++       if (data.note && String(data.note).trim()) {
++         noteInterne += ` | Note: ${String(data.note).trim()}`;
++       }
+*** End Patch
