@@ -535,6 +535,10 @@ document.addEventListener('DOMContentLoaded', () => {
               <input type="time" id="champ-horaire-manuel" class="champ-formulaire" step="900">
               <p class="champ-helper">Utilisez cette option lorsqu'aucun créneau n'est proposé (ex : forfait résident, dates passées).</p>
             </div>
+            <div class="groupe-formulaire">
+              <label for="champ-note-course">Note interne</label>
+              <textarea id="champ-note-course" class="champ-formulaire" rows="3"></textarea>
+            </div>
             <div class="modale-pied-de-page">
               <label><input type="checkbox" id="check-urgent"> Forcer urgent</label>
               <label><input type="checkbox" id="check-notifier"> Avertir le client</label>
@@ -771,6 +775,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }).withFailureHandler(afficherErreur).supprimerReservation(idReservation);
     }
     function gererSoumissionCreation(data) {
+        const note = typeof data?.note === 'string' ? data.note : '';
+        data.note = note;
         const recurrenceActive = !!(data?.recurrence && data.recurrence.enabled);
         if (!ADMIN_OPTIMISTIC_CREATION_ENABLED || recurrenceActive) {
             basculerIndicateurChargement(true);
@@ -806,6 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
             km: 0,
             statut: 'Calcul en cours…',
             infoRemise: '',
+            note: note,
             isDraft: true,
             justCreated: false
         };
@@ -849,6 +856,7 @@ function attacherEcouteursModaleAjout() {
         const selectForfaitResident = document.getElementById('select-forfait-resident');
         const conteneurHoraireManuel = document.getElementById('conteneur-horaire-manuel');
         const champHoraireManuel = document.getElementById('champ-horaire-manuel');
+        const champNoteCourse = document.getElementById('champ-note-course');
         const champsClient = {
             email: document.getElementById('champ-email-client'),
             nom: document.getElementById('champ-nom-client'),
@@ -996,6 +1004,7 @@ function attacherEcouteursModaleAjout() {
             champsClient.nbTourneesOffertes.value = client ? (client.nbTourneesOffertes || 0) : 0;
             if (champsClient.resident) champsClient.resident.checked = !!(client && client.resident);
             basculerForfaitResident(!!(client && client.resident));
+            if (!client && champNoteCourse) champNoteCourse.value = '';
 
             const isNewClient = !client;
             Object.entries(champsClient).forEach(([cle, champ]) => {
@@ -1161,6 +1170,7 @@ function attacherEcouteursModaleAjout() {
                 nbTourneesOffertes: parseInt(champsClient.nbTourneesOffertes.value) || 0,
                 resident: !!champsClient.resident?.checked
             };
+            const note = (champNoteCourse?.value || '').trim();
             const residentMode = clientData.resident && champsClient.residentMode
                 ? normaliserModeResident(champsClient.residentMode.value || champsClient.residentMode.dataset?.default || 'standard')
                 : '';
@@ -1175,6 +1185,7 @@ function attacherEcouteursModaleAjout() {
                 notifyClient: document.getElementById('check-notifier')?.checked || false,
                 forceUrgent: document.getElementById('check-urgent')?.checked || false,
                 residentMode: residentMode,
+                note: note,
                 recurrence: {
                     enabled: recurrenceActive,
                     endDate: recurrenceActive ? recurrenceEndDate : '',
