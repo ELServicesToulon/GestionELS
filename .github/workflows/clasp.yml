@@ -1,23 +1,22 @@
-name: Clasp Push
+name: Deploy to Apps Script
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  push:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: 20
-      - run: npm ci
-      - name: Authenticate
-        run: |
-          printf '%s' "${{ secrets.GCP_OAUTH_CREDS }}" > "$RUNNER_TEMP/creds.json"
-          npx clasp login --creds "$RUNNER_TEMP/creds.json"
-          rm -f "$RUNNER_TEMP/creds.json"
-      - run: npm run clasp:push
+          node-version: '18'
+      - name: Install clasp
+        run: npm install -g @google/clasp
+      - name: Authenticate clasp
+        run: clasp login --creds <(echo "${{ secrets.CLASP_CREDENTIALS }}")
+      - name: Deploy to Apps Script
+        run: clasp push
