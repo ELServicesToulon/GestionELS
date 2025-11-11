@@ -526,8 +526,14 @@ function creerReservationAdmin(data) {
       const dateFin = new Date(dateDebut.getTime() + duree * 60000);
       const typeCourse = samedi ? 'Samedi' : (urgent ? 'Urgent' : 'Normal');
 
+      const rawAdminNote = data && Object.prototype.hasOwnProperty.call(data, 'note') ? data.note : '';
+      const baseAdminNote = typeof sanitizeMultiline === 'function'
+        ? sanitizeMultiline(rawAdminNote, 500)
+        : String(rawAdminNote || '').slice(0, 500);
+      const adminNote = baseAdminNote || 'Ajouté par admin';
+
       const titreEvenement = `Réservation ${NOM_ENTREPRISE} - ${data.client.nom}`;
-      let descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${typeCourse}\nID Réservation: ${idReservation}\nArrêts totaux: ${totalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${prix.toFixed(2)} €\nNote: Ajouté par admin.`;
+      let descriptionEvenement = `Client: ${data.client.nom} (${data.client.email})\nType: ${typeCourse}\nID Réservation: ${idReservation}\nArrêts totaux: ${totalStops}, Retour: ${data.returnToPharmacy ? 'Oui' : 'Non'}\nTotal: ${prix.toFixed(2)} €\nNote: ${adminNote}`;
       if (data.client.resident === true) {
         descriptionEvenement += '\nResident: Oui';
         if (libelleResident) {
@@ -546,9 +552,12 @@ function creerReservationAdmin(data) {
         const resumeRetour = data.returnToPharmacy ? 'retour: oui' : 'retour: non';
         detailsFacturation = `${labelResident} (forfait résident, ${totalStops} arrêt(s), ${resumeRetour})`;
       }
-      const noteInterne = estResident && libelleResident
-        ? `Ajouté par admin | Forfait résident: ${libelleResident}`
-        : 'Ajouté par admin';
+      const noteInterneBrut = estResident && libelleResident
+        ? `${adminNote} | Forfait résident: ${libelleResident}`
+        : adminNote;
+      const noteInterneSanitize = typeof sanitizeMultiline === 'function'
+        ? sanitizeMultiline(noteInterneBrut, 500)
+        : String(noteInterneBrut || '').slice(0, 500);
 
       enregistrerReservationPourFacturation(
         dateDebut,
@@ -559,7 +568,7 @@ function creerReservationAdmin(data) {
         prix,
         evenement.getId(),
         idReservation,
-        noteInterne,
+        noteInterneSanitize,
         tourneeOfferte,
         clientPourCalcul ? clientPourCalcul.typeRemise : '',
         clientPourCalcul ? clientPourCalcul.valeurRemise : 0,
@@ -597,7 +606,8 @@ function creerReservationAdmin(data) {
         amount: prix,
         km: KM_BASE + ((tarif.nbSupp + (data.returnToPharmacy ? 1 : 0)) * KM_ARRET_SUP),
         statut: '',
-        infoRemise: infoRemise
+        infoRemise: infoRemise,
+        note: noteInterneSanitize
       });
     });
 
