@@ -47,3 +47,52 @@ jobs:
 
       - name: Push to Apps Script
         run: clasp push -f
++name: Push Parametres Sheet Extension
+     2 +
+     3 +on:
+     4 +  workflow_dispatch:
+     5 +  push:
+     6 +    branches: [main]
+     7 +    paths:
+     8 +      - "apps-script/**"
+     9 +      - ".github/workflows/push-parametres-sheet.yml"
+    10 +
+    11 +jobs:
+    12 +  push-extension:
+    13 +    runs-on: ubuntu-latest
+    14 +    defaults:
+    15 +      run:
+    16 +        working-directory: apps-script
+    17 +
+    18 +    steps:
+    19 +      - name: Checkout sources
+    20 +        uses: actions/checkout@v4
+    21 +
+    22 +      - name: Set up Node 18
+    23 +        uses: actions/setup-node@v4
+    24 +        with:
+    25 +          node-version: "18"
+    26 +
+    27 +      - name: Install clasp CLI
+    28 +        run: npm install -g @google/clasp
+    29 +
+    30 +      - name: Authenticate clasp
+    31 +        env:
+    32 +          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+    33 +        run: |
+    34 +          mkdir -p "${HOME}"
+    35 +          echo "$CLASPRC_JSON" > "${HOME}/.clasprc.json"
+    36 +          command -v jq >/dev/null || sudo apt-get update && sudo apt-get install -y jq
+    37 +          jq . "${HOME}/.clasprc.json" >/dev/null
+    38 +
+    39 +      - name: Generate clasp project config
+    40 +        run: |
+    41 +          cat <<'EOF' > .clasp.json
+    42 +          {
+    43 +            "scriptId": "1hRea4xVBO3hoNjqV2tD9mnAENr6UhEJ9of7BlbrJuRygMUHkNmbiX93q",
+    44 +            "rootDir": "."
+    45 +          }
+    46 +          EOF
+    47 +
+    48 +      - name: Push to Apps Script
+    49 +        run: clasp push -f
