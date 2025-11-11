@@ -1,4 +1,4 @@
-- name: Authenticate clasp
+
   shell: bash
   run: |
     echo '${{ secrets.CLASPRC_JSON }}' > ~/.clasprc.json
