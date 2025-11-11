@@ -108,7 +108,7 @@ function obtenirToutesReservationsAdmin() {
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
-    const enTetesRequis = ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant", "Type Remise Appliquée", "Valeur Remise Appliquée", "Tournée Offerte Appliquée", "Statut"];
+    const enTetesRequis = ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant", "Type Remise Appliquée", "Valeur Remise Appliquée", "Tournée Offerte Appliquée", "Statut", "Note Interne"];
     const indices = obtenirIndicesEnTetes(feuille, enTetesRequis);
 
     const donnees = feuille.getDataRange().getValues();
@@ -175,7 +175,8 @@ function obtenirToutesReservationsAdmin() {
           amount: parseFloat(ligne[indices["Montant"]]) || 0,
           km: km,
           statut: ligne[indices["Statut"]],
-          infoRemise: infoRemise
+          infoRemise: infoRemise,
+          note: ligne[indices["Note Interne"]] || ''
         };
       } catch(e) { 
         Logger.log(`Erreur de traitement d'une ligne de réservation admin : ${e.toString()} sur la ligne avec ID ${ligne[indices["ID Réservation"]]}`);
@@ -207,7 +208,7 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
     const feuille = SpreadsheetApp.openById(getSecret('ID_FEUILLE_CALCUL')).getSheetByName(SHEET_FACTURATION);
     if (!feuille) throw new Error("La feuille 'Facturation' est introuvable.");
 
-    const enTetesRequis = ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant", "Type Remise Appliquée", "Valeur Remise Appliquée", "Tournée Offerte Appliquée", "Statut"];
+    const enTetesRequis = ["Date", "Client (Email)", "Event ID", "Détails", "Client (Raison S. Client)", "ID Réservation", "Montant", "Type Remise Appliquée", "Valeur Remise Appliquée", "Tournée Offerte Appliquée", "Statut", "Note Interne"];
     const indices = obtenirIndicesEnTetes(feuille, enTetesRequis);
 
     const donnees = feuille.getDataRange().getValues();
@@ -282,7 +283,8 @@ function obtenirToutesReservationsPourDate(dateFiltreString) {
           amount: parseFloat(ligne[indices["Montant"]]) || 0,
           km: km,
           statut: ligne[indices["Statut"]],
-          infoRemise: infoRemise
+          infoRemise: infoRemise,
+          note: ligne[indices["Note Interne"]] || ''
         };
       } catch(e) { 
         Logger.log(`Erreur de traitement d'une ligne de réservation admin : ${e.toString()}`);

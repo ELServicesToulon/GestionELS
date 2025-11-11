@@ -424,6 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="carte-details">
                             <strong>${escapeHTML(resa.details)}</strong>
                             <small>${prix} € ${infoRemiseHtml} (~${escapeHTML(String(resa.km))} km) ${statutHtml}</small>
+                            ${resa.note ? '<small class="note">' + escapeHTML(resa.note) + '</small>' : ''}
                         </div>
                         <div class="carte-actions">
                             <button class="btn btn-sm btn-secondaire btn-modifier" data-id-reservation="${escapeHTML(resa.id)}">Modifier</button>
