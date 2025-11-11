@@ -1,28 +1,73 @@
-name: deploy
+name: Deploy Apps Script
+
 on:
   push:
-    branches: [ main ]
+    branches: [ main, test ]
+    paths:
+      - "src/**"
+      - ".github/workflows/apps-script-deploy.yml"
+  workflow_dispatch:
+
+env:
+  APPS_DIR: src
+  CLASP_VERSION: 2.5.0
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Auth via CLASPRC_JSON (OAuth exporté)
+      - name: Prepare OAuth credentials
+        run: |
+          test -n "${{ secrets.CLASPRC_JSON }}" || { echo "Missing CLASPRC_JSON"; exit 1; }
+          echo "${{ secrets.CLASPRC_JSON }}" > ~/.clasprc.json
+          chmod 600 ~/.clasprc.json
+
+      # Écrit .clasp.json avec le bon scriptId selon la branche
+      - name: Write .clasp.json
+        working-directory: ${{ env.APPS_DIR }}
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            SID="${{ secrets.PROD_SCRIPT_ID }}"
+          else
+            SID="${{ secrets.TEST_SCRIPT_ID }}"
+          fi
+          test -n "$SID" || { echo "Missing PROD_SCRIPT_ID/TEST_SCRIPT_ID"; exit 1; }
+          cat > .clasp.json <<EOF
+          {
+            "scriptId": "$SID",
+            "rootDir": "${{ env.APPS_DIR }}"
+          }
+          EOF
+
       - name: Install clasp
-        run: npm i -g @google/clasp@2
-      - name: Authenticate clasp
-        shell: bash
-        run: |
-          echo '${{ secrets.CLASPRC_JSON }}' > "$HOME/.clasprc.json"
-          sudo apt-get update && sudo apt-get install -y jq
-          jq . "$HOME/.clasprc.json" >/dev/null
-      - name: Sanity
-        run: |
-          clasp -v
-          cat .clasp.json
-          ls -la
-      - name: Push code to Google Apps Script
+        run: npm i -g @google/clasp@${{ env.CLASP_VERSION }}
+
+      # (Build éventuel ici si TS/webpack, puis rootDir=dist)
+
+      - name: Push to Apps Script
+        working-directory: ${{ env.APPS_DIR }}
         run: clasp push -f
-       
+
+      - name: Create version
+        id: ver
+        working-directory: ${{ env.APPS_DIR }}
+        run: |
+          MSG="ci:${GITHUB_SHA::7}"
+          clasp version "$MSG"
+          echo "msg=$MSG" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy
+        working-directory: ${{ env.APPS_DIR }}
+        run: clasp deploy --description "${{ steps.ver.outputs.msg }}"
