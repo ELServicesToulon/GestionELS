@@ -1,0 +1,62 @@
+# Nom du Workflow
+name: 🚀 Deploy to Google Apps Script
+
+on:
+  push:
+    # Déclencher le workflow sur les push vers les branches 'main' et 'test'
+    branches:
+      - main
+      - test
+
+jobs:
+  deploy:
+    # Utiliser la dernière version d'Ubuntu
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Récupérer le code du dépôt
+      - name: 1. Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Mettre en place Node.js (nécessaire pour clasp)
+      - name: 2. Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Utiliser une version LTS de Node
+
+      # 3. Installer clasp
+      - name: 3. Install clasp
+        run: npm install -g @google/clasp
+
+      # 4. S'authentifier auprès de Google
+      # Utilise le "Secret" CLASPRC_JSON que nous avons défini
+      - name: 4. Authenticate with clasp
+        run: echo '${{ secrets.CLASPRC_JSON }}' > ~/.clasprc.json
+
+      # 5. Créer le fichier .clasp.json de configuration
+      # C'est l'étape clé qui gère vos environnements TEST/PROD
+      - name: 5. Create .clasp.json config file
+        run: |
+          echo "Setting up .clasp.json for branch ${{ github.ref_name }}..."
+          
+          # Si la branche est 'main', utiliser l'ID de PROD
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo '{"scriptId":"${{ secrets.PROD_SCRIPT_ID }}", "rootDir":"src"}' > .clasp.json
+            echo "Using PROD Script ID."
+          
+          # Si la branche est 'test', utiliser l'ID de TEST
+          elif [ "${{ github.ref_name }}" == "test" ]; then
+            echo '{"scriptId":"${{ secrets.TEST_SCRIPT_ID }}", "rootDir":"src"}' > .clasp.json
+            echo "Using TEST Script ID."
+          
+          # Sécurité : si la branche n'est ni l'une ni l'autre, ne rien faire
+          else
+            echo "Branch is not 'main' or 'test'. No deployment."
+            exit 0 # Quitter le script avec succès sans déployer
+          fi
+
+      # 6. Pousser le code vers Apps Script
+      # Le 'if' garantit qu'on ne déploie que pour ces branches
+      - name: 6. Push code to Apps Script
+        if: github.ref_name == 'main' || github.ref_name == 'test'
+        run: clasp push -f
