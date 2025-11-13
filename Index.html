@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <? var appUrl = ScriptApp.getService().getUrl(); var nomService = NOM_ENTREPRISE; ?>
+  <? var appUrl = ScriptApp.getService().getUrl(); var nomService = NOM_ENTREPRISE; var tvaMention = BILLING.TVA_MENTION; ?>
   <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -114,7 +114,7 @@
                 <ul class="tarif-liste">
                   <li class="tarif-ligne"><span class="tarif-libelle">Pré-collecte veille + livraison lendemain</span><span class="tarif-valeur" id="forfait-resident-standard">—</span></li>
                   <li class="tarif-ligne"><span class="tarif-libelle">Retrait &amp; livraison sous 4&nbsp;h</span><span class="tarif-valeur" id="forfait-resident-urgence">—</span></li>
-                  <li class="tarif-ligne tarif-ligne--note"><span class="tarif-note">TVA: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</span></li>
+                  <li class="tarif-ligne tarif-ligne--note"><span class="tarif-note">TVA: <?= TVA_APPLICABLE ? 'Applicable' : tvaMention ?>.</span></li>
                 </ul>
               </article>
             </div>
@@ -124,7 +124,7 @@
 
       <!-- Mention TVA (discrète) -->
       <section class="section--tarifs">
-        <div class="tva-notice">TVA&nbsp;: <?= TVA_APPLICABLE ? 'Applicable' : 'Non applicable (art. 293B du CGI)' ?>.</div>
+        <div class="tva-notice">TVA&nbsp;: <?= TVA_APPLICABLE ? 'Applicable' : tvaMention ?>.</div>
       </section>
 
       <!-- Colonne droite: Panier -->
