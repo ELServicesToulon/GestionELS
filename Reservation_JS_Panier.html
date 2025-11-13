@@ -153,17 +153,30 @@ function gererActionsPanier(e) {
  * Sauvegarde le panier dans le localStorage du navigateur.
  */
 function sauvegarderPanierDansLocalStorage() {
-  localStorage.setItem('panierReservationELS', JSON.stringify(window.etat.panier));
+  try {
+    localStorage.setItem('panierReservationELS', JSON.stringify(window.etat.panier));
+  } catch (err) {
+    console.warn('Impossible de sauvegarder le panier dans le stockage local.', err);
+  }
 }
 
 /**
  * Charge le panier depuis le localStorage au démarrage de l'application.
  */
 function chargerPanierDepuisLocalStorage() {
-  const panierSauvegarde = localStorage.getItem('panierReservationELS');
-  if (panierSauvegarde) {
-    window.etat.panier = JSON.parse(panierSauvegarde);
-    afficherPanier();
+  try {
+    const panierSauvegarde = localStorage.getItem('panierReservationELS');
+    if (panierSauvegarde) {
+      const panierParse = JSON.parse(panierSauvegarde);
+      if (Array.isArray(panierParse)) {
+        window.etat.panier = panierParse;
+        afficherPanier();
+      } else {
+        console.warn('Format de panier inattendu dans le stockage local.');
+      }
+    }
+  } catch (err) {
+    console.warn('Impossible de charger le panier depuis le stockage local.', err);
   }
 }
 
