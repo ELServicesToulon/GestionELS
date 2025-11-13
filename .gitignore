@@ -151,3 +151,13 @@ Nouveau dossier/my-node-script/package.json
 Nouveau dossier/my-node-script/README.md
 Nouveau dossier/my-node-script/src/index.js
 .clasprc.json
+# Android TWA build artifacts
+android-twa/.gradle/
+android-twa/build/
+android-twa/app/build/
+android-twa/.externalNativeBuild/
+android-twa/local.properties
+gradle.properties.secret
+key.properties
+*.keystore
+*.jks
