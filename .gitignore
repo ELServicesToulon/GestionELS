@@ -151,6 +151,8 @@ Nouveau dossier/my-node-script/package.json
 Nouveau dossier/my-node-script/README.md
 Nouveau dossier/my-node-script/src/index.js
 .clasprc.json
+# Apps Script configuration (contains secrets; keep local only)
+Configuration.gs
 # PWA build artifacts and bundles
 pwa/dist/
 pwa/build/
