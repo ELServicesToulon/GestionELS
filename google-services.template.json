@@ -1,0 +1,42 @@
+{
+  "__comment": "Template for android-twa/google-services.json. Replace placeholders with Firebase Android app credentials.",
+  "project_info": {
+    "project_number": "1234567890",
+    "project_number__maps_to": "Firebase console > Project settings > Project number",
+    "project_id": "els-services-littoral",
+    "project_id__maps_to": "FIREBASE_PROJECT_ID (.env.template / Configuration.gs)",
+    "storage_bucket": "els-services-littoral.appspot.com",
+    "storage_bucket__maps_to": "Default Cloud Storage bucket"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1234567890:android:abcdef123456",
+        "mobilesdk_app_id__maps_to": "Firebase Android App > App ID",
+        "android_client_info": {
+          "package_name": "com.elservices.littoral",
+          "package_name__maps_to": "android-twa/app/build.gradle > applicationId"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1234567890-android-client.apps.googleusercontent.com",
+          "client_type": 3,
+          "client_id__maps_to": "Optional OAuth client (Google Sign-In)"
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyYourAndroidKey",
+          "current_key__maps_to": "Firebase console > Web API Key (shared with firebase-config.js)"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
