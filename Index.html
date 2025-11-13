@@ -1,18 +1,73 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <? var appUrl = ScriptApp.getService().getUrl(); var nomService = NOM_ENTREPRISE; var tvaMention = BILLING.TVA_MENTION; ?>
+  <?
+    var appUrl = ScriptApp.getService().getUrl();
+    var nomService = NOM_ENTREPRISE;
+    var tvaMention = BILLING.TVA_MENTION;
+    var adresseEntreprise = ADRESSE_ENTREPRISE;
+    var emailEntreprise = EMAIL_ENTREPRISE;
+    var serviceZones = ['Tamaris', 'Mar Vivo', 'Six-Fours-les-Plages', 'Sanary', 'Portissol', 'Bandol'];
+  ?>
   <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="ELS – Livraison pharmacie. Réservation en ligne.">
+  <meta name="description" content="<?= nomService ?> – Livraison pharmacie à domicile et EHPAD sur <?= serviceZones.join(', ') ?>. Réservez vos tournées avec calendrier gélule, forfait résident et urgences maîtrisées.">
+  <link rel="canonical" href="<?= appUrl ?>">
+  <meta property="og:type" content="LocalBusiness">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="<?= nomService ?>">
+  <meta property="og:url" content="<?= appUrl ?>">
+  <meta property="og:title" content="<?= nomService ?> – Livraison pharmacie Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol, Bandol">
+  <meta property="og:description" content="Réservation en ligne de vos tournées officinales : forfait résident, urgences & suivi.">
+  <meta property="og:image" content="<?= BRANDING_LOGO_PUBLIC_URL ?>">
+  <meta property="og:image:alt" content="<?= nomService ?>">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<?= nomService ?> – Livraison pharmacie sur le littoral toulonnais">
+  <meta name="twitter:description" content="Réservez vos tournées pharmacie & EHPAD : calendrier semaine, urgences, forfait résident.">
+  <meta name="twitter:image" content="<?= BRANDING_LOGO_PUBLIC_URL ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= ScriptApp.getService().getUrl() ?>?asset=theme.css">
   <?!= include('Reservation_CSS'); ?>
   <?!= include('charte'); ?>
-  <title><?= nomService ?> | Accueil</title>
+  <title><?= nomService ?> – Livraison pharmacie Tamaris, Mar Vivo, Six-Fours-les-Plages, Sanary, Portissol, Bandol</title>
+  <script type="application/ld+json">
+    <?= JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'LocalBusiness',
+          '@id': appUrl + '#entreprise',
+          'name': nomService,
+          'url': appUrl,
+          'image': BRANDING_LOGO_PUBLIC_URL,
+          'email': emailEntreprise,
+          'address': {
+            '@type': 'PostalAddress',
+            'streetAddress': adresseEntreprise
+          },
+          'priceRange': '€€',
+          'areaServed': serviceZones,
+          'sameAs': []
+        },
+        {
+          '@type': 'Service',
+          'name': 'Livraison pharmacie à domicile et EHPAD',
+          'provider': {
+            '@id': appUrl + '#entreprise'
+          },
+          'serviceType': 'Collecte et livraison de traitements officinaux',
+          'areaServed': serviceZones,
+          'availableChannel': {
+            '@type': 'ServiceChannel',
+            'serviceUrl': appUrl
+          }
+        }
+      ]
+    }) ?>
+  </script>
   <script>
     window.ELS_BRAND = Object.assign({}, window.ELS_BRAND || {}, {
       name: <?= JSON.stringify(nomService) ?>,
