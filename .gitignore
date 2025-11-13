@@ -173,3 +173,8 @@ gradle.properties.secret
 key.properties
 *.keystore
 *.jks
+service-account-*.json
+*-service-account.json
+*.pem
+*.p12
+*.pfx
