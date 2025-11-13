@@ -37,7 +37,10 @@ function INV2_generateInvoicePdf_(data) {
 function INV2_buildReplacements_(data) {
   const p = PropertiesService.getScriptProperties();
   const micro = !!data.options?.microEntreprise;
-  const tvaMention = micro ? 'TVA non applicable, art. 293 B du CGI' : (data.options?.tvaMention || '');
+  const defaultTvaMention = (typeof BILLING !== 'undefined' && BILLING && BILLING.TVA_MENTION)
+    ? BILLING.TVA_MENTION
+    : 'TVA non applicable (Art. 293 B CGI)';
+  const tvaMention = micro ? defaultTvaMention : (data.options?.tvaMention || '');
 
   const clientTva = data.client?.tva ? `\nTVA intracommunautaire : ${data.client.tva}` : '';
 
