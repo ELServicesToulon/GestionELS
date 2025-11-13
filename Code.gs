@@ -211,6 +211,15 @@ function hasAdminAccess(e) {
  */
 function doGet(e) {
   try {
+    const params = (e && e.parameter) || {};
+    const assetName = typeof params.asset === 'string' ? params.asset.trim() : '';
+    if (assetName) {
+      const assetResponse = serveStaticAsset_(assetName);
+      if (assetResponse) {
+        return assetResponse;
+      }
+    }
+
     try {
       const setup = checkSetup_ELS();
       if (setup.missingProps && setup.missingProps.length > 0) {
@@ -222,7 +231,7 @@ function doGet(e) {
       Logger.log('checkSetup_ELS erreur: ' + err.message);
     }
 
-    const page = (e && e.parameter && e.parameter.page) ? String(e.parameter.page) : '';
+    const page = params && params.page ? String(params.page) : '';
     if (typeof REQUEST_LOGGING_ENABLED !== 'undefined' && REQUEST_LOGGING_ENABLED && typeof logRequest === 'function') {
       logRequest(e);
     }
@@ -243,7 +252,6 @@ function doGet(e) {
 
         case 'gestion':
           if (typeof CLIENT_PORTAL_ENABLED !== 'undefined' && CLIENT_PORTAL_ENABLED) {
-            const params = (e && e.parameter) || {};
             if (typeof CLIENT_PORTAL_SIGNED_LINKS !== 'undefined' && CLIENT_PORTAL_SIGNED_LINKS) {
               const emailRaw = String(params.email || '').trim();
               const emailParam = emailRaw.toLowerCase();
@@ -329,6 +337,71 @@ function doGet(e) {
       `L'application ne peut pas démarrer. L'administrateur a été notifié.<br><pre style="color:red;">${error.message}</pre>`
     );
   }
+}
+
+/**
+ * Renvoie une ressource statique si elle est gérée par l'application.
+ * @param {string} assetName Nom de la ressource demandée.
+ * @returns {TextOutput|null} Réponse HTTP contenant la ressource, sinon null.
+ */
+function serveStaticAsset_(assetName) {
+  const key = String(assetName || '').toLowerCase();
+  if (!key) {
+    return null;
+  }
+
+  const assetCatalog = {
+    'theme.css': {
+      candidates: ['theme', 'theme.css', 'theme_css'],
+      mimeType: ContentService.MimeType.CSS
+    }
+  };
+
+  const asset = assetCatalog[key];
+  if (!asset) {
+    return null;
+  }
+
+  const content = loadStaticAssetContent_(asset.candidates);
+  if (content === null) {
+    Logger.log(`Asset introuvable: ${assetName}`);
+    return null;
+  }
+
+  return ContentService.createTextOutput(content).setMimeType(asset.mimeType);
+}
+
+/**
+ * Charge le contenu brut d'un fichier Apps Script.
+ * @param {string[]|string} candidates Liste de noms de fichiers à tester.
+ * @returns {string|null} Le contenu du fichier ou null si introuvable.
+ */
+function loadStaticAssetContent_(candidates) {
+  const names = Array.isArray(candidates) ? candidates : [candidates];
+  for (let i = 0; i < names.length; i += 1) {
+    const name = names[i];
+    if (!name) {
+      continue;
+    }
+    try {
+      const template = HtmlService.createTemplateFromFile(name);
+      if (template && typeof template.getCode === 'function') {
+        const raw = template.getCode();
+        if (raw !== null && raw !== undefined) {
+          return String(raw);
+        }
+      }
+      if (template && typeof template.evaluate === 'function') {
+        const evaluated = template.evaluate();
+        if (evaluated && typeof evaluated.getContent === 'function') {
+          return evaluated.getContent();
+        }
+      }
+    } catch (err) {
+      Logger.log(`loadStaticAssetContent_ erreur pour ${name}: ${err && err.message ? err.message : err}`);
+    }
+  }
+  return null;
 }
 
 
