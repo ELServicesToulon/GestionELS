@@ -560,19 +560,31 @@ function include(nomFichier) {
  * @throws {Error} Si la propriété est absente.
  */
 function getSecret(name) {
+  const propertyName = String(name || '');
+  if (!propertyName) {
+    throw new Error('Propriété manquante: clé vide');
+  }
+  const sanitizedName = typeof sanitizeScalar === 'function' ? sanitizeScalar(propertyName, 64) : propertyName;
   const sp = PropertiesService.getScriptProperties();
-  let value = sp.getProperty(name);
+  let value = sp.getProperty(propertyName);
   if (value === null || value === '') {
-    if (name === 'DOSSIER_PUBLIC_FOLDER_ID') {
+    if (propertyName === 'DOSSIER_PUBLIC_FOLDER_ID') {
       value = sp.getProperty('DOCS_PUBLIC_FOLDER_ID');
-    } else if (name === 'DOCS_PUBLIC_FOLDER_ID') {
+    } else if (propertyName === 'DOCS_PUBLIC_FOLDER_ID') {
       value = sp.getProperty('DOSSIER_PUBLIC_FOLDER_ID');
     }
   }
-  if (value === null || value === '') {
-    throw new Error(`Propriété manquante: ${name}`);
+  const missing = value === null || value === '' || (typeof isScriptPropertyPlaceholder === 'function' && isScriptPropertyPlaceholder(propertyName, value));
+  if (missing) {
+    const fallback = typeof getScriptPropertyPlaceholder === 'function' ? getScriptPropertyPlaceholder(propertyName) : '';
+    if (fallback) {
+      Logger.log('[getSecret] placeholder utilisé pour ' + sanitizedName);
+      return normalizeSecretValue_(propertyName, fallback);
+    }
+    Logger.log('[getSecret] propriété absente: ' + sanitizedName);
+    throw new Error('Propriété manquante: ' + sanitizedName);
   }
-  return normalizeSecretValue_(name, value);
+  return normalizeSecretValue_(propertyName, value);
 }
 
 /**
