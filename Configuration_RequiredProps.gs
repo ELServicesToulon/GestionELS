@@ -13,10 +13,13 @@ function test_requiredProps() {
     if (k === 'DOSSIER_PUBLIC_FOLDER_ID') {
       const v1 = sp.getProperty('DOSSIER_PUBLIC_FOLDER_ID');
       const v2 = sp.getProperty('DOCS_PUBLIC_FOLDER_ID');
-      return (v1 === null || v1 === '') && (v2 === null || v2 === '');
+      const v1Missing = v1 === null || v1 === '' || (typeof isScriptPropertyPlaceholder === 'function' && isScriptPropertyPlaceholder(k, v1));
+      const v2Missing = v2 === null || v2 === '' || (typeof isScriptPropertyPlaceholder === 'function' && isScriptPropertyPlaceholder('DOCS_PUBLIC_FOLDER_ID', v2));
+      return v1Missing && v2Missing;
     }
     const v = sp.getProperty(k);
-    return v === null || v === '';
+    const placeholderMissing = typeof isScriptPropertyPlaceholder === 'function' && isScriptPropertyPlaceholder(k, v);
+    return v === null || v === '' || placeholderMissing;
   });
   const ok = missing.length === 0;
   Logger.log(ok ? 'Toutes les propriétés requises sont définies.' : ('Propriétés manquantes: ' + missing.join(', ')));

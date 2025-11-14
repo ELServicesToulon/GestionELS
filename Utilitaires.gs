@@ -560,19 +560,53 @@ function include(nomFichier) {
  * @throws {Error} Si la propriété est absente.
  */
 function getSecret(name) {
+  const propertyName = String(name || '');
+  if (!propertyName) {
+    throw new Error('Propriété manquante: clé vide');
+  }
+  const sanitizedName = typeof sanitizeScalar === 'function' ? sanitizeScalar(propertyName, 64) : propertyName;
   const sp = PropertiesService.getScriptProperties();
-  let value = sp.getProperty(name);
+  let value = sp.getProperty(propertyName);
   if (value === null || value === '') {
-    if (name === 'DOSSIER_PUBLIC_FOLDER_ID') {
+    if (propertyName === 'DOSSIER_PUBLIC_FOLDER_ID') {
       value = sp.getProperty('DOCS_PUBLIC_FOLDER_ID');
-    } else if (name === 'DOCS_PUBLIC_FOLDER_ID') {
+    } else if (propertyName === 'DOCS_PUBLIC_FOLDER_ID') {
       value = sp.getProperty('DOSSIER_PUBLIC_FOLDER_ID');
     }
   }
-  if (value === null || value === '') {
-    throw new Error(`Propriété manquante: ${name}`);
+  const missing = value === null || value === '' || (typeof isScriptPropertyPlaceholder === 'function' && isScriptPropertyPlaceholder(propertyName, value));
+  if (missing) {
+    const fallback = resolveSecretFallback_(propertyName);
+    if (fallback) {
+      const preview = typeof sanitizeScalar === 'function' ? sanitizeScalar(fallback, 64) : String(fallback).substring(0, 64);
+      Logger.log('[getSecret] placeholder utilisé pour ' + sanitizedName + ' -> ' + preview);
+      return normalizeSecretValue_(propertyName, fallback);
+    }
+    Logger.log('[getSecret] propriété absente: ' + sanitizedName);
+    throw new Error('Propriété manquante: ' + sanitizedName);
   }
-  return normalizeSecretValue_(name, value);
+  return normalizeSecretValue_(propertyName, value);
+}
+
+/**
+ * Génère un placeholder sûr pour un secret absent.
+ * @param {string} name
+ * @returns {string}
+ */
+function resolveSecretFallback_(name) {
+  const key = String(name || '').trim();
+  if (!key) {
+    return '';
+  }
+  if (typeof getScriptPropertyPlaceholder === 'function') {
+    const placeholder = getScriptPropertyPlaceholder(key);
+    if (placeholder) {
+      return placeholder;
+    }
+  }
+  const safeKey = key.replace(/[^a-zA-Z0-9_]/g, '_').toUpperCase();
+  const prefix = (typeof SCRIPT_PROPERTY_PLACEHOLDER_PREFIX !== 'undefined' && SCRIPT_PROPERTY_PLACEHOLDER_PREFIX) ? SCRIPT_PROPERTY_PLACEHOLDER_PREFIX : 'TODO_ELS_';
+  return prefix + safeKey;
 }
 
 /**

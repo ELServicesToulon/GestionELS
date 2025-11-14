@@ -53,7 +53,8 @@ function checkSetup_ELS() {
   const sp = PropertiesService.getScriptProperties();
   const missing = (Array.isArray(REQUIRED_PROPS) ? REQUIRED_PROPS : []).filter(k => {
     const v = sp.getProperty(k);
-    return v === null || v === '';
+    const placeholderMissing = typeof isScriptPropertyPlaceholder === 'function' && isScriptPropertyPlaceholder(k, v);
+    return v === null || v === '' || placeholderMissing;
   });
 
   // 2) Flags exposés au client (depuis Configuration.gs)
