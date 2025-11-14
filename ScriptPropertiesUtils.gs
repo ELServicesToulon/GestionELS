@@ -5,12 +5,30 @@
 // Valeurs sensibles jamais loguées, aperçus masqués uniquement.
 // =================================================================
 
+const SCRIPT_PROPERTY_PLACEHOLDER_PREFIX = 'TODO_ELS_';
+
 const SCRIPT_PROPERTIES_PLACEHOLDERS = Object.freeze({
-  NOM_ENTREPRISE: 'TODO_NOM_ENTREPRISE',
-  ADRESSE_ENTREPRISE: 'TODO_ADRESSE_ENTREPRISE',
-  EMAIL_ENTREPRISE: 'todo@example.com',
+  NOM_ENTREPRISE: 'TODO_ELS_NOM_ENTREPRISE',
+  ADRESSE_ENTREPRISE: 'TODO_ELS_ADRESSE_ENTREPRISE',
+  EMAIL_ENTREPRISE: 'contact@example.com',
   ADMIN_EMAIL: 'admin@example.com',
-  SIRET: '00000000000000'
+  SIRET: '00000000000000',
+  ID_FEUILLE_CALCUL: 'TODO_ELS_SPREADSHEET_ID',
+  ID_FACTURES_DRIVE: 'TODO_ELS_FACTURES_FOLDER_ID',
+  ID_CALENDRIER: 'TODO_ELS_CALENDAR_ID',
+  ID_DOCUMENT_CGV: 'TODO_ELS_DOC_CGV_ID',
+  ID_MODELE_FACTURE: 'TODO_ELS_DOC_MODELE_FACTURE_ID',
+  ID_DOSSIER_ARCHIVES: 'TODO_ELS_ARCHIVES_FOLDER_ID',
+  ID_DOSSIER_TEMPORAIRE: 'TODO_ELS_TEMP_FOLDER_ID',
+  ID_LOGO: 'TODO_ELS_LOGO_FILE_ID',
+  DOSSIER_PUBLIC_FOLDER_ID: 'TODO_ELS_PUBLIC_FOLDER_ID',
+  DOCS_PUBLIC_FOLDER_ID: 'TODO_ELS_PUBLIC_FOLDER_ID',
+  ELS_SHARED_SECRET: 'TODO_ELS_SHARED_SECRET',
+  TRACE_SECRET: 'TODO_ELS_TRACE_SECRET',
+  OPENAI_API_KEY: 'sk-placeholder',
+  ID_FEUILLE_CALCUL_TOURNEES: 'TODO_ELS_TOURNEES_SHEET_ID',
+  ASSISTANT_THREAD_DEFAULT: 'TODO_ELS_ASSISTANT_THREAD',
+  'assistant_tokens:202511': '0'
 });
 
 /**
@@ -22,8 +40,15 @@ function getScriptPropertyPlaceholder(key) {
   if (!key) {
     return '';
   }
-  const placeholder = SCRIPT_PROPERTIES_PLACEHOLDERS[String(key)] || '';
-  return placeholder;
+  const normalizedKey = String(key).trim();
+  if (!normalizedKey) {
+    return '';
+  }
+  if (Object.prototype.hasOwnProperty.call(SCRIPT_PROPERTIES_PLACEHOLDERS, normalizedKey)) {
+    return SCRIPT_PROPERTIES_PLACEHOLDERS[normalizedKey];
+  }
+  const safeKey = normalizedKey.replace(/[^a-zA-Z0-9_]/g, '_').toUpperCase();
+  return SCRIPT_PROPERTY_PLACEHOLDER_PREFIX + safeKey;
 }
 
 /**
@@ -307,6 +332,43 @@ function compareProperties(sourceProps) {
 }
 
 /**
+ * Déploie des placeholders pour les Script Properties manquantes.
+ * @param {{keys?:string[],overwrite?:boolean}} [options]
+ * @returns {{ok:boolean,written:string[],skipped:string[],total:number}}
+ */
+function seedScriptPropertyPlaceholders(options) {
+  const opts = options || {};
+  const requestedKeys = Array.isArray(opts.keys) ? opts.keys.filter(k => typeof k === 'string' && k.trim()) : [];
+  const candidateKeys = requestedKeys.length ? requestedKeys.map(k => k.trim()) : getKnownScriptPropertyKeys_();
+  const overwrite = !!opts.overwrite;
+  const sp = PropertiesService.getScriptProperties();
+  const report = {
+    ok: true,
+    written: [],
+    skipped: [],
+    total: candidateKeys.length
+  };
+  candidateKeys.forEach(key => {
+    const placeholder = getScriptPropertyPlaceholder(key);
+    if (!placeholder) {
+      report.skipped.push(key);
+      return;
+    }
+    const current = sp.getProperty(key);
+    const missing = current === null || current === '' || isScriptPropertyPlaceholder(key, current);
+    if (!missing && !overwrite) {
+      report.skipped.push(key);
+      return;
+    }
+    sp.setProperty(key, placeholder);
+    report.written.push(key);
+  });
+  Logger.log('[seedScriptPropertyPlaceholders] total=%s written=%s skipped=%s overwrite=%s',
+    report.total, report.written.length, report.skipped.length, overwrite);
+  return report;
+}
+
+/**
  * Diagnostic autonome sans dépendance externe.
  * @returns {{ok:boolean,present:number,missing:number,keys:string[]}}
  */
@@ -401,11 +463,37 @@ function test_scriptPropertiesUtils() {
     if (placeholderValue && !isScriptPropertyPlaceholder(placeholderKey, placeholderValue)) {
       return { ok: false, reason: 'PLACEHOLDER_MISMATCH' };
     }
+    const seedRes = seedScriptPropertyPlaceholders({ keys: ['__TEST_PLACEHOLDER__'], overwrite: true });
+    if (!seedRes.ok || seedRes.written.indexOf('__TEST_PLACEHOLDER__') === -1) {
+      return { ok: false, reason: 'SEED_FAILED' };
+    }
+    const seededValue = sp.getProperty('__TEST_PLACEHOLDER__');
+    if (!isScriptPropertyPlaceholder('__TEST_PLACEHOLDER__', seededValue)) {
+      return { ok: false, reason: 'SEED_VALUE_INVALID' };
+    }
     return { ok: true };
   } finally {
     testKeys.forEach(key => sp.deleteProperty(key));
+    sp.deleteProperty('__TEST_PLACEHOLDER__');
     Object.keys(backup).forEach(key => {
       sp.setProperty(key, backup[key]);
     });
   }
+}
+
+/**
+ * Retourne la liste dédupliquée des clés connues (placeholders + requis).
+ * @returns {string[]}
+ */
+function getKnownScriptPropertyKeys_() {
+  const index = {};
+  Object.keys(SCRIPT_PROPERTIES_PLACEHOLDERS).forEach(key => {
+    index[key] = true;
+  });
+  if (typeof REQUIRED_PROPS !== 'undefined' && Array.isArray(REQUIRED_PROPS)) {
+    REQUIRED_PROPS.forEach(key => {
+      index[key] = true;
+    });
+  }
+  return Object.keys(index).sort();
 }

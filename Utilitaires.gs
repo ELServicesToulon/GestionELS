@@ -576,15 +576,37 @@ function getSecret(name) {
   }
   const missing = value === null || value === '' || (typeof isScriptPropertyPlaceholder === 'function' && isScriptPropertyPlaceholder(propertyName, value));
   if (missing) {
-    const fallback = typeof getScriptPropertyPlaceholder === 'function' ? getScriptPropertyPlaceholder(propertyName) : '';
+    const fallback = resolveSecretFallback_(propertyName);
     if (fallback) {
-      Logger.log('[getSecret] placeholder utilisé pour ' + sanitizedName);
+      const preview = typeof sanitizeScalar === 'function' ? sanitizeScalar(fallback, 64) : String(fallback).substring(0, 64);
+      Logger.log('[getSecret] placeholder utilisé pour ' + sanitizedName + ' -> ' + preview);
       return normalizeSecretValue_(propertyName, fallback);
     }
     Logger.log('[getSecret] propriété absente: ' + sanitizedName);
     throw new Error('Propriété manquante: ' + sanitizedName);
   }
   return normalizeSecretValue_(propertyName, value);
+}
+
+/**
+ * Génère un placeholder sûr pour un secret absent.
+ * @param {string} name
+ * @returns {string}
+ */
+function resolveSecretFallback_(name) {
+  const key = String(name || '').trim();
+  if (!key) {
+    return '';
+  }
+  if (typeof getScriptPropertyPlaceholder === 'function') {
+    const placeholder = getScriptPropertyPlaceholder(key);
+    if (placeholder) {
+      return placeholder;
+    }
+  }
+  const safeKey = key.replace(/[^a-zA-Z0-9_]/g, '_').toUpperCase();
+  const prefix = (typeof SCRIPT_PROPERTY_PLACEHOLDER_PREFIX !== 'undefined' && SCRIPT_PROPERTY_PLACEHOLDER_PREFIX) ? SCRIPT_PROPERTY_PLACEHOLDER_PREFIX : 'TODO_ELS_';
+  return prefix + safeKey;
 }
 
 /**
